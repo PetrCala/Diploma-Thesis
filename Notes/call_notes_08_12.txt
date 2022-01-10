@@ -1,0 +1,26 @@
+Ability control vs. no ability control studie - zkusit porovnat
+
+Literatura která používá IV místo ability (proxy, např. parental status), které oddělají korelaci v regresi, která vzniká abilitou, která tma je
+
+studie je není experiment
+
+kauzální efekt vs korelace
+
+experiment!!! (jestli je)
+
+
+ability bias vs non ability bias (jestli tam je IQ, nebo jin qbility zástupce, případně jaký)
+
+
+studie, kde se řeší, že efekt vychází takto a takto, pokud autor ignoruje/neignoruje ability bias - jestli je vůbec aware, že ten bias je, jestli k němu providuje robustness checky etc.
+
+řešit private returns místo social - 
+
+Cui & Martins (2020) - meta analysis = tam by měla být proměnná, která indikuje, jestli se v té a v té studii vysvytukje "private returns"?
+
+income nemusí být middle-high-low -> lze stáhnout data externě a namatchovat (jak v bakalářce)
+
+prostě updatenout dataset, popřemýšlet nad proměnnýma, updatenout, přidat studie atd. 
+
+signalling effect? - kontrolovat, teoreticky udělat summary a tak. (dummy var - if they control for signalling effect)
+
