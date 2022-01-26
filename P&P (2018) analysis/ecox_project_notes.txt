@@ -1,0 +1,19 @@
+To do:
+-Figure out the categorization of the dependent variable - what it is that you want to run the regression on
+
+-Take a look into the lecture notes (lesson on Panel data) - be sure you are using the appropriate methods (possibly FE) and try running this in R
+
+-Take notes along the way
+
+
+
+Notes on the dependent variable:
+
+"Rate of return estimates of investment in education - selected by the authors (P&P 2018) based on their ability to extract a rate of return in a study
+When the rate of return was not reported, the authors computed the number through coefficients of the Mincerian function (if those were reported)
+	-Here the task should be to know what the Mincerian equation looks like, fitted on the data, first of all (their data, that is)
+
+As a reminder, the equation consists of the rate of return to education as a dep variable, and then "years of schooling", "years of lavor market experience", and
+	squares of the two dependent variables
+
+ 
