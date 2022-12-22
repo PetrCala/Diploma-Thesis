@@ -1,2 +1,0 @@
--In the future, after the P&P original dataset has been checked, run the estimations to see whether the numbers they report
-	in their paper are correct, or rather where they are coming from and how they are obtained in the first place.
