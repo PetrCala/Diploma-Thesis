@@ -1,0 +1,7 @@
+# R temporary files
+**/*.Rhistory
+**/*.Rdata
+
+# Large literature files
+Studies list/
+P&P (2018) analysis/Original studies/
