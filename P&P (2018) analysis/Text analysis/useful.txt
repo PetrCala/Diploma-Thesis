@@ -1,0 +1,15 @@
+﻿Journal extraction regex:
+r'.*\.(.*)\s\d+\(.*\):.*'
+
+This regex will extract a journal name from citations of the following format:
+"Cohn, E. and J.T. Addison. 1998. “The Economic Returns to Lifelong Learning.” Education Economics 6(3): 253-308."
+
+Vim cmd command:
+:%s/[^"]*"\s*([^\d]*).*/\1/g
+
+
+Delete all text up until the second quote:
+:%s/[^"]*"\s*\([^\d\.]*\).*/\1/g
+
+Remove all special characters, numbers, dashes, dots, etc.
+:%s/[^a-zA-Z\s]//g
