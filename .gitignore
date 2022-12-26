@@ -13,6 +13,9 @@ Excel temp files
 # Large literature files
 **/Studies/
 
+# P&P folder files
+**/P&P (2018) analysis/Tools/*.txt
+
 # Selenium
 chromedriver
 *.chromedriver

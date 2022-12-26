@@ -17,7 +17,7 @@ import seleniumtools as sel
 
 def main():
     driver = sel.openDriver()
-    handleAllStudies(driver, test=False)
+    handleAllStudies(driver, test=True)
     driver.quit()
     # handleSampleStudy(driver)
     return None
@@ -31,11 +31,19 @@ def handleAllStudies(driver, test:bool = True):
     '''
     downloaded = 0 # Downloaded insided this function
     already_downloaded = 0 # Downloaded beforehand
-    failed = []
+    new_failed = []
     ll = getLookupList() # [Number, Author, Cite]
+    # Sample set
     if test:
-        ll = ll[:3] # Subset onto a sample set
+        ll = ll[:20]
+    # Existing failed studies
+    with open(st.failed_path, 'r', encoding='utf-8') as f:
+        failed_studies = f.readlines()
+        failed_studies = [i.replace('\n','') for i in failed_studies] # Remove 'newline'
+    # Main loop
     for l in ll:
+        if l[0] in failed_studies: # Failed study
+            continue
         outcome, fail_reason = handleStudy(driver, l)
         if fail_reason == 'EXIT':
             print('Process terminated.')
@@ -46,15 +54,16 @@ def handleAllStudies(driver, test:bool = True):
             time.sleep(random.uniform(0.5, 2)) # Wait 
         elif (outcome is False) and (fail_reason is not None): # Failed to download
             l.append(fail_reason) # Now [number, author, cite, fail reason]
-            failed.append(l)
+            new_failed.append(l)
             time.sleep(random.uniform(0.5, 2)) # Wait 
         elif outcome is None: # Download not necessary
             already_downloaded += 1
-    handleFailedStudies(failed) # Print out the list of studies, that could not be downloaded, into a text file
+    handleFailedStudies(new_failed) # Print out the list of studies, that could not be downloaded, into a text file
     print(f'Study download complete.\nDownloaded {downloaded} new studies.')
-    print(f'Found {already_downloaded} already downloaded studies.\nFailed to download {len(failed)} studies.')
-    if failed != []:
-        print(f'The list of failed download studies can be found in {st.failed_path}.')
+    print(f'Found {already_downloaded} already downloaded studies.')
+    print(f'Failed to download {len(failed_studies)} old, and {len(new_failed)} new studies.')
+    if new_failed != []:
+        print(f'The list of all studies that failed to download can be found in {st.failed_path}.')
     return None
 
 def handleFailedStudies(l:list):
@@ -62,16 +71,20 @@ def handleFailedStudies(l:list):
     '''
     if l == []:
         return None
-    path = st.failed_path
-    out_text = ''
+    try:
+        with open(st.failed_path, 'r', encoding='utf-8') as f:
+            failed_studies = f.readlines()
+    except FileNotFoundError:
+        with open(st.failed_path, 'w', encoding='utf-8') as f:
+            f.write('')
+            failed_studies = []
     for study in l:
-        name = study[0]
-        cite = study[1]
-        fail_reason = study[2]
-        out = f'Study: {name}, Citation: {cite}, Fail reason: {fail_reason}\n'
-        out_text += out
-    with open(path, 'w') as f:
-        f.write(out_text)
+        name = study[0] + '\n'
+        if name in failed_studies: # Study name already in the failed studies file
+            continue
+        failed_studies.append(name)
+    with open(st.failed_path, 'w', encoding='utf-8') as f:
+        f.writelines(failed_studies)
     return None
 
 def handleStudy(driver, l:list):
