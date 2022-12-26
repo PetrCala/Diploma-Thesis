@@ -1,7 +1,21 @@
-# R temporary files
+# Python temp files
+__pycache__/
+*.py[cod]
+*$py.class# R temporary files
+
+# R temp files
 **/*.Rhistory
 **/*.Rdata
 
+Excel temp files
+**/~$*.xlsx
+
 # Large literature files
-Studies list/
-P&P (2018) analysis/Original studies/
+**/Studies/
+
+# Selenium
+chromedriver
+*.chromedriver
+
+# Virtual environments
+.venv/

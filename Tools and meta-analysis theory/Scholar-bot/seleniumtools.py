@@ -1,4 +1,5 @@
-﻿from os.path import exists
+﻿import os
+from os.path import exists
 import requests
 import time
 import re
@@ -117,8 +118,10 @@ def downloadStudy(driver, author):
         print('Download impossible.')
         return False
     response = requests.get(driver.current_url)
-    download_path = st.download_path + str(f'\{author}.pdf')
-    with open(download_path, "wb") as f:
+    if not exists(st.download_path):
+        os.makedirs(st.download_path)
+    pdf_download_path = st.download_path + str(f'\{author}.pdf')
+    with open(pdf_download_path, "wb") as f:
         f.write(response.content)
     print(f'{author} downloaded.')
     return True

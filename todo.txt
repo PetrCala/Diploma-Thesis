@@ -1,5 +1,10 @@
+- Check whether the pypaperbot works with a sample DOI data
+- Check how to get DOIs 
+- Finalize the paper download system
+- Clear up all folders in regards to the unused system, or store those folders somewhere safe
+
 Data collection:
-- Make a master literature excel, with a sheet, containing names and references of all the P&P works
+- Make a master literature excel, with a sheet, containing names and references of all the P&P works ✓
 - Download all the P&P works
 - Check Bowles et al. (2001), and their data too, for potential expansion of the base data set
 - Read cookbook again
