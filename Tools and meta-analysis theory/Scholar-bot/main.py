@@ -1,5 +1,4 @@
-﻿import time
-import re
+﻿import random
 from os.path import exists
 
 from selenium import webdriver
@@ -15,34 +14,39 @@ import seleniumtools as sel
 
 # Selenium
 
-
 def main():
     driver = sel.openDriver()
-    handleStudy(driver, st.test_l)
+    handleAllStudies(driver)
+    driver.quit()
+    # handleSampleStudy(driver)
     return None
 
-def handleAllStudies(test:bool = True):
+def handleAllStudies(driver, test:bool = True):
     '''Read the source excel file, read through all studies, check for their existence
     in the download folder, and try to download those studies, which have not been
     downloaded yet.
     :arg:
         test (bool) - Download only the first 3 studies of the excel file.
     '''
-    downloaded = 0
+    downloaded = 0 # Downloaded insided this function
+    already_downloaded = 0 # Downloaded beforehand
     failed = []
-    ll = getLookupList()
-    driver = sel.openDriver()
+    ll = getLookupList() # [Number, Author, Cite]
     if test:
         ll = ll[:3] # Subset onto a sample set
     for l in ll:
-        outcome = handleStudy(driver, l)
-        if outcome:
+        outcome, fail_reason = handleStudy(driver, l)
+        if outcome is True: # Downloaded
             print(f'{l[0]} red and downloaded successfully.')
             downloaded += 1
-        else:
+        elif (outcome is False) and (fail_reason is not None): # Failed to download
+            l.append(fail_reason) # Now [number, author, cite, fail reason]
             failed.append(l)
+        elif outcome is None: # Download not necessary
+            already_downloaded += 1
     handleFailedStudies(failed) # Print out the list of studies, that could not be downloaded, into a text file
-    print(f'Study download complete.\nDownloaded {downloaded} studies.\nFailed to download {len(failed)} studies.')
+    print(f'Study download complete.\nDownloaded {downloaded} new studies.')
+    print(f'Found {already_downloaded} already downloaded studies.\nFailed to download {len(failed)} studies.')
     if failed != []:
         print(f'The list of failed download studies can be found in {st.failed_path}.')
     return None
@@ -57,7 +61,8 @@ def handleFailedStudies(l:list):
     for study in l:
         name = study[0]
         cite = study[1]
-        out = f'Study: {name}, Citation: {cite}\n'
+        fail_reason = study[3]
+        out = f'Study: {name}, Citation: {cite}, Fail reason: {fail_reason}\n'
         out_text += out
     with open(path, 'w') as f:
         f.write(out_text)
@@ -69,47 +74,30 @@ def handleStudy(driver, l:list):
     :arg:
         driver - Selenium driver.
         l(list) - A list in the form [Author, Citation].
+    :return:
+        outcome (bool) - True/False, depending on the download outcome.
+            None, if already downloaded.
+        fail_reason (str/None) - Reason for the unsuccessful download.
     '''
     if (not isinstance(l, list)) or (not len(l)==2):
         raise ValueError('Please specify the [author,citation] list correctly.')
-    author, cite = l[0], l[1]
+    author, cite = l
     already_downloaded = checkForExistence(author)
     if already_downloaded:
         print(f'{author} already downloaded.')
-        return False
+        return None, None
     sel.openWebsite(driver, st.SCHOLAR_SITE)
-    sel.searchGoogleScholar(driver, st.test_cite)
+    sel.searchGoogleScholar(driver, cite)
     WebDriverWait(driver, 10).until(EC.url_changes)
     downloadable = sel.openStudyForDownload(driver, cite)
     if not downloadable:
-        return False
-    time.sleep(3)
-    driver.quit()
-    # except Exception as e:
-    #     print("Exception occured:", e)
-    return True
+        return False, 'No download button on Google Scholar'
+    downloaded = sel.downloadStudy(driver, author)
+    if not downloaded:
+        return False, 'Failed to click the download button'
+    return True, None
     
 #----- OTHER METHODS -----
-
-def validateStudy(cite:str):
-    '''Input the citation of the study, and check, whether or not it is the first
-    hit of the google scholar search.
-    '''
-    rgx = r'"(.*)"' # Extract between double quotes # Alternative - r'"([^"]*)"'
-    match = re.search(rgx, cite)
-    if match is None:
-        print('This study is not in the correct citation form.')
-        return False
-    study_title = match.group(1)
-    study_title_list = study_title.split()
-    msg = I.readTextInRange(st.SCHOLAR_FIRST_STUDY_COORDS) # Scholar result
-    matches = I.checkStringForMatches(msg, study_title_list)
-    if matches > 3:
-        print(f'Found the correct study title: {study_title}')
-        return True
-    print(f'Failed to find the title {study_title}')
-    return False
-
 def checkForExistence(author:str):
     '''Input the name of the study, and check, whether this study has been downloaded yet.
     If yes, return True, otherwise return False.
@@ -139,6 +127,14 @@ def readExcel():
     '''Read the excel under the source path, defined in static 'st.lit_file'.
     '''
     return pd.read_excel(st.lit_file)
+
+def handleSampleStudy(driver):
+    '''Handle a sample study using the samples in static.py.
+    '''
+    ll = st.test_ll
+    sample_l = random.choice(ll)
+    handleStudy(driver, sample_l)
+    return True
 
 if __name__ == '__main__':
     main()

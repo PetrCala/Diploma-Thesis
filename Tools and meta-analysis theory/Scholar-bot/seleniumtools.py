@@ -1,28 +1,23 @@
 ﻿from os.path import exists
+import requests
 import time
 import re
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from bs4 import BeautifulSoup
 
 import static as st
+from input import Input
+
+I = Input()
 
 def main():
-    try:
-        driver = openDriver()
-        openWebsite(driver, st.SCHOLAR_SITE)
-        searchGoogleScholar(driver, st.test_cite)
-        time.sleep(2)
-        driver.quit()
-    except Exception as e:
-        print("Exception occured:", e)
-    return None
+    pass
 
 #----- SELENIUM METHODS -----
 def openDriver():
@@ -45,9 +40,9 @@ def openWebsite(driver, link:str):
 def searchGoogleScholar(driver, search_string):
     '''Search the google scholar for a specific string (citation).
     '''
-    search_bar = driver.find_element(By.NAME, 'q') # Find the search bar element
+    search_bar = driver.find_element(By.NAME, st.SEARCH_BAR_NAME) # Find the search bar element
     search_bar.send_keys(search_string)
-    search_button = driver.find_element(By.NAME, 'btnG') # Search button
+    search_button = driver.find_element(By.NAME, st.SEARCH_BUTTON_NAME) # Search button
     search_button.click() # Click the search button
     return None
 
@@ -62,52 +57,71 @@ def openStudyForDownload(driver, desired_study_cite):
         print('This study is not in the correct citation form.')
         return False
     searched_title = match.group(1) # Title of searched study
-    studies_box = driver.find_element(By.ID, 'gs_res_ccl_mid') # All studies
-    study_idx = getStudyIndex(studies_box, searched_title)
-    if not study_idx:
-        return False
-    study_box = studies_box[study_idx] # Box with the desired study
-    print('trying to get the pdf link...')
-    link = study_box.find_element(By.XPATH, f"//*[@class='gs_ggs gs_fl']/div/div/a")
-    print(f"{link} found")
     try:
+        studies_box = driver.find_element(By.ID, st.STUDIES_BOX_ID) # All studies
+    except NoSuchElementException: # Captcha window open most probably
+        captcha_handled = handleCaptcha(driver)
+        if not captcha_handled:
+            return False
+        studies_box = driver.find_element(By.ID, st.STUDIES_BOX_ID) # Search again
+    study_box = getStudyBox(studies_box, searched_title) # Correct study
+    if not study_box:
+        return False
+    try:
+        link = study_box.find_element(By.XPATH, st.STUDY_BOX_PDF_BTN_XPATH)
         link.click()
+        WebDriverWait(driver,10).until(EC.url_changes)
         return True
     except Exception as e:
         print('Download button not found.')
+        print("Exception:", e)
         return False
 
-def getStudyIndex(studies_box, searched_title):
-    '''Insert the box with all studies on the page, iterate through the first 4
-    elements, and check, whether any matches the study title. If so, return
-    the index of the correct study box minus one. If not, return False.
+def handleCaptcha(driver):
+    '''Handle the captcha window. If handled successfully, return True,
+    else return False.
     '''
-    for i in range(1,3):
-        link_el = studies_box.find_element(By.XPATH, f"div[{i}]//*[@class='gs_ri']/h3/a") # Move this down later
+    captcha_url = driver.current_url
+    WebDriverWait(driver,20).until(EC.presence_of_element_located((By.ID, st.STUDIES_BOX_ID)))
+    if captcha_url == driver.current_url:
+        print('Captcha failed.')
+        return False
+    return True
+
+def getStudyBox(studies_box, searched_title):
+    '''Insert the box with all studies on the page, iterate through the first 3
+    elements, and check, whether any matches the study title. If so, return
+    the correct study box element. Else return False.
+    '''
+    for i in range(1,4):
         try:
+            study_box = studies_box.find_element(By.XPATH, f"div[{i}]") # Get a new study
+            link_el = study_box.find_element(By.XPATH, st.STUDY_BOX_TITLE_XPATH) # Get the title of that study
             found_title = str(link_el.text)
             searched_list, found_list = searched_title.split(), found_title.split()
             matches = [(i in found_list) for i in searched_list]
             if sum(matches)/len(searched_list) > 0.3:
                 print(f'{searched_title} found.')
-                return i - 1
+                return link_el
         except Exception as e:
             continue # Study not in this box
     print(f'{searched_title} not found.')
     return False
 
-def openForDownload(driver):
-    '''Look for the download button, and click it, if it is available.
-    If not, return False.
+def downloadStudy(driver, author):
+    '''After the study download page has been opened, download the study.
+    If the download is successful, return True. Otherwise return False.
     '''
-    pdf_button = driver.find_element(By.CSS_SELECTOR, st.first_pdf_button_css)
-    pdf_button.click()
-
-def readWebsite(driver):
-    '''Get the BeautifulSoup of the current website.
-    '''
-    page_source = driver.page_source
-    return BeautifulSoup(page_source,features='html.parser')
+    url_ = driver.current_url
+    if not '.pdf' in url_:
+        print('Download impossible.')
+        return False
+    response = requests.get(driver.current_url)
+    download_path = st.download_path + str(f'\{author}.pdf')
+    with open(download_path, "wb") as f:
+        f.write(response.content)
+    print(f'{author} downloaded.')
+    return True
 
 
 if __name__ == '__main__':
