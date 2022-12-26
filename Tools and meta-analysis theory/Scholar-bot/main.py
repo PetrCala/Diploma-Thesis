@@ -1,4 +1,5 @@
 ﻿import random
+import time
 from os.path import exists
 
 from selenium import webdriver
@@ -16,7 +17,7 @@ import seleniumtools as sel
 
 def main():
     driver = sel.openDriver()
-    handleAllStudies(driver)
+    handleAllStudies(driver, test=False)
     driver.quit()
     # handleSampleStudy(driver)
     return None
@@ -36,12 +37,17 @@ def handleAllStudies(driver, test:bool = True):
         ll = ll[:3] # Subset onto a sample set
     for l in ll:
         outcome, fail_reason = handleStudy(driver, l)
-        if outcome is True: # Downloaded
+        if fail_reason == 'EXIT':
+            print('Process terminated.')
+            break
+        elif outcome is True: # Downloaded
             print(f'{l[0]} red and downloaded successfully.')
             downloaded += 1
+            time.sleep(random.uniform(0.5, 2)) # Wait 
         elif (outcome is False) and (fail_reason is not None): # Failed to download
             l.append(fail_reason) # Now [number, author, cite, fail reason]
             failed.append(l)
+            time.sleep(random.uniform(0.5, 2)) # Wait 
         elif outcome is None: # Download not necessary
             already_downloaded += 1
     handleFailedStudies(failed) # Print out the list of studies, that could not be downloaded, into a text file
@@ -61,7 +67,7 @@ def handleFailedStudies(l:list):
     for study in l:
         name = study[0]
         cite = study[1]
-        fail_reason = study[3]
+        fail_reason = study[2]
         out = f'Study: {name}, Citation: {cite}, Fail reason: {fail_reason}\n'
         out_text += out
     with open(path, 'w') as f:
@@ -86,7 +92,9 @@ def handleStudy(driver, l:list):
     if already_downloaded:
         print(f'{author} already downloaded.')
         return None, None
-    sel.openWebsite(driver, st.SCHOLAR_SITE)
+    website_open = sel.openWebsite(driver, st.SCHOLAR_SITE)
+    if not website_open: # Google scholar timeout message
+        return False, 'EXIT'
     sel.searchGoogleScholar(driver, cite)
     WebDriverWait(driver, 10).until(EC.url_changes)
     downloadable = sel.openStudyForDownload(driver, cite)

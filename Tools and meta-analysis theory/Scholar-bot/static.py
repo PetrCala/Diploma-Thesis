@@ -3,7 +3,7 @@
 # Pathing
 abs_path = os.getcwd() # Scholar-bot folder
 if not (abs_path[-11:] == 'Scholar-bot'):
-    raise ValueError('Wrong folder')
+    raise ValueError('Wrong folder. You must run all your scripts from the \"Scholar-bot\" folder.')
 thesis_path  = os.path.dirname(os.path.dirname(abs_path)) # Diploma-thesis folder
 if not (thesis_path[-14:] == 'Diploma-Thesis'):
     raise ValueError('Wrong thesis folder')

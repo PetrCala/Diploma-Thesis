@@ -31,12 +31,16 @@ def openDriver():
 
 def openWebsite(driver, link:str):
     '''Input a selenium driver and a link and open a website with that driver.
+    In case of a timeout, return False, otherwise return True.
     '''
     current_url = driver.current_url
     if not current_url == link:
         driver.get(link)
-        WebDriverWait(driver,10).until(EC.url_to_be(link))
-    return None
+        try:
+            WebDriverWait(driver,10).until(EC.url_to_be(link))
+        except TimeoutException:
+            return False
+    return True
 
 def searchGoogleScholar(driver, search_string):
     '''Search the google scholar for a specific string (citation).

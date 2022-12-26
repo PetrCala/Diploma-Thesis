@@ -1,4 +1,5 @@
 ﻿import re
+import os
 from os.path import exists
 
 from main import checkForExistence
