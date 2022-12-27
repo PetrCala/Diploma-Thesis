@@ -9,7 +9,7 @@ import static as st
 def main():
     # checkDummyForExistence()
     # checkTitleRegex()
-    link = 'https://www.sciencedirect.com/science/article/pii/S0304387805001380/pdfft?isDTMRedir=true&download=true'
+    link = 'https://read.oecd-ilibrary.org/economics/oecd-economic-surveys-iceland-2006/adapting-the-education-system-to-a-changing-environment_eco_surveys-isl-2006-7-en'
     downloadTestStudy(link)
 
 def downloadTestStudy(link = None):
