@@ -72,15 +72,13 @@ def openStudyForDownload(driver, desired_study_cite):
     study_box = getStudyBox(studies_box, searched_title) # Correct study
     if not study_box:
         return False
-    try:
+    try: # Get the PDF button
         link = study_box.find_element(By.XPATH, st.STUDY_BOX_PDF_BTN_XPATH)
-        link.click()
-        WebDriverWait(driver,10).until(EC.url_changes)
-        return True
-    except Exception as e:
-        print('Download button not found.')
-        print("Exception:", e)
-        return False
+    except Exception as e: # Get the study title instead (no PDF button)
+        link = study_box.find_element(By.XPATH, st.STUDY_BOX_TITLE_XPATH) # Existence validated in getStudyBox
+    link.click()
+    WebDriverWait(driver,10).until(EC.url_changes)
+    return True
 
 def handleCaptcha(driver):
     '''Handle the captcha window. If handled successfully, return True,
@@ -105,11 +103,11 @@ def getStudyBox(studies_box, searched_title):
             found_title = str(link_el.text)
             searched_list, found_list = searched_title.split(), found_title.split()
             matches = [(i in found_list) for i in searched_list]
-            if sum(matches)/len(searched_list) > 0.3:
+            if sum(matches)/len(searched_list) > 0.6:
                 print(f'{searched_title} found.')
                 return link_el
         except Exception as e:
-            continue # Study not in this box
+            continue # Study not in this box, or only citation
     print(f'{searched_title} not found.')
     return False
 
@@ -118,10 +116,13 @@ def downloadStudy(driver, author):
     If the download is successful, return True. Otherwise return False.
     '''
     url_ = driver.current_url
-    if not '.pdf' in url_:
-        print('Download impossible.')
-        return False
-    response = requests.get(driver.current_url)
+    if not 'pdf' in url_:
+        pdf_link = openPDFPage(driver) # Get the PDF page
+        if response is None:
+            return False
+        response = requests.get(pdf_link)
+    else:
+        response = requests.get(url_) # Already on PDF page
     if not exists(st.download_path):
         os.makedirs(st.download_path)
     pdf_download_path = st.download_path + str(f'\{author}.pdf')
@@ -129,6 +130,22 @@ def downloadStudy(driver, author):
         f.write(response.content)
     print(f'{author} downloaded.')
     return True
+
+def openPDFPage(driver):
+    '''Check the type of the (potentially downloadable) website, which the driver is
+    currently on. Perform any necessary preparations/send inputs, until the page with
+    a downloadable PDF is open. If this succeeds, return the pdf link (response).
+    Otherwise return None.
+    '''
+    url_ = driver.current_url
+    if 'sciencedirect' in url_:
+        view_pdf_btn = driver.find_element(By.XPATH, st.SCIENCE_DIRECT_VIEW_PDF_XPATH)
+        view_pdf_btn.click()
+        WebDriverWait(driver,10).until(EC.url_changes)
+        download_pdf_btn = driver.find_element(By.XPATH, st.SCIENCE_DIRECT_PDF_BTN_XPATH)
+        download_link = download_pdf_btn.get_attribute('href')
+        return download_link
+    return False
 
 
 if __name__ == '__main__':

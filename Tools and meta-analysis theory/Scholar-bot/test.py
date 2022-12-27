@@ -1,14 +1,28 @@
 ﻿import re
 import os
 from os.path import exists
+import requests
 
 from main import checkForExistence
 import static as st
 
 def main():
     # checkDummyForExistence()
-    checkTitleRegex()
+    # checkTitleRegex()
+    link = 'https://www.sciencedirect.com/science/article/pii/S0304387805001380/pdfft?isDTMRedir=true&download=true'
+    downloadTestStudy(link)
 
+def downloadTestStudy(link = None):
+    '''Download a study into the Tools folder using the requests package.
+    '''
+    if link is None:
+        link = st.test_link
+    download_path = st.tools_path + f'\{st.test_name}.pdf'
+    response = requests.get(link)
+    with open(download_path, "wb") as f:
+        f.write(response.content)
+    print(f'{st.test_name} downloaded.')
+    return True 
 
 def checkTitleRegex():
     '''Check the functionality of the study title lookup regex.

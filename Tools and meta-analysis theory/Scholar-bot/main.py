@@ -1,5 +1,6 @@
 ﻿import random
 import time
+import openpyxl
 from os.path import exists
 
 from selenium import webdriver
@@ -16,9 +17,11 @@ import seleniumtools as sel
 # Selenium
 
 def main():
-    driver = sel.openDriver()
-    handleAllStudies(driver, test=True)
-    driver.quit()
+    # driver = sel.openDriver()
+    # handleAllStudies(driver, test=False)
+    # driver.quit()
+    getAlreadyDownloadedList(to_excel=True)
+
     # handleSampleStudy(driver)
     return None
 
@@ -35,7 +38,7 @@ def handleAllStudies(driver, test:bool = True):
     ll = getLookupList() # [Number, Author, Cite]
     # Sample set
     if test:
-        ll = ll[:20]
+        ll = ll[:200]
     # Existing failed studies
     with open(st.failed_path, 'r', encoding='utf-8') as f:
         failed_studies = f.readlines()
@@ -83,6 +86,7 @@ def handleFailedStudies(l:list):
         if name in failed_studies: # Study name already in the failed studies file
             continue
         failed_studies.append(name)
+    failed_studies.sort() # Alphabetic sorting
     with open(st.failed_path, 'w', encoding='utf-8') as f:
         f.writelines(failed_studies)
     return None
@@ -103,7 +107,6 @@ def handleStudy(driver, l:list):
     author, cite = l
     already_downloaded = checkForExistence(author)
     if already_downloaded:
-        print(f'{author} already downloaded.')
         return None, None
     website_open = sel.openWebsite(driver, st.SCHOLAR_SITE)
     if not website_open: # Google scholar timeout message
@@ -115,7 +118,7 @@ def handleStudy(driver, l:list):
         return False, 'No download button on Google Scholar'
     downloaded = sel.downloadStudy(driver, author)
     if not downloaded:
-        return False, 'Failed to click the download button'
+        return False, 'Failed to download the study.'
     return True, None
     
 #----- OTHER METHODS -----
@@ -143,6 +146,40 @@ def getLookupList():
         if not isinstance(citation, float): # [nan, nan]
             ll.append(out)
     return ll
+
+def getAlreadyDownloadedList(to_excel=True):
+    '''Read the Literature excel file, get the list of all study names,
+    and return a boolean list indicating the download status of all studies.
+    True = already downloaded in P&P\Studies, False = not downloaded.
+    :arg:
+        to_excel (bool, Default False) - If true, create a .xlsx file in the
+            Tools folder, which will contain the boolean list.
+    '''
+    dwnl_bool = [] # List for storing booleans
+    excel = readExcel()
+    authors = excel['Label'].to_list()
+    for author in authors:
+        path = st.download_path + str(f'\{author}.pdf')
+        dwnl_bool.append(exists(path)) # True if already downloaded, False otherwise
+    if to_excel:
+        print('Opening the literature file for editing...')
+        lit = openpyxl.load_workbook(st.lit_file)
+        sheet = lit['P&P studies']
+        col_letter = 'J' # Column to update
+        # Source file malformatting check
+        if not sheet[f'{col_letter}1'].value == 'Already downloaded':
+            return ValueError('Please check the literature excel formatting.')
+        range_length = len(dwnl_bool) + 1 # Last row to modify
+        # Get the range of cells in the desired column
+        column_range = f'{col_letter}2:{col_letter}{range_length}'
+        cell_tuples = sheet[column_range] # (cell, ), (cell2, ),...
+        column_cells = [i[0] for i in cell_tuples] # First elements of list of tuples
+        # Update values
+        for cell, new_value in zip(column_cells, dwnl_bool):
+            cell.value = new_value
+        lit.save(st.lit_file)
+        print('Literature file updated.')
+    return dwnl_bool
 
 def readExcel():
     '''Read the excel under the source path, defined in static 'st.lit_file'.

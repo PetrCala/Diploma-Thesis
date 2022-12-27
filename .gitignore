@@ -14,7 +14,7 @@ Excel temp files
 **/Studies/
 
 # P&P folder files
-**/P&P (2018) analysis/Tools/*.txt
+**/P&P (2018) analysis/Tools/*
 
 # Selenium
 chromedriver
