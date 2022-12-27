@@ -20,7 +20,7 @@ def main():
     # driver = sel.openDriver()
     # handleAllStudies(driver, test=False)
     # driver.quit()
-    getAlreadyDownloadedList(to_excel=True)
+    getAlreadyDownloadedList(update_excel=True)
 
     # handleSampleStudy(driver)
     return None
@@ -147,12 +147,12 @@ def getLookupList():
             ll.append(out)
     return ll
 
-def getAlreadyDownloadedList(to_excel=True):
+def getAlreadyDownloadedList(update_excel=True):
     '''Read the Literature excel file, get the list of all study names,
     and return a boolean list indicating the download status of all studies.
     True = already downloaded in P&P\Studies, False = not downloaded.
     :arg:
-        to_excel (bool, Default False) - If true, create a .xlsx file in the
+        update_excel (bool, Default False) - If true, create a .xlsx file in the
             Tools folder, which will contain the boolean list.
     '''
     dwnl_bool = [] # List for storing booleans
@@ -161,7 +161,7 @@ def getAlreadyDownloadedList(to_excel=True):
     for author in authors:
         path = st.download_path + str(f'\{author}.pdf')
         dwnl_bool.append(exists(path)) # True if already downloaded, False otherwise
-    if to_excel:
+    if update_excel:
         print('Opening the literature file for editing...')
         lit = openpyxl.load_workbook(st.lit_file)
         sheet = lit['P&P studies']
