@@ -1,4 +1,7 @@
-﻿import random
+﻿#----- Main script for downloading the studies from Google Scholar based
+# on a list of citations
+
+import random
 import time
 import openpyxl
 from os.path import exists
@@ -159,8 +162,10 @@ def getAlreadyDownloadedList(update_excel=True):
     excel = readExcel()
     authors = excel['Label'].to_list()
     for author in authors:
-        path = st.download_path + str(f'\{author}.pdf')
-        dwnl_bool.append(exists(path)) # True if already downloaded, False otherwise
+        path_pdf = st.download_path + str(f'\{author}.pdf')
+        path_txt = st.download_path + str(f'\{author}.txt')
+        file_downloaded = (exists(path_pdf) or exists(path_txt))
+        dwnl_bool.append(file_downloaded) # True if already downloaded, False otherwise
     if update_excel:
         print('Opening the literature file for editing...')
         lit = openpyxl.load_workbook(st.lit_file)

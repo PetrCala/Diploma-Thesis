@@ -39,6 +39,7 @@ def getAllWords(get_titles_only=False):
             title = match.group(1)
             lists_of_words.append(title.split()) # All words from the title
             studies_analyzed += 1
+    # Unnest the list of words [['foo', 'foo'], ['foo', 'foo']] -> ['foo', 'foo', 'foo', 'foo']
     words = [stripSpecialCharacters(word.lower()) for words in lists_of_words for word in words]
     print(f'{studies_analyzed} titles exctrated out of a total of {len(citations)} titles.')
     return words

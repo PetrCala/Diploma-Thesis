@@ -35,6 +35,6 @@ test_ll = [
     ['Belli and Ayadi (1998)', 'Belli, P. and M.A. Ayadi. 1998. "Returns to Investment in Education: The Case of Nicaragua." World Bank (mimeo).'],
     ['Brainerd (1998)', 'Brainerd, E. 1998. "Winners and losers in Russia\'s economic transition." American Economic Review 1094-1116.'],
 ]
-test_name ='Agrawal (2011)' 
+test_name ='Author (1999)' 
 test_cite = 'Agrawal, T. 2011. "Returns to Education in India: Some Recent Evidence." Indira Gandhi Institute of Development Research, Mumbai, WP-2011-017.'
 test_link = 'https://reader.elsevier.com/reader/sd/pii/S0304387805001380?token=3487516D9EAF1AE2A4A7E64BBE19ABF07271B09CE5434401CFA8DBFA0812010C63508A4246729B6EDD2C1C241E806F50&originRegion=eu-west-1&originCreation=20221226193153'

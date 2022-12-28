@@ -3,26 +3,13 @@ import os
 from os.path import exists
 import requests
 
-from main import checkForExistence
+from scholarmain import checkForExistence
 import static as st
 
 def main():
+    pass
     # checkDummyForExistence()
     # checkTitleRegex()
-    link = 'https://read.oecd-ilibrary.org/economics/oecd-economic-surveys-iceland-2006/adapting-the-education-system-to-a-changing-environment_eco_surveys-isl-2006-7-en'
-    downloadTestStudy(link)
-
-def downloadTestStudy(link = None):
-    '''Download a study into the Tools folder using the requests package.
-    '''
-    if link is None:
-        link = st.test_link
-    download_path = st.tools_path + f'\{st.test_name}.pdf'
-    response = requests.get(link)
-    with open(download_path, "wb") as f:
-        f.write(response.content)
-    print(f'{st.test_name} downloaded.')
-    return True 
 
 def checkTitleRegex():
     '''Check the functionality of the study title lookup regex.

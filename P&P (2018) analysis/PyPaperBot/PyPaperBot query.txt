@@ -1,1 +1,1 @@
-python -m PyPaperBot --doi="https://doi.org/10.1080/09645299600000022" --dwn-dir="C:\Users\hso20\OneDrive\Plocha\IES\Diploma-Thesis\P&P (2018) analysis\PyPaperBot"
+python -m PyPaperBot --doi="10.1080/00220979909598353" --dwn-dir="C:\Users\hso20\OneDrive\Plocha\IES\Diploma-Thesis\P&P (2018) analysis\PyPaperBot"
