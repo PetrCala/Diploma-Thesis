@@ -1,0 +1,7 @@
+Paper download system:
+- Make a functional, automatic paper download system from the Google Scholar ✓
+
+Data collection:
+- Make a master literature excel, with a sheet, containing names and references of all the P&P works ✓
+- Download all the P&P works ✓
+- Double check that no more works are downloadable, and note down the stats ✓

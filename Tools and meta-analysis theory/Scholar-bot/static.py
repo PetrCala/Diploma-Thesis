@@ -1,6 +1,6 @@
 ﻿import os
 
-#----- PATHIING -----
+#----- PATHING -----
 abs_path = os.getcwd() # Scholar-bot folder
 if not (abs_path[-11:] == 'Scholar-bot'):
     raise ValueError('Wrong folder. You must run all your scripts from the \"Scholar-bot\" folder.')
@@ -25,6 +25,9 @@ STUDY_BOX_PDF_BTN_XPATH = f"//*[@class='gs_ggs gs_fl']/div/div/a" # PDF button X
 STUDY_BOX_TITLE_XPATH = f"//*[@class='gs_ri']/h3/a" # Study title XPATH, from study box
 SCIENCE_DIRECT_VIEW_PDF_XPATH = f"//*[@class='ViewPDF']/a"
 SCIENCE_DIRECT_PDF_BTN_XPATH = f"//*[@class='save-pdf-button-wrapper']/a"
+
+#----- QUERY CONSTRUCTION -----
+query_filler_words = ['in', 'to', 'the', 'and', 'of', 'a', 'from', 'for', 'an', 'on', 'de', 'la']
 
 #----- TEST/DUMMY FILES AND PATHS -----
 test_l = ['Agrawal (2011)', 'Agrawal, T.  2011. "Returns to Education in India: Some Recent Evidence." Indira Gandhi Institute of Development Research, Mumbai, WP-2011-017.']
