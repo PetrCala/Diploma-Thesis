@@ -16,6 +16,7 @@ def main(excel_out = True):
     df = loadData()
     df = orderColumns(df)
     df = dropRedundantRows(df)
+    df = sortAndIndex(df)
     if excel_out:
         excelOut(df)
     print(df.head())
@@ -30,9 +31,20 @@ def excelOut(df):
     print('New excel file created successfully.')
     return None
 
+def sortAndIndex(df):
+    '''Sort the data frame rows and add an index.
+    '''
+    df = df.sort_values(by=['source', 'country']).reset_index(drop=True) # Order observations by studies, alphabetically
+    df['obs_n'] = range(1, df.shape[0] + 1)
+    df = df.assign(study_id=(df['source'] != df['source'].shift()).cumsum()) # Create study id column
+    df = df[NEW_COLNAMES]
+    return df
+
 def dropRedundantRows(df):
     '''Drop rows without a schooling year info, or rows redundant from the discounting method.
     '''
+    if not all(df.columns == NEW_COLNAMES[2:]):
+        raise ValueError('Please handle the column names first')
     df = df.dropna(subset=['years_of_schooling'])
     df = df.dropna(subset=['overall', 'prim', 'sec', 'higher',
                 'gender_male', 'gender_female', 'private_sector', 'public_sector'], how='all')
@@ -42,15 +54,12 @@ def orderColumns(df):
     '''Input the inital data set, then remove the full discounting method columns,
     and reorder the columns as desired. Return the new data set.
     '''
+    base_cols = NEW_COLNAMES[2:]
     df = df.drop(columns=[col for col in df.columns if 'del' in col])
-    df = df.sort_values(by=['source', 'country']).reset_index(drop=True) # Order observations by studies, alphabetically
-    df['obs_n'] = range(1, df.shape[0] + 1)
-    df = df.assign(study_id=df.groupby('obs_n').cumcount() + 1) # Create study id column
-
-    # Shuffle column order
-    if not df.shape[1] == len(NEW_COLNAMES):
+    # Shuffle and rename columns
+    if not df.shape[1] == len(base_cols):
         raise ValueError(f'Incorrect list of new column names. The list must contain {df.shape[1]} names.')
-    df = df[NEW_COLNAMES]
+    df = df[base_cols] # Without n_obs, study_id
     return df
 
 def loadData():
