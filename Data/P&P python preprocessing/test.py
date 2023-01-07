@@ -2,14 +2,14 @@
 
 import pandas as pd
 
+BASE_PATH = r'C:\Users\hso20\OneDrive\Plocha\IES\Diploma-Thesis\Data\P&P python preprocessing'
 SOURCE_FILE_NAME = 'PP_preprocessed.xlsx'
 
 def main():
     df = loadData()
     df = testPreprocess(df)
-    # print(df.head())
-    # print(df.shape)
     print(df.head())
+    print(df.shape)
     return df
 
 def testPreprocess(df):
@@ -23,9 +23,10 @@ def testPreprocess(df):
     return df
 
 def loadData():
-    if not exists(SOURCE_FILE_NAME):
+    path = str(BASE_PATH) + f'\{SOURCE_FILE_NAME}'
+    if not exists(path):
         raise ValueError('Source file untraceable')
-    file = pd.read_excel(SOURCE_FILE_NAME)
+    file = pd.read_excel(path)
     return file
 
 if __name__=='__main__':

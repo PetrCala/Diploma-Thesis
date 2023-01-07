@@ -5,12 +5,14 @@ from os.path import exists
 
 import pandas as pd
 
+BASE_PATH = r'C:\Users\hso20\OneDrive\Plocha\IES\Diploma-Thesis\Data\P&P python preprocessing'
 SOURCE_FILE_NAME = 'PP_source.xlsx'
 SOURCE_FILE_COLNAMES = ['country', 'year', 'region', 'income_level', 'years_of_schooling', 'overall',
     'prim', 'sec', 'higher', 'del1', 'del2', 'del3', 'del4', 'del5', 'del6', 'gender_male', 'gender_female',
     'private_sector', 'public_sector', 'source']
 NEW_COLNAMES = ['obs_n', 'study_id', 'source', 'years_of_schooling', 'overall', 'prim', 'sec', 'higher',
     'gender_male', 'gender_female', 'private_sector', 'public_sector', 'country', 'year', 'region', 'income_level']
+OUT_FILE_NAME = 'PP_preprocessed.xlsx'
 
 def main(excel_out = True):
     df = loadData()
@@ -27,7 +29,8 @@ def main(excel_out = True):
 def excelOut(df):
     '''Create an excel file with the new dataset.
     '''
-    df.to_excel('PP_preprocessed.xlsx', index = False)
+    path = str(BASE_PATH) + f'\{OUT_FILE_NAME}'
+    df.to_excel(path, index = False)
     print('New excel file created successfully.')
     return None
 
@@ -63,9 +66,10 @@ def orderColumns(df):
     return df
 
 def loadData():
-    if not exists(SOURCE_FILE_NAME):
+    path = str(BASE_PATH) + f'\{SOURCE_FILE_NAME}'
+    if not exists(path):
         raise ValueError('Source file untraceable')
-    file = pd.read_excel(SOURCE_FILE_NAME, skiprows=9)
+    file = pd.read_excel(path, skiprows=9)
     file.columns = SOURCE_FILE_COLNAMES
     return file
 
