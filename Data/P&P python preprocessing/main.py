@@ -11,10 +11,7 @@ SOURCE_FILE_NAME = 'PP_source.xlsx'
 SOURCE_FILE_COLNAMES = ['country', 'year', 'region', 'income_level', 'years_of_schooling', 'overall',
     'mincer_prim', 'mincer_sec', 'mincer_higher', 'disc_prim', 'disc_sec', 'disc_higher', 'del4', 'del5', 'del6',
     'gender_male', 'gender_female', 'private_sector', 'public_sector', 'source']
-INITIAL_COLNAMES = ['source', 'years_of_schooling', 'overall', 'mincer_prim', 'mincer_sec', 'mincer_higher',
-    'disc_prim', 'disc_sec', 'disc_higher', 'gender_male', 'gender_female', 'private_sector', 'public_sector',
-    'country', 'year', 'region', 'income_level']
-FINAL_ORDER = ['obs_n', 'study_id', 'source', 'effect', 'overall', 'mincer_prim', 'mincer_sec', 'mincer_higher', 'disc_prim',
+INITIAL_COLNAMES = ['source', 'overall', 'mincer_prim', 'mincer_sec', 'mincer_higher', 'disc_prim',
     'disc_sec', 'disc_higher', 'gender_male', 'gender_female', 'private_sector', 'public_sector', 'years_of_schooling',
     'year', 'country', 'region', 'income_level']
 OUT_FILE_NAME = 'PP_preprocessed.xlsx'
@@ -48,7 +45,6 @@ def sortAndIndex(df):
     df = df.sort_values(by=sort_order).reset_index(drop=True) # Order observations by studies, alphabetically
     df.insert(0, 'obs_n', range(1, df.shape[0] + 1))
     df.insert(1, 'study_id', (df['source'] != df['source'].shift()).cumsum())
-    df = df[FINAL_ORDER]
     return df
 
 def spreadEffects(df):
