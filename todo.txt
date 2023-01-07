@@ -2,15 +2,21 @@ Paper download system
 - Consider improvements
 
 Data collection:
-- Check Bowles et al. (2001), and their data too, for potential expansion of the base data set
-- Read cookbook again
+- Subset the P&P data set into only those estimates dealing with Mincerian equation, and only the private returns
 - Collect all the primary studies, add them to the literature master excel
 - Look for any potential existing queries in the primary literature
+- Read the proposal thoroughly again, get the overall picture
+- Think about the direction of the thesis, outline the to-do for the whole work in major steps  (append to this file)
 - Construct own query using the python code, try to match it with the P&P dataset, look for new studies
 - Construct a preliminary set of variables to collect
 - Validate the P&P dataset, add all feasible variables, keep on track with the original goal, proposal, while doing so
 - Run the query, get new literature, make it into a list in the main literature excel
 - Screen and download the additional literature
-- Collect the remaining data
+- Check the cookbook again at this point, confirm all is done until point 21)
+- Prepare to collect the remaining data - note the statistics of studies screened, downloaded
+- Try collecting about 5 studies of the P&P, observe the trend in variables
+- Construct a new set of variables to collect, continuously update until 15-20 works are collected
+- Collect all P&P available data plus additional variables
+- Collet new studies plus additional variables
 
 Data transformation:
