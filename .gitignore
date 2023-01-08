@@ -1,7 +1,7 @@
 # Python temp files
 __pycache__/
 *.py[cod]
-*$py.class# R temporary files
+*$py.class
 
 # R temp files
 **/*.Rhistory
