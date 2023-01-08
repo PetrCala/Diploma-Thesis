@@ -22,6 +22,7 @@ def main(excel_out = True):
     df = dropRedundantRows(df)
     df = spreadEffects(df)
     df = sortAndIndex(df)
+    df = extraDummification(df)
     if excel_out:
         excelOut(df)
     print(df.head())
@@ -36,6 +37,30 @@ def excelOut(df):
     df.to_excel(path, index = False)
     print('New excel file created successfully.')
     return None
+
+def extraDummification(df):
+    '''Dummify several extra variables.
+    '''
+    # Temp function for hyphenation handling
+    def translate(series):
+        series = series.str.lower() # Lowercase
+        series = series.str.replace(' ', '_').str.replace('-','_')
+        return series
+
+    # Dummify region
+    region_data = pd.Series(df['region'])
+    region_data_translated = translate(region_data)
+    region_df = pd.get_dummies(region_data_translated, prefix = 'region')
+
+    # Dummify income level
+    income_data = pd.Series(df['income_level'])
+    income_data_translated = translate(income_data)
+    income_df = pd.get_dummies(income_data_translated, prefix = 'income')
+
+    # Concatenate all
+    df = pd.concat([df, region_df, income_df], axis=1)
+    df = df.drop(['region', 'income_level'], axis = 1) # Drop the orig  columns
+    return df
 
 def sortAndIndex(df):
     '''Sort the data frame rows and add an index.
