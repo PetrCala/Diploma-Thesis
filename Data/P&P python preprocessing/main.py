@@ -9,10 +9,10 @@ import numpy as np
 BASE_PATH = r'C:\Users\hso20\OneDrive\Plocha\IES\Diploma-Thesis\Data\P&P python preprocessing'
 SOURCE_FILE_NAME = 'PP_source.xlsx'
 SOURCE_FILE_COLNAMES = ['country', 'year', 'region', 'income_level', 'years_of_schooling', 'overall',
-    'prim', 'sec', 'higher', 'del1', 'del2', 'del3', 'del4', 'del5', 'del6',
+    'prim', 'sec', 'higher', 'disc_prim', 'disc_sec', 'disc_higher', 'del4', 'del5', 'del6',
     'gender_male', 'gender_female', 'private_sector', 'public_sector', 'source']
-INITIAL_COLNAMES = ['source', 'overall', 'prim', 'sec', 'higher',
-    'gender_male', 'gender_female', 'private_sector', 'public_sector', 'years_of_schooling',
+INITIAL_COLNAMES = ['source', 'overall', 'prim', 'sec', 'higher', 'disc_prim',
+    'disc_sec', 'disc_higher', 'gender_male', 'gender_female', 'private_sector', 'public_sector', 'years_of_schooling',
     'year', 'country', 'region', 'income_level']
 OUT_FILE_NAME = 'PP_preprocessed.xlsx'
 
@@ -41,7 +41,7 @@ def sortAndIndex(df):
     '''Sort the data frame rows and add an index.
     '''
     sort_order = ['source', 'country', 'public_sector', 'private_sector', 'gender_female', 'gender_male',
-        'higher', 'sec', 'prim', 'overall', 'year']
+        'disc_higher', 'disc_sec', 'disc_prim', 'higher', 'sec', 'prim', 'overall', 'year']
     df = df.sort_values(by=sort_order).reset_index(drop=True) # Order observations by studies, alphabetically
     df.insert(0, 'obs_n', range(1, df.shape[0] + 1))
     df.insert(1, 'study_id', (df['source'] != df['source'].shift()).cumsum())
@@ -57,7 +57,8 @@ def spreadEffects(df):
 
     # Define various columns
     id_cols = ['source', 'years_of_schooling', 'country', 'year', 'region', 'income_level']
-    value_cols =  ['overall', 'prim', 'sec', 'higher', 'gender_male', 'gender_female', 'private_sector', 'public_sector']
+    value_cols =  ['overall', 'prim', 'sec', 'higher', 'disc_prim', 'disc_sec', 'disc_higher',
+        'gender_male', 'gender_female', 'private_sector', 'public_sector']
 
     # Melt the df to turn the data columns into rows
     melted_df = df.melt(id_vars = id_cols, value_vars = value_cols,
@@ -81,7 +82,7 @@ def dropRedundantRows(df):
     if not all(df.columns == INITIAL_COLNAMES):
         raise ValueError('Please handle the column names first')
     df = df.dropna(subset=['years_of_schooling'])
-    df = df.dropna(subset=['overall', 'prim', 'sec', 'higher',
+    df = df.dropna(subset=['overall', 'prim', 'sec', 'higher', 'disc_prim', 'disc_sec', 'disc_higher',
                 'gender_male', 'gender_female', 'private_sector', 'public_sector'], how='all')
     return df
 
