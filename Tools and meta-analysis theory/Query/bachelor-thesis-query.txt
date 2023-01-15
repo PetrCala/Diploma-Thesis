@@ -1,0 +1,2 @@
+("financial rewards" OR "money" OR "financial incentive" OR "financial in-centives" OR "monetary incentives") AND ("motivation" OR "performance")
+effect affect experiment intrinsic extrinsic reward

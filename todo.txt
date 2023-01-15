@@ -19,4 +19,9 @@ Data collection:
 - Collect all P&P available data plus additional variables
 - Collet new studies plus additional variables
 
+-Go through various P&P studies to see, whether they deal with the ability at all in Mincer regressions
+-If yes, continue collecting, possibly
+-But better yet, create the query, get a new list of studies, and start collecting from there - should mostly (at least 30%) contain ability
+	in Mincer regression
+
 Data transformation:
