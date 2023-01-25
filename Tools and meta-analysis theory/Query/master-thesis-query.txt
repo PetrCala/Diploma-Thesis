@@ -1,25 +1,14 @@
+Initial query, trying to replicate P&P:
 ("returns to education" OR "education") AND ("private returns")
 AND ("ability bias" OR "ability" OR "intelligence" OR "cognitive") 
 AND ("mincer equation" OR "mincerian equation" OR "discounting method") AND ("years of schooling")
 experiment evidence wage economic
 
-
-
-
-
-
-
-
-
-test:
+Test:
 intelligence wage private returns to education cognitive IQ ability experiment
-
- - Ashenfelter \& Rouse, 1999 -
-Ashenfelter, Orley, and Cecilia Rouse. "Schooling, intelligence, and income in America." Meritocracy and economic inequality 89 (2000).
-
-cognitive abilities and labour market outcomes
-IQ, academic performance, environent, and earnings
-
 
 chatGPT suggestions:
 ("ability bias" OR "intelligence bias") AND ("private returns" OR "income" OR "earnings") AND ("schooling" OR "education")
+
+chatGPT modified query: (23.1.2023) - LIKELY ENDED UP USING THIS ONE
+("ability bias" OR "intelligence bias") AND ("private returns") AND ("income" OR "earnings") AND ("schooling" OR "education")
