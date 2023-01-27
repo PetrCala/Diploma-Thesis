@@ -1,7 +1,12 @@
-Paper download system
-- Consider improvements
-
 Data collection:
+-Transform the raw query data from SERPAPI to the main literature file, make a list of 574 works from the query, that you will go through,
+	and stick to this list
+-Get all citations, authors, names etc. into one, single, well-managed sheet
+-Append the info about the already collected works
+-Go through the rest of the works in an efficient way
+
+
+
 - Subset the P&P data set into only those estimates dealing with Mincerian equation, and only the private returns
 - Collect all the primary studies, add them to the literature master excel
 - Look for any potential existing queries in the primary literature
@@ -18,10 +23,5 @@ Data collection:
 - Construct a new set of variables to collect, continuously update until 15-20 works are collected
 - Collect all P&P available data plus additional variables
 - Collet new studies plus additional variables
-
--Go through various P&P studies to see, whether they deal with the ability at all in Mincer regressions
--If yes, continue collecting, possibly
--But better yet, create the query, get a new list of studies, and start collecting from there - should mostly (at least 30%) contain ability
-	in Mincer regression
 
 Data transformation:

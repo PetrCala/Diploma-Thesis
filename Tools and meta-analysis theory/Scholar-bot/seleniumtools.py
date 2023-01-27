@@ -11,6 +11,7 @@ from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from pynput.keyboard import Key
 
 import static as st
 from input import Input
@@ -26,6 +27,7 @@ def openDriver():
     '''
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--service-log-path=/dev/null')
+    chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
     ser = Service(executable_path=ChromeDriverManager().install())
     return webdriver.Chrome(service=ser, options=chrome_options)
 
@@ -51,6 +53,18 @@ def searchGoogleScholar(driver, search_string):
     search_button.click() # Click the search button
     return None
 
+def getStudiesBox(driver):
+    '''Return the element with all studies.
+    '''
+    try:
+        studies_box = driver.find_element(By.ID, st.STUDIES_BOX_ID) # All studies
+    except NoSuchElementException: # Captcha window open most probably
+        captcha_handled = handleCaptcha(driver)
+        if not captcha_handled:
+            return False
+        studies_box = driver.find_element(By.ID, st.STUDIES_BOX_ID) # Search again
+    return studies_box
+
 def openStudyForDownload(driver, desired_study_cite):
     '''Check whether the Google Scholar search results yielded the desired
     study on the first hit. If it is so, click the download button and return
@@ -62,13 +76,7 @@ def openStudyForDownload(driver, desired_study_cite):
         print('This study is not in the correct citation form.')
         return False
     searched_title = match.group(1) # Title of searched study
-    try:
-        studies_box = driver.find_element(By.ID, st.STUDIES_BOX_ID) # All studies
-    except NoSuchElementException: # Captcha window open most probably
-        captcha_handled = handleCaptcha(driver)
-        if not captcha_handled:
-            return False
-        studies_box = driver.find_element(By.ID, st.STUDIES_BOX_ID) # Search again
+    studies_box = getStudiesBox(driver) # All studies
     study_box = getStudyBox(studies_box, searched_title) # Correct study
     if not study_box:
         return False
@@ -110,6 +118,25 @@ def getStudyBox(studies_box, searched_title):
             continue # Study not in this box, or only citation
     print(f'{searched_title} not found.')
     return False
+
+def getStudyCitation(driver, study_box):
+    '''Input a study box and open the cite window. Get the harvard citation text,
+    close the window, and return the text as a string, or None if it was not found.
+    '''
+    cite_el = study_box.find_element(By.CLASS_NAME, st.STUDY_BOX_CITE_CLASS_NAME) # Get cite el
+    cite_el.click()
+    try:
+        WebDriverWait(driver,5).until(EC.presence_of_element_located((By.CLASS_NAME, st.CITE_CLASS)))
+        citation_div = driver.find_element(By.CLASS_NAME, st.CITE_CLASS)
+        print(citation_div.get_attribute('class'), citation_div.get_attribute('text'))
+        text = citation_div.text
+        # Close the window
+        I.useKey(Key.esc)
+        # WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CLASS_NAME, st.CITE_WINDOW_CLOSE_BUTTON_CLASS))).click()
+        return text
+    except Exception as e:
+        print(e)
+        return None
 
 def downloadStudy(driver, author):
     '''After the study download page has been opened, download the study.

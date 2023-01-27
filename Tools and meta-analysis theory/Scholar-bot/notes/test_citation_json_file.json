@@ -1,0 +1,57 @@
+{
+  "search_metadata": {
+    "id": "63d4077df55d777a7a2850ad",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/615cbb063ce5f0c2/63d4077df55d777a7a2850ad.json",
+    "created_at": "2023-01-27 17:18:53 UTC",
+    "processed_at": "2023-01-27 17:18:53 UTC",
+    "google_scholar_cite_url": "https://scholar.google.com/scholar?output=cite&q=info:F9mcN4lPglYJ:scholar.google.com",
+    "raw_html_file": "https://serpapi.com/searches/615cbb063ce5f0c2/63d4077df55d777a7a2850ad.html",
+    "prettify_html_file": "https://serpapi.com/searches/615cbb063ce5f0c2/63d4077df55d777a7a2850ad.prettify",
+    "total_time_taken": 0.77
+  },
+  "search_parameters": {
+    "engine": "google_scholar_cite",
+    "q": "F9mcN4lPglYJ"
+  },
+  "citations": [
+    {
+      "title": "MLA",
+      "snippet": "Umar, Habibu Mohammed, R. Ismail, and R. AbdulHakim. \"Regional Disparities in Private Returns to Education: Evidence from Nigeria.\" Journal of Economics and Sustainable Development 5.20 (2014): 48-58."
+    },
+    {
+      "title": "APA",
+      "snippet": "Umar, H. M., Ismail, R., & AbdulHakim, R. (2014). Regional Disparities in Private Returns to Education: Evidence from Nigeria. Journal of Economics and Sustainable Development, 5(20), 48-58."
+    },
+    {
+      "title": "Chicago",
+      "snippet": "Umar, Habibu Mohammed, R. Ismail, and R. AbdulHakim. \"Regional Disparities in Private Returns to Education: Evidence from Nigeria.\" Journal of Economics and Sustainable Development 5, no. 20 (2014): 48-58."
+    },
+    {
+      "title": "Harvard",
+      "snippet": "Umar, H.M., Ismail, R. and AbdulHakim, R., 2014. Regional Disparities in Private Returns to Education: Evidence from Nigeria. Journal of Economics and Sustainable Development, 5(20), pp.48-58."
+    },
+    {
+      "title": "Vancouver",
+      "snippet": "Umar HM, Ismail R, AbdulHakim R. Regional Disparities in Private Returns to Education: Evidence from Nigeria. Journal of Economics and Sustainable Development. 2014;5(20):48-58."
+    }
+  ],
+  "links": [
+    {
+      "name": "BibTeX",
+      "link": "https://scholar.googleusercontent.com/scholar.bib?q=info:F9mcN4lPglYJ:scholar.google.com/&output=citation&scisdr=CgXJ-kpsGAA:AAGBfm0AAAAAY9QJ1pjhjklIywyXvD8meDM_O9xByFzA&scisig=AAGBfm0AAAAAY9QJ1lpHcW4dekMu3wadtE8X61WM0c3j&scisf=4&ct=citation&cd=-1&hl=en"
+    },
+    {
+      "name": "EndNote",
+      "link": "https://scholar.googleusercontent.com/scholar.enw?q=info:F9mcN4lPglYJ:scholar.google.com/&output=citation&scisdr=CgXJ-kpsGAA:AAGBfm0AAAAAY9QJ1pjhjklIywyXvD8meDM_O9xByFzA&scisig=AAGBfm0AAAAAY9QJ1lpHcW4dekMu3wadtE8X61WM0c3j&scisf=3&ct=citation&cd=-1&hl=en"
+    },
+    {
+      "name": "RefMan",
+      "link": "https://scholar.googleusercontent.com/scholar.ris?q=info:F9mcN4lPglYJ:scholar.google.com/&output=citation&scisdr=CgXJ-kpsGAA:AAGBfm0AAAAAY9QJ1pjhjklIywyXvD8meDM_O9xByFzA&scisig=AAGBfm0AAAAAY9QJ1lpHcW4dekMu3wadtE8X61WM0c3j&scisf=2&ct=citation&cd=-1&hl=en"
+    },
+    {
+      "name": "RefWorks",
+      "link": "https://scholar.googleusercontent.com/scholar.rfw?q=info:F9mcN4lPglYJ:scholar.google.com/&output=citation&scisdr=CgXJ-kpsGAA:AAGBfm0AAAAAY9QJ1pjhjklIywyXvD8meDM_O9xByFzA&scisig=AAGBfm0AAAAAY9QJ1lpHcW4dekMu3wadtE8X61WM0c3j&scisf=1&ct=citation&cd=-1&hl=en"
+    }
+  ]
+}

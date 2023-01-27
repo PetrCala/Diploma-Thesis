@@ -21,8 +21,13 @@ SCHOLAR_SITE = 'https://scholar.google.com/'
 SEARCH_BAR_NAME = 'q'
 SEARCH_BUTTON_NAME = 'btnG'
 STUDIES_BOX_ID = 'gs_res_ccl_mid' # ID for the box containing all studies from the page after query search
+STUDY_BOX_CLASS_NAME = 'gs_r.gs_or.gs_scl'
 STUDY_BOX_PDF_BTN_XPATH = f"//*[@class='gs_ggs gs_fl']/div/div/a" # PDF button XPATH, from study box
 STUDY_BOX_TITLE_XPATH = f"//*[@class='gs_ri']/h3/a" # Study title XPATH, from study box
+STUDY_BOX_CITE_CLASS_NAME = f"gs_or_cit.gs_or_btn.gs_nph" # Citation button class name
+CITE_CLASS = 'gs_citr' # Harvard citation element class
+CITE_WINDOW_ID = 'gs_cit' # ID of the whole citation window
+CITE_WINDOW_CLOSE_BUTTON_CLASS = f"gs_btnCLS.gs_md_x.gs_md_hdr_c.gs_in_ib.gs_btn_lrge" # Close button class
 SCIENCE_DIRECT_VIEW_PDF_XPATH = f"//*[@class='ViewPDF']/a"
 SCIENCE_DIRECT_PDF_BTN_XPATH = f"//*[@class='save-pdf-button-wrapper']/a"
 
