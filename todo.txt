@@ -1,9 +1,11 @@
 Data collection:
 -Transform the raw query data from SERPAPI to the main literature file, make a list of 574 works from the query, that you will go through,
-	and stick to this list
--Get all citations, authors, names etc. into one, single, well-managed sheet
--Append the info about the already collected works
+	and stick to this list ✓ 
+-Get all citations, authors, names etc. into one, single, well-managed sheet ✓
+-Append the info about the already collected works ✓
 -Go through the rest of the works in an efficient way
+-Start collecting the data concerned with ability first, mark all other studies for future reference, and possibly collect them
+	at the end as a baseline
 
 
 
