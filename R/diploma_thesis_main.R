@@ -3,7 +3,7 @@
 # Required packages
 packages <- c("readr", "tidyverse", "ggplot2", "readxl", "stats", "DescTools", "sandwich", "lmtest", "multiwayvcov",
               "metafor", "bayesm", "puniform", "haven", "meta", "AER", "BMS", "corrplot", "foreign", "xtable",
-              "LowRankQP", "foreign", "multcomp", "prob")
+              "LowRankQP", "foreign", "multcomp")
 
 # Install packages not yet installed
 installed_packages <- packages %in% rownames(installed.packages())
@@ -22,7 +22,9 @@ rm(list = ls()) #Clean environment
 # Original data set
 ###################
 
-data_raw <- read_xlsx("data_set_master_thesis_cala.xlsx", sheet = 'main', n_max = 67)
+data_path <- paste0("../Data/data_set_master_thesis_cala.xlsx") # Master data set in folder Data
+data_raw <- read_xlsx(data_path, sheet = 'main')
+
 
 #####################
 # Data transformation
@@ -30,6 +32,10 @@ data_raw <- read_xlsx("data_set_master_thesis_cala.xlsx", sheet = 'main', n_max 
 
 data <- data_raw
 
+# Remove redundant rows
+while(is.na(data[nrow(data), "source"])) {
+  data <- data[-nrow(data),]
+}
 
 #############################
 #Winsorization and groundwork
