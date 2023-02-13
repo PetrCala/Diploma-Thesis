@@ -23,3 +23,6 @@ chromedriver
 
 # Virtual environments
 .venv/
+
+# Shortcuts
+*.lnk
