@@ -57,6 +57,55 @@ preprocessData <- function(input_data, win_level = 0.01){
   return(input_data)
 }
 
+######################### DATA EXPLORATION #########################
+
+#' Identify outliers in the data, return the filter which can be used
+#'  to get the data without these outliers.
+#' 
+#' :args:
+#'  input_data - Data to check
+#'  pcc_cutoff - Outlier cutoff point for the PCC
+#'  precision_cutoff - Outlier cutoff point for the SE precision
+#'  
+#' :return:
+#'  [list] - Filter for the data without outliers
+getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2) {
+  # Check column validity
+  expected_cols <- c('pcc_w', 'se_precision_w')
+  if (!all(expected_cols %in% colnames(input_data))) {
+    stop('Missing columns in the data set when trying to identify outliers.')
+  }
+  
+  obs <- input_data$obs_n
+  pcc <- input_data$pcc_w
+  precision <- input_data$se_precision_w
+  
+  # Maximum values
+  max_pcc <- max(pcc)
+  max_precision <- max(precision)
+  
+  # Percentage of the maximum value - [0.2, 0.8, 0.7, ...]
+  pcc_perc <- pcc/max_pcc
+  precision_perc <- precision/max_precision
+  
+  # Create filters
+  pcc_filter <- pcc_perc > pcc_cutoff
+  precision_filter <- precision_perc > precision_cutoff
+  outlier_filter <- pcc_filter & precision_filter
+    
+  # Filter suspicious observations
+  outliers <- obs[outlier_filter]
+  if (!length(outliers) == 0) {
+    print(paste('Outliers found:', length(outliers)), sep=' ')
+    print('Data rows:')
+    print(outliers)
+  }
+  
+  # Return the negated filter
+  return(!outlier_filter)
+  
+}
+
 
 ######################### GRAPHICS #########################
 
