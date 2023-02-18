@@ -66,10 +66,11 @@ preprocessData <- function(input_data, win_level = 0.01){
 #'  input_data - Data to check
 #'  pcc_cutoff - Outlier cutoff point for the PCC
 #'  precision_cutoff - Outlier cutoff point for the SE precision
+#'  verbose - If true, print out information about the outliers
 #'  
 #' :return:
 #'  [list] - Filter for the data without outliers
-getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2) {
+getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, verbose=T) {
   # Check column validity
   expected_cols <- c('pcc_w', 'se_precision_w')
   if (!all(expected_cols %in% colnames(input_data))) {
@@ -95,17 +96,28 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2) {
     
   # Filter suspicious observations
   outliers <- obs[outlier_filter]
-  if (!length(outliers) == 0) {
+  if ((!length(outliers) == 0) & (verbose)) {
+    # Get the list of studies with outliers
+    suspicious_studies <- c()
+    for (outlier in outliers) {
+      study <- as.character(input_data[outlier, 'source'])
+      if (!study %in% suspicious_studies) {
+        suspicious_studies <- c(suspicious_studies, study) # Add to the vector
+      }
+    }
+    
+    # Print out the information
     print(paste('Outliers found:', length(outliers)), sep=' ')
     print('Data rows:')
     print(outliers)
+    print('Suspicious studies:')
+    print(suspicious_studies)
   }
   
   # Return the negated filter
   return(!outlier_filter)
   
 }
-
 
 ######################### GRAPHICS #########################
 
