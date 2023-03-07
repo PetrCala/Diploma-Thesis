@@ -96,6 +96,9 @@ preprocessData <- function(input_data, win_level = 0.01){
   input_data$significant_w <- c(rep(0,nrow(input_data)))
   input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
   
+  # Other useful columns
+input_data$study_size <- ave(input_data$study_id, input_data$study_id, FUN = length) # Size of each study
+  
   return(input_data)
 }
 
@@ -251,6 +254,165 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
   return(!outlier_filter)
   
 }
+
+######################### LINEAR TESTS ######################### 
+
+###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
+
+#' Run all the linear tests on data, and return a matrix of results.
+#' These tests are ran: OLS, FE, RE, Weighted OLS (by study size),
+#'  Weighted OLS (by precision).
+#' 
+#' :args:
+#'  data [data.frame] - Input data
+getLinearTests <- function(data) {
+  
+  # Validate that the necessary columns are present
+  required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
+  if(!all(required_cols %in% names(data))) {
+    stop("Input data frame is missing necessary columns")
+  }
+  
+  # OLS
+  OLS <- lm(formula = pcc_w ~ se_pcc_w, data = data)
+  OLS_id <- coeftest(OLS, vcov = vcovHC(OLS, type = "HC0", cluster = c(data$study_id)))
+  
+  # FE
+  FE <- rma(pcc_w, sei = se_pcc_w, mods = ~se_pcc_w, data = data, method = "FE")
+  FE_c <- coeftest(FE, vcov = vcov(FE, type = "fixed", cluster = c(data$study_id)))
+  
+  # RE
+  RE <- rma(pcc_w, sei = se_pcc_w, mods = ~se_pcc_w, data = data, method = "REML")
+  RE_c <- coeftest(RE, vcov = vcov(RE, type = "fixed", cluster = c(data$study_id)))
+  
+  # Weighted by number of observations per study
+  OLS_w_study <- lm(formula = pcc_w ~ se_pcc_w, data = data, weight = (data$study_size*data$study_size))
+  OLS_w_study_c <- coeftest(OLS_w_study, vcov = vcovHC(OLS_w_study, type = "HC0", cluster = c(data$study_id)))
+  
+  # Weighted by precision
+  OLS_w_precision <- lm(formula = pcc_w ~ se_pcc_w, data = data, weight = c(data$se_precision_w*data$se_precision_w))
+  OLS_w_precision_c <- coeftest(OLS_w_precision, vcov = vcovHC(OLS_w_precision, type = "HC0", cluster = c(data$study_id)))
+  
+  # Combine the results into a data frame
+  results <- data.frame(
+    OLS_clustered = OLS_id[, "Estimate"],
+    FE_clustered = FE_c[, "Estimate"],
+    RE_clustered = RE_c[, "Estimate"],
+    OLS_weighted_study_clustered = OLS_w_study_c[, "Estimate"],
+    OLS_weighted_precision_clustered = OLS_w_precision_c[, "Estimate"]
+  )
+  
+  rownames(results) <- c("Intercept", "se_pcc_w")
+  results <- t(results)
+  
+  # Print the results into the console
+  print(results)
+  
+  # Return silently
+  invisible(results) 
+}
+
+
+######################### NON-LINEAR TESTS ######################### 
+
+
+###### PUBLICATION BIAS - WAAP (Ioannidis et al., 2017) ######
+
+getWaapResults <- function(data, verbose = T){
+  WLS_FE_avg <- sum(data$pcc_w/data$se_pcc_w)/sum(1/data$se_pcc_w)
+  WAAP_bound <- abs(WLS_FE_avg)/2.8
+  WAAP_reg <- lm(formula = pcc_w ~ -se_precision_w, data = data[data$se_pcc_w<WAAP_bound,])
+  WAAP_reg_cluster <- coeftest(WAAP_reg, vcov = vcovHC(WAAP_reg, type = "HC0", cluster = c(data$study_id)))
+  if (verbose){
+    print(WAAP_reg_cluster)
+  }
+  invisible(WAAP_reg_cluster)
+}
+
+###### PUBLICATION BIAS - TOP10 method (Stanley et al., 2010) ######
+
+getTop10Results <- function(data, verbose = T){
+  T10_bound <- quantile(data$se_precision_w, probs = 0.9) #Setting the 90th quantile bound
+  T10_reg <- lm(formula = pcc_w ~ -se_precision_w, data = data[data$se_precision_w>T10_bound,]) #Regression using the filtered data
+  T10_reg_cluster <- coeftest(T10_reg, vcov = vcovHC(T10_reg, type = "HC0", cluster = c(data$study_id)))
+  if (verbose){
+    print(T10_reg_cluster)
+  }
+  invisible(T10_reg_cluster)
+}
+
+
+###### PUBLICATION BIAS - Stem-based method in R (Furukawa, 2019) #####
+
+getStemResults <- function(data, verbose = T){
+  source("stem_method_ext.R") #github.com/Chishio318/stem-based_method
+  
+  est_stem <- stem(data$pcc_w, data$se_pcc_w, param)
+  est_stem$estimates
+  funnels_stem <- stem_funnel(data$pcc_w, data$se_pcc_w, est_stem$estimates) #For more detail see link above
+  if (verbose){
+    print(funnels_stem)
+  }
+  invisible(funnels_stem)
+}
+
+
+###### PUBLICATION BIAS - FAT-PET hierarchical in R ######
+
+getHierResults <- function(data, verbose = T){
+  study_levels_h <- levels(as.factor(data$source))
+  nreg_h <- length(study_levels_h)
+  regdata_h <- NULL
+  for (i in 1:nreg_h) {
+    filter <- data$source==study_levels_h[i] #T/F vector identifying if the observation is from the i-th study
+    y <- data$pcc_w[filter] #PCCs from the i-th study
+    X <- cbind(1,
+               data$se_pcc_w[filter])
+    regdata_h[[i]] <- list(y=y, X=X)
+  }
+  Data_h <- list(regdata=regdata_h)
+  Mcmc_h <- list(R=6000)
+  out_h <- bayesm::rhierLinearModel(
+    Data=Data_h,
+    Mcmc=Mcmc_h)
+  cat("Summary of Delta Draws", fill=TRUE)
+  if (verbose){
+    summary(out_h$Deltadraw) 
+  }
+  invisible(NA) # Update later
+}
+
+
+###### NON-LINEAR MODELS RESULTS ######
+
+getNonlinearResults <- function(data) {
+  
+  # Validate that the necessary columns are present
+  required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
+  if(!all(required_cols %in% names(data))) {
+    stop("Input data frame is missing necessary columns")
+  }
+  
+  waap_res <- getWaapResults(data, verbose = F)
+  top10_res <- getTop10Results(data, verbose = F)
+  stem_res <- getStemResults(data, verbose = F)
+  hier_res <- getHierResults(data, verbose = F)
+  
+  # Combine the results into a data frame
+  results <- data.frame(
+    waap = waap_res[, "Estimate"],
+    top10 = top10_res[, "Estimate"],)
+ 
+  rownames(results) <- c("Intercept", "se_pcc_w")
+  results <- t(results)
+  
+  # Print the results into the console
+  print(results)
+  
+  # Return silently
+  invisible(results) 
+}
+
 
 ######################### GRAPHICS #########################
 
