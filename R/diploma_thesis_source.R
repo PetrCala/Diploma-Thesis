@@ -306,6 +306,7 @@ getLinearTests <- function(data) {
   results <- t(results)
   
   # Print the results into the console
+  print("Results of the linear tests:")
   print(results)
   
   # Return silently
@@ -347,13 +348,18 @@ getTop10Results <- function(data, verbose = T){
 getStemResults <- function(data, verbose = T){
   source("stem_method_ext.R") #github.com/Chishio318/stem-based_method
   
-  est_stem <- stem(data$pcc_w, data$se_pcc_w, param)
-  est_stem$estimates
-  funnels_stem <- stem_funnel(data$pcc_w, data$se_pcc_w, est_stem$estimates) #For more detail see link above
+  est_stem <- stem(data$pcc_w, data$se_pcc_w, param) # Actual esimation
+  
+  # Save results
+  stem_coefs <- est_stem$estimates[1:2] # Manual
+  stem_res <- matrix(NA, nrow = 2, ncol = 1)
+  stem_res[,1] <- stem_coefs
+  rownames(stem_res) <- c("Estimate", "Std. Error")
+  colnames(stem_res) <- c("hier")
   if (verbose){
-    print(funnels_stem)
+    print(stem_res)
   }
-  invisible(funnels_stem)
+  invisible(stem_res)
 }
 
 
@@ -375,11 +381,17 @@ getHierResults <- function(data, verbose = T){
   out_h <- bayesm::rhierLinearModel(
     Data=Data_h,
     Mcmc=Mcmc_h)
-  cat("Summary of Delta Draws", fill=TRUE)
+  
+  # Save results
+  hier_coefs <- summary(out_h$Deltadraw)[1:2] # Manual
+  hier_res <- matrix(NA, nrow = 2, ncol = 1)
+  hier_res[,1] <- hier_coefs
+  rownames(hier_res) <- c("Estimate", "Std. Error")
+  colnames(hier_res) <- c("hier")
   if (verbose){
-    summary(out_h$Deltadraw) 
+    print(hier_res)
   }
-  invisible(NA) # Update later
+  invisible(hier_res)
 }
 
 
@@ -400,13 +412,17 @@ getNonlinearResults <- function(data) {
   
   # Combine the results into a data frame
   results <- data.frame(
-    waap = waap_res[, "Estimate"],
-    top10 = top10_res[, "Estimate"],)
+    waap_df = waap_res[, "Estimate"],
+    top10_df = top10_res[, "Estimate"],
+    stem_df = stem_res,
+    hier_df = hier_res)
  
   rownames(results) <- c("Intercept", "se_pcc_w")
+  colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch")
   results <- t(results)
   
   # Print the results into the console
+  print("Results of the non-linear tests:")
   print(results)
   
   # Return silently

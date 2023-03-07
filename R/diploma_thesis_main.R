@@ -112,7 +112,7 @@ if (run_this["linear_tests"]){
 ######################### NON-LINEAR TESTS ######################### 
 
 if (run_this["nonlinear_tests"]){
-  global_non_lin_res <- F # Set to false if tests should be ran separately
+  global_non_lin_res <- T # Set to false if tests should be ran separately
   
   if (!global_non_lin_res) {
     ###### PUBLICATION BIAS - WAAP (Ioannidis et al., 2017) ######
@@ -141,6 +141,4 @@ if (run_this["nonlinear_tests"]){
     getNonlinearResults(data)
   }
 }
-
-
 
