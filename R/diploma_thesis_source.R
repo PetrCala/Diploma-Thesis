@@ -327,7 +327,8 @@ getWaapResults <- function(data, verbose = T){
   if (verbose){
     print(WAAP_reg_cluster)
   }
-  invisible(WAAP_reg_cluster)
+  WAAP_res <- WAAP_reg_cluster[1:2] # Manual coef extraction
+  invisible(WAAP_res)
 }
 
 ###### PUBLICATION BIAS - TOP10 method (Stanley et al., 2010) ######
@@ -339,7 +340,8 @@ getTop10Results <- function(data, verbose = T){
   if (verbose){
     print(T10_reg_cluster)
   }
-  invisible(T10_reg_cluster)
+  T10_res <- T10_reg_cluster[1:2] # Manual coef extraction
+  invisible(T10_res)
 }
 
 
@@ -351,7 +353,7 @@ getStemResults <- function(data, verbose = T){
   est_stem <- stem(data$pcc_w, data$se_pcc_w, param) # Actual esimation
   
   # Save results
-  stem_coefs <- est_stem$estimates[1:2] # Manual
+  stem_coefs <- est_stem$estimates[1:2] # Manual coef extraction
   stem_res <- matrix(NA, nrow = 2, ncol = 1)
   stem_res[,1] <- stem_coefs
   rownames(stem_res) <- c("Estimate", "Std. Error")
@@ -378,12 +380,16 @@ getHierResults <- function(data, verbose = T){
   }
   Data_h <- list(regdata=regdata_h)
   Mcmc_h <- list(R=6000)
-  out_h <- bayesm::rhierLinearModel(
-    Data=Data_h,
-    Mcmc=Mcmc_h)
+  
+  # Run the model silently
+  ddpcr::quiet(
+    out_h <- bayesm::rhierLinearModel(
+      Data=Data_h,
+      Mcmc=Mcmc_h)
+  )
   
   # Save results
-  hier_coefs <- summary(out_h$Deltadraw)[1:2] # Manual
+  hier_coefs <- summary(out_h$Deltadraw)[1:2] # Manual coef extraction
   hier_res <- matrix(NA, nrow = 2, ncol = 1)
   hier_res[,1] <- hier_coefs
   rownames(hier_res) <- c("Estimate", "Std. Error")
@@ -393,7 +399,6 @@ getHierResults <- function(data, verbose = T){
   }
   invisible(hier_res)
 }
-
 
 ###### NON-LINEAR MODELS RESULTS ######
 
@@ -412,8 +417,8 @@ getNonlinearResults <- function(data) {
   
   # Combine the results into a data frame
   results <- data.frame(
-    waap_df = waap_res[, "Estimate"],
-    top10_df = top10_res[, "Estimate"],
+    waap_df = waap_res,
+    top10_df = top10_res,
     stem_df = stem_res,
     hier_df = hier_res)
  

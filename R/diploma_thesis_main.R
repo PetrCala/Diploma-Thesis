@@ -1,4 +1,4 @@
-##################### ENVIRONMENT PREPARATION ########################
+  ##################### ENVIRONMENT PREPARATION ########################
 
 # Sys.setlocale("LC_ALL", "en_US.UTF-8") # Set the correct locale
 
@@ -10,7 +10,7 @@ rm(list = ls())
 # What to run (allows for easier testing of the script with "Run script")
 run_this <- c(
   "summary_stats" = T,
-  "funnel_plot" = F,
+  "funnel_plot" = T,
   "linear_tests" = T,
   "nonlinear_tests" = T,
   "exo_tests" = F,
@@ -32,7 +32,7 @@ source_files <- c(
 # Required packages
 packages <- c("readr", "tidyverse", "ggplot2", "readxl", "stats", "DescTools", "sandwich", "lmtest", "multiwayvcov",
               "metafor", "bayesm", "puniform", "haven", "meta", "AER", "BMS", "corrplot", "foreign", "xtable",
-              "LowRankQP", "foreign", "multcomp", "data.table", "dplyr")
+              "LowRankQP", "foreign", "multcomp", "data.table", "dplyr", "ddpcr")
 
 ##### PREPARATION #####
 
@@ -141,4 +141,5 @@ if (run_this["nonlinear_tests"]){
     getNonlinearResults(data)
   }
 }
+
 
