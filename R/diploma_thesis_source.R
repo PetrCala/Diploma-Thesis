@@ -382,14 +382,16 @@ getHierResults <- function(data, verbose = T){
   Mcmc_h <- list(R=6000)
   
   # Run the model silently
-  ddpcr::quiet(
+  quiet(
     out_h <- bayesm::rhierLinearModel(
       Data=Data_h,
-      Mcmc=Mcmc_h)
+      Mcmc=Mcmc_h),
   )
   
   # Save results
-  hier_coefs <- summary(out_h$Deltadraw)[1:2] # Manual coef extraction
+  quiet(
+    hier_coefs <- summary(out_h$Deltadraw)[1:2] # Quiet coef extraction
+  )
   hier_res <- matrix(NA, nrow = 2, ncol = 1)
   hier_res[,1] <- hier_coefs
   rownames(hier_res) <- c("Estimate", "Std. Error")
