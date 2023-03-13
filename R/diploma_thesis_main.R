@@ -12,7 +12,7 @@ run_this <- c(
   "summary_stats" = T,
   "funnel_plot" = T,
   "linear_tests" = T,
-  "nonlinear_tests" = T,
+  "nonlinear_tests" = F,
   "exo_tests" = F,
   "caliper" = F,
   "bma" = F,
