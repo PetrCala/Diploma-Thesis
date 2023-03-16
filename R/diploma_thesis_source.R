@@ -2,8 +2,8 @@
 
 #' Function to read multiple sheets from an Excel file and write them as CSV files
 #' USE ONLY IN DEVELOPMENT
-#' @param xlsx_path - Path to the Excel file
-#' @param sheet_names - A vector of sheet names to read
+#' @param xlsx_path Path to the Excel file
+#' @param sheet_names A vector of sheet names to read
 #' @return A list of data frames
 readExcelAndWriteCsv <- function(xlsx_path, sheet_names) {
   # Read each sheet and write it as a CSV file in the working directory
@@ -41,8 +41,7 @@ readDataCustom <- function(source_path){
 #' of the main script, and validate that all are indeed present.
 #' Print out a status message after the validation.
 #' 
-#' :args:
-#'  files[vector] - A vector of strings.
+#' @param files[vector] A vector of strings.
 validateFiles <- function(files){
   for (file in files){
     if (!file.exists(file)){
@@ -78,11 +77,9 @@ loadPackages <- function(package_list){
 #' Preprocess the raw excel data
 #' 
 #' Check column validity, add winsorized statistics (PCC, SE, t-stat)
-#' :args:
-#'  win_int [float] - Interval for winsirization. If 0.01, winsorize at 1%.
+#' @param win_int [float] Interval for winsirization. If 0.01, winsorize at 1%.
 #'    Defaults to 0.01.
-#' :return:
-#'  [data.frame] - The preprocessed data
+#' @return [data.frame] The preprocessed data
 preprocessData <- function(input_data, win_level = 0.01){
   # Remove redundant rows
   while(is.na(input_data[nrow(input_data), "study_name"])) {
@@ -143,20 +140,17 @@ loadSummaryStats <- function(){
 #' Input a data frame, and a vector of variables and their values for which to
 #' load the summary statistics, and return a data frame of these summary statistics.
 #' 
-#' :args:
-#'  data [data.frame] - The input data frame
-#'  sum_stats [vector] - A vector in the form of a dictionary, such as
+#' @param data [data.frame] - The input data frame
+#' @param sum_stats [vector] - A vector in the form of a dictionary, such as
 #'    c("var_name1" = "value1",
 #'    "var_name2" = "value2")
 #'    The values can also be prepended with "lt" (lower than) or
 #'    "gt" (greater than), such as "var1" = "gt0.5".
-#'  conf.level [float] - Confidence level for the confidence interval.
+#' @param conf.level [float] - Confidence level for the confidence interval.
 #'    Defaults to 0.95
-#'  weight [bool] - If True, return weighted mean instead of a usual mean.
+#' @param weight [bool] - If True, return weighted mean instead of a usual mean.
 #'    Defaults to FALSE.
-#'  
-#'  :return:
-#'    [data.frame] - A data frame with summary statistic for all the specified
+#' @return [data.frame] - A data frame with summary statistic for all the specified
 #'      variables. These summary statistics are "mean", "SD", "lower CI bound",
 #'      "upper CI bound", "number of observations"
 getSummaryStats <- function (input_data, sum_stats, conf.level = 0.95, weight = FALSE) {
@@ -211,21 +205,55 @@ getSummaryStats <- function (input_data, sum_stats, conf.level = 0.95, weight = 
   return(df)
 }
 
-###Box plot PCC###
-getBoxPlot <- function(input_data){
+#' A quick search function to extract all specified factors for the box plot
+#' 
+#' @param adj_pars_source [vector] Source vector with adjustable parameters.
+#' @param pattern [str] Pattern to search for inside the paramteres vector.
+#' @return factor_names [vector] A vector with specified factor names.
+getBoxPlotFactors <- function(adj_pars_source, pattern){
+  factor_names <- c()
+  i <- 1
+  while (i < 20) {
+    factor_name <- as.character(adj_pars_source[paste0(pattern,i)])
+    if (is.na(factor_name)){ # No more factors specified
+      break
+    }
+    factor_names <- append(factor_names, factor_name)
+    i <- i + 1
+  }
+  invisible(factor_names)
+}
+
+#' Input the main data frame, specify a factor to group by, and create a box plot.
+#' This plot is automatically printed out into the Plots window.
+#' 
+#' @param input_data [data.frame] Input data
+#' @param factor_by [str] Factor to group by. Can be one of the following:
+#'  - 'country'
+#'  - 'study_level'
+#'  Defaults to 'country'
+#' @param verbose [bool] - If T, print out the information about the plot being printed.
+#'  Defaults to T.
+getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
   # Check column validity
-  expected_cols <- c('pcc_w', 'study_name')
+  expected_cols <- c('pcc_w', factor_by)
   if (!all(expected_cols %in% colnames(input_data))) {
-    stop('Missing columns in the data set when trying to plot the BoxPlot.')
+    stop('Missing columns in the data set when trying to plot the Box-Plot.')
   }
   
-  # Construct the plot
-  box_plot <- ggplot(data = input_data, aes(x = pcc_w, y=factor(study_name, levels = rev(levels(factor(study_name)))))) +
+  # Plot variable preparation
+  factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
+  factor_by_verbose <- gsub("_", " ", factor_by)
+  factor_by_verbose <- paste0(tolower(substr(factor_by_verbose,1,1)), substr(factor_by_verbose,2,nchar(factor_by_verbose))) # All to lower
+  
+  # Construct the plot - use !!sym(factor_by) to cast some more dark magic - makes plot recognize function input
+  box_plot <- ggplot(data = input_data, aes(x = pcc_w, y=factor(!!sym(factor_by), levels = factor_levels))) +
       geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
-      labs(title = NULL,x="Estimate of the PCC between years of schooling and wage", y = NULL) +
+      labs(title = NULL,x="Estimate of the PCC between years of schooling and wage", y = "Grouped by " %>% paste0(factor_by_verbose)) +
       main_theme()
   
   # Plot the plot
+  print(paste0('Printing a box plot for the factor: ', factor_by_verbose))
   suppressWarnings(print(box_plot))
 }
 
@@ -233,14 +261,11 @@ getBoxPlot <- function(input_data){
 #' Identify outliers in the data, return the filter which can be used
 #'  to get the data without these outliers.
 #' 
-#' :args:
-#'  input_data - Data to check
-#'  pcc_cutoff - Outlier cutoff point for the PCC
-#'  precision_cutoff - Outlier cutoff point for the SE precision
-#'  verbose - If true, print out information about the outliers
-#'  
-#' :return:
-#'  [list] - Filter for the data without outliers
+#' @param input_data Data to check
+#' @param pcc_cutoff Outlier cutoff point for the PCC
+#' @param precision_cutoff Outlier cutoff point for the SE precision
+#' @param verbose If true, print out information about the outliers
+#' @return [list] Filter for the data without outliers
 getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, verbose=T) {
   # Check column validity
   expected_cols <- c('pcc_w', 'se_precision_w')
@@ -290,7 +315,12 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
   
 }
 
-
+#' Input the main data frame, several specifications, and create a funnel plot
+#' 
+#' @param input_data [data.frame] Main data frame. Must contain cols 'pcc_w', 'se_precision_w'
+#' @param pcc_cutoff [float] Cutoff point for PCC.
+#' @param precision_cutoff [float] Cutoff point for precision.
+#' @param verbose [bool] If T, print out outlier information. Defaults to T.
 getFunnelPlot <- function(input_data, pcc_cutoff=0.2, precision_cutoff=0.2, verbose = T){
   # Check column validity
 expected_cols <- c('pcc_w', 'se_precision_w')
@@ -314,6 +344,31 @@ expected_cols <- c('pcc_w', 'se_precision_w')
   suppressWarnings(print(funnel_win)) # Print out the funnel plot
 }
 
+#' Generate a histogram of the T-statistic values for the given input data, with the 
+#'  option to specify lower and upper cutoffs for filtering outliers.
+#' 
+#' @param input_data A data frame containing the T-statistic values to be plotted.
+#' @param lower_cutoff An optional numeric value specifying the lower cutoff for filtering outliers. Default is -150.
+#' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
+#' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
+#'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
+getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
+  # Specify a cutoff filter
+  t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff ) #removing the outliers from the graph
+  
+  # Construct the histogram
+  t_hist_plot <- ggplot(data = input_data[t_hist_filter,], aes(x = t_w[t_hist_filter], y = after_stat(density))) +
+    geom_histogram(color = "black", fill = "#1261ff", bins = "80") +
+    geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", size = 0.7) + 
+    geom_vline(aes(xintercept = -1.96), color = "red", size = 0.5) +
+    geom_vline(aes(xintercept = 1.96), color = "red", size = 0.5) +
+    labs(x = "T-statistic", y = "Density") +
+    #scale_x_continuous(breaks = c(-4, -1.96, 0, 1.96, 4, 8, 12, 16, 20), label = c(-4, -1.96, 0, 1.96, 4, 8, 12, 16, 20)) +
+    main_theme()
+  
+  suppressWarnings(print(t_hist_plot)) # Print out the plot
+}
+
 ######################### LINEAR TESTS ######################### 
 
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
@@ -322,8 +377,7 @@ expected_cols <- c('pcc_w', 'se_precision_w')
 #' These tests are ran: OLS, FE, RE, Weighted OLS (by study size),
 #'  Weighted OLS (by precision).
 #' 
-#' :args:
-#'  data [data.frame] - Input data
+#' @param data [data.frame] Input data
 getLinearTests <- function(data) {
   
   # Validate that the necessary columns are present

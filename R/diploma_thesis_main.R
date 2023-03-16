@@ -40,28 +40,37 @@ rm(list = ls())
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "summary_stats" = T,
+  "summary_stats" = F,
   "box_plot" = T,
-  "funnel_plot" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
   "exo_tests" = F,
   "caliper" = F,
   "bma" = F,
   "fma" = F,
-  "bp" = F
+  "best_practice_estimate" = F
 )
 
 #' ADJUSTABLE PARAMETERS
 #' Adjust the parameters by modifying the numbers, or boolean values
 #' Note:
-#'  Do NOT change the variable names, or the name of the vector
+#'  Do NOT change the variable names (apart from when adding new Box plot factors),
+#'    or the name of the vector
 adjustable_parameters <- c(
   # Box plot parameters
-  "box_plot_pcc_cutoff" = 0.8, # pcc axis cutoff point
-  "box_plot_precision_cutoff" = 0.2, # precision axis cutoff point
-  "box_plot_verbose" = T # If T, print out outlier information
-  # Other parameters
+  "box_plot_group_by_factor_1" = "study_name", # Group by study name
+  "box_plot_group_by_factor_2" = "country", # Group by country
+  # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
+  "box_plot_verbose" = T, # Get information about the plots being printed
+  # Funnel plot parameters
+  "funnel_plot_pcc_cutoff" = 0.8, # PCC axis cutoff point
+  "funnel_plot_precision_cutoff" = 0.2, # Precision axis cutoff point
+  "funnel_plot_verbose" = T, # If T, print cut outlier information
+  # T-statistic histogram parameters
+  "t_hist_lower_cutoff" = -150, # Lower cutoff point for t-statistics
+  "t_hist_upper_cutoff" = 150 # Upper cutoff point for t-statistics
 )
 
 ######################################################################
@@ -154,19 +163,33 @@ if (run_this["summary_stats"]){
   getSummaryStats(data, summary_stats_desc)
 }
 
+###### BOX PLOT ######
 if (run_this["box_plot"]){
-  getBoxPlot(data)
+  # Automatically extract all specified factor names
+  factor_names <- getBoxPlotFactors(adj_pars_source = adjustable_parameters, pattern = "box_plot_group_by_factor_")
+  box_plot_verbose <- adjustable_parameters["box_plot_verbose"]
+  
+  # Run box plots for all these factors iteratively
+  for (factor_name in factor_names){
+    getBoxPlot(data, factor_by = factor_name, verbose = run_verbose)
+  }
 }
 
 ###### FUNNEL PLOT ######
 
 if (run_this["funnel_plot"]){
-  custom_pcc_cutoff <- adjustable_parameters["box_plot_pcc_cutoff"]
-  custom_precision_cutoff <- adjustable_parameters["box_plot_precision_cutoff"]
-  custom_verbose <- adjustable_parameters["box_plot_verbose"]
+  custom_pcc_cutoff <- adjustable_parameters["funnel_plot_pcc_cutoff"]
+  custom_precision_cutoff <- adjustable_parameters["funnel_plot_precision_cutoff"]
+  custom_verbose <- adjustable_parameters["funnel_plot_verbose"]
   getFunnelPlot(data, custom_pcc_cutoff, custom_precision_cutoff, custom_verbose)
 }
 
+###### HISTOGRAM OF T-STATISTICS ######
+if (run_this["t_stat_histogram"]){
+  lower_cutoff <- adjustable_parameters["t_hist_lower_cutoff"]
+  upper_cutoff <- adjustable_parameters["t_hist_upper_cutoff"]
+  getTstatHist(data, lower_cutoff, upper_cutoff)
+}
 
 ######################### LINEAR TESTS ######################### 
 
@@ -208,5 +231,4 @@ if (run_this["nonlinear_tests"]){
     getNonlinearResults(data)
   }
 }
-
 
