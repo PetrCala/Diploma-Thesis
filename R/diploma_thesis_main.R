@@ -69,22 +69,50 @@ adjustable_parameters <- c(
 ######################################################################
 
 ##################### ENVIRONMENT PREPARATION ########################
+development_on <- T # Turn off when distributing the code
 
 # Source files
 master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
+var_list_source <- "var_list_master_thesis_cala.csv" # Variable info source
 stem_source <- "stem_method_ext.R" # STEM method (Furukawa, 2019) - fixed package handling
+
 source_files <- c(
   master_data_set_source,
+  var_list_source,
   stem_source
-
 )
 
 # Required packages
-packages <- c("readr", "tidyverse", "ggplot2", "readxl", "stats", "DescTools", "sandwich", "lmtest", "multiwayvcov",
-              "metafor", "bayesm", "puniform", "haven", "meta", "AER", "BMS", "corrplot", "foreign", "xtable",
-              "LowRankQP", "foreign", "multcomp", "data.table", "dplyr", "ddpcr")
+packages <- c(
+  "AER", # Applied econometrics with R
+  "BMS", # bayesian model averaging
+  "DescTools", # Descriptive statistics and data analysis
+  "LowRankQP", # Solving convex quadratic optimization problems
+  "bayesm", # bayesian modeling and inference
+  "corrplot", # Graphical display of correlation matrices
+  "data.table", # Fast data manipulation and aggregation
+  "ddpcr", # Analysis of Droplet Digital PCR (ddPCR) data
+  "dplyr", # Data manipulation and data wrangling
+  "foreign", # Reading and writing data stored by other statistical software
+  "ggplot2", # Creating graphics and data visualizations
+  "haven", # Importing and exporting data from SAS, SPSS, and Stata
+  "lmtest", # Hypothesis testing and diagnostics for linear regression models
+  "meta", # Meta-analysis package
+  "metafor", # Conducting meta-analyses
+  "multcomp", # Simultaneous inference for general linear hypotheses
+  "multiwayvcov", # Computing clustered covariance matrix estimators
+  "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
+  "readr", # Reading data into R from various file formats
+  "readxl", # Reading Excel files
+  "sandwich", # Computing robust covariance matrix estimators
+  "stats", # Statistical analysis and modeling
+  "testthat", # Unit testing for R
+  "tidyverse", # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
+  "xtable" # Creating tables in LaTeX or HTML
+)
 
 ##### PREPARATION #####
+
 
 # Load the source script
 if (!file.exists("diploma_thesis_source.R")){
@@ -98,28 +126,24 @@ if (!file.exists("diploma_thesis_source.R")){
 # Load packages
 loadPackages(packages)
 
-# Copy the master data frame from ./Data into the WD (DELETE IN PRODUCTION)
-master_data_set_xlsx_path = "../Data/data_set_master_thesis_cala.xlsx" # Master data set in folder Data
-copyMasterDF(xlsx_path = master_data_set_xlsx_path, csv_path = master_data_set_source)
+if (development_on) {
+  # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files if necessary)
+  master_data_set_xlsx_path <- "../Data/data_set_master_thesis_cala.xlsx"
+  sheet_names <- c("data_set", "var_list") # Sheet names to read
+  readExcelAndWriteCsv(master_data_set_xlsx_path, sheet_names)
+}
 
 # Validate all the necessary files
 validateFiles(source_files)
 
 ######################### DATA PREPROCESSING #########################
 
-# Read the data set into the environment
-data_raw <- read_csv(
-              master_data_set_source,
-              locale = locale(decimal_mark=".",
-                              grouping_mark=",",
-                              tz="UTC"),
-              show_col_types = FALSE) # Quiet warnings
-# data_raw <- read_xlsx(master_data_set_xlsx_path, sheet = 'main')
+# Read all the source .csv files
+data_source <- readDataCustom(master_data_set_source)
+var_list <- readDataCustom(var_list_source)
 
 # Data transformation
-data <- copy(data_raw) # Make a deep copy
-data <- preprocessData(data) # Validate, preprocess, and winsorize data
-                            
+data <- preprocessData(data_source) # Validate, preprocess, and winsorize data
 
 ######################### DATA EXPLORATION #########################
 

@@ -1,22 +1,39 @@
 ##################### ENVIRONMENT PREPARATION ########################
 
-#' DELETE IN PRODUCTION
+#' Function to read multiple sheets from an Excel file and write them as CSV files
+#' USE ONLY IN DEVELOPMENT
+#' @param xlsx_path - Path to the Excel file
+#' @param sheet_names - A vector of sheet names to read
+#' @return A list of data frames
+readExcelAndWriteCsv <- function(xlsx_path, sheet_names) {
+  # Read each sheet and write it as a CSV file in the working directory
+  quiet(
+    dfs <- lapply(sheet_names, function(sheet_name) {
+      csv_path <- paste0(sheet_name, "_master_thesis_cala.csv")
+      # Read the source file
+      df_xlsx <- read_excel(xlsx_path, sheet = sheet_name)
+      # Remove .
+      df_xlsx[df_xlsx == '.'] <- NA
+      # Overwrite the CSV file
+      write_csv(df_xlsx, csv_path)
+      return(df_xlsx)
+    })
+  )
+  print('Read all data from the source file successfully.')
+  # invisible(dfs) # Return if need be
+}
+
+#' Read_csv with parameters to avoid redundancy
 #' 
-#' Copy the existing excel data frame into a basic .csv file in
-#'  the working directory
-#'  
-#' :args:
-#'  xlsx_path [str] - Path to the main, already existing excel file.
-#'  csv_path [str]- Path to where the new .csv file should be created.
-copyMasterDF <- function(xlsx_path, csv_path){
-  data_raw <- read_xlsx(xlsx_path, sheet = 'main')
-  
-  # Remove .
-  data_raw[data_raw == '.'] <- NA
-  
-  write_csv(data_raw,
-            csv_path)
-  print(".csv data source file created in the working directory.")
+#' @param source_path [str] - Path to the .csv file
+readDataCustom <- function(source_path){
+  data_out <- read_csv(
+    source_path,
+    locale = locale(decimal_mark=".",
+                    grouping_mark=",",
+                    tz="UTC"),
+    show_col_types = FALSE) # Quiet warnings
+  invisible(data_out)
 }
 
 
