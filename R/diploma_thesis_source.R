@@ -243,8 +243,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
   
   # Plot variable preparation
   factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
-  factor_by_verbose <- gsub("_", " ", factor_by)
-  factor_by_verbose <- paste0(tolower(substr(factor_by_verbose,1,1)), substr(factor_by_verbose,2,nchar(factor_by_verbose))) # All to lower
+  factor_by_verbose <- gsub("_", " ", factor_by) # More legible y-axis label
   
   # Construct the plot - use !!sym(factor_by) to cast some more dark magic - makes plot recognize function input
   box_plot <- ggplot(data = input_data, aes(x = pcc_w, y=factor(!!sym(factor_by), levels = factor_levels))) +
@@ -292,7 +291,7 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
     
   # Filter suspicious observations
   outliers <- obs[outlier_filter]
-  if ((!length(outliers) == 0) & (verbose)) {
+  if ((length(outliers)>0) & (verbose)) {
     # Get the list of studies with outliers
     suspicious_studies <- c()
     for (outlier in outliers) {
@@ -323,7 +322,7 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
 getFunnelPlot <- function(input_data, pcc_cutoff=0.2, precision_cutoff=0.2, verbose = T){
   # Check column validity
-expected_cols <- c('pcc_w', 'se_precision_w')
+  expected_cols <- c('pcc_w', 'se_precision_w')
   if (!all(expected_cols %in% colnames(input_data))) {
     stop('Missing columns in the data set when trying to plot the Funnel plot.')
   }
@@ -354,14 +353,14 @@ expected_cols <- c('pcc_w', 'se_precision_w')
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
 getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
   # Specify a cutoff filter
-  t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff ) #removing the outliers from the graph
+  t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff) #removing the outliers from the graph
   
   # Construct the histogram
   t_hist_plot <- ggplot(data = input_data[t_hist_filter,], aes(x = t_w[t_hist_filter], y = after_stat(density))) +
     geom_histogram(color = "black", fill = "#1261ff", bins = "80") +
-    geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", size = 0.7) + 
-    geom_vline(aes(xintercept = -1.96), color = "red", size = 0.5) +
-    geom_vline(aes(xintercept = 1.96), color = "red", size = 0.5) +
+    geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
+    geom_vline(aes(xintercept = -1.96), color = "red", linewidth = 0.5) +
+    geom_vline(aes(xintercept = 1.96), color = "red", linewidth = 0.5) +
     labs(x = "T-statistic", y = "Density") +
     #scale_x_continuous(breaks = c(-4, -1.96, 0, 1.96, 4, 8, 12, 16, 20), label = c(-4, -1.96, 0, 1.96, 4, 8, 12, 16, 20)) +
     main_theme()

@@ -40,11 +40,11 @@ rm(list = ls())
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "summary_stats" = F,
+  "summary_stats" = T,
   "box_plot" = T,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
   "nonlinear_tests" = F,
   "exo_tests" = F,
   "caliper" = F,
@@ -167,7 +167,7 @@ if (run_this["summary_stats"]){
 if (run_this["box_plot"]){
   # Automatically extract all specified factor names
   factor_names <- getBoxPlotFactors(adj_pars_source = adjustable_parameters, pattern = "box_plot_group_by_factor_")
-  box_plot_verbose <- adjustable_parameters["box_plot_verbose"]
+  box_plot_verbose <- as.logical(adjustable_parameters["box_plot_verbose"])
   
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
@@ -178,16 +178,16 @@ if (run_this["box_plot"]){
 ###### FUNNEL PLOT ######
 
 if (run_this["funnel_plot"]){
-  custom_pcc_cutoff <- adjustable_parameters["funnel_plot_pcc_cutoff"]
-  custom_precision_cutoff <- adjustable_parameters["funnel_plot_precision_cutoff"]
-  custom_verbose <- adjustable_parameters["funnel_plot_verbose"]
+  custom_pcc_cutoff <- as.numeric(adjustable_parameters["funnel_plot_pcc_cutoff"])
+  custom_precision_cutoff <- as.numeric(adjustable_parameters["funnel_plot_precision_cutoff"])
+  custom_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
   getFunnelPlot(data, custom_pcc_cutoff, custom_precision_cutoff, custom_verbose)
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
 if (run_this["t_stat_histogram"]){
-  lower_cutoff <- adjustable_parameters["t_hist_lower_cutoff"]
-  upper_cutoff <- adjustable_parameters["t_hist_upper_cutoff"]
+  lower_cutoff <- as.numeric(adjustable_parameters["t_hist_lower_cutoff"])
+  upper_cutoff <- as.numeric(adjustable_parameters["t_hist_upper_cutoff"])
   getTstatHist(data, lower_cutoff, upper_cutoff)
 }
 
