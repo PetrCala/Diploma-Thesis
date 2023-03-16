@@ -1,24 +1,74 @@
-  ##################### ENVIRONMENT PREPARATION ########################
+#' Master script for my Diploma Thesis
+#'  
+#' Topic - Ability bias in the returns to schooling: How large it is and why it matters 
+#' Author - Bc. Petr Čala
+#' Year of defense - 2024
+#' Supervisor - doc. PhDr. Zuzana Havránková Ph.D. 
+#' 
+#' HOW TO RUN:
+#'  1. Make sure that your working directory contains the following files:
+#'    - diploma_thesis_main.R
+#'    - diploma_thesis_source.R
+#'    - stem_method_ext.R
+#'  2. The script should be ran all at once, which should make for the most
+#'    user-friendly experience. In order to achieve this, you can customize
+#'    which parts of the code should be ran during the global call.
+#'    This is achieved by splitting the script into two parts:
+#'      - Customizable part: Here you define which parts of the script you want
+#'          to run and with which parameters
+#'      - Technical part: The actual code, which should run without any problems,
+#'          and all at once, if you specify the parameters correctly.
+#'  3. Go to the customizable part, and set which parts of the code you want to run.
+#'    T stand for TRUE, F for FALSE. If the name of the part is set to T, that
+#'    part will run. If it is set to F, it will not.
+#'  4. Adjust the parameters with which to run the script. Find the 
+#'    'adjustable_parameters' vector, and inside, feel free to adjust the various
+#'    parameters as you see fit.
+#'  5. Run the code ALL AT ONCE, and see the results in the console, and in the
+#'    'Plots' section.
 
-# Sys.setlocale("LC_ALL", "en_US.UTF-8") # Set the correct locale
+######################################################################
+#####################    CUSTOMIZABLE PART    #######################
+######################################################################
 
-#Clean the environment
+# Clean the environment - DO NOT CHANGE THIS
 rm(list = ls()) 
 
-##### STATIC #####
-
-# What to run (allows for easier testing of the script with "Run script")
+#' WHAT PARTS OF THE SCRIPT TO RUN
+#' T - RUN THIS PART
+#' F - DO NOT RUN THIS PART
+#' Note:
+#'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
   "summary_stats" = T,
+  "box_plot" = T,
   "funnel_plot" = T,
   "linear_tests" = T,
-  "nonlinear_tests" = F,
+  "nonlinear_tests" = T,
   "exo_tests" = F,
   "caliper" = F,
   "bma" = F,
   "fma" = F,
   "bp" = F
 )
+
+#' ADJUSTABLE PARAMETERS
+#' Adjust the parameters by modifying the numbers, or boolean values
+#' Note:
+#'  Do NOT change the variable names, or the name of the vector
+adjustable_parameters <- c(
+  # Box plot parameters
+  "box_plot_pcc_cutoff" = 0.8, # pcc axis cutoff point
+  "box_plot_precision_cutoff" = 0.2, # precision axis cutoff point
+  "box_plot_verbose" = T # If T, print out outlier information
+  # Other parameters
+)
+
+######################################################################
+#####################      TECHNICAL PART      #######################
+######################################################################
+
+##################### ENVIRONMENT PREPARATION ########################
 
 # Source files
 master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
@@ -80,24 +130,17 @@ if (run_this["summary_stats"]){
   getSummaryStats(data, summary_stats_desc)
 }
 
+if (run_this["box_plot"]){
+  getBoxPlot(data)
+}
+
 ###### FUNNEL PLOT ######
 
 if (run_this["funnel_plot"]){
-  # Filter out the outliers
-  filter_pcc_w <- getOutliers(data, pcc_cutoff=0.8, precision_cutoff=0.1, verbose=T)
-  filter_pcc_w <- getOutliers(data, pcc_cutoff=1, precision_cutoff=1, verbose=T) # Allow all
-  
-  # Single out the data for the funnel plot
-  funnel_data <- data[filter_pcc_w, c('pcc_w', 'se_precision_w')] # Only PCC, Precision
-  funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
-  
-  # Plot the plot
-  funnel_win <- ggplot(data = funnel_data, aes(x = pcc_w, y = se_precision_w)) + 
-    geom_point(color = "#0d4ed1") + 
-    labs(title = NULL, x = "Partial correlation coefficient", y = "Precision of the estimate (1/SE)") +
-    main_theme()
-    
-  suppressWarnings(print(funnel_win)) # Print out the funnel plot
+  custom_pcc_cutoff <- adjustable_parameters["box_plot_pcc_cutoff"]
+  custom_precision_cutoff <- adjustable_parameters["box_plot_precision_cutoff"]
+  custom_verbose <- adjustable_parameters["box_plot_verbose"]
+  getFunnelPlot(data, custom_pcc_cutoff, custom_precision_cutoff, custom_verbose)
 }
 
 

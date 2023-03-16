@@ -68,7 +68,7 @@ loadPackages <- function(package_list){
 #'  [data.frame] - The preprocessed data
 preprocessData <- function(input_data, win_level = 0.01){
   # Remove redundant rows
-  while(is.na(input_data[nrow(input_data), "source"])) {
+  while(is.na(input_data[nrow(input_data), "study_name"])) {
     input_data <- input_data[-nrow(input_data),]
   }
   
@@ -194,6 +194,24 @@ getSummaryStats <- function (input_data, sum_stats, conf.level = 0.95, weight = 
   return(df)
 }
 
+###Box plot PCC###
+getBoxPlot <- function(input_data){
+  # Check column validity
+  expected_cols <- c('pcc_w', 'study_name')
+  if (!all(expected_cols %in% colnames(input_data))) {
+    stop('Missing columns in the data set when trying to plot the BoxPlot.')
+  }
+  
+  # Construct the plot
+  box_plot <- ggplot(data = input_data, aes(x = pcc_w, y=factor(study_name, levels = rev(levels(factor(study_name)))))) +
+      geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
+      labs(title = NULL,x="Estimate of the PCC between years of schooling and wage", y = NULL) +
+      main_theme()
+  
+  # Plot the plot
+  suppressWarnings(print(box_plot))
+}
+
 
 #' Identify outliers in the data, return the filter which can be used
 #'  to get the data without these outliers.
@@ -236,7 +254,7 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
     # Get the list of studies with outliers
     suspicious_studies <- c()
     for (outlier in outliers) {
-      study <- as.character(input_data[outlier, 'source'])
+      study <- as.character(input_data[outlier, 'study_name'])
       if (!study %in% suspicious_studies) {
         suspicious_studies <- c(suspicious_studies, study) # Add to the vector
       }
@@ -253,6 +271,30 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
   # Return the negated filter
   return(!outlier_filter)
   
+}
+
+
+getFunnelPlot <- function(input_data, pcc_cutoff=0.2, precision_cutoff=0.2, verbose = T){
+  # Check column validity
+expected_cols <- c('pcc_w', 'se_precision_w')
+  if (!all(expected_cols %in% colnames(input_data))) {
+    stop('Missing columns in the data set when trying to plot the Funnel plot.')
+  }
+  
+  # Filter out the outliers
+  filter_pcc_w <- getOutliers(input_data, pcc_cutoff=pcc_cutoff, precision_cutoff=precision_cutoff, verbose=verbose)
+  
+  # Single out the data for the funnel plot
+  funnel_data <- data[filter_pcc_w, c('pcc_w', 'se_precision_w')] # Only PCC, Precision
+  funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
+  
+  # Plot the plot
+  funnel_win <- ggplot(data = funnel_data, aes(x = pcc_w, y = se_precision_w)) + 
+    geom_point(color = "#0d4ed1") + 
+    labs(title = NULL, x = "Partial correlation coefficient", y = "Precision of the estimate (1/SE)") +
+    main_theme()
+    
+  suppressWarnings(print(funnel_win)) # Print out the funnel plot
 }
 
 ######################### LINEAR TESTS ######################### 
@@ -368,11 +410,11 @@ getStemResults <- function(data, verbose = T){
 ###### PUBLICATION BIAS - FAT-PET hierarchical in R ######
 
 getHierResults <- function(data, verbose = T){
-  study_levels_h <- levels(as.factor(data$source))
+  study_levels_h <- levels(as.factor(data$study_name))
   nreg_h <- length(study_levels_h)
   regdata_h <- NULL
   for (i in 1:nreg_h) {
-    filter <- data$source==study_levels_h[i] #T/F vector identifying if the observation is from the i-th study
+    filter <- data$study_name==study_levels_h[i] #T/F vector identifying if the observation is from the i-th study
     y <- data$pcc_w[filter] #PCCs from the i-th study
     X <- cbind(1,
                data$se_pcc_w[filter])
