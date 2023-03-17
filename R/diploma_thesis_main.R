@@ -40,12 +40,12 @@ rm(list = ls())
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
+  "summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
   "linear_tests" = T,
-  "nonlinear_tests" = F,
+  "nonlinear_tests" = T,
   "exo_tests" = F,
   "caliper" = F,
   "bma" = F,
@@ -234,3 +234,5 @@ if (run_this["nonlinear_tests"]){
     getNonlinearResults(data)
   }
 }
+
+

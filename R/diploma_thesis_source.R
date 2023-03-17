@@ -202,7 +202,12 @@ getSummaryStats <- function (input_data, sum_stats, conf.level = 0.95, weight = 
   }
   df <- data.frame(df_matrix) # Main output df
   colnames(df) <- stats_list # Rename columns
-  return(df)
+  # Print out the output
+  print("Summary statistics:")
+  print(df)
+  cat("\n\n")
+  # Return quietly
+  invisible(df)
 }
 
 #' A quick search function to extract all specified factors for the box plot
@@ -255,6 +260,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
   # Plot the plot
   print(paste0('Printing a box plot for the factor: ', factor_by_verbose))
   suppressWarnings(print(box_plot))
+  cat('\n')
 }
 
 
@@ -303,11 +309,13 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
     }
     
     # Print out the information
+    print("Funnel plot outlier information:")
     print(paste('Outliers found:', length(outliers)), sep=' ')
     print('Data rows:')
     print(outliers)
     print('Suspicious studies:')
     print(suspicious_studies)
+    cat('\n\n')
   }
   
   # Return the negated filter
@@ -356,16 +364,18 @@ getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
   # Specify a cutoff filter
   t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff) #removing the outliers from the graph
   # Construct the histogram
-  t_hist_plot <- ggplot(data = input_data[t_hist_filter,], aes(x = t_w[t_hist_filter], y = after_stat(density))) +
-    geom_histogram(color = "black", fill = "#1261ff", bins = "80") +
-    geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
-    geom_vline(aes(xintercept = -1.96), color = "red", linewidth = 0.5) +
-    geom_vline(aes(xintercept = 1.96), color = "red", linewidth = 0.5) +
-    labs(x = "T-statistic", y = "Density") +
-    scale_x_continuous(breaks = c(-1.96, 1.96, round(mean(data$t_w),2), 50, 100, 130),
-                       limits = c(-10, 130)) + 
-    main_theme(
-      x_axis_tick_text = c("red", "red", "darkorange", "black", "black", "black"))
+  quiet(
+    t_hist_plot <- ggplot(data = input_data[t_hist_filter,], aes(x = t_w[t_hist_filter], y = after_stat(density))) +
+      geom_histogram(color = "black", fill = "#1261ff", bins = "80") +
+      geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
+      geom_vline(aes(xintercept = -1.96), color = "red", linewidth = 0.5) +
+      geom_vline(aes(xintercept = 1.96), color = "red", linewidth = 0.5) +
+      labs(x = "T-statistic", y = "Density") +
+      scale_x_continuous(breaks = c(-1.96, 1.96, round(mean(data$t_w),2), 50, 100, 130),
+                         limits = c(-10, 130)) + 
+      main_theme(
+        x_axis_tick_text = c("red", "red", "darkorange", "black", "black", "black"))
+  )
   # Print out the plot
   suppressWarnings(print(t_hist_plot))
 }
@@ -452,6 +462,7 @@ getLinearTests <- function(data) {
   # Print the results into the console
   print("Results of the linear tests, clustered by study:")
   print(results)
+  cat("\n\n")
   # Return silently
   invisible(results) 
 }
@@ -460,57 +471,79 @@ getLinearTests <- function(data) {
 ######################### NON-LINEAR TESTS ######################### 
 
 
+#' Extract the four coefficients from linear test in the order
+#' - Intercept, Intercept SE
+#' Assume a very simplitic form of the non-linear objects, where the coefficients
+#' are the the first two positions of the object.
+#' 
+#' @param nonlinear_object Non-linear object from the linear test
+#' @param pub_bias_present [bool] If T, the method returns publication bias coefs too.
+#'  Deafults to F.
+#' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
+#'  standard errors as strings wrapped in parentheses. Defaults to T.
+#' @return [vector] - Vector of len 4, with the coefficients
+extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbose_coefs=T){
+  # Extract coefficients
+  effect_coef <- round(as.numeric(nonlinear_object[1,1]), 5)
+  effect_se <- round(as.numeric(nonlinear_object[1,2]), 5)
+  if (pub_bias_present){
+    pub_coef <- round(as.numeric(nonlinear_object[2,1]), 5)
+    pub_se <- round(as.numeric(nonlinear_object[2,2]), 5)
+  }
+  # Wrap the standard errors in parenthesis for cleaner presentation
+  if (verbose_coefs){
+    effect_se <- paste0("(", effect_se, ")")
+    if (pub_bias_present){
+      pub_se <- paste0("(", pub_se, ")")
+    }
+  }
+  # Group and return quietly
+  if (pub_bias_present){
+    nonlin_coefs <- c(pub_coef, pub_se, effect_coef, effect_se) # First two for pub bias
+  } else {
+    nonlin_coefs <- c("", "", effect_coef, effect_se)
+  }
+  invisible(nonlin_coefs)
+}
+
 ###### PUBLICATION BIAS - WAAP (Ioannidis et al., 2017) ######
 
-getWaapResults <- function(data, verbose = T){
+getWaapResults <- function(data, ...){
   WLS_FE_avg <- sum(data$pcc_w/data$se_pcc_w)/sum(1/data$se_pcc_w)
   WAAP_bound <- abs(WLS_FE_avg)/2.8
   WAAP_reg <- lm(formula = pcc_w ~ -se_precision_w, data = data[data$se_pcc_w<WAAP_bound,])
   WAAP_reg_cluster <- coeftest(WAAP_reg, vcov = vcovHC(WAAP_reg, type = "HC0", cluster = c(data$study_id)))
-  if (verbose){
-    print(WAAP_reg_cluster)
-  }
-  WAAP_res <- WAAP_reg_cluster[1:2] # Manual coef extraction
-  invisible(WAAP_res)
+  WAAP_coefs <- extractNonlinearCoefs(WAAP_reg_cluster, ...)
+  invisible(WAAP_coefs)
 }
 
 ###### PUBLICATION BIAS - TOP10 method (Stanley et al., 2010) ######
 
-getTop10Results <- function(data, verbose = T){
+getTop10Results <- function(data, ...){
   T10_bound <- quantile(data$se_precision_w, probs = 0.9) #Setting the 90th quantile bound
   T10_reg <- lm(formula = pcc_w ~ -se_precision_w, data = data[data$se_precision_w>T10_bound,]) #Regression using the filtered data
   T10_reg_cluster <- coeftest(T10_reg, vcov = vcovHC(T10_reg, type = "HC0", cluster = c(data$study_id)))
-  if (verbose){
-    print(T10_reg_cluster)
-  }
-  T10_res <- T10_reg_cluster[1:2] # Manual coef extraction
-  invisible(T10_res)
+  T10_coefs <- extractNonlinearCoefs(T10_reg_cluster, ...)
+  invisible(T10_coefs)
 }
 
 
 ###### PUBLICATION BIAS - Stem-based method in R (Furukawa, 2019) #####
 
-getStemResults <- function(data, verbose = T){
+getStemResults <- function(data, ...){
   source("stem_method_ext.R") #github.com/Chishio318/stem-based_method
   
-  est_stem <- stem(data$pcc_w, data$se_pcc_w, param) # Actual esimation
+  est_stem <- stem(data$pcc_w, data$se_pcc_w, param)$estimates # Actual esimation
   
   # Save results
-  stem_coefs <- est_stem$estimates[1:2] # Manual coef extraction
-  stem_res <- matrix(NA, nrow = 2, ncol = 1)
-  stem_res[,1] <- stem_coefs
-  rownames(stem_res) <- c("Estimate", "Std. Error")
-  colnames(stem_res) <- c("hier")
-  if (verbose){
-    print(stem_res)
-  }
-  invisible(stem_res)
+  stem_coefs <- extractNonlinearCoefs(est_stem, ...)
+  invisible(stem_coefs)
 }
 
 
 ###### PUBLICATION BIAS - FAT-PET hierarchical in R ######
 
-getHierResults <- function(data, verbose = T){
+getHierResults <- function(data, ...){
   study_levels_h <- levels(as.factor(data$study_name))
   nreg_h <- length(study_levels_h)
   regdata_h <- NULL
@@ -533,16 +566,10 @@ getHierResults <- function(data, verbose = T){
   
   # Save results
   quiet(
-    hier_coefs <- summary(out_h$Deltadraw)[1:2] # Quiet coef extraction
+    hier_raw_coefs <- summary(out_h$Deltadraw)
   )
-  hier_res <- matrix(NA, nrow = 2, ncol = 1)
-  hier_res[,1] <- hier_coefs
-  rownames(hier_res) <- c("Estimate", "Std. Error")
-  colnames(hier_res) <- c("hier")
-  if (verbose){
-    print(hier_res)
-  }
-  invisible(hier_res)
+  hier_coefs <- extractNonlinearCoefs(hier_raw_coefs, ...)
+  invisible(hier_coefs)
 }
 
 ###### NON-LINEAR MODELS RESULTS ######
@@ -554,11 +581,11 @@ getNonlinearResults <- function(data) {
   if(!all(required_cols %in% names(data))) {
     stop("Input data frame is missing necessary columns")
   }
-  
-  waap_res <- getWaapResults(data, verbose = F)
-  top10_res <- getTop10Results(data, verbose = F)
-  stem_res <- getStemResults(data, verbose = F)
-  hier_res <- getHierResults(data, verbose = F)
+  # Get coefficients
+  waap_res <- getWaapResults(data, pub_bias_present = F, verbose_coefs = T)
+  top10_res <- getTop10Results(data, pub_bias_present = F, verbose_coefs = T)
+  stem_res <- getStemResults(data, pub_bias_present = F, verbose_coefs = T)
+  hier_res <- getHierResults(data, pub_bias_present = T, verbose_coefs = T)
   
   # Combine the results into a data frame
   results <- data.frame(
@@ -566,15 +593,13 @@ getNonlinearResults <- function(data) {
     top10_df = top10_res,
     stem_df = stem_res,
     hier_df = hier_res)
- 
-  rownames(results) <- c("Intercept", "se_pcc_w")
-  colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch")
-  results <- t(results)
   
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
+  colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch")
   # Print the results into the console
   print("Results of the non-linear tests:")
   print(results)
-  
+  cat("\n\n")
   # Return silently
   invisible(results) 
 }
