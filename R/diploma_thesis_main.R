@@ -137,7 +137,7 @@ loadPackages(packages)
 
 if (development_on) {
   # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files if necessary)
-  master_data_set_xlsx_path <- "../Data/data_set_master_thesis_cala.xlsx"
+  master_data_set_xlsx_path <- "../Data/data_set_master_thesis_cala.xlsm"
   sheet_names <- c("data_set", "var_list") # Sheet names to read
   readExcelAndWriteCsv(master_data_set_xlsx_path, sheet_names)
 }
