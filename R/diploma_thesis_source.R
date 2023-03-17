@@ -248,6 +248,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
   # Construct the plot - use !!sym(factor_by) to cast some more dark magic - makes plot recognize function input
   box_plot <- ggplot(data = input_data, aes(x = pcc_w, y=factor(!!sym(factor_by), levels = factor_levels))) +
       geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
+      geom_vline(aes(xintercept = mean(pcc_w)), color = "red", linewidth = 0.85) + 
       labs(title = NULL,x="Estimate of the PCC between years of schooling and wage", y = "Grouped by " %>% paste0(factor_by_verbose)) +
       main_theme()
   
@@ -354,7 +355,6 @@ getFunnelPlot <- function(input_data, pcc_cutoff=0.2, precision_cutoff=0.2, verb
 getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
   # Specify a cutoff filter
   t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff) #removing the outliers from the graph
-  
   # Construct the histogram
   t_hist_plot <- ggplot(data = input_data[t_hist_filter,], aes(x = t_w[t_hist_filter], y = after_stat(density))) +
     geom_histogram(color = "black", fill = "#1261ff", bins = "80") +
@@ -362,13 +362,50 @@ getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
     geom_vline(aes(xintercept = -1.96), color = "red", linewidth = 0.5) +
     geom_vline(aes(xintercept = 1.96), color = "red", linewidth = 0.5) +
     labs(x = "T-statistic", y = "Density") +
-    #scale_x_continuous(breaks = c(-4, -1.96, 0, 1.96, 4, 8, 12, 16, 20), label = c(-4, -1.96, 0, 1.96, 4, 8, 12, 16, 20)) +
-    main_theme()
-  
-  suppressWarnings(print(t_hist_plot)) # Print out the plot
+    scale_x_continuous(breaks = c(-1.96, 1.96, round(mean(data$t_w),2), 50, 100, 130),
+                       limits = c(-10, 130)) + 
+    main_theme(
+      x_axis_tick_text = c("red", "red", "darkorange", "black", "black", "black"))
+  # Print out the plot
+  suppressWarnings(print(t_hist_plot))
 }
 
 ######################### LINEAR TESTS ######################### 
+
+#' Extract the four coefficients from linear test in the order
+#' - Intercept, Intercept SE, Slope, Slope SE
+#' 
+#' @param coeftest_object Coeftest object from the linear test
+#' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
+#'  standard errors as strings wrapped in parentheses. Defaults to T.
+#' @return [vector] - Vector of len 4, with the coefficients
+extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
+  # Check validity of the coeftest object
+  validity_checks <- list(
+    nrow(coeftest_object) == 2,
+    ncol(coeftest_object) == 4,
+    colnames(coeftest_object)[1] == "Estimate",
+    colnames(coeftest_object)[2] == "Std. Error"
+  )
+  for (val_check in validity_checks){
+    if (!val_check){
+      stop("Invalid coeftest object properties. Check the coeftest function.")
+    }
+  }
+  # Extract coefficients
+  pub_bias_coef <- round(coeftest_object[2,"Estimate"], 5)
+  pub_bias_se <- round(coeftest_object[2,"Std. Error"], 5)
+  effect_coef <- round(coeftest_object[1,"Estimate"], 5)
+  effect_se <- round(coeftest_object[1,"Std. Error"], 5)
+  # Wrap the standard errors in parenthesis for cleaner presentation
+  if (verbose_coefs){
+    pub_bias_se <- paste0("(", pub_bias_se, ")")
+    effect_se <- paste0("(", effect_se, ")")
+  }
+  # Group and return quietly
+  lin_coefs <- c(pub_bias_coef, pub_bias_se, effect_coef, effect_se)
+  invisible(lin_coefs)
+}
 
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
 
@@ -378,49 +415,43 @@ getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
 #' 
 #' @param data [data.frame] Input data
 getLinearTests <- function(data) {
-  
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
   if(!all(required_cols %in% names(data))) {
     stop("Input data frame is missing necessary columns")
   }
-  
   # OLS
-  OLS <- lm(formula = pcc_w ~ se_pcc_w, data = data)
-  OLS_id <- coeftest(OLS, vcov = vcovHC(OLS, type = "HC0", cluster = c(data$study_id)))
-  
+  ols <- lm(formula = pcc_w ~ se_pcc_w, data = data)
+  ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
+  ols_coefs <- extractLinearCoefs(ols_res)
   # FE
-  FE <- rma(pcc_w, sei = se_pcc_w, mods = ~se_pcc_w, data = data, method = "FE")
-  FE_c <- coeftest(FE, vcov = vcov(FE, type = "fixed", cluster = c(data$study_id)))
-  
+  fe <- rma(pcc_w, sei = se_pcc_w, mods = ~se_pcc_w, data = data, method = "FE")
+  fe_res <- coeftest(fe, vcov = vcov(fe, type = "fixed", cluster = c(data$study_id)))
+  fe_coefs <- extractLinearCoefs(fe_res)
   # RE
-  RE <- rma(pcc_w, sei = se_pcc_w, mods = ~se_pcc_w, data = data, method = "REML")
-  RE_c <- coeftest(RE, vcov = vcov(RE, type = "fixed", cluster = c(data$study_id)))
-  
+  re <- rma(pcc_w, sei = se_pcc_w, mods = ~se_pcc_w, data = data, method = "REML")
+  re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
+  re_coefs <- extractLinearCoefs(re_res)
   # Weighted by number of observations per study
-  OLS_w_study <- lm(formula = pcc_w ~ se_pcc_w, data = data, weight = (data$study_size*data$study_size))
-  OLS_w_study_c <- coeftest(OLS_w_study, vcov = vcovHC(OLS_w_study, type = "HC0", cluster = c(data$study_id)))
-  
+  ols_w_study <- lm(formula = pcc_w ~ se_pcc_w, data = data, weight = (data$study_size*data$study_size))
+  ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
+  ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res)
   # Weighted by precision
-  OLS_w_precision <- lm(formula = pcc_w ~ se_pcc_w, data = data, weight = c(data$se_precision_w*data$se_precision_w))
-  OLS_w_precision_c <- coeftest(OLS_w_precision, vcov = vcovHC(OLS_w_precision, type = "HC0", cluster = c(data$study_id)))
-  
+  ols_w_precision <- lm(formula = pcc_w ~ se_pcc_w, data = data, weight = c(data$se_precision_w*data$se_precision_w))
+  ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
+  ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res)
   # Combine the results into a data frame
   results <- data.frame(
-    OLS_clustered = OLS_id[, "Estimate"],
-    FE_clustered = FE_c[, "Estimate"],
-    RE_clustered = RE_c[, "Estimate"],
-    OLS_weighted_study_clustered = OLS_w_study_c[, "Estimate"],
-    OLS_weighted_precision_clustered = OLS_w_precision_c[, "Estimate"]
+    OLS = ols_coefs,
+    FE = fe_coefs,
+    RE = re_coefs,
+    OLS_weighted_study = ols_w_study_coefs,
+    OLS_weighted_precision = ols_w_precision_coefs
   )
-  
-  rownames(results) <- c("Intercept", "se_pcc_w")
-  results <- t(results)
-  
+  rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)")
   # Print the results into the console
-  print("Results of the linear tests:")
+  print("Results of the linear tests, clustered by study:")
   print(results)
-  
   # Return silently
   invisible(results) 
 }
@@ -552,9 +583,9 @@ getNonlinearResults <- function(data) {
 ######################### GRAPHICS #########################
 
 #' Custom ggplot theme
-main_theme <- function(){
+main_theme <- function(x_axis_tick_text = "black"){
   theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid"),
-        axis.text.x = element_text(color = "black"), axis.text.y = element_text(color = "black"),
+        axis.text.x = element_text(color = x_axis_tick_text), axis.text.y = element_text(color = "black"),
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
         plot.background = element_rect(fill = "#DCEEF3"))
 }

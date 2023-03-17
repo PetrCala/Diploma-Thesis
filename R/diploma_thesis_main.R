@@ -40,10 +40,10 @@ rm(list = ls())
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
+  "summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
   "linear_tests" = T,
   "nonlinear_tests" = F,
   "exo_tests" = F,
@@ -59,6 +59,8 @@ run_this <- c(
 #'  Do NOT change the variable names (apart from when adding new Box plot factors),
 #'    or the name of the vector
 adjustable_parameters <- c(
+  # Data winsorization level
+  "data_winsorization_level" = 0.01, # Choose between 0 and 1 (excluding both)
   # Box plot parameters
   "box_plot_group_by_factor_1" = "study_name", # Group by study name
   "box_plot_group_by_factor_2" = "country", # Group by country
@@ -79,6 +81,7 @@ adjustable_parameters <- c(
 
 ##################### ENVIRONMENT PREPARATION ########################
 development_on <- T # Turn off when distributing the code
+options(scipen=999) # No scientific notation
 
 # Source files
 master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
@@ -122,7 +125,6 @@ packages <- c(
 
 ##### PREPARATION #####
 
-
 # Load the source script
 if (!file.exists("diploma_thesis_source.R")){
   print('Please make sure to put the source file \"diploma_thesis_source\" in
@@ -151,8 +153,9 @@ validateFiles(source_files)
 data_source <- readDataCustom(master_data_set_source)
 var_list <- readDataCustom(var_list_source)
 
-# Data transformation
-data <- preprocessData(data_source) # Validate, preprocess, and winsorize data
+# Validate, preprocess, and winsorize data
+data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
+data <- preprocessData(data_source, win_level = data_win_level)
 
 ######################### DATA EXPLORATION #########################
 
@@ -231,4 +234,3 @@ if (run_this["nonlinear_tests"]){
     getNonlinearResults(data)
   }
 }
-
