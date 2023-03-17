@@ -209,16 +209,16 @@ if (run_this["nonlinear_tests"]){
   
   if (!global_non_lin_res) {
     ###### PUBLICATION BIAS - WAAP (Ioannidis et al., 2017) ######
-    waap_results<- getWaapResults(data)
+    waap_results<- getWaapResults(data, pub_bias_present = F, verbose_coefs = T)
     
     ###### PUBLICATION BIAS - TOP10 method (Stanley et al., 2010) ######
-    top10_results <- getTop10Results(data)
+    top10_results <- getTop10Results(data, pub_bias_present = F, verbose_coefs= T)
     
     ###### PUBLICATION BIAS - Stem-based method in R (Furukawa, 2019) #####
-    stem_results <- getStemResults(data)
+    stem_results <- getStemResults(data, pub_bias_present = F, verbose_coefs= T)
     
     ###### PUBLICATION BIAS - FAT-PET hierarchical in R ######
-    hier_results <- getHierResults(data)
+    hier_results <- getHierResults(data, pub_bias_present = T, verbose_coefs= T)
     
     ###### PUBLICATION BIAS - Selection model (Andrews & Kasy, 2019) ######
     
