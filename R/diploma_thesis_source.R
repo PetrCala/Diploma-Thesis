@@ -74,30 +74,103 @@ loadPackages <- function(package_list, load_quietly = F){
 
 ######################### DATA PREPROCESSING #########################
 
-#' Preprocess the raw excel data
+
+#' Check that the input variable list specifications are all correct
+#'
+#' @param input_var_list [data.frame] The input variable list
+validateInputVarList <- function(input_var_list){
+  # Validate that data type stays consistent within each group
+  for (i in 1:max(input_var_list$group_category)){
+    data_slice <- input_var_list$data_type[input_var_list$group_category == i]
+    arbitrary_type <- data_slice[1] # Should be equal for all
+    validity_test <- all(data_slice == arbitrary_type)
+    stopifnot(validity_test)
+  }
+  
+  # Validate that specifications are present for all variables where sum stats are required
+  data_to_summarize <- input_var_list[input_var_list$pcc_sum_stats == TRUE, ]
+  for (i in 1:nrow(data_to_summarize)){
+    temp_row <- data_to_summarize[i,]
+    validity_test <- any(c( # At least one of the following is not empty
+      !is.na(temp_row$equal),
+      !is.na(temp_row$gtlt)
+      ))
+    stopifnot(validity_test)
+  }
+    
+  # Check data values
+  float_data_to_check <- data_to_summarize[data_to_summarize$data_type %in% c('float','int'),]
+  float_data_allowed_values <- c('MED', 'MEAN')
+  for (i in 1:nrow(float_data_to_check)){
+    temp_row <- float_data_to_check[i,]
+    validity_test <- temp_row$gtlt %in% float_data_allowed_values
+    stopifnot(all(validity_test))
+  }
+  
+  dummy_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'dummy',]
+  dummy_data_allowed_values <- c(0, 1)
+  for (i in 1:nrow(dummy_data_to_check)){
+    temp_row <- dummy_data_to_check[i,]
+    validity_test <- temp_row$equal %in% dummy_data_allowed_values
+    stopifnot(all(validity_test))
+  }
+  
+  perc_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'perc',]
+  for (i in 1:nrow(perc_data_to_check)){
+    temp_row <- perc_data_to_check[i,]
+    validity_test <- c(
+      temp_row$gtlt < 1,
+      temp_row$gtlt > 0
+    )
+    stopifnot(all(validity_test))
+  }
+}
+
+#' Preprocess the raw excel data:
+#' - Adjust the source data dimensions
+#' 
 #' 
 #' Check column validity, add winsorized statistics (PCC, SE, t-stat)
 #' @param win_int [float] Interval for winsirization. If 0.01, winsorize at 1%.
 #'    Defaults to 0.01.
 #' @return [data.frame] The preprocessed data
-preprocessData <- function(input_data, win_level = 0.01){
+preprocessData <- function(input_data, input_var_list, win_level = 0.01){
+  # Remove redundant columns
+  expected_col_n <- nrow(var_list)
+  while(ncol(input_data) > expected_col_n){
+    input_data <- input_data[,-ncol(input_data)]
+  }
+  
+  # Variable name validity check
+  varnames <- colnames(input_data)
+  expected_varnames <- input_var_list$var_name
+  if(!all(varnames == expected_varnames)){ # A strong, restrictive assumption
+    print("These variables from the source data names do not match the expected names:")
+    print(varnames[!(varnames == expected_varnames)])
+    stop("Mismatching variable names")
+  }
+  
   # Remove redundant rows
   while(is.na(input_data[nrow(input_data), "study_name"])) {
     input_data <- input_data[-nrow(input_data),]
   }
   
-  # Column validity check
-  expected_cols <- c('pcc', 'se_pcc', 't_stat')
-  stopifnot(all(expected_cols %in% colnames(input_data)))
+  # Winsorize the data using a custom function
+  input_data <- winsorizeData(input_data, win_level)
   
-  # Conver double to numeric
-  #input_data <- input_data %>% mutate_all(~ ifelse(is.double(.), as.numeric(.), .))
+  # Other useful columns
+  input_data$study_size <- ave(input_data$study_id, input_data$study_id, FUN = length) # Size of each study
+  
+  
+  return(input_data)
+}
+
+winsorizeData <- function(input_data, win_level){
+  # Validate input
+  stopifnot(0 < win_level && win_level < 1)
   
   # Get the winsorization interval
-  if (!(0 < win_level & win_level <1)){
-    stop('Incorrect winsorization level. Choose a float between 0 and 1.')
-  }
-  win_int = c(win_level, 1-win_level) # c(0.01, 0.99)
+  win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
   
   # Statistic preprocessing
   input_data$pcc_w <- Winsorize(x = input_data$pcc, minval = NULL, maxval = NULL, probs = win_int)
@@ -107,42 +180,70 @@ preprocessData <- function(input_data, win_level = 0.01){
   input_data$significant_w <- c(rep(0,nrow(input_data)))
   input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
   
-  # Other useful columns
-input_data$study_size <- ave(input_data$study_id, input_data$study_id, FUN = length) # Size of each study
-  
-  return(input_data)
+  # Return quietly
+  invisible(input_data)
 }
 
 ######################### DATA EXPLORATION #########################
 
-#' Load the identifiers of various summary stats that should be used
-#' during the data exploration.
-loadSummaryStats <- function(){
-  return(c(
-    "schooling_years" = 1,
-    "schooling_levels" = 1,
-    "data_type_micro" = 1,
-    "data_type_survey" = 1,
-    "data_type_national_register" = 1,
-    "data_cross_section" = 1,
-    "data_panel" = 1,
-    "gender_male_over_half" = "gt0.5",
-    "gender_male_under_half" = "lt0.5",
-    "sector_urban" = 1,
-    "sector_rural" = 1
-  ))
+getVariableSummaryStats <- function(input_data, input_var_list){
+  # List of the statistics to compute
+  variable_stat_names <- c("Variable Name", "Mean", "Median",
+                           "SD", "Min", "Max")
+  
+  # Variables to preprocess
+  desired_vars <- input_var_list[input_var_list$variable_summary == TRUE,]$var_name # Vector
+  
+  # Initialize output data frame
+  df <- data.frame(matrix(nrow = length(desired_vars), ncol = length(variable_stat_names)))
+  colnames(df) <- variable_stat_names
+  
+  # Iterate over all desired variables and append summary statistics to the main DF
+  missing_data_vars <- c()
+  for (var_name in desired_vars){
+    var_data <- as.vector(unlist(subset(input_data, select = var_name))) # Roundabout way, because types
+    row_idx <- match(var_name, desired_vars) # Append data to this row
+    
+    # Missing all data 
+    if (!any(is.numeric(var_data), na.rm=TRUE)){
+      missing_data_vars <- append(missing_data_vars, var_name)
+      df[row_idx, ] <- c(var_name, rep(NA, length(variable_stat_names) - 1))
+      next
+    }
+    
+    # Calculate the statistics
+    var_mean <- round(mean(var_data, na.rm = TRUE), 3)
+    var_median <- round(median(var_data, na.rm = TRUE), 3)
+    var_sd <- round(sd(var_data, na.rm = TRUE), 3)
+    var_min <- round(min(var_data, na.rm = TRUE), 3)
+    var_max <- round(max(var_data, na.rm = TRUE), 3)
+    
+    
+    # Aggregate and append to the main DF
+    row_data <- c(
+      var_name,
+      var_mean,
+      var_median,
+      var_sd,
+      var_min,
+      var_max
+    )
+    df[row_idx, ] <- row_data
+  }
+  
+  # Print and return output data frame
+  cat("Variable summary statistics:\n")
+  print(df)
+  cat("\n")
+  invisible(df)
 }
 
 
-#' Input a data frame, and a vector of variables and their values for which to
-#' load the summary statistics, and return a data frame of these summary statistics.
+#' Input a data frame, the variable list, and return a data frame of 
+#'  these summary statistics.
 #' 
-#' @param data [data.frame] - The input data frame
-#' @param sum_stats [vector] - A vector in the form of a dictionary, such as
-#'    c("var_name1" = "value1",
-#'    "var_name2" = "value2")
-#'    The values can also be prepended with "lt" (lower than) or
-#'    "gt" (greater than), such as "var1" = "gt0.5".
+#' @param input_data [data.frame] - The input data frame
+#' @param input_var_list [data.frame] The variable list data frame.
 #' @param conf.level [float] - Confidence level for the confidence interval.
 #'    Defaults to 0.95
 #' @param weight [bool] - If True, return weighted mean instead of a usual mean.
@@ -150,13 +251,13 @@ loadSummaryStats <- function(){
 #' @return [data.frame] - A data frame with summary statistic for all the specified
 #'      variables. These summary statistics are "mean", "SD", "lower CI bound",
 #'      "upper CI bound", "number of observations"
-getSummaryStats <- function (input_data, sum_stats, conf.level = 0.95, weight = FALSE) {
+getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95, weight = FALSE) {
   # Parameter checking
-  stopifnot(is.data.frame(input_data))
-  stopifnot(is.vector(sum_stats) && names(sum_stats) != "") 
+  stopifnot(all(c(conf.level > 0, conf.level < 1)))
   
   # Output columns
-  stats_list <- c("Variable", "Mean", "SD", "CI lower", "CI upper", "Obs")
+  pcc_stat_names <- c("Variable", "Mean", "Median", "Weighted Mean",
+                     "SD", "CI lower", "CI upper", "Min", "Max", "Number of Outliers", "Obs")
   
   # Z value for confidence interval calculation 
   z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) 
@@ -166,35 +267,35 @@ getSummaryStats <- function (input_data, sum_stats, conf.level = 0.95, weight = 
   colnames(df) <- stats_list
   
   # Loop over each summary statistic 
-  for (i in names(sum_stats)) {
-    value <- sum_stats[i]
+  #for (i in names(sum_stats)) {
+    #value <- sum_stats[i]
     
-    # Filter input data based on variable value
-    if (startsWith(value, "gt")) {
-      filter <- input_data[, i] > as.numeric(substr(value, 3))
-      disp_name <- paste(i, ">", substr(value, 3))
-    } else if (startsWith(value, "lt")) {
-      filter <- input_data[, i] < as.numeric(substr(value, 3))
-      disp_name <- paste(i, "<", substr(value, 3))
-    } else {
-      filter <- input_data[, i] == as.numeric(value)
-      disp_name <- i
-    }
+    ## Filter input data based on variable value
+    #if (startsWith(value, "gt")) {
+      #filter <- input_data[, i] > as.numeric(substr(value, 3))
+      #disp_name <- paste(i, ">", substr(value, 3))
+    #} else if (startsWith(value, "lt")) {
+      #filter <- input_data[, i] < as.numeric(substr(value, 3))
+      #disp_name <- paste(i, "<", substr(value, 3))
+    #} else {
+      #filter <- input_data[, i] == as.numeric(value)
+      #disp_name <- i
+    #}
     
-    # Calculate summary statistics
-    obs <- sum(filter)
-    xbar <- if (weight) {
-      weighted.mean(input_data[filter, "pcc_w"], w = input_data[filter, "study_size"]^2)
-    } else {
-      mean(input_data[filter, "pcc_w"])
-    }
-    sdx <- sd(input_data[filter, "pcc_w"])
-    conf_l <- xbar - z * sdx
-    conf_u <- xbar + z * sdx
+    ## Calculate PCC_w summary statistics for various levels of the specified variables
+    #obs <- sum(filter)
+    #xbar <- if (weight) {
+      #weighted.mean(input_data[filter, "pcc_w"], w = input_data[filter, "study_size"]^2)
+    #} else {
+      #mean(input_data[filter, "pcc_w"])
+    #}
+    #sdx <- sd(input_data[filter, "pcc_w"])
+    #conf_l <- xbar - z * sdx
+    #conf_u <- xbar + z * sdx
     
-    # Add results to output data frame
-    df[i, ] <- c(disp_name, round(xbar, 3), round(sdx, 3), round(conf_l, 3), round(conf_u, 3), obs)
-  }
+    ## Add results to output data frame
+    #df[i, ] <- c(disp_name, round(xbar, 3), round(sdx, 3), round(conf_l, 3), round(conf_u, 3), obs)
+  #}
   
   # Print and return output data frame
   cat("Summary statistics:\n")

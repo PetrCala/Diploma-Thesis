@@ -40,7 +40,8 @@ rm(list = ls())
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "summary_stats" = T,
+  "variable_summary_stats" = T,
+  "pcc_summary_stats" = F,
   "box_plot" = T,
   "funnel_plot" = T,
   "t_stat_histogram" = T,
@@ -153,17 +154,21 @@ validateFiles(source_files)
 data_source <- readDataCustom(master_data_set_source)
 var_list <- readDataCustom(var_list_source)
 
+
 # Validate, preprocess, and winsorize data
+validateInputVarList(var_list)
 data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
-data <- preprocessData(data_source, win_level = data_win_level)
+data <- preprocessData(data_source, var_list, win_level = data_win_level)
 
 ######################### DATA EXPLORATION #########################
 
 ###### SUMMARY STATISTICS ######
+if (run_this["variable_summary_stats"]){
+  getVariableSummaryStats(data, var_list)
+}
 
-if (run_this["summary_stats"]){
-  summary_stats_desc <- loadSummaryStats()
-  getSummaryStats(data, summary_stats_desc)
+if (run_this["pcc_summary_stats"]){
+  getPCCSummaryStats(data, var_list)
 }
 
 ###### BOX PLOT ######
