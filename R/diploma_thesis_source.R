@@ -91,10 +91,8 @@ validateInputVarList <- function(input_var_list){
   data_to_summarize <- input_var_list[input_var_list$pcc_sum_stats == TRUE, ]
   for (i in 1:nrow(data_to_summarize)){
     temp_row <- data_to_summarize[i,]
-    validity_test <- any(c( # At least one of the following is not empty
-      !is.na(temp_row$equal),
-      !is.na(temp_row$gtlt)
-      ))
+    # Only one of the two specifications is used
+    validity_test <- xor(!is.na(temp_row$equal),!is.na(temp_row$gtlt))
     stopifnot(validity_test)
   }
     
@@ -186,6 +184,17 @@ winsorizeData <- function(input_data, win_level){
 
 ######################### DATA EXPLORATION #########################
 
+#' Compute summary statistics for selected variables in a data frame
+#'
+#' This function computes summary statistics for selected variables in a data frame,
+#' including mean, median, minimum, maximum, and standard deviation.
+#' If a variable contains missing or non-numeric data, the corresponding summary statistics will be omitted.
+#'
+#' @param input_data [data.frame] The input data frame.
+#' @param input_var_list [data.frame] A data frame with information about the variables to be summarized.
+#' It should have columns "var_name", "data_type", and "variable_summary".
+#'
+#' @return [data.frame] A data frame containing summary statistics for selected variables.
 getVariableSummaryStats <- function(input_data, input_var_list){
   # List of the statistics to compute
   variable_stat_names <- c("Var Name", "Var Class", "Mean", "Median",
@@ -230,72 +239,166 @@ getVariableSummaryStats <- function(input_data, input_var_list){
   cat("Variable summary statistics:\n")
   print(df)
   cat("\n")
+  print(paste0("Missing data for: ", length(missing_data_vars), " variables."))
+  cat("\n")
   invisible(df)
 }
 
 
-#' Input a data frame, the variable list, and return a data frame of 
-#'  these summary statistics.
+#' The function getPCCSummaryStats() calculates the summary statistics for variables in a given data frame input_data
+#'    using the percentage of correct classification (PCC) pcc_w and sample size study_size columns,
+#'    and returns a data frame with the results. The function takes as input input_var_list,
+#'    a data frame that contains metadata about the variables in input_data and which variables to calculate
+#'    summary statistics for. The summary statistics calculated are the mean, median, weighted mean,
+#'    minimum, maximum, standard deviation, and number of observations. For the weighted mean,
+#'    the inverse squared sample size is used as weights. The confidence level for the weighted mean
+#'    confidence interval can be set using the conf.level parameter, which defaults to 0.95.
+#'    If any input data is missing or non-numeric, it is ignored, and the variable is not included in the output.
 #' 
-#' @param input_data [data.frame] - The input data frame
-#' @param input_var_list [data.frame] The variable list data frame.
-#' @param conf.level [float] - Confidence level for the confidence interval.
-#'    Defaults to 0.95
-#' @param weight [bool] - If True, return weighted mean instead of a usual mean.
-#'    Defaults to FALSE.
-#' @return [data.frame] - A data frame with summary statistic for all the specified
-#'      variables. These summary statistics are "mean", "SD", "lower CI bound",
-#'      "upper CI bound", "number of observations"
-getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95, weight = FALSE) {
+#' The function returns a data frame with the following columns:
+#' -Var Name: The name of the variable.
+#' -Var Class: The data type of the variable.
+#' -Mean: The arithmetic mean of the PCC for the variable.
+#' -Median: The median of the PCC for the variable.
+#' -Weighted Mean: The weighted mean of the PCC for the variable, using the inverse squared sample size as weights.
+#' -WM CI lower: The lower bound of the confidence interval for the weighted mean.
+#' -WM CI upper: The upper bound of the confidence interval for the weighted mean.
+#' -Min: The minimum PCC value for the variable.
+#' -Max: The maximum PCC value for the variable.
+#' -SD: The standard deviation of the PCC for the variable.
+#' -Obs: The number of observations for the variable.
+#' If a variable has missing or non-numeric data, it will not be included in the output.
+#' If no variables are included in the output, the function returns an empty data frame.
+getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
   # Parameter checking
   stopifnot(all(c(conf.level > 0, conf.level < 1)))
   
-  # Output columns
-  pcc_stat_names <- c("Variable", "Mean", "Median", "Weighted Mean",
-                     "SD", "CI lower", "CI upper", "Min", "Max", "Number of Outliers", "Obs")
+  # Constants
+  z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) # Z value for conf. int. calculation
+  pcc_data <- with(input_data, as.vector(pcc_w))
+  study_size_data <- with(input_data, as.vector(study_size))
   
-  # Z value for confidence interval calculation 
-  z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) 
+  # Output columns
+  pcc_stat_names <- c("Var Name", "Var Class", "Mean", "Median", "Weighted Mean",
+                     "WM CI lower", "WM CI upper", "Min", "Max", "SD", "Obs")
+  
+  # Variables to preprocess
+  desired_vars <- input_var_list[input_var_list$pcc_sum_stats == TRUE,]$var_name # Vector
   
   # Initialize output data frame
-  df <- data.frame(matrix(nrow = length(sum_stats), ncol = length(stats_list)))
-  colnames(df) <- stats_list
+  df <- data.frame(col1 = character(),
+                   col2 = character(),
+                   col3 = numeric(),
+                   col4 = numeric(),
+                   col5 = numeric(),
+                   col6 = numeric(),
+                   col7 = numeric(),
+                   col8 = numeric(),
+                   col9 = numeric(),
+                   col10 = numeric(),
+                   col11 = numeric(),
+                   stringsAsFactors = F
+                   )
+  stopifnot(ncol(df) == length(pcc_stat_names))
   
-  # Loop over each summary statistic 
-  #for (i in names(sum_stats)) {
-    #value <- sum_stats[i]
+  # Iterate over all desired variables and append summary statistics to the main DF
+  missing_data_vars <- c()
+  for (var_name in desired_vars){
+    # Get data for this var
+    var_data <- as.vector(unlist(subset(input_data, select = var_name))) # Roundabout way, because types
+    var_specs <- input_var_list[input_var_list$var_name == var_name,] # Specifications for this variable
+    var_class <- var_specs$data_type
+    var_name_verbose <- var_specs$var_name_verbose
+    row_idx <- match(var_name, desired_vars) # Append data to this row
     
-    ## Filter input data based on variable value
-    #if (startsWith(value, "gt")) {
-      #filter <- input_data[, i] > as.numeric(substr(value, 3))
-      #disp_name <- paste(i, ">", substr(value, 3))
-    #} else if (startsWith(value, "lt")) {
-      #filter <- input_data[, i] < as.numeric(substr(value, 3))
-      #disp_name <- paste(i, "<", substr(value, 3))
-    #} else {
-      #filter <- input_data[, i] == as.numeric(value)
-      #disp_name <- i
-    #}
+    # Missing all data 
+    if (!any(is.numeric(var_data), na.rm=TRUE)){
+      missing_data_vars <- append(missing_data_vars, var_name)
+      next
+    }
     
-    ## Calculate PCC_w summary statistics for various levels of the specified variables
-    #obs <- sum(filter)
-    #xbar <- if (weight) {
-      #weighted.mean(input_data[filter, "pcc_w"], w = input_data[filter, "study_size"]^2)
-    #} else {
-      #mean(input_data[filter, "pcc_w"])
-    #}
-    #sdx <- sd(input_data[filter, "pcc_w"])
-    #conf_l <- xbar - z * sdx
-    #conf_u <- xbar + z * sdx
+    # Get the specifications and subset the data accordingly
+    equal_val <- var_specs$equal
+    gtlt_val <- var_specs$gtlt
+    stopifnot(xor(is.na(equal_val),is.na(gtlt_val))) # Additional validity check - should never occur
+    # The specification is EQUAL
+    if (!is.na(equal_val)){
+      pcc_data_equal <- pcc_data[var_data == equal_val]
+      study_size_data_equal <- study_size_data[var_data == equal_val] # For W. mean - wonky, but straightforward
+      cutoff <- equal_val  # For verbose output
+    } else { # The specification is gtlt
+      if (gtlt_val %in% c("MEAN", "MED")){
+        cutoff <- ifelse(gtlt_val == 'MEAN', mean(var_data, na.rm=T), median(var_data, na.rm=T))
+        pcc_data_gt <- pcc_data[var_data >= cutoff]
+        pcc_data_lt <- pcc_data[var_data < cutoff]
+        study_size_data_gt <- study_size_data[var_data >= cutoff]
+        study_size_data_lt <- study_size_data[var_data < cutoff]
+      } else if (!is.na(gtlt_val)){
+        cutoff <- gtlt_val # For verbose output
+        pcc_data_gt <- pcc_data[var_data >= gtlt_val]
+        pcc_data_lt <- pcc_data[var_data < gtlt_val]
+        study_size_data_gt <- study_size_data[var_data >= gtlt_val]
+        study_size_data_lt <- study_size_data[var_data < gtlt_val]
+      } else {
+        stop("Value error")
+      }
+    }
     
-    ## Add results to output data frame
-    #df[i, ] <- c(disp_name, round(xbar, 3), round(sdx, 3), round(conf_l, 3), round(conf_u, 3), obs)
-  #}
-  
-  # Print and return output data frame
+    # A function for statistics calculation
+    getNewDataRow <- function(input_var_name, input_class_name, input_pcc_data, input_study_size_data){
+      input_pcc_data <- na.omit(input_pcc_data)
+      input_study_size_data <- na.omit(input_study_size_data)
+      # Summary stats computation
+      var_mean <- round(mean(input_pcc_data), 3)
+      var_median <- round(median(input_pcc_data), 3)
+      var_weighted_mean <- round(weighted.mean(input_pcc_data, w = input_study_size_data^2),3)
+      var_sd <- round(sd(input_pcc_data), 3)
+      var_ci_lower <- round(var_weighted_mean - var_sd*z, 3)
+      var_ci_upper <- round(var_weighted_mean + var_sd*z, 3)
+      var_min <- round(min(input_pcc_data), 3)
+      var_max <- round(max(input_pcc_data), 3)
+      var_obs <- length(input_pcc_data)
+      
+      new_row <- data.frame(
+        col1 = input_var_name,
+        col2 = input_class_name,
+        col3 = var_mean,
+        col4 = var_median,
+        col5 = var_weighted_mean,
+        col6 = var_ci_lower,
+        col7 = var_ci_upper,
+        col8 = var_min,
+        col9 = var_max,
+        col10 = var_sd,
+        col11 = var_obs
+      )
+      return (new_row)
+    }
+    
+    # EQUAL data
+    if (!is.na(equal_val)){
+      new_varname_equal <- paste0(var_name_verbose, " = ", round(as.numeric(cutoff,3)))
+      new_row <- getNewDataRow(new_varname_equal, var_class, pcc_data_equal, study_size_data_equal)
+      df <- rbind(df, new_row)
+    } else { # GTLT data
+      new_varname_gt <- paste0(var_name_verbose, " >= ", round(as.numeric(cutoff,3)))
+      new_varname_lt <- paste0(var_name_verbose, " < ", round(as.numeric(cutoff,3)))
+      new_row_gt <- getNewDataRow(new_varname_gt, var_class, pcc_data_gt, study_size_data_gt)
+      new_row_lt <- getNewDataRow(new_varname_lt, var_class, pcc_data_lt, study_size_data_lt)
+      df <- rbind(df, new_row_gt)
+      df <- rbind(df, new_row_lt)
+    }
+  }
+  # Put the final output together
+  colnames(df) <- pcc_stat_names
   cat("Summary statistics:\n")
   print(df)
   cat("\n")
+  if (length(missing_data_vars) > 0){
+    print(paste0("Missing data for ", length(missing_data_vars), " variables:"))
+    print(missing_data_vars)
+    cat("\n")
+  }
   invisible(df)
 }
 
@@ -475,7 +578,7 @@ getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
 #' @return [vector] - Vector of len 4, with the coefficients
 extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
   # Check validity of the coeftest object
-  validity_checks <- list(
+  validity_checks <- c(
     nrow(coeftest_object) == 2,
     ncol(coeftest_object) == 4,
     colnames(coeftest_object)[1] == "Estimate",

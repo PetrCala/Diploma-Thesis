@@ -41,7 +41,7 @@ rm(list = ls())
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
   "variable_summary_stats" = T,
-  "pcc_summary_stats" = F,
+  "pcc_summary_stats" = T,
   "box_plot" = T,
   "funnel_plot" = T,
   "t_stat_histogram" = T,
@@ -61,7 +61,9 @@ run_this <- c(
 #'    or the name of the vector
 adjustable_parameters <- c(
   # Data winsorization level
-  "data_winsorization_level" = 0.01, # Choose between 0 and 1 (excluding both)
+  "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
+  # PCC summary statistics confidence level
+  "pcc_summary_stats_conf_level" = 0.95, # Between 0 and 1 (excluding)
   # Box plot parameters
   "box_plot_group_by_factor_1" = "study_name", # Group by study name
   "box_plot_group_by_factor_2" = "country", # Group by country
@@ -154,7 +156,6 @@ validateFiles(source_files)
 data_source <- readDataCustom(master_data_set_source)
 var_list <- readDataCustom(var_list_source)
 
-
 # Validate, preprocess, and winsorize data
 validateInputVarList(var_list)
 data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
@@ -168,7 +169,8 @@ if (run_this["variable_summary_stats"]){
 }
 
 if (run_this["pcc_summary_stats"]){
-  getPCCSummaryStats(data, var_list)
+  pcc_sum_stats_conf_level <- as.numeric(adjustable_parameters["pcc_summary_stats_conf_level"])
+  getPCCSummaryStats(data, var_list, pcc_sum_stats_conf_level)
 }
 
 ###### BOX PLOT ######
