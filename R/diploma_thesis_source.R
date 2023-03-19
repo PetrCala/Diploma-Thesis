@@ -59,7 +59,7 @@ validateFiles <- function(files){
 #' 
 #' Insert a vector/list of package names, install all missing ones,
 #'  load all into workspace, and clean the environment
-loadPackages <- function(package_list){
+loadPackages <- function(package_list, load_quietly = F){
   # Install packages not yet installed
   installed_packages <- package_list %in% rownames(installed.packages())
   if (any(installed_packages == FALSE)) {
@@ -88,10 +88,7 @@ preprocessData <- function(input_data, win_level = 0.01){
   
   # Column validity check
   expected_cols <- c('pcc', 'se_pcc', 't_stat')
-  if (!all(expected_cols %in% colnames(input_data))) {
-    print('There are missing columns in the data.')
-    return(NA)
-  }
+  stopifnot(all(expected_cols %in% colnames(input_data)))
   
   # Conver double to numeric
   #input_data <- input_data %>% mutate_all(~ ifelse(is.double(.), as.numeric(.), .))
@@ -129,8 +126,8 @@ loadSummaryStats <- function(){
     "data_type_national_register" = 1,
     "data_cross_section" = 1,
     "data_panel" = 1,
-    "gender_male1" = "gt0.5",
-    "gender_male2" = "lt0.5",
+    "gender_male_over_half" = "gt0.5",
+    "gender_male_under_half" = "lt0.5",
     "sector_urban" = 1,
     "sector_rural" = 1
   ))
@@ -154,59 +151,55 @@ loadSummaryStats <- function(){
 #'      variables. These summary statistics are "mean", "SD", "lower CI bound",
 #'      "upper CI bound", "number of observations"
 getSummaryStats <- function (input_data, sum_stats, conf.level = 0.95, weight = FALSE) {
-  stats_list <- c("Variable", "Mean", "SD",
-                    "CI lower", "CI upper", "Obs") # Columns of the output df
-  z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) # Z value 
-  df_rows <- length(sum_stats)
-  df_cols <- length(stats_list)
-  df_matrix <- matrix(nrow=df_rows, ncol=df_cols) #Temporary matrix
+  # Parameter checking
+  stopifnot(is.data.frame(input_data))
+  stopifnot(is.vector(sum_stats) && names(sum_stats) != "") 
   
+  # Output columns
+  stats_list <- c("Variable", "Mean", "SD", "CI lower", "CI upper", "Obs")
+  
+  # Z value for confidence interval calculation 
+  z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) 
+  
+  # Initialize output data frame
+  df <- data.frame(matrix(nrow = length(sum_stats), ncol = length(stats_list)))
+  colnames(df) <- stats_list
+  
+  # Loop over each summary statistic 
   for (i in names(sum_stats)) {
-    name <- i
-    value <- sum_stats[name]
-    last_char <- substr(name, nchar(name), nchar(name))
-    if (last_char %in% (c(1,2,3,4,5))) {
-      name <- substring(name, 1, nchar(i)-1)
+    value <- sum_stats[i]
+    
+    # Filter input data based on variable value
+    if (startsWith(value, "gt")) {
+      filter <- input_data[, i] > as.numeric(substr(value, 3))
+      disp_name <- paste(i, ">", substr(value, 3))
+    } else if (startsWith(value, "lt")) {
+      filter <- input_data[, i] < as.numeric(substr(value, 3))
+      disp_name <- paste(i, "<", substr(value, 3))
+    } else {
+      filter <- input_data[, i] == as.numeric(value)
+      disp_name <- i
     }
     
-    # Get display names
-    if (grepl("lt", value, fixed=TRUE)) {
-      value <- substr(value, 3, nchar(value))
-      filter <- input_data[,name]<as.numeric(value)
-      disp_name <- paste(name, "<", as.character(value))
-    } else if (grepl("gt", value, fixed=TRUE)) {
-      value <- substr(value, 3, nchar(value))
-      filter <- input_data[,name]>as.numeric(value)
-      disp_name <- paste(name, ">", as.character(value))
+    # Calculate summary statistics
+    obs <- sum(filter)
+    xbar <- if (weight) {
+      weighted.mean(input_data[filter, "pcc_w"], w = input_data[filter, "study_size"]^2)
     } else {
-      filter <- input_data[,name]==as.numeric(value)
-      disp_name <- name
+      mean(input_data[filter, "pcc_w"])
     }
+    sdx <- sd(input_data[filter, "pcc_w"])
+    conf_l <- xbar - z * sdx
+    conf_u <- xbar + z * sdx
     
-    # Mean
-    if (weight != TRUE) {
-      xbar <- mean(input_data$pcc_w[filter]) #Simple mean
-    } else {
-      xbar <- weighted.mean(input_data$pcc_w[filter], #Weighted mean
-                            w = c(input_data$study_size*input_data$study_size)[filter])
-    }
-    sdx <- sd(input_data$pcc_w[filter])   #SD
-    conf_l <- xbar - z * sdx        #Confidence interval lower bound
-    conf_u <- xbar + z * sdx        #Confidence interval upper bound
-    obs <- sum(filter)              #Number of observations
-    # Resulting vector
-    out <- c(disp_name, round(xbar, 3), round(sdx, 3),
-             round(conf_l, 3), round(conf_u, 3), obs)
-    row_idx <- match(i, names(sum_stats))
-    df_matrix[row_idx,] <- out
+    # Add results to output data frame
+    df[i, ] <- c(disp_name, round(xbar, 3), round(sdx, 3), round(conf_l, 3), round(conf_u, 3), obs)
   }
-  df <- data.frame(df_matrix) # Main output df
-  colnames(df) <- stats_list # Rename columns
-  # Print out the output
-  print("Summary statistics:")
+  
+  # Print and return output data frame
+  cat("Summary statistics:\n")
   print(df)
-  cat("\n\n")
-  # Return quietly
+  cat("\n")
   invisible(df)
 }
 
@@ -242,9 +235,7 @@ getBoxPlotFactors <- function(adj_pars_source, pattern){
 getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
   # Check column validity
   expected_cols <- c('pcc_w', factor_by)
-  if (!all(expected_cols %in% colnames(input_data))) {
-    stop('Missing columns in the data set when trying to plot the Box-Plot.')
-  }
+  stopifnot(all(expected_cols %in% colnames(input_data)))
   
   # Plot variable preparation
   factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
@@ -275,10 +266,9 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
 getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, verbose=T) {
   # Check column validity
   expected_cols <- c('pcc_w', 'se_precision_w')
-  if (!all(expected_cols %in% colnames(input_data))) {
-    stop('Missing columns in the data set when trying to identify outliers.')
-  }
+  stopifnot(all(expected_cols %in% colnames(input_data)))
   
+  # Get source values
   obs <- input_data$obs_n
   pcc <- input_data$pcc_w
   precision <- input_data$se_precision_w
@@ -332,9 +322,7 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
 getFunnelPlot <- function(input_data, pcc_cutoff=0.2, precision_cutoff=0.2, verbose = T){
   # Check column validity
   expected_cols <- c('pcc_w', 'se_precision_w')
-  if (!all(expected_cols %in% colnames(input_data))) {
-    stop('Missing columns in the data set when trying to plot the Funnel plot.')
-  }
+  stopifnot(all(expected_cols %in% colnames(input_data)))
   
   # Filter out the outliers
   filter_pcc_w <- getOutliers(input_data, pcc_cutoff=pcc_cutoff, precision_cutoff=precision_cutoff, verbose=verbose)
@@ -397,11 +385,8 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
     colnames(coeftest_object)[1] == "Estimate",
     colnames(coeftest_object)[2] == "Std. Error"
   )
-  for (val_check in validity_checks){
-    if (!val_check){
-      stop("Invalid coeftest object properties. Check the coeftest function.")
-    }
-  }
+  stopifnot(all(validity_checks))
+  
   # Extract coefficients
   pub_bias_coef <- round(coeftest_object[2,"Estimate"], 5)
   pub_bias_se <- round(coeftest_object[2,"Std. Error"], 5)
@@ -597,7 +582,7 @@ getNonlinearResults <- function(data) {
   rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
   colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch")
   # Print the results into the console
-  print("Results of the non-linear tests:")
+  print("Results of the non-linear tests, clustered by study:")
   print(results)
   cat("\n\n")
   # Return silently
