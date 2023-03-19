@@ -156,10 +156,6 @@ preprocessData <- function(input_data, input_var_list, win_level = 0.01){
   # Winsorize the data using a custom function
   input_data <- winsorizeData(input_data, win_level)
   
-  # Other useful columns
-  input_data$study_size <- ave(input_data$study_id, input_data$study_id, FUN = length) # Size of each study
-  
-  
   return(input_data)
 }
 
