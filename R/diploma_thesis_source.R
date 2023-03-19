@@ -188,12 +188,10 @@ winsorizeData <- function(input_data, win_level){
 
 getVariableSummaryStats <- function(input_data, input_var_list){
   # List of the statistics to compute
-  variable_stat_names <- c("Variable Name", "Mean", "Median",
-                           "SD", "Min", "Max")
-  
+  variable_stat_names <- c("Var Name", "Var Class", "Mean", "Median",
+                            "Min", "Max", "SD")
   # Variables to preprocess
   desired_vars <- input_var_list[input_var_list$variable_summary == TRUE,]$var_name # Vector
-  
   # Initialize output data frame
   df <- data.frame(matrix(nrow = length(desired_vars), ncol = length(variable_stat_names)))
   colnames(df) <- variable_stat_names
@@ -202,35 +200,32 @@ getVariableSummaryStats <- function(input_data, input_var_list){
   missing_data_vars <- c()
   for (var_name in desired_vars){
     var_data <- as.vector(unlist(subset(input_data, select = var_name))) # Roundabout way, because types
+    var_class <- input_var_list[input_var_list$var_name == var_name,]$data_type
     row_idx <- match(var_name, desired_vars) # Append data to this row
-    
     # Missing all data 
     if (!any(is.numeric(var_data), na.rm=TRUE)){
       missing_data_vars <- append(missing_data_vars, var_name)
-      df[row_idx, ] <- c(var_name, rep(NA, length(variable_stat_names) - 1))
+      df[row_idx, ] <- c(var_name, var_class, rep(NA, length(variable_stat_names) - 2))
       next
     }
-    
     # Calculate the statistics
     var_mean <- round(mean(var_data, na.rm = TRUE), 3)
     var_median <- round(median(var_data, na.rm = TRUE), 3)
     var_sd <- round(sd(var_data, na.rm = TRUE), 3)
     var_min <- round(min(var_data, na.rm = TRUE), 3)
     var_max <- round(max(var_data, na.rm = TRUE), 3)
-    
-    
     # Aggregate and append to the main DF
     row_data <- c(
       var_name,
+      var_class,
       var_mean,
       var_median,
-      var_sd,
       var_min,
-      var_max
+      var_max,
+      var_sd
     )
     df[row_idx, ] <- row_data
   }
-  
   # Print and return output data frame
   cat("Variable summary statistics:\n")
   print(df)
