@@ -97,14 +97,6 @@ validateInputVarList <- function(input_var_list){
   }
     
   # Check data values
-  float_data_to_check <- data_to_summarize[data_to_summarize$data_type %in% c('float','int'),]
-  float_data_allowed_values <- c('MED', 'MEAN')
-  for (i in 1:nrow(float_data_to_check)){
-    temp_row <- float_data_to_check[i,]
-    validity_test <- temp_row$gtlt %in% float_data_allowed_values
-    stopifnot(all(validity_test))
-  }
-  
   dummy_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'dummy',]
   dummy_data_allowed_values <- c(0, 1)
   for (i in 1:nrow(dummy_data_to_check)){
@@ -397,6 +389,7 @@ getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
   }
   invisible(df)
 }
+
 
 #' A quick search function to extract all specified factors for the box plot
 #' 
