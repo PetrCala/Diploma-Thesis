@@ -825,7 +825,7 @@ getHierResults <- function(data, ...){
 #' as their standard errors, in the usual format.
 #' 
 #' @import selection_model_custom.R
-getSelectionResults <- function(input_data, cutoffs = c(1.960),
+getSelectionResults <- function(data, cutoffs = c(1.960),
                                 symmetric = F, modelmu="normal", ...){
   # Read the source script
   source("selection_model_custom.R") 
@@ -836,8 +836,8 @@ getSelectionResults <- function(input_data, cutoffs = c(1.960),
   required_cols <- c("pcc_w", "se_pcc_w")
   stopifnot(all(required_cols %in% names(data)))
   # Extract winsorized estimates, standard errors
-  sel_X <- input_data$pcc_w # PCC - Winsorized
-  sel_sigma <- input_data$se_pcc_w # SE - Winsorized
+  sel_X <- data$pcc_w # PCC - Winsorized
+  sel_sigma <- data$se_pcc_w # SE - Winsorized
   
   # Estimation
   estimates <- metastudies_estimation(sel_X, sel_sigma, cutoffs, symmetric, model = modelmu)
@@ -856,20 +856,126 @@ getSelectionResults <- function(input_data, cutoffs = c(1.960),
   return(sel_coefs)
 }
   
+###### PUBLICATION BIAS - Endogenous kink (Bom & Rachinger, 2020) ######
+
+getEndoKinkResults <- function(data, ...){
+  # Validate that the necessary columns are present
+  required_cols <- c("pcc_w", "se_pcc_w")
+  stopifnot(all(required_cols %in% names(data))) 
+  # Extract winsorized estimates, standard errors
+  data <- data[,c("pcc_w", "se_pcc_w")]
+  colnames(data) <- c("bs", "sebs")
+  # Create new variables
+  data$ones <- 1
+  M <- nrow(data)
+  sebs_min <- min(data$sebs)
+  sebs_max <- max(data$sebs)
+  data$sebs2 <- data$sebs^2
+  data$wis <- data$ones / data$sebs2
+  data$bs_sebs <- data$bs / data$sebs
+  data$ones_sebs <- data$ones / data$sebs
+  wis_sum <- sum(data$bs * data$wis)
+  
+  # FAT-PET
+  fat_pet <- lm(bs_sebs ~ ones_sebs + ones, data = data)
+  pet <- coef(fat_pet)[2]
+  t1_linreg <- coef(fat_pet)[2] / summary(fat_pet)$coefficients[2, 2]
+  b_lin <- coef(fat_pet)[2]
+  Q1_lin <- sum(resid(fat_pet)^2)
+  abs_t1_linreg <- abs(t1_linreg) 
+  
+  # PEESE
+  peese_model <- lm(bs_sebs ~ ones_sebs + sebs, data = data)
+  peese <- coef(peese_model)["ones_sebs"]
+  b_sq <- coef(peese_model)["ones_sebs"]
+  Q1_sq <- sum(resid(peese_model)^2)
+  
+  # FAT-PET-PEESE
+  if (abs_t1_linreg > qt(0.975, M-2)) {
+    combreg <- b_sq
+    Q1 <- Q1_sq
+  } else {
+    combreg <- b_lin
+    Q1 <- Q1_lin
+  }
+  
+  # Estimation of random effects variance component
+  df_m <- df.residual(peese_model)
+  sigh2hat <- max(0, M * ((Q1 / (M - df_m - 1)) - 1) / wis_sum)
+  sighhat <- sqrt(sigh2hat)
+  
+  # Cutoff value for EK
+  if (combreg > 1.96 * sighhat) {
+    a1 <- (combreg - 1.96 * sighhat) * (combreg + 1.96 * sighhat) / (2 * 1.96 * combreg)
+  } else {
+    a1 <- 0
+  }
+  
+  # Rename variables
+  names(data)[names(data) == "bs"] <- "bs_original"
+  names(data)[names(data) == "bs_sebs"] <- "bs"
+  names(data)[names(data) == "ones_sebs"] <- "constant"
+  names(data)[names(data) == "ones"] <- "pub_bias"
+  
+  # Regressions and coefficient extraction in various scenarios
+  if (a1 > sebs_min & a1 < sebs_max) {
+    data$sebs_a1 <- ifelse(data$sebs > a1, data$sebs - a1, 0)
+    data$pubbias <- data$sebs_a1 / data$sebs
+    ek_regression <- lm(bs ~ constant + pubbias, data = data)
+    b0_ek <- coef(ek_regression)[1]
+    b1_ek <- coef(ek_regression)[2]
+    sd0_ek <- summary(ek_regression)$coefficients[1, 2]
+    sd1_ek <- summary(ek_regression)$coefficients[2, 2]
+  } else if (a1 < sebs_min) {
+    ek_regression <- lm(bs ~ constant + pub_bias, data = data)
+    b0_ek <- coef(ek_regression)[1]
+    b1_ek <- coef(ek_regression)[2]
+    sd0_ek <- summary(ek_regression)$coefficients[1, 2]
+    sd1_ek <- summary(ek_regression)$coefficients[2, 2]
+  } else if (a1 > sebs_max) {
+    ek_regression <- lm(bs ~ constant, data = data)
+    b0_ek <- coef(ek_regression)[1]
+    sd0_ek <- summary(ek_regression)$coefficients[1, 2]
+  }
+  
+  # Extract the coefficients and return as a vector
+  estimates_vec <- c(
+    b0_ek, # Mean effect
+    sd0_ek, # Mean effect SE
+    b1_ek, # Pub bias estimate
+    sd1_ek # Pub bias SE
+  )
+  estimates_mat <- matrix(estimates_vec, nrow=2, ncol=2, byrow=TRUE)
+  endo_kink_coefs <- extractNonlinearCoefs(estimates_mat, ...)
+  return(endo_kink_coefs)
+}
+  
 ###### NON-LINEAR MODELS RESULTS ######
 
-getNonlinearResults <- function(data) {
+#' Get Non-Linear Results
+#'
+#' This function takes in a data frame and returns the results of several non-linear regression methods
+#' clustered by study. It first validates that the necessary columns are present in the input data frame.
+#' Then, it calls the functions getWaapResults(), getTop10Results(), getStemResults(), getHierResults(),
+#' getSelectionResults(), and getEndoKinkResults() to get the coefficients for each method. Finally,
+#' it combines the results into a data frame, prints the results to the console, and returns the data
+#' frame silently.
+#'
+#' @param data The main data frame, onto which all the non-linear methods are then called.
+#' @return A data frame containing the results of the non-linear tests, clustered by study.
+getNonlinearResults <- function(input_data) {
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
-  if(!all(required_cols %in% names(data))) {
+  if(!all(required_cols %in% names(input_data))) {
     stop("Input data frame is missing necessary columns")
   }
   # Get coefficients
-  waap_res <- getWaapResults(data, pub_bias_present = F, verbose_coefs = T)
-  top10_res <- getTop10Results(data, pub_bias_present = F, verbose_coefs = T)
-  stem_res <- getStemResults(data, pub_bias_present = F, verbose_coefs = T)
-  hier_res <- getHierResults(data, pub_bias_present = T, verbose_coefs = T)
-  sel_res <- getSelectionResults(data, pub_bias_present = T, verbose_coefs = T)
+  waap_res <- getWaapResults(input_data, pub_bias_present = F, verbose_coefs = T)
+  top10_res <- getTop10Results(input_data, pub_bias_present = F, verbose_coefs = T)
+  stem_res <- getStemResults(input_data, pub_bias_present = F, verbose_coefs = T)
+  hier_res <- getHierResults(input_data, pub_bias_present = T, verbose_coefs = T)
+  sel_res <- getSelectionResults(input_data, pub_bias_present = T, verbose_coefs = T)
+  endo_kink_res <- getEndoKinkResults(input_data, pub_bias_present = T, verbose_coefs = T)
   
   # Combine the results into a data frame
   results <- data.frame(
@@ -877,10 +983,11 @@ getNonlinearResults <- function(data) {
     top10_df = top10_res,
     stem_df = stem_res,
     hier_df = hier_res,
-    sel_df = sel_res)
+    sel_df = sel_res,
+    endo_kink_df = endo_kink_res)
   
   rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
-  colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch", "Selection")
+  colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch", "Selection", "Endogenous Kink")
   # Print the results into the console
   print("Results of the non-linear tests, clustered by study:")
   print(results)
@@ -888,7 +995,6 @@ getNonlinearResults <- function(data) {
   # Return silently
   invisible(results) 
 }
-
 
 
 ######################### GRAPHICS #########################
@@ -900,6 +1006,4 @@ main_theme <- function(x_axis_tick_text = "black"){
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
         plot.background = element_rect(fill = "#DCEEF3"))
 }
-
-
 

@@ -243,10 +243,11 @@
             pub_bias_present = T, verbose_coefs = T)
       
       ###### PUBLICATION BIAS - Endogenous kink (Bom & Rachinger, 2020) ######
-      # Stata code appended below
+      endo_kink_results <- getEndoKinkResults(data, pub_bias_present = T, verbose_coefs = T)
     } else {
       # Get all results at once without assigning the output to any variables - unparametrizable
       getNonlinearResults(data)
     }
   }
+  
   
