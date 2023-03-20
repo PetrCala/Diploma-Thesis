@@ -858,6 +858,9 @@ getSelectionResults <- function(data, cutoffs = c(1.960),
   
 ###### PUBLICATION BIAS - Endogenous kink (Bom & Rachinger, 2020) ######
 
+#' DOES NOT WORK CORRECTLY
+#' Estimate the Endogenous Kink model and extract the effect/pub_bias coefficients
+#'  - Source: https://osf.io/f6nzb/
 getEndoKinkResults <- function(data, ...){
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w")
@@ -874,7 +877,8 @@ getEndoKinkResults <- function(data, ...){
   data$wis <- data$ones / data$sebs2
   data$bs_sebs <- data$bs / data$sebs
   data$ones_sebs <- data$ones / data$sebs
-  wis_sum <- sum(data$bs * data$wis)
+  data$bswis <- data$bs * data$wis
+  wis_sum <- sum(data$wis)
   
   # FAT-PET
   fat_pet <- lm(bs_sebs ~ ones_sebs + ones, data = data)
@@ -952,7 +956,7 @@ getEndoKinkResults <- function(data, ...){
   
 ###### NON-LINEAR MODELS RESULTS ######
 
-#' Get Non-Linear Results
+#' Get Non-Linear Tests
 #'
 #' This function takes in a data frame and returns the results of several non-linear regression methods
 #' clustered by study. It first validates that the necessary columns are present in the input data frame.
@@ -963,7 +967,7 @@ getEndoKinkResults <- function(data, ...){
 #'
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
-getNonlinearResults <- function(input_data) {
+getNonlinearTests <- function(input_data) {
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
   if(!all(required_cols %in% names(input_data))) {
@@ -996,6 +1000,43 @@ getNonlinearResults <- function(input_data) {
   invisible(results) 
 }
 
+######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
+
+
+getIVResults <- function(input_data){
+  # code here
+  return(c(1,2,3,4))
+}
+
+getPUniResults <- function(input_data){
+  # code here
+  return(c(1,2,3,4))
+}
+
+getExoTests <- function(data) {
+  # Validate that the necessary columns are present
+  required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
+  if(!all(required_cols %in% names(data))) {
+    stop("Input data frame is missing necessary columns")
+  }
+  # Get coefficients
+  iv_res <- getIVResults(data)
+  p_uni_res <-getPUniResults(data)
+  
+  # Combine the results into a data frame
+  results <- data.frame(
+    iv_df = iv_res,
+    p_uni_df = p_uni_res)
+  
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
+  colnames(results) <- c("IV", "p-Uniform")
+  # Print the results into the console
+  print("Results of the tests relaxing exogeneity, clustered by study:")
+  print(results)
+  cat("\n\n")
+  # Return silently
+  invisible(results) 
+}
 
 ######################### GRAPHICS #########################
 
