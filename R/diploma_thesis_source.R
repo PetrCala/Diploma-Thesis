@@ -170,6 +170,32 @@ winsorizeData <- function(input_data, win_level){
   invisible(input_data)
 }
 
+limitDataToOneStudy <- function(input_data, input_study_id){
+  if (is.na(input_study_id)){
+    return(input_data) # Do nothing
+  } else if (is.logical(input_study_id)){
+    stop("Invalid index for subsetting data. Use an integer.") # Boolean
+  }
+  # Validate the input
+  study_id <- tryCatch(
+    {
+      as.numeric(input_study_id) # Dict value is a character by default
+    },
+    warning = function(e){
+      message("Invalid index for subsetting data. Use an integer.")
+      return(input_data)
+    }
+  )
+  # Subset to one study
+  stopifnot(study_id %in% input_data$study_id)
+  study_data <- input_data[input_data$study_id == study_id,]
+  stopifnot(nrow(study_data) > 0) # Check valid output
+  # Extract info and return data
+  study_name <- as.character(study_data[1,]$study_name)
+  print(paste0('Subsetting the dataset to ', study_name))
+  invisible(study_data)
+}
+
 ######################### DATA EXPLORATION #########################
 
 #' Compute summary statistics for selected variables in a data frame
@@ -470,8 +496,8 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
   precision_perc <- precision/max_precision
   
   # Create filters
-  pcc_filter <- pcc_perc > pcc_cutoff
-  precision_filter <- precision_perc > precision_cutoff
+  pcc_filter <- pcc_perc >= pcc_cutoff
+  precision_filter <- precision_perc >= precision_cutoff
   outlier_filter <- pcc_filter & precision_filter
     
   # Filter suspicious observations
@@ -787,3 +813,5 @@ main_theme <- function(x_axis_tick_text = "black"){
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
         plot.background = element_rect(fill = "#DCEEF3"))
 }
+
+

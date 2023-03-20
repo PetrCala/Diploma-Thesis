@@ -75,7 +75,9 @@ adjustable_parameters <- c(
   "funnel_plot_verbose" = T, # If T, print cut outlier information
   # T-statistic histogram parameters
   "t_hist_lower_cutoff" = -150, # Lower cutoff point for t-statistics
-  "t_hist_upper_cutoff" = 150 # Upper cutoff point for t-statistics
+  "t_hist_upper_cutoff" = 150, # Upper cutoff point for t-statistics
+  # Subset data to one study only
+  "subset_this_study_only" = NA # Use index, such as 1,2,3,... Default NA means no subsetting.
 )
 
 ######################################################################
@@ -160,6 +162,11 @@ var_list <- readDataCustom(var_list_source)
 validateInputVarList(var_list)
 data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
 data <- preprocessData(data_source, var_list, win_level = data_win_level)
+
+# Subset data to only one study for testing (does nothing by default)
+one_study_subset <- adjustable_parameters["subset_this_study_only"]
+data <- limitDataToOneStudy(data, one_study_subset) # Do nothing if subset == NA
+
 
 ######################### DATA EXPLORATION #########################
 
