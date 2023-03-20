@@ -12,6 +12,7 @@ Excel temp files
 **/~$*.xlsm
 R/*.csv
 
+
 # Large literature files
 **/Studies/
 **/Studies list/

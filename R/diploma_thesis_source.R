@@ -626,9 +626,7 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
 getLinearTests <- function(data) {
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
-  if(!all(required_cols %in% names(data))) {
-    stop("Input data frame is missing necessary columns")
-  }
+  stopifnot(all(required_cols %in% names(data)))
   # OLS
   ols <- lm(formula = pcc_w ~ se_pcc_w, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
@@ -718,6 +716,7 @@ getWaapResults <- function(data, ...){
 
 ###### PUBLICATION BIAS - TOP10 method (Stanley et al., 2010) ######
 
+
 getTop10Results <- function(data, ...){
   T10_bound <- quantile(data$se_precision_w, probs = 0.9) #Setting the 90th quantile bound
   T10_reg <- lm(formula = pcc_w ~ -se_precision_w, data = data[data$se_precision_w>T10_bound,]) #Regression using the filtered data
@@ -729,8 +728,23 @@ getTop10Results <- function(data, ...){
 
 ###### PUBLICATION BIAS - Stem-based method in R (Furukawa, 2019) #####
 
+#' Compute STEM-based method coefficients from input data
+#'
+#' This function computes coefficients using the STEM-based method from the \code{stem}
+#' package (available at \url{https://github.com/Chishio318/stem-based_method}). The input data
+#' should include the necessary columns for the STEM method, and the output will be a numeric
+#' vector containing the estimated coefficients.
+#'
+#' @param data A data frame containing the necessary columns for the STEM-based method
+#' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
+#' for formatting the output.
+#'
+#' @return A numeric vector containing the estimated coefficients for the STEM-based method
+#' in the usual format.
+#' 
+#' @import stem_method_custom.R
 getStemResults <- function(data, ...){
-  source("stem_method_ext.R") #github.com/Chishio318/stem-based_method
+  source("stem_method_custom.R") #github.com/Chishio318/stem-based_method
   
   est_stem <- stem(data$pcc_w, data$se_pcc_w, param)$estimates # Actual esimation
   
@@ -742,6 +756,21 @@ getStemResults <- function(data, ...){
 
 ###### PUBLICATION BIAS - FAT-PET hierarchical in R ######
 
+#' Compute hierarchical linear model coefficients from input data
+#'
+#' This function computes hierarchical linear model coefficients from input data using
+#' the \code{rhierLinearModel} function from the \code{bayesm} package. It first organizes
+#' the data by study and creates a list of regression data for each study. It then runs the
+#' hierarchical linear model using default settings and extracts the estimated coefficients.
+#' 
+#' @param data A data frame containing the necessary columns for the hierarchical linear model
+#' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
+#' for formatting the output.
+#'
+#' @return A numeric vector containing the estimated coefficients for the hierarchical linear
+#' model in the usual format.
+#' 
+#' @import bayesm
 getHierResults <- function(data, ...){
   study_levels_h <- levels(as.factor(data$study_name))
   nreg_h <- length(study_levels_h)
@@ -771,10 +800,65 @@ getHierResults <- function(data, ...){
   invisible(hier_coefs)
 }
 
+###### PUBLICATION BIAS - Selection model (Andrews & Kasy, 2019) ######
+
+#' Estimate the Selection Model and extract the coefficients for PCC and its SE
+#'  - Source: https://maxkasy.github.io/home/metastudy/
+#' 
+#' This function computes selection model coefficients from input data using
+#' the \code{metastudies_estimation} function from the \code{selection_model_custom.R}
+#' package. It extracts the estimated effect and publication bias, as well as their
+#' standard errors, and returns them as a vector..
+#'
+#' @param input_data A data frame containing the necessary columns for the selection model
+#' @param cutoffs A numeric vector of cutoff values for computing the selection model
+#' coefficients. The default is \code{c(1.960)}, corresponding to a 95% confidence interval.
+#' @param symmetric A logical value indicating whether to use the symmetric or asymmetric
+#' selection model. The default is \code{FALSE}, indicating the asymmetric model.
+#' @param modelmu A character string indicating the type of model to use for the mean
+#' effect estimate. The default is \code{"normal"}, corresponding to a normal distribution.
+#' Another option is \code{"t"}, corresponding to a t-distribution.
+#' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
+#' for formatting the output.
+#'
+#' @return A numeric vector containing the estimated effect and publication bias, as well
+#' as their standard errors, in the usual format.
+#' 
+#' @import selection_model_custom.R
+getSelectionResults <- function(input_data, cutoffs = c(1.960),
+                                symmetric = F, modelmu="normal", ...){
+  # Read the source script
+  source("selection_model_custom.R") 
+  # Validate input
+  stopifnot(all(cutoffs %in% c(1.645, 1.960, 2.576))) # Cutoffs
+  stopifnot(modelmu %in% c("normal", "t")) # Model
+  # Validate that the necessary columns are present
+  required_cols <- c("pcc_w", "se_pcc_w")
+  stopifnot(all(required_cols %in% names(data)))
+  # Extract winsorized estimates, standard errors
+  sel_X <- input_data$pcc_w # PCC - Winsorized
+  sel_sigma <- input_data$se_pcc_w # SE - Winsorized
+  
+  # Estimation
+  estimates <- metastudies_estimation(sel_X, sel_sigma, cutoffs, symmetric, model = modelmu)
+  # Extract coefficients
+  estimates_psi <- estimates$Psihat
+  estimates_se <- estimates$SE
+  estimates_vec <- c(estimates_psi[1], # Effect
+                     estimates_se[1],  # Effect SE
+                     estimates_psi[2], # Pub Bias
+                     estimates_se[2]   # Pub Bias SE
+                     )
+  estimates_mat <- matrix(estimates_vec, nrow=2, ncol=2, byrow=TRUE)
+  
+  # Extract the coefficients and return as a vector
+  sel_coefs <- extractNonlinearCoefs(estimates_mat, ...)
+  return(sel_coefs)
+}
+  
 ###### NON-LINEAR MODELS RESULTS ######
 
 getNonlinearResults <- function(data) {
-  
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
   if(!all(required_cols %in% names(data))) {
@@ -785,16 +869,18 @@ getNonlinearResults <- function(data) {
   top10_res <- getTop10Results(data, pub_bias_present = F, verbose_coefs = T)
   stem_res <- getStemResults(data, pub_bias_present = F, verbose_coefs = T)
   hier_res <- getHierResults(data, pub_bias_present = T, verbose_coefs = T)
+  sel_res <- getSelectionResults(data, pub_bias_present = T, verbose_coefs = T)
   
   # Combine the results into a data frame
   results <- data.frame(
     waap_df = waap_res,
     top10_df = top10_res,
     stem_df = stem_res,
-    hier_df = hier_res)
+    hier_df = hier_res,
+    sel_df = sel_res)
   
   rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
-  colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch")
+  colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch", "Selection")
   # Print the results into the console
   print("Results of the non-linear tests, clustered by study:")
   print(results)
@@ -802,6 +888,7 @@ getNonlinearResults <- function(data) {
   # Return silently
   invisible(results) 
 }
+
 
 
 ######################### GRAPHICS #########################
@@ -813,5 +900,6 @@ main_theme <- function(x_axis_tick_text = "black"){
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
         plot.background = element_rect(fill = "#DCEEF3"))
 }
+
 
 
