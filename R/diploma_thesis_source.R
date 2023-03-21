@@ -593,13 +593,12 @@ getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
 #' @return [vector] - Vector of len 4, with the coefficients
 extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
   # Check validity of the coeftest object
-  validity_checks <- c(
+  stopifnot(
     nrow(coeftest_object) == 2,
     ncol(coeftest_object) == 4,
     colnames(coeftest_object)[1] == "Estimate",
     colnames(coeftest_object)[2] == "Std. Error"
   )
-  stopifnot(all(validity_checks))
   
   # Extract coefficients
   pub_bias_coef <- round(coeftest_object[2,"Estimate"], 5)
@@ -882,7 +881,7 @@ getEndoKinkResults <- function(data, ...){
   required_cols <- c("pcc_w", "se_pcc_w")
   stopifnot(all(required_cols %in% names(data))) 
   # Extract winsorized estimates, standard errors
-  data <- data[,c("pcc_w", "se_pcc_w")]
+  data <- data[,required_cols]
   # Run the model estimation and get the four coefficients
   estimates_vec <- runEndoKink(data, verbose = F)
   # Handle output and return verbose coefs
@@ -939,36 +938,140 @@ getNonlinearTests <- function(input_data) {
 
 ######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
 
+#' Extract the four coefficients from an exo test in the order
+#' - Pub bias, Pub bias SE, Effect, Effect SE
+#' Input a 2 by 2 matrix, where in the first row, you have the effect coefficients,
+#'  and in the second row, the pub bias coefficients.
+#' 
+#' @param exo_object [matrix] Object from the exo tests, should be matrix (M(2,2))
+#' @param effect_present [bool] If T, the method returns effect coefs. Defaults to T
+#' @param pub_bias_present [bool] If T, the method returns publication bias coefs too.
+#'  Deafults to T.
+#' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
+#'  standard errors as strings wrapped in parentheses. Defaults to T.
+#' @return [vector] The four desired coefficients, which are, in order:
+#'    - Pub bias estimate
+#'    - Pub bias standard error
+#'    - Mean effect estimate
+#'    - Mean effect standard error
+extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T, verbose_coefs=T){
+  # Validate input
+  stopifnot(
+    is.logical(effect_present),
+    is.logical(pub_bias_present),
+    is.logical(verbose_coefs),
+    effect_present || pub_bias_present # At least one
+  )
+  # Extract coefficients
+  effect_coef <- ifelse(effect_present,
+                        round(as.numeric(exo_object[1,1]), 5),
+                        "")
+  effect_se <- ifelse(effect_present,
+                        round(as.numeric(exo_object[1,2]), 5),
+                        "")
+  pub_coef <- ifelse(pub_bias_present,
+                        round(as.numeric(exo_object[2,1]), 5),
+                        "")
+  pub_se <- ifelse(pub_bias_present,
+                        round(as.numeric(exo_object[2,2]), 5),
+                        "")
+  # Wrap the standard errors in parenthesis for cleaner presentation
+  if (verbose_coefs){
+    if (effect_present){
+      effect_se <- paste0("(", effect_se, ")")
+    }
+    if (pub_bias_present){
+      pub_se <- paste0("(", pub_se, ")")
+    }
+  }
+  # Group and return quietly
+  exo_coefs <- c(pub_coef, pub_se, effect_coef, effect_se)
+  invisible(exo_coefs)
+}
 
-getIVResults <- function(input_data){
+getIVResults <- function(data, ...){
   # code here
   return(c(1,2,3,4))
 }
 
-getPUniResults <- function(input_data){
+getPUniResults <- function(data, ...){
   # code here
   return(c(1,2,3,4))
 }
 
-getExoTests <- function(data) {
+###### MAIVE Estimator (Irsova et al., 2023) ######
+
+#' Run the MAIVE estimation using a modified source script
+#'  - Source: http://meta-analysis.cz/maive/
+#'
+#' @param method [int] Method. Options - PET:1, PEESE:2, PET-PEESE:3, EK:4 (default 3)
+#' @param weight [int] Weighting. Options - no weight: 0 ; weights: 1, adjusted weights: 2 (default 0)
+#' @param instrument [int] Instrumenting. Options - 0;1(default 1)
+#' @param studylevel[int] Correlation at study level. Options -  none: 0 (default), fixed effects: 1, cluster: 2
+#'  (default 0)
+#' @param verbose [bool] Print out the results into the console in a nice format.
+#' @inheritDotParams Parameters for the extractExoCoefs function.
+#' 
+#' @import maive_custom.R
+getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studylevel = 0, verbose = T, ...){
+  # Read the source file
+  source("maive_custom.R")
+  # Validate that the necessary columns are present
+  required_cols <- c("pcc_w", "se_pcc_w", "study_size", "study_id")
+  stopifnot(
+    all(required_cols %in% names(data)),
+    method %in% c(1,2,3,4),
+    weight %in% c(0,1,2),
+    instrument %in% c(0,1),
+    studylevel %in% c(0,1,2),
+    is.logical(verbose)
+  )
+  # Subset data and rename columns
+  data <- data[,required_cols]
+  colnames(data) <- c('bs', 'sebs', 'Ns', 'studyid')
+  # Run the estimation
+  MAIVE <- maive(dat=data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
+  # Extract (and print) the output
+  if (verbose){
+    object<-c("MAIVE coefficient","MAIVE standard error","F-test of first step in IV",
+              "Hausman-type test (to be used with caution)","Critical Value of Chi2(1)")
+    maive_coefs_all<-c(MAIVE$beta,MAIVE$SE,MAIVE$`F-test`,MAIVE$Hausman,MAIVE$Chi2)
+    MAIVEresults<-data.frame(object,maive_coefs_all)
+    print(MAIVEresults)
+  }
+  # Extract for getExoTests
+  maive_coefs_vec <- c(
+    "", # Effect
+    "", # Effect SE
+    as.numeric(MAIVE$beta), # Pub Bias
+    as.numeric(MAIVE$SE) # Pub Bias SE
+    ) 
+  maive_coefs_mat <- matrix(maive_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
+  # Extract the coefficients and return as a vector
+  maive_coefs_out <- extractExoCoefs(maive_coefs_mat, ...) # Use the same extraction method as in non-lin
+  return(maive_coefs_out)
+}
+
+getExoTests <- function(input_data) {
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
-  if(!all(required_cols %in% names(data))) {
+  if(!all(required_cols %in% names(input_data))) {
     stop("Input data frame is missing necessary columns")
   }
   # Get coefficients
-  iv_res <- getIVResults(data)
-  p_uni_res <-getPUniResults(data)
-  
+  iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  p_uni_res <- getPUniResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  maive_res <- getMaiveResults(input_data, verbose=F, effect_present = F, pub_bias_present = T, verbose_coefs = T)
   # Combine the results into a data frame
   results <- data.frame(
     iv_df = iv_res,
-    p_uni_df = p_uni_res)
-  
+    p_uni_df = p_uni_res,
+    maive_df = maive_res)
+  # Label names
   rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
-  colnames(results) <- c("IV", "p-Uniform")
+  colnames(results) <- c("IV", "p-Uniform", "MAIVE")
   # Print the results into the console
-  print("Results of the tests relaxing exogeneity, clustered by study:")
+  print("Results of the tests relaxing exogeneity (and MAIVE), clustered by study:")
   print(results)
   cat("\n\n")
   # Return silently

@@ -40,14 +40,14 @@ rm(list = ls())
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "pcc_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
+  "variable_summary_stats" = F,
+  "pcc_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
   "linear_tests" = T,
   "nonlinear_tests" = T,
-  "exo_tests" = F,
+  "exo_tests" = T,
   "caliper" = F,
   "bma" = F,
   "fma" = F,
@@ -85,6 +85,7 @@ adjustable_parameters <- c(
 ######################################################################
 
 ##################### ENVIRONMENT PREPARATION ########################
+# Static 
 development_on <- T # Turn off when distributing the code
 options(scipen=999) # No scientific notation
 
@@ -94,13 +95,15 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable info source
 stem_source <- "stem_method_custom.R" # STEM method (Furukawa, 2019) - fixed package handling
 selection_model_source <- "selection_model_custom.R" # Selection model (Andrew & Kasy, 2019)
 endo_kink_source <- "endo_kink_custom.R" # Endogenous Kink model (Bom & Rachinger, 2019)
+maive_source <- "maive_custom.R" # MAIVE Estimator (Irsova et al., 2023)
 
 source_files <- c(
   master_data_set_source,
   var_list_source,
   stem_source,
   selection_model_source,
-  endo_kink_source
+  endo_kink_source,
+  maive_source
 )
 
 # Required packages
@@ -123,18 +126,19 @@ packages <- c(
   "multcomp", # Simultaneous inference for general linear hypotheses
   "multiwayvcov", # Computing clustered covariance matrix estimators
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
+  "pracma", # MAIVE Estimator
   "readr", # Reading data into R from various file formats
   "readxl", # Reading Excel files
-  "sandwich", # Computing robust covariance matrix estimators
+  "sandwich", # Computing robust covariance matrix estimators, MAIVE estimator
   "shiny", # Andrew & Kasy (2019) Selection model
   "stats", # Statistical analysis and modeling
   "testthat", # Unit testing for R
   "tidyverse", # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
+  "varhandle", # MAIVE estimator
   "xtable" # Creating tables in LaTeX or HTML
 )
 
 ##### PREPARATION #####
-
 # Load the source script
 if (!file.exists("diploma_thesis_source.R")){
   print('Please make sure to put the source file \"diploma_thesis_source\" in
@@ -255,5 +259,21 @@ if (run_this["nonlinear_tests"]){
 
 ######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
 if (run_this["exo_tests"]){
-  getExoTests(data)
+  global_exo_tests <- T # Set to false if tests should be ran separately
+  
+  if (!global_exo_tests) {
+    
+    ###### PUBLICATION BIAS - FAT-PET with IV ######
+    iv_results <- getIVResults(data)
+    
+    ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
+    p_uni_results <- getPUniResults(data)
+    
+    ###### MAIVE Estimator (Irsova et al., 2023) ######
+    maive_results <- getMaiveResults(data,
+            method=3, weight=0, instrument=1, studylevel=0, verbose=T,
+            effect_present=T, pub_bias_present=T, verbose_coefs=T)
+  } else{
+    getExoTests(data)
+  }
 }
