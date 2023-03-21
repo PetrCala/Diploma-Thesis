@@ -988,10 +988,143 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
   exo_coefs <- c(pub_coef, pub_se, effect_coef, effect_se)
   invisible(exo_coefs)
 }
+#' Identify the best instrument(s) from a set of instruments based on IV regression diagnostics.
+#'
+#' This function takes in a data frame containing the outcome, the endogenous variable, and the instrument(s), 
+#' a list of potential instruments, and a vector of verbose names for each instrument. 
+#' The function then runs IV regressions using each of the potential instruments, and returns the instrument(s)
+#' with the best performance based on four different diagnostics: R-squared, weak instruments test, Wu-Hausman test,
+#' and Sargan test. If multiple instruments are tied for the best performance, all of them will be returned.
+#' The function also prints the identified best instrument(s).
+#'
+#' @param input_data [data.frame] A data frame containing the outcome (pcc_w), the endogenous variable (se_pcc_w),
+#' and the instrument(s) (specified as separate columns). It must have the columns "pcc_w", "se_pcc_w", "study_id", and "n_obs".
+#' @param instruments [list] A list of potential instruments. Each element of the list should be a vector of numeric values.
+#'  Ideally specify as "1/data$n_obs", etc.
+#' @param instruments_verbose [vector] A vector of verbose names for each instrument. It must have the same length
+#'  as the number of potential instruments.
+#' @return a character vector containing the best instrument(s) identified by the function.
+#' @examples
+#' data("instrument_data")
+#' instruments <- list(instrument_data$instrument1, instrument_data$instrument2)
+#' instruments_verbose <- c("Instrument 1", "Instrument 2")
+#' findBestInstrument(instrument_data, instruments, instruments_verbose)
+findBestInstrument <- function(input_data, instruments, instruments_verbose){
+  # Validity checks
+  stopifnot(
+    is.data.frame(input_data),
+    is.list(instruments),
+    is.vector(instruments_verbose),
+    all(c("pcc_w", "se_pcc_w", "study_id", "n_obs") %in% colnames(input_data))
+  )
+  # Initialize an empty data frame - each row will be one instrument
+  results <- data.frame(r_squared = numeric(length(instruments)),
+                        weak_instruments = numeric(length(instruments)),
+                        wu_hausman = numeric(length(instruments)),
+                        sargan = numeric(length(instruments)))
+  # Run the IV regressions and get diagnostics from each of them
+  for (i in seq_along(instruments)) {
+    instrument <- instruments[i][[1]] # Unlist
+    stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
+    model <- ivreg(formula = pcc_w ~ se_pcc_w | instrument, data = input_data)
+    model_summary <- summary(model, vcov = vcovHC(model, cluster = c(input_data$study_id)), diagnostics=T)
+    # Extract relevant statistics
+    results[i,"r_squared"] <- model_summary$r.squared
+    results[i,"weak_instruments"] <- model_summary$diagnostics["Weak instruments", "p-value"]
+    results[i,"wu_hausman"] <- model_summary$diagnostics["Wu-Hausman", "p-value"]
+    results[i,"sargan"] <- model_summary$diagnostics["Sargan", "p-value"]
+  }
+  rownames(results) <- instruments_verbose
+  # Find the row index with the best performing instrument
+  # R-sq
+  best_r_squared_idx <- ifelse(any(is.na(results$r_squared)), 
+                               NA,
+                               which.max(results$r_squared)) 
+  # Weak instr
+  best_weak_instruments_idx <- ifelse(any(is.na(results$weak_instruments)),
+                              NA,
+                              which.min(results$weak_instruments)) 
+  # Wu Hausman
+  best_wu_hausman_idx <- ifelse(any(is.na(results$wu_hausman)),
+                                NA,
+                                which.min(results$wu_hausman)) 
+  # Sargan
+  best_sargan_idx <- ifelse(any(is.na(results$sargan)),
+                            NA,
+                            which.min(results$sargan))
+  # Get indexes into a table
+  best_instruments_idx <- c(best_r_squared_idx, best_weak_instruments_idx, best_wu_hausman_idx, best_sargan_idx)
+  freqs <- table(best_instruments_idx[!is.na(best_instruments_idx)]) # Remove NAs
+  stopifnot(length(freqs) > 0) # All NAs
+  # Get the most frequent index
+  max_freq <- max(freqs)
+  max_values <- sapply(names(freqs[freqs == max_freq]), as.numeric) # Numeric index of best performing instrument (or instruments)
+  # Get the best instrument(s)
+  best_instruments <- rownames(results[max_values,])
+  # Return results - verbose
+  print(paste0("Identified ", best_instruments, " as the best instrument."))
+  return(best_instruments)
+}
 
+#' getIVResults function
+#'
+#' This function takes in data and finds the best instrument for the IV regression of pcc_w against se_pcc_w.
+#' It then runs the IV regression and extracts the coefficients. The strength of the function is found
+#' in being able to identify the best instrument automatically. These are unmodifiable.
+#' 
+#' The four instruments from which the function chooses are:
+#' - 1/sqrt(data$n_obs)
+#' - 1/data$n_obs
+#' - 1/data$n_obs^2
+#' - log(data$n_obs)
+#'
+#' @param data a data frame containing the data for the IV regression
+#' @inheritDotParams ... additional arguments to be passed to extractExoCoefs
+#'
+#' @return a numeric vector containing the extracted coefficients from the IV regression
+#'
+#' @details The function defines a list of instruments to use, and finds the best instrument
+#' by running a function called findBestInstrument. If multiple best instruments are identified,
+#' the function arbitrarily chooses the first one. The function then runs the IV regression and
+#' extracts the coefficients using extractExoCoefs.
+#'
+#' @examples
+#' data <- data.frame(pcc_w = rnorm(10), se_pcc_w = rnorm(10), n_obs = rep(10, 10), study_id = rep(1:10, each = 1))
+#' getIVResults(data)
 getIVResults <- function(data, ...){
-  # code here
-  return(c(1,2,3,4))
+  # Define the instruments to use
+  instruments <- list(1/sqrt(data$n_obs), 1/data$n_obs, 1/data$n_obs^2, log(data$n_obs))
+  instruments_verbose <- c('1/sqrt(data$n_obs)', '1/data$n_obs', '1/data$n_obs^2', 'log(data$n_obs)')
+  # Find out the best instrument
+  best_instrument <- findBestInstrument(data, instruments, instruments_verbose)
+  # If more best instruments are identified
+  if (length(best_instrument) > 1){ 
+    best_instrument <- best_instrument[0] # Choose the first one arbitrarily
+    print(paste0("More best instruments identified. Running the regression for ", best_instrument))
+  }
+  stopifnot(
+    best_instrument %in% instruments_verbose,
+    length(best_instrument) == 1 # Should be redundant
+    )
+  # Get instrument values instead of name
+  best_instrument <- instruments[match(best_instrument, instruments_verbose)]
+  # Run the regression
+  instrument <- best_instrument[[1]] # Unlist
+  stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
+  model <- ivreg(formula = pcc_w ~ se_pcc_w | instrument, data = data)
+  model_summary <- summary(model, vcov = vcovHC(model, cluster = c(data$study_id)), diagnostics=T)
+  # Get the coefficients
+  all_coefs <- model_summary$coefficients
+  IV_coefs_vec <- c(
+    all_coefs["(Intercept)","Estimate"], # Effect
+    all_coefs["(Intercept)", "Std. Error"], # Effect SE
+    all_coefs["se_pcc_w", "Estimate"], # Pub Bias
+    all_coefs["se_pcc_w", "Std. Error"] # Pub Bias SE
+    ) 
+  iv_coefs_mat <- matrix(IV_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
+  # Extract the coefficients and return as a vector
+  iv_coefs_out <- extractExoCoefs(iv_coefs_mat, ...) 
+  return(iv_coefs_out)
 }
 
 getPUniResults <- function(data, ...){
@@ -1048,7 +1181,7 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
     ) 
   maive_coefs_mat <- matrix(maive_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
   # Extract the coefficients and return as a vector
-  maive_coefs_out <- extractExoCoefs(maive_coefs_mat, ...) # Use the same extraction method as in non-lin
+  maive_coefs_out <- extractExoCoefs(maive_coefs_mat, ...)
   return(maive_coefs_out)
 }
 

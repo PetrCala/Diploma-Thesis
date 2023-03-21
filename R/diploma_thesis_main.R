@@ -45,8 +45,8 @@ run_this <- c(
   "box_plot" = F,
   "funnel_plot" = F,
   "t_stat_histogram" = F,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
   "exo_tests" = T,
   "caliper" = F,
   "bma" = F,
@@ -264,7 +264,7 @@ if (run_this["exo_tests"]){
   if (!global_exo_tests) {
     
     ###### PUBLICATION BIAS - FAT-PET with IV ######
-    iv_results <- getIVResults(data)
+    iv_results <- getIVResults(data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
     
     ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
     p_uni_results <- getPUniResults(data)
