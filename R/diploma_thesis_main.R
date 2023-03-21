@@ -40,14 +40,14 @@ rm(list = ls())
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "pcc_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
-  "exo_tests" = T,
+  "variable_summary_stats" = T,
+  "pcc_summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
+  "nonlinear_tests" = T,
+  "exo_tests" = F,
   "caliper" = F,
   "bma" = F,
   "fma" = F,
@@ -93,12 +93,14 @@ master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
 var_list_source <- "var_list_master_thesis_cala.csv" # Variable info source
 stem_source <- "stem_method_custom.R" # STEM method (Furukawa, 2019) - fixed package handling
 selection_model_source <- "selection_model_custom.R" # Selection model (Andrew & Kasy, 2019)
+endo_kink_source <- "endo_kink_custom.R" # Endogenous Kink model (Bom & Rachinger, 2019)
 
 source_files <- c(
   master_data_set_source,
   var_list_source,
   stem_source,
-  selection_model_source
+  selection_model_source,
+  endo_kink_source
 )
 
 # Required packages
@@ -255,4 +257,3 @@ if (run_this["nonlinear_tests"]){
 if (run_this["exo_tests"]){
   getExoTests(data)
 }
-

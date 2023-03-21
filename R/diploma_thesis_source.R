@@ -858,97 +858,34 @@ getSelectionResults <- function(data, cutoffs = c(1.960),
   
 ###### PUBLICATION BIAS - Endogenous kink (Bom & Rachinger, 2020) ######
 
-#' DOES NOT WORK CORRECTLY
 #' Estimate the Endogenous Kink model and extract the effect/pub_bias coefficients
 #'  - Source: https://osf.io/f6nzb/
+
+#'  @param data [data.frame] The main data frame on which to run the estimation on.
+#'    Must contain the columns - "pcc_w", and "se_pcc_w"
+#'  @inheritDotParams Parameters for the extractNonlinearCoefs function.
+#'  
+#'  @return endo_kink_coefs [vector] The four desired coefficients, which are:
+#'    - Pub bias estimate
+#'    - Pub bias standard error
+#'    - Mean effect estimate
+#'    - Mean effect standard error
+#'
+#' @import endo_kink_custom.R
+#'
+#'  Note - The runEndoKink method returns the coefficients in order mean_effect-pub_bias,
+#'    this way is just for easier printing into the console, so be mindful of that.
 getEndoKinkResults <- function(data, ...){
+  # Read the source file
+  source("endo_kink_custom.R")
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w")
   stopifnot(all(required_cols %in% names(data))) 
   # Extract winsorized estimates, standard errors
   data <- data[,c("pcc_w", "se_pcc_w")]
-  colnames(data) <- c("bs", "sebs")
-  # Create new variables
-  data$ones <- 1
-  M <- nrow(data)
-  sebs_min <- min(data$sebs)
-  sebs_max <- max(data$sebs)
-  data$sebs2 <- data$sebs^2
-  data$wis <- data$ones / data$sebs2
-  data$bs_sebs <- data$bs / data$sebs
-  data$ones_sebs <- data$ones / data$sebs
-  data$bswis <- data$bs * data$wis
-  wis_sum <- sum(data$wis)
-  
-  # FAT-PET
-  fat_pet <- lm(bs_sebs ~ ones_sebs + ones, data = data)
-  pet <- coef(fat_pet)[2]
-  t1_linreg <- coef(fat_pet)[2] / summary(fat_pet)$coefficients[2, 2]
-  b_lin <- coef(fat_pet)[2]
-  Q1_lin <- sum(resid(fat_pet)^2)
-  abs_t1_linreg <- abs(t1_linreg) 
-  
-  # PEESE
-  peese_model <- lm(bs_sebs ~ ones_sebs + sebs, data = data)
-  peese <- coef(peese_model)["ones_sebs"]
-  b_sq <- coef(peese_model)["ones_sebs"]
-  Q1_sq <- sum(resid(peese_model)^2)
-  
-  # FAT-PET-PEESE
-  if (abs_t1_linreg > qt(0.975, M-2)) {
-    combreg <- b_sq
-    Q1 <- Q1_sq
-  } else {
-    combreg <- b_lin
-    Q1 <- Q1_lin
-  }
-  
-  # Estimation of random effects variance component
-  df_m <- df.residual(peese_model)
-  sigh2hat <- max(0, M * ((Q1 / (M - df_m - 1)) - 1) / wis_sum)
-  sighhat <- sqrt(sigh2hat)
-  
-  # Cutoff value for EK
-  if (combreg > 1.96 * sighhat) {
-    a1 <- (combreg - 1.96 * sighhat) * (combreg + 1.96 * sighhat) / (2 * 1.96 * combreg)
-  } else {
-    a1 <- 0
-  }
-  
-  # Rename variables
-  names(data)[names(data) == "bs"] <- "bs_original"
-  names(data)[names(data) == "bs_sebs"] <- "bs"
-  names(data)[names(data) == "ones_sebs"] <- "constant"
-  names(data)[names(data) == "ones"] <- "pub_bias"
-  
-  # Regressions and coefficient extraction in various scenarios
-  if (a1 > sebs_min & a1 < sebs_max) {
-    data$sebs_a1 <- ifelse(data$sebs > a1, data$sebs - a1, 0)
-    data$pubbias <- data$sebs_a1 / data$sebs
-    ek_regression <- lm(bs ~ constant + pubbias, data = data)
-    b0_ek <- coef(ek_regression)[1]
-    b1_ek <- coef(ek_regression)[2]
-    sd0_ek <- summary(ek_regression)$coefficients[1, 2]
-    sd1_ek <- summary(ek_regression)$coefficients[2, 2]
-  } else if (a1 < sebs_min) {
-    ek_regression <- lm(bs ~ constant + pub_bias, data = data)
-    b0_ek <- coef(ek_regression)[1]
-    b1_ek <- coef(ek_regression)[2]
-    sd0_ek <- summary(ek_regression)$coefficients[1, 2]
-    sd1_ek <- summary(ek_regression)$coefficients[2, 2]
-  } else if (a1 > sebs_max) {
-    ek_regression <- lm(bs ~ constant, data = data)
-    b0_ek <- coef(ek_regression)[1]
-    sd0_ek <- summary(ek_regression)$coefficients[1, 2]
-  }
-  
-  # Extract the coefficients and return as a vector
-  estimates_vec <- c(
-    b0_ek, # Mean effect
-    sd0_ek, # Mean effect SE
-    b1_ek, # Pub bias estimate
-    sd1_ek # Pub bias SE
-  )
+  # Run the model estimation and get the four coefficients
+  estimates_vec <- runEndoKink(data, verbose = F)
+  # Handle output and return verbose coefs
   estimates_mat <- matrix(estimates_vec, nrow=2, ncol=2, byrow=TRUE)
   endo_kink_coefs <- extractNonlinearCoefs(estimates_mat, ...)
   return(endo_kink_coefs)
