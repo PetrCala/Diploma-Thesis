@@ -153,11 +153,19 @@ preprocessData <- function(input_data, input_var_list, win_level = 0.01){
 
 winsorizeData <- function(input_data, win_level){
   # Validate input
-  stopifnot(0 < win_level && win_level < 1)
-  
+  stopifnot(
+    win_level > 0,
+    win_level < 1,
+    all(c('pcc', 'se_pcc') %in% colnames(input_data)),
+    !(any(is.na(input_data$pcc))), # No missing PCC values
+    !(any(is.na(input_data$se_pcc))) # No missing SE values
+    )
   # Get the winsorization interval
   win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
-  
+  # Create a t-stat column if it does not exist in the data
+  if (!("t_stat") %in% colnames(input_data)){
+    input_data$t_stat <- input_data$pcc / input_data$se_pcc
+  }
   # Statistic preprocessing
   input_data$pcc_w <- Winsorize(x = input_data$pcc, minval = NULL, maxval = NULL, probs = win_int)
   input_data$se_pcc_w <- Winsorize(x = input_data$se_pcc, minval = NULL, maxval = NULL, probs = win_int)
@@ -165,7 +173,6 @@ winsorizeData <- function(input_data, win_level){
   input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
   input_data$significant_w <- c(rep(0,nrow(input_data)))
   input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
-  
   # Return quietly
   invisible(input_data)
 }
