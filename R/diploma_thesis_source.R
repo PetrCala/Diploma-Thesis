@@ -67,10 +67,15 @@ loadPackages <- function(package_list, load_quietly = F){
     install.packages(package_list[!installed_packages])
   }
   # Package loading
-  invisible(lapply(package_list, library, character.only = TRUE))
+  if (load_quietly){
+    quiet(
+      invisible(lapply(package_list, suppressWarnings(suppressMessages(library)), character.only = TRUE))
+    )
+  } else {
+    invisible(lapply(package_list, library, character.only = TRUE))
+  }
   print('All packages loaded successfully')
 }
-
 
 ######################### DATA PREPROCESSING #########################
 

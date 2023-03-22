@@ -149,7 +149,7 @@ if (!file.exists("diploma_thesis_source.R")){
 }
 
 # Load packages
-loadPackages(packages)
+loadPackages(packages, load_quietly = development_on)
 
 if (development_on) {
   # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files if necessary)
