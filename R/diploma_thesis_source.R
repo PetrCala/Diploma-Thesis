@@ -68,9 +68,7 @@ loadPackages <- function(package_list, load_quietly = F){
   }
   # Package loading
   if (load_quietly){
-    quiet(
-      invisible(lapply(package_list, suppressWarnings(suppressMessages(library)), character.only = TRUE))
-    )
+    invisible(lapply(package_list, suppressWarnings(suppressMessages(library)), character.only = TRUE))
   } else {
     invisible(lapply(package_list, library, character.only = TRUE))
   }
@@ -1002,18 +1000,17 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
 }
 #' Identify the best instrument(s) from a set of instruments based on IV regression diagnostics.
 #'
-#' This function takes in a data frame containing the outcome, the endogenous variable, and the instrument(s), 
-#' a list of potential instruments, and a vector of verbose names for each instrument. 
+#' This function takes in a data frame, a list of potential instruments, and a vector of verbose names for each instrument. 
 #' The function then runs IV regressions using each of the potential instruments, and returns the instrument(s)
 #' with the best performance based on four different diagnostics: R-squared, weak instruments test, Wu-Hausman test,
 #' and Sargan test. If multiple instruments are tied for the best performance, all of them will be returned.
 #' The function also prints the identified best instrument(s).
 #'
-#' @param input_data [data.frame] A data frame containing the outcome (pcc_w), the endogenous variable (se_pcc_w),
-#' and the instrument(s) (specified as separate columns). It must have the columns "pcc_w", "se_pcc_w", "study_id", and "n_obs".
+#' @param input_data [data.frame] A data frame containing the effect (pcc_w), its standard error (se_pcc_w), study ids, and source
+#' data for the instrument(s) (specified as separate columns). It must have the columns "pcc_w", "se_pcc_w", "study_id", and "n_obs".
 #' @param instruments [list] A list of potential instruments. Each element of the list should be a vector of numeric values.
-#'  Ideally specify as "1/data$n_obs", etc.
-#' @param instruments_verbose [vector] A vector of verbose names for each instrument. It must have the same length
+#'  Ideally specify as 1/data$n_obs, etc.
+#' @param instruments_verbose [vector] A vector of verbose names (strings) for each instrument. It must have the same length
 #'  as the number of potential instruments.
 #' @return a character vector containing the best instrument(s) identified by the function.
 #' @examples
@@ -1082,7 +1079,7 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 #'
 #' This function takes in data and finds the best instrument for the IV regression of pcc_w against se_pcc_w.
 #' It then runs the IV regression and extracts the coefficients. The strength of the function is found
-#' in being able to identify the best instrument automatically. These are unmodifiable.
+#' in being able to identify the best instrument automatically. The list of instruments is unmodifiable as of now.
 #' 
 #' The four instruments from which the function chooses are:
 #' - 1/sqrt(data$n_obs)
