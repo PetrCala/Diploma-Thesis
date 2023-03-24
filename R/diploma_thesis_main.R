@@ -47,8 +47,8 @@ run_this <- c(
   "t_stat_histogram" = F,
   "linear_tests" = F,
   "nonlinear_tests" = F,
-  "exo_tests" = T,
-  "caliper" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = T,
   "bma" = F,
   "fma" = F,
   "best_practice_estimate" = F
@@ -271,12 +271,23 @@ if (run_this["exo_tests"]){
     p_uni_results <- getPUniResults(data, method = "ML",
             effect_present=T, pub_bias_present=T, verbose_coefs=T)
     
-    ###### MAIVE Estimator (Irsova et al., 2023) ######
-    maive_results <- getMaiveResults(data,
-            method=3, weight=0, instrument=1, studylevel=0, verbose=T,
-            effect_present=T, pub_bias_present=T, verbose_coefs=T)
   } else{
     getExoTests(data)
   }
+}
+
+######################### P-HACKING TESTS #########################
+
+if (run_this["p_hacking_tests"]){
+  
+  ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
+  caliper_results <- getCaliper(data)
+   
+  ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
+  eliott_results <- getEliott(data)
+   
+  ###### MAIVE Estimator (Irsova et al., 2023) ######
+  maive_results <- getMaiveResults(data,
+          method=3, weight=0, instrument=1, studylevel=0, verbose=T)
 }
 

@@ -1223,6 +1223,56 @@ getPUniResults <- function(data, method="ML",...){
   return(p_uni_coefs_out)
 }
 
+#' getExoTests
+#'
+#' Performs two tests for publication bias and exogeneity in instrumental variable (IV) analyses using clustered data.
+#'
+#' @param input_data [data.frame] A data frame containing the necessary columns: "pcc_w", "se_pcc_w", "study_id", "study_size", and "se_precision_w".
+#' @return A data frame with the results of the three tests for publication bias and exogeneity in IV analyses using clustered data.
+#'
+#' @details This function first validates that the necessary columns are present in the input data frame.
+#' If the validation is successful, it performs three tests for publication bias and exogeneity in instrumental variable (IV)
+#' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
+#' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
+#' The results are then printed into the console and returned invisibly.
+getExoTests <- function(input_data) {
+  # Validate that the necessary columns are present
+  required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
+  stopifnot(
+    is.data.frame(input_data),
+    all(required_cols %in% names(input_data))
+  )
+  # Get coefficients
+  iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  p_uni_res <- getPUniResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  # Combine the results into a data frame
+  results <- data.frame(
+    iv_df = iv_res,
+    p_uni_df = p_uni_res)
+  # Label names
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
+  colnames(results) <- c("IV", "p-Uniform")
+  # Print the results into the console
+  print("Results of the tests relaxing exogeneity, clustered by study:")
+  print(results)
+  cat("\n\n")
+  # Return silently
+  invisible(results) 
+}
+
+######################### P-HACKING TESTS #########################
+
+###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
+getCaliper <- function(input_data){
+  
+  return('caliper results here')
+}
+
+###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
+getEliott <- function(input_data){
+  return('eliott results here')
+}
+
 ###### MAIVE Estimator (Irsova et al., 2023) ######
 
 #' Run the MAIVE estimation using a modified source script
@@ -1258,50 +1308,22 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
   # Extract (and print) the output
   if (verbose){
     object<-c("MAIVE coefficient","MAIVE standard error","F-test of first step in IV",
-              "Hausman-type test (to be used with caution)","Critical Value of Chi2(1)")
+              "Hausman-type test (use with caution)","Critical Value of Chi2(1)")
     maive_coefs_all<-c(MAIVE$beta,MAIVE$SE,MAIVE$`F-test`,MAIVE$Hausman,MAIVE$Chi2)
     MAIVEresults<-data.frame(object,maive_coefs_all)
+    colnames(MAIVEresults) <- c("Object", "Coefficient")
+    print("Results using the MAIVE estimator:")
     print(MAIVEresults)
   }
-  # Extract for getExoTests
-  maive_coefs_vec <- c(
-    "", # Effect
-    "", # Effect SE
-    as.numeric(MAIVE$beta), # Pub Bias
-    as.numeric(MAIVE$SE) # Pub Bias SE
+  # Extract the main two coefficients
+  maive_coefs <- c(
+    as.numeric(MAIVE$beta), # MAIVE Coefficient
+    as.numeric(MAIVE$SE) # MAIVE Standard Error
     ) 
-  maive_coefs_mat <- matrix(maive_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
-  # Extract the coefficients and return as a vector
-  maive_coefs_out <- extractExoCoefs(maive_coefs_mat, ...)
-  return(maive_coefs_out)
+  return(maive_coefs) # Return as a simple vector
 }
 
-getExoTests <- function(input_data) {
-  # Validate that the necessary columns are present
-  required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
-  stopifnot(
-    is.data.frame(input_data),
-    all(required_cols %in% names(input_data))
-  )
-  # Get coefficients
-  iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
-  p_uni_res <- getPUniResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
-  maive_res <- getMaiveResults(input_data, verbose=F, effect_present = F, pub_bias_present = T, verbose_coefs = T)
-  # Combine the results into a data frame
-  results <- data.frame(
-    iv_df = iv_res,
-    p_uni_df = p_uni_res,
-    maive_df = maive_res)
-  # Label names
-  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
-  colnames(results) <- c("IV", "p-Uniform", "MAIVE")
-  # Print the results into the console
-  print("Results of the tests relaxing exogeneity (and MAIVE), clustered by study:")
-  print(results)
-  cat("\n\n")
-  # Return silently
-  invisible(results) 
-}
+
 
 ######################### GRAPHICS #########################
 
