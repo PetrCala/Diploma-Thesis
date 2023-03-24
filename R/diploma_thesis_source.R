@@ -1263,9 +1263,110 @@ getExoTests <- function(input_data) {
 ######################### P-HACKING TESTS #########################
 
 ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
-getCaliper <- function(input_data){
-  
-  return('caliper results here')
+
+#' Run a Caliper Test
+#'
+#' This function performs a Caliper test on a data set to detect selective reporting of statistically significant results.
+#'
+#' @param input_data [data.frame] A data.frame containing the data set to be tested. The data.frame must have at least two columns named
+#'  "t_w" and "study_id", and these columns must be numeric.
+#' @param threshold [numeric] The t-statistic threshold used to define statistically significant results. Default is 1.96.
+#' @param width [numeric] The width of the Caliper interval used to define the sub-sample of observations used in the test. Default is 0.05.
+#' @return A numeric vector with four elements: the estimate of the proportion of results reported, the standard error of the estimate,
+#' the number of observations with t-statistics above the threshold, and the number of observations with t-statistics below the threshold.
+
+runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
+  # Validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(threshold),
+    is.numeric(width),
+    all(c("t_w", "study_id") %in% colnames(input_data))
+  )
+  # Add a column indicating which observations have t-stats above (below) threshold
+  if (threshold >= 0){ # Explicit because ifelse does not work, due to some dark spells probably
+    significant_obs <- input_data$t_w > threshold
+  } else {
+    significant_obs <- input_data$t_w < threshold
+  }
+  input_data$significant_w <- ifelse(significant_obs, 1, 0) # Col of 0/1
+  # Initialize variables for output storage
+  caliper_output <- list()
+  # Run the test
+  lower_bound <- input_data$t_w > ( threshold - width ) # Bool vector
+  upper_bound <- input_data$t_w < ( threshold + width ) # Bool vector
+  subsetted_data <- input_data[lower_bound & upper_bound,] # Only desired rows
+  if (nrow(subsetted_data) == 0){
+    return(c(0,0,0,0)) # No observations in the interval
+  }
+  cal_res <- lm(formula = significant_w ~ t_w - 1, data = subsetted_data)
+  cal_res_coefs <- coeftest(cal_res, vcov = vcovHC(cal_res, type = "const", cluster = c(input_data$study_id)))
+  cal_est <- cal_res_coefs["t_w", "Estimate"] # Estimate
+  cal_se <- cal_res_coefs["t_w", "Std. Error"] # Standard Error
+  cal_above <- nrow(subsetted_data[subsetted_data$t_w > threshold, ]) # N. obs above the threshold
+  cal_below <- nrow(subsetted_data[subsetted_data$t_w < threshold, ]) # N. obs below the threshold
+  # Return the output
+  res <- c(
+    round(cal_est, 5),
+    round(cal_se, 5),
+    cal_above,
+    cal_below)
+  invisible(res)
+}
+
+#' Run Caliper tests across all thresholds and widths and store the output in a data frame
+#' 
+#' @param input_data [data.frame] A data frame containing the input data.
+#' @param thresholds [vector] A numeric vector containing the thresholds at which the caliper tests are to be run.
+#'                   Defaults to c(0, 1.96, 2.58).
+#' @param widths [vector] A numeric vector containing the caliper widths at which the tests are to be run. 
+#'               Defaults to c(0.05, 0.1, 0.2).
+#' @param verbose [bool] A logical value indicating whether the results should be printed to the console. 
+#'                Defaults to TRUE.
+#' 
+#' @return A data frame with dimensions nrow = length(widths) * 3 and ncol = length(thresholds),
+#'         where the rows are named with the caliper width and its estimate, standard error, and n1/n2 ratio,
+#'         and the columns are named with the corresponding thresholds.
+getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2), verbose = T){
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.vector(thresholds),
+    is.vector(widths),
+    is.numeric(thresholds),
+    is.numeric(widths)
+  )
+  # Initialize the output data frame
+  num_thresholds <- length(thresholds)
+  num_widths <- length(widths)
+  result_df <- data.frame(matrix(ncol = num_thresholds, nrow = num_widths * 3))
+  colnames(result_df) <- paste0("Threshold ", thresholds)
+  rownames_vec <- c()
+  for (width in widths){
+    rows <- c(
+      paste0("Caliper width ", width, " - Estimate"),
+      paste0("Caliper width ", width, " - SE"),
+      paste0("Caliper width ", width, " - n1/n2")
+    )
+    rownames_vec <- append(rownames_vec, rows)
+  }
+  rownames(result_df) <- rownames_vec
+  # Run caliper tests for all thresholds and widths
+  for (i in 1:num_thresholds){
+    for (j in 1:num_widths){
+      caliper_res <- runCaliperTest(input_data, threshold = thresholds[i], width = widths[j])
+      result_df[j*3-2, i] <- round(caliper_res[1], 5) # Estimate
+      result_df[j*3-1, i] <- paste0("(", round(caliper_res[2], 5), ")") # Standard Error
+      result_df[j*3, i] <- paste0(caliper_res[3], "/", caliper_res[4]) # n1/n2
+    }
+  }
+  if (verbose){
+    print("Results of the Caliper tests:")
+    print(result_df)
+    cat("\n\n")
+  }
+  # Return the data frame
+  invisible(result_df)
 }
 
 ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
@@ -1314,6 +1415,7 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
     colnames(MAIVEresults) <- c("Object", "Coefficient")
     print("Results using the MAIVE estimator:")
     print(MAIVEresults)
+    cat("\n\n")
   }
   # Extract the main two coefficients
   maive_coefs <- c(

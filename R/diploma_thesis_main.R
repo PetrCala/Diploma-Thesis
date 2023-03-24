@@ -40,14 +40,14 @@ rm(list = ls())
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "pcc_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
-  "exo_tests" = F,
+  "variable_summary_stats" = T,
+  "pcc_summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
+  "nonlinear_tests" = T,
+  "exo_tests" = T,
   "p_hacking_tests" = T,
   "bma" = F,
   "fma" = F,
@@ -281,7 +281,8 @@ if (run_this["exo_tests"]){
 if (run_this["p_hacking_tests"]){
   
   ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
-  caliper_results <- getCaliper(data)
+  caliper_results <- getCaliperResults(data,
+          thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2), verbose = T)
    
   ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
   eliott_results <- getEliott(data)
@@ -290,4 +291,3 @@ if (run_this["p_hacking_tests"]){
   maive_results <- getMaiveResults(data,
           method=3, weight=0, instrument=1, studylevel=0, verbose=T)
 }
-
