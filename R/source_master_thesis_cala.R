@@ -751,9 +751,9 @@ getTop10Results <- function(data, ...){
 #' @return A numeric vector containing the estimated coefficients for the STEM-based method
 #' in the usual format.
 #' 
-#' @import stem_method_custom.R
+#' @import stem_method_master_thesis_cala.R
 getStemResults <- function(data, ...){
-  source("stem_method_custom.R") #github.com/Chishio318/stem-based_method
+  source("stem_method_master_thesis_cala.R") #github.com/Chishio318/stem-based_method
   
   est_stem <- stem(data$pcc_w, data$se_pcc_w, param)$estimates # Actual esimation
   
@@ -815,7 +815,7 @@ getHierResults <- function(data, ...){
 #'  - Source: https://maxkasy.github.io/home/metastudy/
 #' 
 #' This function computes selection model coefficients from input data using
-#' the \code{metastudies_estimation} function from the \code{selection_model_custom.R}
+#' the \code{metastudies_estimation} function from the \code{selection_model_master_thesis_cala.R}
 #' package. It extracts the estimated effect and publication bias, as well as their
 #' standard errors, and returns them as a vector..
 #'
@@ -833,11 +833,11 @@ getHierResults <- function(data, ...){
 #' @return A numeric vector containing the estimated effect and publication bias, as well
 #' as their standard errors, in the usual format.
 #' 
-#' @import selection_model_custom.R
+#' @import selection_model_master_thesis_cala.R
 getSelectionResults <- function(data, cutoffs = c(1.960),
                                 symmetric = F, modelmu="normal", ...){
   # Read the source script
-  source("selection_model_custom.R") 
+  source("selection_model_master_thesis_cala.R") 
   # Validate input
   stopifnot(all(cutoffs %in% c(1.645, 1.960, 2.576))) # Cutoffs
   stopifnot(modelmu %in% c("normal", "t")) # Model
@@ -880,13 +880,13 @@ getSelectionResults <- function(data, cutoffs = c(1.960),
 #'    - Mean effect estimate
 #'    - Mean effect standard error
 #'
-#' @import endo_kink_custom.R
+#' @import endo_kink_master_thesis_cala.R
 #'
 #'  Note - The runEndoKink method returns the coefficients in order mean_effect-pub_bias,
 #'    this way is just for easier printing into the console, so be mindful of that.
 getEndoKinkResults <- function(data, ...){
   # Read the source file
-  source("endo_kink_custom.R")
+  source("endo_kink_master_thesis_cala.R")
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w")
   stopifnot(all(required_cols %in% names(data))) 
@@ -1387,10 +1387,10 @@ getEliott <- function(input_data){
 #' @param verbose [bool] Print out the results into the console in a nice format.
 #' @inheritDotParams Parameters for the extractExoCoefs function.
 #' 
-#' @import maive_custom.R
+#' @import maive_master_thesis_cala.R
 getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studylevel = 0, verbose = T, ...){
   # Read the source file
-  source("maive_custom.R")
+  source("maive_master_thesis_cala.R")
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w", "study_size", "study_id")
   stopifnot(

@@ -92,10 +92,10 @@ options(scipen=999) # No scientific notation
 # Source files
 master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
 var_list_source <- "var_list_master_thesis_cala.csv" # Variable info source
-stem_source <- "stem_method_custom.R" # STEM method (Furukawa, 2019) - fixed package handling
-selection_model_source <- "selection_model_custom.R" # Selection model (Andrew & Kasy, 2019)
-endo_kink_source <- "endo_kink_custom.R" # Endogenous Kink model (Bom & Rachinger, 2019)
-maive_source <- "maive_custom.R" # MAIVE Estimator (Irsova et al., 2023)
+stem_source <- "stem_method_master_thesis_cala.R" # STEM method (Furukawa, 2019) - fixed package handling
+selection_model_source <- "selection_model_master_thesis_cala.R" # Selection model (Andrew & Kasy, 2019)
+endo_kink_source <- "endo_kink_master_thesis_cala.R" # Endogenous Kink model (Bom & Rachinger, 2019)
+maive_source <- "maive_master_thesis_cala.R" # MAIVE Estimator (Irsova et al., 2023)
 
 source_files <- c(
   master_data_set_source,
@@ -140,11 +140,11 @@ packages <- c(
 
 ##### PREPARATION #####
 # Load the source script
-if (!file.exists("diploma_thesis_source.R")){
-  print('Please make sure to put the source file \"diploma_thesis_source\" in
+if (!file.exists("source_master_thesis_cala.R")){
+  print('Please make sure to put the source file \"source_master_thesis_cala\" in
         your working directory.')
 } else{
-  source("diploma_thesis_source.R")
+  source("source_master_thesis_cala.R")
   print("Source file loaded.")
 }
 

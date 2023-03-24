@@ -1,2 +1,0 @@
-source("diploma_thesis_main.R")
-

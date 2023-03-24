@@ -477,7 +477,6 @@ Cal_3 <- coeftest(Cal_3_nc, vcov = vcovHC(Cal_3_nc, type = "const", cluster = c(
 print(Cal_3)
 
 
-
 #########################################################################
 #########################################################################
 #HETEROGENEITY - Bayesian Model Averaging in R
