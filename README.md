@@ -11,7 +11,7 @@ The reason to keep this repository is to allow for easier version tracking, and 
 ## How to Run
 To run the code, follow these steps:
 
-1. Make sure that your working directory contains the following files.:
+1. Make sure that your working directory contains the following files (these can be found in the `.R/` folder):
   - `endo_kink_master_thesis_cala.R`
   - `main_master_thesis_cala.R`
   - `maive_master_thesis_cala.R`
@@ -21,8 +21,6 @@ To run the code, follow these steps:
   - `stem_master_thesis_cala.R`
   - `data_set_master_thesis_cala.csv`
   - `var_list_master_thesis_cala.csv`
-
-  These can be all be found in the folder `/R`.
 2. If you do not want to parametrize anything, simply open the file `pretty_output_master_thesis_cala.R` and run it. We can not guarantee you will not encounter any errors, especially with package dependencies, but everything should run quite smoothly by deafult.
 3. If you wish to see into the code a bit more, and maybe parametrize several parts, such as which tests should run, and which not, then open the script `main_master_thesis_cala.R`. This script is split into *two parts*:
   - **Customizable part**: Here you define which parts of the script you want to run and with which parameters
