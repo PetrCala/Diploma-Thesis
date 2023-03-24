@@ -11,7 +11,7 @@ The reason to keep this repository is to allow for easier version tracking, and 
 ## How to Run
 To run the code, follow these steps:
 
-1. Make sure that your working directory contains the following files (these can be found in the `.R/` folder):
+1. Make sure that your working directory contains the following files (these can be found in the `/R` folder):
   - `endo_kink_master_thesis_cala.R`
   - `main_master_thesis_cala.R`
   - `maive_master_thesis_cala.R`
