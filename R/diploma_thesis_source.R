@@ -914,11 +914,12 @@ getEndoKinkResults <- function(data, ...){
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data) {
-  # Validate that the necessary columns are present
+  # Validate the input
   required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
-  if(!all(required_cols %in% names(input_data))) {
-    stop("Input data frame is missing necessary columns")
-  }
+  stopifnot(
+    is.data.frame(input_data),
+    all(required_cols %in% names(input_data))
+  )
   # Get coefficients
   waap_res <- getWaapResults(input_data, pub_bias_present = F, verbose_coefs = T)
   top10_res <- getTop10Results(input_data, pub_bias_present = F, verbose_coefs = T)
@@ -1136,9 +1137,90 @@ getIVResults <- function(data, ...){
   return(iv_coefs_out)
 }
 
-getPUniResults <- function(data, ...){
-  # code here
-  return(c(1,2,3,4))
+###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
+
+#' getMedians - Calculates the vector of medians for pcc_w
+#' Input the data frame, and the name of the column to calculate a vector of medians for,
+#'  grouped by the study levels.
+#' 
+#' @param input_data [data.frame] Main data frame.
+#' @param mec_col [str] Name of the column to compute the medians for. Must be in colnames
+#'  of the input data frame.
+#' @return [vector] Vector of medians by levels of the data frame studies.
+getMedians <- function(input_data, med_col){
+  # Validation
+  stopifnot(all(c(med_col, 'study_name') %in% colnames(input_data)))
+  # Preparation
+  med_vec <- c()
+  study_levels <- levels(as.factor(input_data$study_name)) # Names of studies as levels
+  # Calculation
+  for (study in study_levels) {
+    col_data_numeric <- as.numeric(unlist(input_data[input_data$study_name == study,med_col]))
+    med <- median(col_data_numeric)
+    med_vec <- append(med_vec, med)
+  }
+  stopifnot(length(med_vec) == length(study_levels)) # Calculated median for all studies
+  return(med_vec)
+}
+
+#' getPUniResults - Calculates publication bias test results using the p-uniform method
+#'
+#' This function calculates publication bias test results using the p-uniform method.
+#' It takes in a data frame of the effects with their corresponding standard errors and either uses
+#' the Maximum Likelihood (ML) or Moments (P) method to estimate the publication bias.
+#'
+#' @param data [data.frame] A data frame containing the effects with their corresponding standard errors.
+#' @param method [str] A character string indicating which method to use to estimate publication bias.
+#' "ML" for Maximum Likelihood and "P" for Moments. Default is "ML".
+#'
+#' @return A vector containing the following four elements:
+#' \describe{
+#' \item{Test Statistic for the P-uniform publication bias test}{A character string indicatingthe L test
+#'  statistic for the P-uniform publication bias test.}
+#' \item{P-value for the L test statistic}{A character string indicating the P-value for the L test statistic.}
+#' \item{Effect Beyond Bias}{A numeric value indicating the effect beyond bias estimate.}
+#' \item{Effect Standard Error}{A character string indicating the standard error of the effect beyond bias estimate.}
+#' }
+getPUniResults <- function(data, method="ML",...){
+  # Validation
+  stopifnot(
+    is.data.frame(data),
+    is.character(method),
+    method %in% c("ML", "P") # Max likelihood, Moments
+  )
+  # Calculate medians for all studies
+  med_pcc_w <- getMedians(data, 'pcc_w') # PCC vector of medians
+  med_se_pcc_w <- getMedians(data, 'se_pcc_w') # SE vector of medians
+  #Estimation
+  if (method == "ML"){
+    #Maximum likelihood
+    quiet(
+      est_ml <- puni_star(yi = med_pcc_w, vi = med_se_pcc_w^2, side = "right", method = "ML", alpha = 0.05,
+                             control=list( max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
+    )
+  } else if (method == "P"){
+    # Moments method estimation
+    quiet(
+      est_ml <- puni_star(yi = med_pcc_w, vi = med_se_pcc_w^2, side = "right", method = "P",
+                          alpha = 0.05,control=list(max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
+    )
+  } else {
+    stop("Broken validity checks") # Should not happen
+  }
+  est_se <- (est_ml$ci.ub - est_ml$ci.lb) / (2*1.96) # Standard error of the estmiate
+  # Extract and save coefficients - using a custom format for this method
+  est_effect_verbose <- round(est_ml$est, 5) # Effect Beyond Bias
+  est_se_verbose <- paste0("(", round(est_se, 5), ")") # Effect Standard Error
+  est_pub_test_verbose <- paste0("L = ", round(est_ml$L.0, 5)) # Test statistic of p-uni publication bias test
+  est_pub_p_val_verbose <- paste0("(p = ", round(est_ml$pval.0, 5), ")") # P-value for the L test statistic
+  # Return as a vector
+  p_uni_coefs_out <- c(
+    est_pub_test_verbose,
+    est_pub_p_val_verbose,
+    est_effect_verbose,
+    est_se_verbose
+  )
+  return(p_uni_coefs_out)
 }
 
 ###### MAIVE Estimator (Irsova et al., 2023) ######
@@ -1197,9 +1279,10 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
 getExoTests <- function(input_data) {
   # Validate that the necessary columns are present
   required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
-  if(!all(required_cols %in% names(input_data))) {
-    stop("Input data frame is missing necessary columns")
-  }
+  stopifnot(
+    is.data.frame(input_data),
+    all(required_cols %in% names(input_data))
+  )
   # Get coefficients
   iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
   p_uni_res <- getPUniResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
