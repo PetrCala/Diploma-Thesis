@@ -755,7 +755,11 @@ getTop10Results <- function(data, ...){
 getStemResults <- function(data, ...){
   source("stem_method_master_thesis_cala.R") #github.com/Chishio318/stem-based_method
   
-  est_stem <- stem(data$pcc_w, data$se_pcc_w, param)$estimates # Actual esimation
+  stem_param <- c(
+    10^(-4), # Tolerance - set level of sufficiently small stem to determine convergence
+    10^3 # max_N_count - set maximum number of iteration before termination
+  )
+  est_stem <- stem(data$pcc_w, data$se_pcc_w, stem_param)$estimates # Actual esimation
   
   # Save results
   stem_coefs <- extractNonlinearCoefs(est_stem, ...)

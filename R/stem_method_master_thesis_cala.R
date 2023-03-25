@@ -39,15 +39,15 @@ loadPackages <- function(package_list){
   invisible(lapply(package_list, library, character.only = TRUE))
 }
 
-packages_temp <- c('ggplot2', 'data.table')
-loadPackages(packages_temp)
+loadPackages(c('ggplot2', 'data.table'))
 
 #### END OF PACKAGE HANDLING ####
 
-##0 set stem parameter
-tolerance = 10^(-4) #set level of sufficiently small stem to determine convergence
-max_N_count = 10^3 #set maximum number of iteration before termination
-param <- c(tolerance, max_N_count)
+##0 set stem parameters
+# param <- c(
+#  10^(-4), # Tolerance #set level of sufficiently small stem to determine convergence
+#  10^3 # max_N_count #set maximum number of iteration before termination
+#  )
 
 ##1 outer algorithm
 stem <- function(beta, se, param){

@@ -90,11 +90,6 @@ Clustered_covariance_estimate <-function(g,cluster_index) {
 ### Source: https://github.com/maxkasy/MetaStudiesApp/blob/master/metastudiesfunctions.r
 
 
-#parameters for optimization
-MaxEval<-10^5
-MaxIter<-10^5;
-Tol<-10^(-8);
-stepsize<-10^(-6);
 
 
 Tpowers_fun=function(TT,cutoffs,symmetric){
@@ -159,6 +154,11 @@ VariationVarianceLogLikelihood <-function(lambdabar, tauhat, betap,
 
 
 metastudies_estimation=function(X,sigma, cutoffs,symmetric, model="normal"){
+  #parameters for optimization
+  MaxEval<-10^5
+  MaxIter<-10^5;
+  Tol<-10^(-8);
+  stepsize<-10^(-6);
   
   nn=length(X)
   #%regressors for step function p

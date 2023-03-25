@@ -89,6 +89,13 @@ adjustable_parameters <- c(
 development_on <- T # Turn off when distributing the code
 options(scipen=999) # No scientific notation
 
+# Working directory
+if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
+if (! getwd() == dirname(getActiveDocumentContext()$path)){
+  setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
+  print(paste0('Setting the working directory to: ', getwd()))
+}
+
 # Source files
 master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
 var_list_source <- "var_list_master_thesis_cala.csv" # Variable info source
@@ -164,13 +171,13 @@ validateFiles(source_files)
 ######################### DATA PREPROCESSING #########################
 
 # Read all the source .csv files
-data_source <- readDataCustom(master_data_set_source)
+data <- readDataCustom(master_data_set_source)
 var_list <- readDataCustom(var_list_source)
 
 # Validate, preprocess, and winsorize data
 validateInputVarList(var_list)
 data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
-data <- preprocessData(data_source, var_list, win_level = data_win_level)
+data <- preprocessData(data, var_list, win_level = data_win_level)
 
 # Subset data to only one study for testing (does nothing by default)
 one_study_subset <- adjustable_parameters["subset_this_study_only"]
@@ -291,3 +298,4 @@ if (run_this["p_hacking_tests"]){
   maive_results <- getMaiveResults(data,
           method=3, weight=0, instrument=1, studylevel=0, verbose=T)
 }
+
