@@ -345,7 +345,7 @@ getVariableSummaryStats <- function(input_data, input_var_list){
     var_class <- input_var_list[input_var_list$var_name == var_name,]$data_type
     row_idx <- match(var_name, desired_vars) # Append data to this row
     # Missing all data 
-    if (!any(is.numeric(var_data), na.rm=TRUE)){
+    if (!any(is.numeric(var_data), na.rm=TRUE) || all(is.na(var_data))){
       missing_data_vars <- append(missing_data_vars, var_name)
       df[row_idx, ] <- c(var_name, var_class, rep(NA, length(variable_stat_names) - 2))
       next
@@ -445,7 +445,7 @@ getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
     row_idx <- match(var_name, desired_vars) # Append data to this row
     
     # Missing all data 
-    if (!any(is.numeric(var_data), na.rm=TRUE)){
+    if (!any(is.numeric(var_data), na.rm=TRUE) || all(is.na(var_data))){
       missing_data_vars <- append(missing_data_vars, var_name)
       next
     }
