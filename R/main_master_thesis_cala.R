@@ -174,14 +174,18 @@ validateFiles(source_files)
 data <- readDataCustom(master_data_set_source)
 var_list <- readDataCustom(var_list_source)
 
-# Validate, preprocess, and winsorize data
+# Validate the input variable list
 validateInputVarList(var_list)
 data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
-data <- preprocessData(data, var_list, win_level = data_win_level)
+# Preprocess data - ignore missing values in development only, otherwise require all values
+data <- preprocessData(data, var_list,
+                       win_level = data_win_level, ignore_missing = development_on)
+# Validate the data types, correct values, etc. VERY restrictive.
+validateData(data, var_list, ignore_missing = development_on)
 
 # Subset data to only one study for testing (does nothing by default)
 one_study_subset <- adjustable_parameters["subset_this_study_only"]
-data <- limitDataToOneStudy(data, one_study_subset) # Do nothing if subset == NA
+data <- limitDataToOneStudy(data, one_study_subset) # Handle wrong cases inside function, pass in that case
 
 
 ######################### DATA EXPLORATION #########################

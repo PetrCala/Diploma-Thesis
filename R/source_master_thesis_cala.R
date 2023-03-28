@@ -118,42 +118,6 @@ validateInputVarList <- function(input_var_list){
     stopifnot(all(validity_test))
   }
 }
-
-#' Preprocess the raw excel data:
-#' - Adjust the source data dimensions
-#' 
-#' 
-#' Check column validity, add winsorized statistics (PCC, SE, t-stat)
-#' @param win_int [float] Interval for winsirization. If 0.01, winsorize at 1%.
-#'    Defaults to 0.01.
-#' @return [data.frame] The preprocessed data
-preprocessData <- function(input_data, input_var_list, win_level = 0.01){
-  # Remove redundant columns
-  expected_col_n <- nrow(var_list)
-  while(ncol(input_data) > expected_col_n){
-    input_data <- input_data[,-ncol(input_data)]
-  }
-  
-  # Variable name validity check
-  varnames <- colnames(input_data)
-  expected_varnames <- input_var_list$var_name
-  if(!all(varnames == expected_varnames)){ # A strong, restrictive assumption
-    print("These variables from the source data names do not match the expected names:")
-    print(varnames[!(varnames == expected_varnames)])
-    stop("Mismatching variable names")
-  }
-  
-  # Remove redundant rows
-  while(is.na(input_data[nrow(input_data), "study_name"])) {
-    input_data <- input_data[-nrow(input_data),]
-  }
-  
-  # Winsorize the data using a custom function
-  input_data <- winsorizeData(input_data, win_level)
-  
-  return(input_data)
-}
-
 winsorizeData <- function(input_data, win_level){
   # Validate input
   stopifnot(
@@ -180,12 +144,153 @@ winsorizeData <- function(input_data, win_level){
   invisible(input_data)
 }
 
-limitDataToOneStudy <- function(input_data, input_study_id){
-  if (is.na(input_study_id)){
-    return(input_data) # Do nothing
-  } else if (is.logical(input_study_id)){
-    stop("Invalid index for subsetting data. Use an integer.") # Boolean
+#' Preprocess the raw excel data:
+#' - Adjust the source data dimensions
+#' 
+#' 
+#' Check column validity, add winsorized statistics (PCC, SE, t-stat)
+#' @param input_data [data.frame] Main data frame
+#' @param input_var_list [data.frame] Data frame with variable descriptions.
+#' @param win_int [float] Interval for winsirization. If 0.01, winsorize at 1%.
+#'    Defaults to 0.01.
+#' @return [data.frame] The preprocessed data
+preprocessData <- function(input_data, input_var_list, win_level = 0.01, ignore_missing = F){
+  # Remove redundant columns
+  expected_col_n <- nrow(var_list)
+  while(ncol(input_data) > expected_col_n){
+    input_data <- input_data[,-ncol(input_data)]
   }
+  
+  # Variable name validity check
+  varnames <- colnames(input_data)
+  expected_varnames <- input_var_list$var_name
+  if(!all(varnames == expected_varnames)){ # A strong, restrictive assumption
+    print("These variables from the source data names do not match the expected names:")
+    print(varnames[!(varnames == expected_varnames)])
+    stop("Mismatching variable names")
+  }
+  
+  # Remove redundant rows
+  while(is.na(input_data[nrow(input_data), "study_name"])) {
+    input_data <- input_data[-nrow(input_data),]
+  }
+  
+  # Do not pass if any values are NA. 
+  if (!ignore_missing){
+    if(any(is.na(input_data))){
+      stop("This script does not allow for ANY missing values. Make sure your data frame contains no missing values first.")
+    }
+  }
+  
+  # Winsorize the data using a custom function
+  input_data <- winsorizeData(input_data, win_level)
+  
+  # Preprocess and enforce correct data types
+  for (col_name in varnames) {
+    col_data_type <- input_var_list$data_type[input_var_list$var_name == col_name]
+    if (col_data_type == "int" || col_data_type == "dummy") {
+      input_data[[col_name]] <- as.integer(input_data[[col_name]])
+    } else if (col_data_type == "float" || col_data_type == "perc") {
+      input_data[[col_name]] <- as.numeric(input_data[[col_name]])
+    } else if (col_data_type == "category") {
+      input_data[[col_name]] <- as.character(input_data[[col_name]])
+    }
+  }
+  return(input_data)
+}
+
+
+#' A very restrictive function for validating the correct data types
+#' 
+#' Check that all values across all columns have the correct data type, check that all dummy groups
+#' are correctly specified across all observations (only one 1, otherwise 0), and 
+#' stop and print out the error message, if it is not so.
+#' 
+#' Allows for skipping NA values, if your data set is incomplete. Otherwise
+#' 
+#' @param input_data [data.frame] The data frame to be validated
+#' @param input_var_list [data.frame] The data frame that specifies the data type of each variable
+#' @param ignore_missing [bool] If True, allow missing values in the data frame. Deafults to FALSE.
+validateData <- function(input_data, input_var_list, ignore_missing = F){
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.logical(ignore_missing)
+  )
+  
+  # Do not pass if any values are NA. 
+  if (!ignore_missing){
+    if(any(is.na(input_data))){
+      stop("This script does not allow for ANY missing values. Make sure your data frame contains no missing values first.")
+    }
+  }
+  
+  ### Dummy group validation
+  # Names of dummy variable columns
+  dummy_group_vars <- as.vector(unlist(input_var_list[input_var_list$data_type == "dummy", "var_name"]))
+  # Group numbers for these columns (e.g. 11,11,12,12,12,13,13,...)
+  dummy_group_nums <- as.vector(unlist(input_var_list[input_var_list$data_type == "dummy", "group_category"]))
+  # Split the data frame based on the dummy variable groups
+  unique_group_nums <- unique(dummy_group_nums)
+  splitted_data_frames <- list()
+  for (group_num in unique_group_nums){
+    group_col_names <- dummy_group_vars[dummy_group_nums == group_num] # Get col names of the same category
+    splitted_data_frames[[as.character(group_num)]] <- input_data[,group_col_names, drop = FALSE] # To list
+  }
+  # Validate all groups
+  for (i in length(splitted_data_frames)){
+    df_to_test <- splitted_data_frames[[i]] # Explicit for indexing clarity
+    # Skip empty groups in development
+    if(ignore_missing & all(is.na(df_to_test))){
+      next # Empty group
+    }
+    if(!any(apply(df_to_test,1,sum) == 1)){ # Check that for all rows of all groups, only one value is 1, other are 0
+        stop("Invalid dummy group configuration: One and only one dummy variable must be 1 in each group for each row")
+    }
+  }
+  ### Data type validation
+  for (row in 1:nrow(input_var_list)) {
+    var_name <- as.character(input_var_list[row, "var_name"])
+    data_type <- as.character(input_var_list[row, "data_type"])
+    
+    if (ignore_missing) {
+      non_missing_rows <- !is.na(input_data[[var_name]]) & input_data[[var_name]] != "."
+    } else {
+      non_missing_rows <- TRUE
+    }
+    # Check that all values in all columns have the expected value
+    if (data_type == "int") {
+      if (!all(sapply(as.vector(unlist(input_data[non_missing_rows, var_name])), is.integer))) {
+        stop(paste("Invalid data type for variable:", var_name, "Expected integer values"))
+      }
+    } else if (data_type == "category") {
+      if (!all(sapply(as.vector(unlist(input_data[non_missing_rows, var_name])), is.character))) {
+        stop(paste("Invalid data type for variable:", var_name, "Expected categorical (string) values"))
+      }
+    } else if (data_type == "float") {
+      if (!all(sapply(as.vector(unlist(input_data[non_missing_rows, var_name])), is.numeric))) {
+        stop(paste("Invalid data type for variable:", var_name, "Expected float (numeric) values"))
+      }
+    } else if (data_type == "dummy") {
+      if (!all(as.vector(unlist(input_data[non_missing_rows, var_name])) %in% c(0, 1))) {
+        stop(paste("Invalid data type for variable:", var_name, "Expected dummy (0 or 1) values"))
+      }
+    }
+  }
+  print("All values across all columns of the main data frame are of the correct type.")
+}
+
+
+#' An auxiliary method to limit the data frame to one study only. Use only for testing
+#' 
+#' @param input_data [data.frame] The main data frame
+#' @param input_study_id [int] Study ID of the study to subset to
+#' @return data.frame The subsetted data frame
+limitDataToOneStudy <- function(input_data, input_study_id){
+  stopifnot(
+    is.data.frame(input_data)
+  )
   # Validate the input
   study_id <- tryCatch(
     {
@@ -196,6 +301,10 @@ limitDataToOneStudy <- function(input_data, input_study_id){
       return(input_data)
     }
   )
+  if(is.na(study_id)){ # NAs pass through the as.numeric function, but are not detecable before (jeez)
+    # Do nothing
+    return(input_data)
+  }
   # Subset to one study
   stopifnot(study_id %in% input_data$study_id)
   study_data <- input_data[input_data$study_id == study_id,]
