@@ -326,9 +326,11 @@ limitDataToOneStudy <- function(input_data, input_study_id){
 #' @param input_data [data.frame] The input data frame.
 #' @param input_var_list [data.frame] A data frame with information about the variables to be summarized.
 #' It should have columns "var_name", "data_type", and "variable_summary".
+#' @param names_verbose [bool] If True, print out the descriptive variable names. If F,
+#' print out the data frame column names. Defaults to TRUE.
 #'
 #' @return [data.frame] A data frame containing summary statistics for selected variables.
-getVariableSummaryStats <- function(input_data, input_var_list){
+getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = T){
   # List of the statistics to compute
   variable_stat_names <- c("Var Name", "Var Class", "Mean", "Median",
                             "Min", "Max", "SD")
@@ -342,7 +344,9 @@ getVariableSummaryStats <- function(input_data, input_var_list){
   missing_data_vars <- c()
   for (var_name in desired_vars){
     var_data <- as.vector(unlist(subset(input_data, select = var_name))) # Roundabout way, because types
-    var_class <- input_var_list[input_var_list$var_name == var_name,]$data_type
+    var_specs <- input_var_list[input_var_list$var_name == var_name,] # Specifications for this variable
+    var_class <- var_specs$data_type
+    var_name_display <- ifelse(names_verbose, var_specs$var_name_verbose, var_name) # Variable display name
     row_idx <- match(var_name, desired_vars) # Append data to this row
     # Missing all data 
     if (!any(is.numeric(var_data), na.rm=TRUE) || all(is.na(var_data))){
@@ -358,7 +362,7 @@ getVariableSummaryStats <- function(input_data, input_var_list){
     var_max <- round(max(var_data, na.rm = TRUE), 3)
     # Aggregate and append to the main DF
     row_data <- c(
-      var_name,
+      var_name_display,
       var_class,
       var_mean,
       var_median,
@@ -372,8 +376,10 @@ getVariableSummaryStats <- function(input_data, input_var_list){
   cat("Variable summary statistics:\n")
   print(df)
   cat("\n")
-  print(paste0("Missing data for: ", length(missing_data_vars), " variables."))
-  cat("\n")
+  if (length(missing_data_vars) > 0){
+    print(paste0("Missing data for: ", length(missing_data_vars), " variables."))
+    cat("\n")
+  }
   invisible(df)
 }
 
@@ -445,7 +451,12 @@ getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
     row_idx <- match(var_name, desired_vars) # Append data to this row
     
     # Missing all data 
-    if (!any(is.numeric(var_data), na.rm=TRUE) || all(is.na(var_data))){
+    if (any(
+      !any(is.numeric(var_data), na.rm=TRUE), # No numerics
+      all(is.na(var_data)), # All NAs
+      nrow(var_data) == 0, # Empty data
+      all(var_data == 0) # Only 0s
+      )){
       missing_data_vars <- append(missing_data_vars, var_name)
       next
     }
