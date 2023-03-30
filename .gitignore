@@ -12,10 +12,13 @@ Excel temp files
 **/~$*.xlsm
 R/*.csv
 
-
 # Large literature files
 **/Studies/
 **/Studies list/
+
+# Large data files
+**/automatically_updated_data_set_master_thesis_cala.xlsx
+**/impact_factor_data.*
 
 # P&P folder files
 **/P&P (2018) analysis/Tools/*
