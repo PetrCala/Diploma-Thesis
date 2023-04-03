@@ -10,7 +10,6 @@ __pycache__/
 Excel temp files
 **/~$*.xlsx
 **/~$*.xlsm
-R/*.csv
 
 # Large literature files
 **/Studies/
