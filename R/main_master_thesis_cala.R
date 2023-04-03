@@ -41,7 +41,7 @@ rm(list = ls())
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
   "variable_summary_stats" = T,
-  "pcc_summary_stats" = T,
+  "effect_summary_stats" = T,
   "box_plot" = T,
   "funnel_plot" = T,
   "t_stat_histogram" = T,
@@ -62,15 +62,15 @@ run_this <- c(
 adjustable_parameters <- c(
   # Data winsorization level
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
-  # PCC summary statistics confidence level
-  "pcc_summary_stats_conf_level" = 0.95, # Between 0 and 1 (excluding)
+  # Effect summary statistics confidence level
+  "effect_summary_stats_conf_level" = 0.95, # Between 0 and 1 (excluding)
   # Box plot parameters
   "box_plot_group_by_factor_1" = "study_name", # Group by study name
   "box_plot_group_by_factor_2" = "country", # Group by country
   # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
   "box_plot_verbose" = T, # Get information about the plots being printed
   # Funnel plot parameters
-  "funnel_plot_pcc_cutoff" = 0.8, # PCC axis cutoff point
+  "funnel_plot_effect_cutoff" = 0.8, # Effect axis cutoff point
   "funnel_plot_precision_cutoff" = 0.2, # Precision axis cutoff point
   "funnel_plot_verbose" = T, # If T, print cut outlier information
   # T-statistic histogram parameters
@@ -195,9 +195,9 @@ if (run_this["variable_summary_stats"]){
   getVariableSummaryStats(data, var_list)
 }
 
-if (run_this["pcc_summary_stats"]){
-  pcc_sum_stats_conf_level <- as.numeric(adjustable_parameters["pcc_summary_stats_conf_level"])
-  getPCCSummaryStats(data, var_list, pcc_sum_stats_conf_level)
+if (run_this["effect_summary_stats"]){
+  effect_sum_stats_conf_level <- as.numeric(adjustable_parameters["effect_summary_stats_conf_level"])
+  getEffectSummaryStats(data, var_list, effect_sum_stats_conf_level)
 }
 
 ###### BOX PLOT ######
@@ -215,10 +215,10 @@ if (run_this["box_plot"]){
 ###### FUNNEL PLOT ######
 
 if (run_this["funnel_plot"]){
-  custom_pcc_cutoff <- as.numeric(adjustable_parameters["funnel_plot_pcc_cutoff"])
+  custom_effect_cutoff <- as.numeric(adjustable_parameters["funnel_plot_effect_cutoff"])
   custom_precision_cutoff <- as.numeric(adjustable_parameters["funnel_plot_precision_cutoff"])
   custom_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
-  getFunnelPlot(data, custom_pcc_cutoff, custom_precision_cutoff, custom_verbose)
+  getFunnelPlot(data, custom_effect_cutoff, custom_precision_cutoff, custom_verbose)
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######

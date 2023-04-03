@@ -91,7 +91,7 @@ validateInputVarList <- function(input_var_list){
   }
   
   # Validate that specifications are present for all variables where sum stats are required
-  data_to_summarize <- input_var_list[input_var_list$pcc_sum_stats == TRUE, ]
+  data_to_summarize <- input_var_list[input_var_list$effect_sum_stats == TRUE, ]
   for (i in 1:nrow(data_to_summarize)){
     temp_row <- data_to_summarize[i,]
     # Only one of the two specifications is used
@@ -118,25 +118,38 @@ validateInputVarList <- function(input_var_list){
     stopifnot(all(validity_test))
   }
 }
+
+#' Winsorize input data
+#'
+#' This function applies Winsorization to the data to minimize the effect of outliers on the statistical analysis.
+#' Winsorization is a process of limiting extreme values by replacing them with the next lowest or
+#' highest value that is within a certain percentile range.
+#'
+#' @param input_data [data.frame] A data frame containing the main effect (effect),
+#' standard error of the effect (se), and t-statistic (t_stat) columns.
+#' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
+#' extreme values to be replaced with the nearest non-extreme value.
+#' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
+#' and t-statistic columns have been Winsorized.
 winsorizeData <- function(input_data, win_level){
   # Validate input
   stopifnot(
     win_level > 0,
     win_level < 1,
-    all(c('pcc', 'se_pcc') %in% colnames(input_data)),
-    !(any(is.na(input_data$pcc))), # No missing PCC values
-    !(any(is.na(input_data$se_pcc))) # No missing SE values
+    all(c('effect', 'se') %in% colnames(input_data)),
+    !(any(is.na(input_data$effect))), # No missing effect values
+    !(any(is.na(input_data$se))) # No missing SE values
     )
   # Get the winsorization interval
   win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
   # Create a t-stat column if it does not exist in the data
   if (!("t_stat") %in% colnames(input_data)){
-    input_data$t_stat <- input_data$pcc / input_data$se_pcc
+    input_data$t_stat <- input_data$effect / input_data$se
   }
   # Statistic preprocessing
-  input_data$pcc_w <- Winsorize(x = input_data$pcc, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$se_pcc_w <- Winsorize(x = input_data$se_pcc, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$se_precision_w <- 1/input_data$se_pcc_w
+  input_data$effect_w <- Winsorize(x = input_data$effect, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$se_w <- Winsorize(x = input_data$se, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$se_precision_w <- 1/input_data$se_w
   input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
   input_data$significant_w <- c(rep(0,nrow(input_data)))
   input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
@@ -148,7 +161,7 @@ winsorizeData <- function(input_data, win_level){
 #' - Adjust the source data dimensions
 #' 
 #' 
-#' Check column validity, add winsorized statistics (PCC, SE, t-stat)
+#' Check column validity, add winsorized statistics (Effect, SE, t-stat)
 #' @param input_data [data.frame] Main data frame
 #' @param input_var_list [data.frame] Data frame with variable descriptions.
 #' @param win_int [float] Interval for winsirization. If 0.01, winsorize at 1%.
@@ -384,8 +397,8 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
 }
 
 
-#' The function getPCCSummaryStats() calculates the summary statistics for variables in a given data frame input_data
-#'    using the percentage of correct classification (PCC) pcc_w and sample size study_size columns,
+#' The function getEffectSummaryStats() calculates the summary statistics for variables in a given data frame input_data
+#'    using the percentage of correct classification (Effect) effect_w and sample size study_size columns,
 #'    and returns a data frame with the results. The function takes as input input_var_list,
 #'    a data frame that contains metadata about the variables in input_data and which variables to calculate
 #'    summary statistics for. The summary statistics calculated are the mean, median, weighted mean,
@@ -397,32 +410,32 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
 #' The function returns a data frame with the following columns:
 #' -Var Name: The name of the variable.
 #' -Var Class: The data type of the variable.
-#' -Mean: The arithmetic mean of the PCC for the variable.
-#' -Median: The median of the PCC for the variable.
-#' -Weighted Mean: The weighted mean of the PCC for the variable, using the inverse squared sample size as weights.
+#' -Mean: The arithmetic mean of the effect for the variable.
+#' -Median: The median of the effect for the variable.
+#' -Weighted Mean: The weighted mean of the effect for the variable, using the inverse squared sample size as weights.
 #' -WM CI lower: The lower bound of the confidence interval for the weighted mean.
 #' -WM CI upper: The upper bound of the confidence interval for the weighted mean.
-#' -Min: The minimum PCC value for the variable.
-#' -Max: The maximum PCC value for the variable.
-#' -SD: The standard deviation of the PCC for the variable.
+#' -Min: The minimum effect value for the variable.
+#' -Max: The maximum effect value for the variable.
+#' -SD: The standard deviation of the effect for the variable.
 #' -Obs: The number of observations for the variable.
 #' If a variable has missing or non-numeric data, it will not be included in the output.
 #' If no variables are included in the output, the function returns an empty data frame.
-getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
+getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
   # Parameter checking
   stopifnot(all(c(conf.level > 0, conf.level < 1)))
   
   # Constants
   z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) # Z value for conf. int. calculation
-  pcc_data <- with(input_data, as.vector(pcc_w))
+  effect_data <- with(input_data, as.vector(effect_w))
   study_size_data <- with(input_data, as.vector(study_size))
   
   # Output columns
-  pcc_stat_names <- c("Var Name", "Var Class", "Mean", "Median", "Weighted Mean",
+  effect_stat_names <- c("Var Name", "Var Class", "Mean", "Median", "Weighted Mean",
                      "WM CI lower", "WM CI upper", "Min", "Max", "SD", "Obs")
   
   # Variables to preprocess
-  desired_vars <- input_var_list[input_var_list$pcc_sum_stats == TRUE,]$var_name # Vector
+  desired_vars <- input_var_list[input_var_list$effect_sum_stats == TRUE,]$var_name # Vector
   
   # Initialize output data frame
   df <- data.frame(col1 = character(),
@@ -438,7 +451,7 @@ getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
                    col11 = numeric(),
                    stringsAsFactors = F
                    )
-  stopifnot(ncol(df) == length(pcc_stat_names))
+  stopifnot(ncol(df) == length(effect_stat_names))
   
   # Iterate over all desired variables and append summary statistics to the main DF
   missing_data_vars <- c()
@@ -467,20 +480,20 @@ getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
     stopifnot(xor(is.na(equal_val),is.na(gtlt_val))) # Additional validity check - should never occur
     # The specification is EQUAL
     if (!is.na(equal_val)){
-      pcc_data_equal <- pcc_data[var_data == equal_val]
+      effect_data_equal <- effect_data[var_data == equal_val]
       study_size_data_equal <- study_size_data[var_data == equal_val] # For W. mean - wonky, but straightforward
       cutoff <- equal_val  # For verbose output
     } else { # The specification is gtlt
       if (gtlt_val %in% c("MEAN", "MED")){
         cutoff <- ifelse(gtlt_val == 'MEAN', mean(var_data, na.rm=T), median(var_data, na.rm=T))
-        pcc_data_gt <- pcc_data[var_data >= cutoff]
-        pcc_data_lt <- pcc_data[var_data < cutoff]
+        effect_data_gt <- effect_data[var_data >= cutoff]
+        effect_data_lt <- effect_data[var_data < cutoff]
         study_size_data_gt <- study_size_data[var_data >= cutoff]
         study_size_data_lt <- study_size_data[var_data < cutoff]
       } else if (!is.na(gtlt_val)){
         cutoff <- gtlt_val # For verbose output
-        pcc_data_gt <- pcc_data[var_data >= gtlt_val]
-        pcc_data_lt <- pcc_data[var_data < gtlt_val]
+        effect_data_gt <- effect_data[var_data >= gtlt_val]
+        effect_data_lt <- effect_data[var_data < gtlt_val]
         study_size_data_gt <- study_size_data[var_data >= gtlt_val]
         study_size_data_lt <- study_size_data[var_data < gtlt_val]
       } else {
@@ -489,19 +502,19 @@ getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
     }
     
     # A function for statistics calculation
-    getNewDataRow <- function(input_var_name, input_class_name, input_pcc_data, input_study_size_data){
-      input_pcc_data <- na.omit(input_pcc_data)
+    getNewDataRow <- function(input_var_name, input_class_name, input_effect_data, input_study_size_data){
+      input_effect_data <- na.omit(input_effect_data)
       input_study_size_data <- na.omit(input_study_size_data)
       # Summary stats computation
-      var_mean <- round(mean(input_pcc_data), 3)
-      var_median <- round(median(input_pcc_data), 3)
-      var_weighted_mean <- round(weighted.mean(input_pcc_data, w = input_study_size_data^2),3)
-      var_sd <- round(sd(input_pcc_data), 3)
+      var_mean <- round(mean(input_effect_data), 3)
+      var_median <- round(median(input_effect_data), 3)
+      var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
+      var_sd <- round(sd(input_effect_data), 3)
       var_ci_lower <- round(var_weighted_mean - var_sd*z, 3)
       var_ci_upper <- round(var_weighted_mean + var_sd*z, 3)
-      var_min <- round(min(input_pcc_data), 3)
-      var_max <- round(max(input_pcc_data), 3)
-      var_obs <- length(input_pcc_data)
+      var_min <- round(min(input_effect_data), 3)
+      var_max <- round(max(input_effect_data), 3)
+      var_obs <- length(input_effect_data)
       
       new_row <- data.frame(
         col1 = input_var_name,
@@ -522,19 +535,19 @@ getPCCSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
     # EQUAL data
     if (!is.na(equal_val)){
       new_varname_equal <- paste0(var_name_verbose, " = ", round(as.numeric(cutoff,3)))
-      new_row <- getNewDataRow(new_varname_equal, var_class, pcc_data_equal, study_size_data_equal)
+      new_row <- getNewDataRow(new_varname_equal, var_class, effect_data_equal, study_size_data_equal)
       df <- rbind(df, new_row)
     } else { # GTLT data
       new_varname_gt <- paste0(var_name_verbose, " >= ", round(as.numeric(cutoff,3)))
       new_varname_lt <- paste0(var_name_verbose, " < ", round(as.numeric(cutoff,3)))
-      new_row_gt <- getNewDataRow(new_varname_gt, var_class, pcc_data_gt, study_size_data_gt)
-      new_row_lt <- getNewDataRow(new_varname_lt, var_class, pcc_data_lt, study_size_data_lt)
+      new_row_gt <- getNewDataRow(new_varname_gt, var_class, effect_data_gt, study_size_data_gt)
+      new_row_lt <- getNewDataRow(new_varname_lt, var_class, effect_data_lt, study_size_data_lt)
       df <- rbind(df, new_row_gt)
       df <- rbind(df, new_row_lt)
     }
   }
   # Put the final output together
-  colnames(df) <- pcc_stat_names
+  colnames(df) <- effect_stat_names
   cat("Summary statistics:\n")
   print(df)
   cat("\n")
@@ -578,7 +591,7 @@ getBoxPlotFactors <- function(adj_pars_source, pattern){
 #'  Defaults to T.
 getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
   # Check column validity
-  expected_cols <- c('pcc_w', factor_by)
+  expected_cols <- c('effect_w', factor_by)
   stopifnot(all(expected_cols %in% colnames(input_data)))
   
   # Plot variable preparation
@@ -586,10 +599,10 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
   factor_by_verbose <- gsub("_", " ", factor_by) # More legible y-axis label
   
   # Construct the plot - use !!sym(factor_by) to cast some more dark magic - makes plot recognize function input
-  box_plot <- ggplot(data = input_data, aes(x = pcc_w, y=factor(!!sym(factor_by), levels = factor_levels))) +
+  box_plot <- ggplot(data = input_data, aes(x = effect_w, y=factor(!!sym(factor_by), levels = factor_levels))) +
       geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
-      geom_vline(aes(xintercept = mean(pcc_w)), color = "red", linewidth = 0.85) + 
-      labs(title = NULL,x="Estimate of the PCC between years of schooling and wage", y = "Grouped by " %>% paste0(factor_by_verbose)) +
+      geom_vline(aes(xintercept = mean(effect_w)), color = "red", linewidth = 0.85) + 
+      labs(title = NULL,x="Estimate of the effect of years of schooling on wage", y = "Grouped by " %>% paste0(factor_by_verbose)) +
       main_theme()
   
   # Plot the plot
@@ -603,32 +616,32 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
 #'  to get the data without these outliers.
 #' 
 #' @param input_data Data to check
-#' @param pcc_cutoff Outlier cutoff point for the PCC
+#' @param effect_cutoff Outlier cutoff point for the effect
 #' @param precision_cutoff Outlier cutoff point for the SE precision
 #' @param verbose If true, print out information about the outliers
 #' @return [list] Filter for the data without outliers
-getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, verbose=T) {
+getOutliers <- function(input_data, effect_cutoff = 0.2, precision_cutoff = 0.2, verbose=T) {
   # Check column validity
-  expected_cols <- c('pcc_w', 'se_precision_w')
+  expected_cols <- c('effect_w', 'se_precision_w')
   stopifnot(all(expected_cols %in% colnames(input_data)))
   
   # Get source values
   obs <- input_data$obs_n
-  pcc <- input_data$pcc_w
+  effect <- input_data$effect_w
   precision <- input_data$se_precision_w
   
   # Maximum values
-  max_pcc <- max(pcc)
+  max_effect <- max(effect)
   max_precision <- max(precision)
   
   # Percentage of the maximum value - [0.2, 0.8, 0.7, ...]
-  pcc_perc <- pcc/max_pcc
+  effect_perc <- effect/max_effect
   precision_perc <- precision/max_precision
   
   # Create filters
-  pcc_filter <- pcc_perc >= pcc_cutoff
+  effect_filter <- effect_perc >= effect_cutoff
   precision_filter <- precision_perc >= precision_cutoff
-  outlier_filter <- pcc_filter & precision_filter
+  outlier_filter <- effect_filter & precision_filter
     
   # Filter suspicious observations
   outliers <- obs[outlier_filter]
@@ -659,24 +672,24 @@ getOutliers <- function(input_data, pcc_cutoff = 0.2, precision_cutoff = 0.2, ve
 
 #' Input the main data frame, several specifications, and create a funnel plot
 #' 
-#' @param input_data [data.frame] Main data frame. Must contain cols 'pcc_w', 'se_precision_w'
-#' @param pcc_cutoff [float] Cutoff point for PCC.
+#' @param input_data [data.frame] Main data frame. Must contain cols 'effect_w', 'se_precision_w'
+#' @param effect_cutoff [float] Cutoff point for the effect.
 #' @param precision_cutoff [float] Cutoff point for precision.
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
-getFunnelPlot <- function(input_data, pcc_cutoff=0.2, precision_cutoff=0.2, verbose = T){
+getFunnelPlot <- function(input_data, effect_cutoff=0.2, precision_cutoff=0.2, verbose = T){
   # Check column validity
-  expected_cols <- c('pcc_w', 'se_precision_w')
+  expected_cols <- c('effect_w', 'se_precision_w')
   stopifnot(all(expected_cols %in% colnames(input_data)))
   
   # Filter out the outliers
-  filter_pcc_w <- getOutliers(input_data, pcc_cutoff=pcc_cutoff, precision_cutoff=precision_cutoff, verbose=verbose)
+  filter_effect_w <- getOutliers(input_data, effect_cutoff=effect_cutoff, precision_cutoff=precision_cutoff, verbose=verbose)
   
   # Single out the data for the funnel plot
-  funnel_data <- data[filter_pcc_w, c('pcc_w', 'se_precision_w')] # Only PCC, Precision
+  funnel_data <- data[filter_effect_w, c('effect_w', 'se_precision_w')] # Only Effect, Precision
   funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
   
   # Plot the plot
-  funnel_win <- ggplot(data = funnel_data, aes(x = pcc_w, y = se_precision_w)) + 
+  funnel_win <- ggplot(data = funnel_data, aes(x = effect_w, y = se_precision_w)) + 
     geom_point(color = "#0d4ed1") + 
     labs(title = NULL, x = "Partial correlation coefficient", y = "Precision of the estimate (1/SE)") +
     main_theme()
@@ -754,26 +767,26 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
 #' @param data [data.frame] Input data
 getLinearTests <- function(data) {
   # Validate that the necessary columns are present
-  required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
+  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
   stopifnot(all(required_cols %in% names(data)))
   # OLS
-  ols <- lm(formula = pcc_w ~ se_pcc_w, data = data)
+  ols <- lm(formula = effect_w ~ se_w, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
   ols_coefs <- extractLinearCoefs(ols_res)
   # FE
-  fe <- rma(pcc_w, sei = se_pcc_w, mods = ~se_pcc_w, data = data, method = "FE")
+  fe <- rma(effect_w, sei = se_w, mods = ~se_w, data = data, method = "FE")
   fe_res <- coeftest(fe, vcov = vcov(fe, type = "fixed", cluster = c(data$study_id)))
   fe_coefs <- extractLinearCoefs(fe_res)
   # RE
-  re <- rma(pcc_w, sei = se_pcc_w, mods = ~se_pcc_w, data = data, method = "REML")
+  re <- rma(effect_w, sei = se_w, mods = ~se_w, data = data, method = "REML")
   re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
   re_coefs <- extractLinearCoefs(re_res)
   # Weighted by number of observations per study
-  ols_w_study <- lm(formula = pcc_w ~ se_pcc_w, data = data, weight = (data$study_size*data$study_size))
+  ols_w_study <- lm(formula = effect_w ~ se_w, data = data, weight = (data$study_size*data$study_size))
   ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
   ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res)
   # Weighted by precision
-  ols_w_precision <- lm(formula = pcc_w ~ se_pcc_w, data = data, weight = c(data$se_precision_w*data$se_precision_w))
+  ols_w_precision <- lm(formula = effect_w ~ se_w, data = data, weight = c(data$se_precision_w*data$se_precision_w))
   ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
   ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res)
   # Combine the results into a data frame
@@ -835,9 +848,9 @@ extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbos
 ###### PUBLICATION BIAS - WAAP (Ioannidis et al., 2017) ######
 
 getWaapResults <- function(data, ...){
-  WLS_FE_avg <- sum(data$pcc_w/data$se_pcc_w)/sum(1/data$se_pcc_w)
+  WLS_FE_avg <- sum(data$effect_w/data$se_w)/sum(1/data$se_w)
   WAAP_bound <- abs(WLS_FE_avg)/2.8
-  WAAP_reg <- lm(formula = pcc_w ~ -se_precision_w, data = data[data$se_pcc_w<WAAP_bound,])
+  WAAP_reg <- lm(formula = effect_w ~ -se_precision_w, data = data[data$se_w<WAAP_bound,])
   WAAP_reg_cluster <- coeftest(WAAP_reg, vcov = vcovHC(WAAP_reg, type = "HC0", cluster = c(data$study_id)))
   WAAP_coefs <- extractNonlinearCoefs(WAAP_reg_cluster, ...)
   invisible(WAAP_coefs)
@@ -848,7 +861,7 @@ getWaapResults <- function(data, ...){
 
 getTop10Results <- function(data, ...){
   T10_bound <- quantile(data$se_precision_w, probs = 0.9) #Setting the 90th quantile bound
-  T10_reg <- lm(formula = pcc_w ~ -se_precision_w, data = data[data$se_precision_w>T10_bound,]) #Regression using the filtered data
+  T10_reg <- lm(formula = effect_w ~ -se_precision_w, data = data[data$se_precision_w>T10_bound,]) #Regression using the filtered data
   T10_reg_cluster <- coeftest(T10_reg, vcov = vcovHC(T10_reg, type = "HC0", cluster = c(data$study_id)))
   T10_coefs <- extractNonlinearCoefs(T10_reg_cluster, ...)
   invisible(T10_coefs)
@@ -879,7 +892,7 @@ getStemResults <- function(data, ...){
     10^(-4), # Tolerance - set level of sufficiently small stem to determine convergence
     10^3 # max_N_count - set maximum number of iteration before termination
   )
-  est_stem <- stem(data$pcc_w, data$se_pcc_w, stem_param)$estimates # Actual esimation
+  est_stem <- stem(data$effect_w, data$se_w, stem_param)$estimates # Actual esimation
   
   # Save results
   stem_coefs <- extractNonlinearCoefs(est_stem, ...)
@@ -910,9 +923,9 @@ getHierResults <- function(data, ...){
   regdata_h <- NULL
   for (i in 1:nreg_h) {
     filter <- data$study_name==study_levels_h[i] #T/F vector identifying if the observation is from the i-th study
-    y <- data$pcc_w[filter] #PCCs from the i-th study
+    y <- data$effect_w[filter] #Effects from the i-th study
     X <- cbind(1,
-               data$se_pcc_w[filter])
+               data$se_w[filter])
     regdata_h[[i]] <- list(y=y, X=X)
   }
   Data_h <- list(regdata=regdata_h)
@@ -935,7 +948,7 @@ getHierResults <- function(data, ...){
 
 ###### PUBLICATION BIAS - Selection model (Andrews & Kasy, 2019) ######
 
-#' Estimate the Selection Model and extract the coefficients for PCC and its SE
+#' Estimate the Selection Model and extract the coefficients for Effect and its SE
 #'  - Source: https://maxkasy.github.io/home/metastudy/
 #' 
 #' This function computes selection model coefficients from input data using
@@ -966,11 +979,11 @@ getSelectionResults <- function(data, cutoffs = c(1.960),
   stopifnot(all(cutoffs %in% c(1.645, 1.960, 2.576))) # Cutoffs
   stopifnot(modelmu %in% c("normal", "t")) # Model
   # Validate that the necessary columns are present
-  required_cols <- c("pcc_w", "se_pcc_w")
+  required_cols <- c("effect_w", "se_w")
   stopifnot(all(required_cols %in% names(data)))
   # Extract winsorized estimates, standard errors
-  sel_X <- data$pcc_w # PCC - Winsorized
-  sel_sigma <- data$se_pcc_w # SE - Winsorized
+  sel_X <- data$effect_w # Effect - Winsorized
+  sel_sigma <- data$se_w # SE - Winsorized
   
   # Estimation
   estimates <- metastudies_estimation(sel_X, sel_sigma, cutoffs, symmetric, model = modelmu)
@@ -995,7 +1008,7 @@ getSelectionResults <- function(data, cutoffs = c(1.960),
 #'  - Source: https://osf.io/f6nzb/
 
 #'  @param data [data.frame] The main data frame on which to run the estimation on.
-#'    Must contain the columns - "pcc_w", and "se_pcc_w"
+#'    Must contain the columns - "effect_w", and "se_w"
 #'  @inheritDotParams Parameters for the extractNonlinearCoefs function.
 #'  
 #'  @return endo_kink_coefs [vector] The four desired coefficients, which are:
@@ -1012,7 +1025,7 @@ getEndoKinkResults <- function(data, ...){
   # Read the source file
   source("endo_kink_master_thesis_cala.R")
   # Validate that the necessary columns are present
-  required_cols <- c("pcc_w", "se_pcc_w")
+  required_cols <- c("effect_w", "se_w")
   stopifnot(all(required_cols %in% names(data))) 
   # Extract winsorized estimates, standard errors
   data <- data[,required_cols]
@@ -1039,7 +1052,7 @@ getEndoKinkResults <- function(data, ...){
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data) {
   # Validate the input
-  required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
+  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
   stopifnot(
     is.data.frame(input_data),
     all(required_cols %in% names(input_data))
@@ -1131,8 +1144,8 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
 #' and Sargan test. If multiple instruments are tied for the best performance, all of them will be returned.
 #' The function also prints the identified best instrument(s).
 #'
-#' @param input_data [data.frame] A data frame containing the effect (pcc_w), its standard error (se_pcc_w), study ids, and source
-#' data for the instrument(s) (specified as separate columns). It must have the columns "pcc_w", "se_pcc_w", "study_id", and "n_obs".
+#' @param input_data [data.frame] A data frame containing the effect (effect_w), its standard error (se_w), study ids, and source
+#' data for the instrument(s) (specified as separate columns). It must have the columns "effect_w", "se_w", "study_id", and "n_obs".
 #' @param instruments [list] A list of potential instruments. Each element of the list should be a vector of numeric values.
 #'  Ideally specify as 1/data$n_obs, etc.
 #' @param instruments_verbose [vector] A vector of verbose names (strings) for each instrument. It must have the same length
@@ -1149,7 +1162,7 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
     is.data.frame(input_data),
     is.list(instruments),
     is.vector(instruments_verbose),
-    all(c("pcc_w", "se_pcc_w", "study_id", "n_obs") %in% colnames(input_data))
+    all(c("effect_w", "se_w", "study_id", "n_obs") %in% colnames(input_data))
   )
   # Initialize an empty data frame - each row will be one instrument
   results <- data.frame(r_squared = numeric(length(instruments)),
@@ -1160,7 +1173,7 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
   for (i in seq_along(instruments)) {
     instrument <- instruments[i][[1]] # Unlist
     stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
-    model <- ivreg(formula = pcc_w ~ se_pcc_w | instrument, data = input_data)
+    model <- ivreg(formula = effect_w ~ se_w | instrument, data = input_data)
     model_summary <- summary(model, vcov = vcovHC(model, cluster = c(input_data$study_id)), diagnostics=T)
     # Extract relevant statistics
     results[i,"r_squared"] <- model_summary$r.squared
@@ -1202,7 +1215,7 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 
 #' getIVResults function
 #'
-#' This function takes in data and finds the best instrument for the IV regression of pcc_w against se_pcc_w.
+#' This function takes in data and finds the best instrument for the IV regression of effect_w against se_w.
 #' It then runs the IV regression and extracts the coefficients. The strength of the function is found
 #' in being able to identify the best instrument automatically. The list of instruments is unmodifiable as of now.
 #' 
@@ -1223,7 +1236,7 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 #' extracts the coefficients using extractExoCoefs.
 #'
 #' @examples
-#' data <- data.frame(pcc_w = rnorm(10), se_pcc_w = rnorm(10), n_obs = rep(10, 10), study_id = rep(1:10, each = 1))
+#' data <- data.frame(effect_w = rnorm(10), se_w = rnorm(10), n_obs = rep(10, 10), study_id = rep(1:10, each = 1))
 #' getIVResults(data)
 getIVResults <- function(data, ...){
   # Define the instruments to use
@@ -1245,15 +1258,15 @@ getIVResults <- function(data, ...){
   # Run the regression
   instrument <- best_instrument[[1]] # Unlist
   stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
-  model <- ivreg(formula = pcc_w ~ se_pcc_w | instrument, data = data)
+  model <- ivreg(formula = effect_w ~ se_w | instrument, data = data)
   model_summary <- summary(model, vcov = vcovHC(model, cluster = c(data$study_id)), diagnostics=T)
   # Get the coefficients
   all_coefs <- model_summary$coefficients
   IV_coefs_vec <- c(
     all_coefs["(Intercept)","Estimate"], # Effect
     all_coefs["(Intercept)", "Std. Error"], # Effect SE
-    all_coefs["se_pcc_w", "Estimate"], # Pub Bias
-    all_coefs["se_pcc_w", "Std. Error"] # Pub Bias SE
+    all_coefs["se_w", "Estimate"], # Pub Bias
+    all_coefs["se_w", "Std. Error"] # Pub Bias SE
     ) 
   iv_coefs_mat <- matrix(IV_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
   # Extract the coefficients and return as a vector
@@ -1263,7 +1276,7 @@ getIVResults <- function(data, ...){
 
 ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
 
-#' getMedians - Calculates the vector of medians for pcc_w
+#' getMedians - Calculates the vector of medians for effect_w
 #' Input the data frame, and the name of the column to calculate a vector of medians for,
 #'  grouped by the study levels.
 #' 
@@ -1313,19 +1326,19 @@ getPUniResults <- function(data, method="ML",...){
     method %in% c("ML", "P") # Max likelihood, Moments
   )
   # Calculate medians for all studies
-  med_pcc_w <- getMedians(data, 'pcc_w') # PCC vector of medians
-  med_se_pcc_w <- getMedians(data, 'se_pcc_w') # SE vector of medians
+  med_effect_w <- getMedians(data, 'effect_w') # Effect vector of medians
+  med_se_w <- getMedians(data, 'se_w') # SE vector of medians
   #Estimation
   if (method == "ML"){
     #Maximum likelihood
     quiet(
-      est_ml <- puni_star(yi = med_pcc_w, vi = med_se_pcc_w^2, side = "right", method = "ML", alpha = 0.05,
+      est_ml <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "ML", alpha = 0.05,
                              control=list( max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
     )
   } else if (method == "P"){
     # Moments method estimation
     quiet(
-      est_ml <- puni_star(yi = med_pcc_w, vi = med_se_pcc_w^2, side = "right", method = "P",
+      est_ml <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "P",
                           alpha = 0.05,control=list(max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
     )
   } else {
@@ -1351,7 +1364,7 @@ getPUniResults <- function(data, method="ML",...){
 #'
 #' Performs two tests for publication bias and exogeneity in instrumental variable (IV) analyses using clustered data.
 #'
-#' @param input_data [data.frame] A data frame containing the necessary columns: "pcc_w", "se_pcc_w", "study_id", "study_size", and "se_precision_w".
+#' @param input_data [data.frame] A data frame containing the necessary columns: "effect_w", "se_w", "study_id", "study_size", and "se_precision_w".
 #' @return A data frame with the results of the three tests for publication bias and exogeneity in IV analyses using clustered data.
 #'
 #' @details This function first validates that the necessary columns are present in the input data frame.
@@ -1361,7 +1374,7 @@ getPUniResults <- function(data, method="ML",...){
 #' The results are then printed into the console and returned invisibly.
 getExoTests <- function(input_data) {
   # Validate that the necessary columns are present
-  required_cols <- c("pcc_w", "se_pcc_w", "study_id", "study_size", "se_precision_w")
+  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
   stopifnot(
     is.data.frame(input_data),
     all(required_cols %in% names(input_data))
@@ -1516,7 +1529,7 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
   # Read the source file
   source("maive_master_thesis_cala.R")
   # Validate that the necessary columns are present
-  required_cols <- c("pcc_w", "se_pcc_w", "study_size", "study_id")
+  required_cols <- c("effect_w", "se_w", "study_size", "study_id")
   stopifnot(
     all(required_cols %in% names(data)),
     method %in% c(1,2,3,4),

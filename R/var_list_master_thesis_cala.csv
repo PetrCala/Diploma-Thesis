@@ -1,4 +1,4 @@
-var_name,var_name_verbose,data_type,group_category,variable_summary,pcc_sum_stats,equal,gtlt,bma,to_log_for_bma,bpe
+var_name,var_name_verbose,data_type,group_category,variable_summary,effect_sum_stats,equal,gtlt,bma,to_log_for_bma,bpe
 obs_n,Observation Number,int,1,FALSE,FALSE,NA,NA,FALSE,NA,NA
 study_id,Study ID,int,2,FALSE,FALSE,NA,NA,FALSE,NA,NA
 study_name,Study Name,category,3,FALSE,FALSE,NA,NA,FALSE,NA,NA
@@ -7,8 +7,8 @@ se_orig,Effect Standard Error,float,5,TRUE,FALSE,NA,NA,FALSE,NA,NA
 t_stat,T-Statistic,float,6,TRUE,TRUE,NA,MED,FALSE,NA,NA
 95_lower_orig,95% CI Lower Bound of Original Effect,float,7,FALSE,FALSE,NA,NA,FALSE,NA,NA
 95_upper_orig,95% CI Upper Bound of Original Effect,float,7,FALSE,FALSE,NA,NA,FALSE,NA,NA
-pcc,Partial Correlation Coefficient,float,8,TRUE,FALSE,NA,NA,FALSE,NA,NA
-se_pcc,Standard Error of PCC,float,9,FALSE,FALSE,NA,NA,FALSE,NA,NA
+effect,Transformed Effect (PCC),float,8,TRUE,FALSE,NA,NA,FALSE,NA,NA
+se,Standard Error of the Transformed Effect,float,9,FALSE,FALSE,NA,NA,FALSE,NA,NA
 se_precision,Preicision,float,9,TRUE,FALSE,NA,NA,FALSE,NA,NA
 95_lower,95% Lower Bound for Precision,float,10,FALSE,FALSE,NA,NA,FALSE,NA,NA
 95_upper,95% Upper Bound for Precision,float,10,FALSE,FALSE,NA,NA,FALSE,NA,NA
@@ -101,8 +101,8 @@ citations,Citations,int,40,TRUE,TRUE,NA,MED,TRUE,FALSE,NA
 published,Study - Published,dummy,41,TRUE,TRUE,1,NA,TRUE,FALSE,NA
 unpublished,Study - Unpublished,dummy,41,TRUE,TRUE,1,NA,FALSE,FALSE,NA
 pub_year,Publication Year,int,42,TRUE,TRUE,NA,MED,FALSE,FALSE,NA
-pcc_w,Partial Correlation Coefficient - Winsorized,float,43,TRUE,FALSE,NA,NA,TRUE,NA,NA
-se_pcc_w,PCC Standard Error - Winsorized,float,44,TRUE,FALSE,NA,NA,TRUE,NA,NA
+effect_w,Transformed Effect - Winsorized,float,43,TRUE,FALSE,NA,NA,TRUE,NA,NA
+se_w,Standard Error - Winsorized,float,44,TRUE,FALSE,NA,NA,TRUE,NA,NA
 se_precision_w,Precision - Winsorized,float,45,TRUE,FALSE,NA,NA,FALSE,NA,NA
 t_w,T-Statistic - Winsorized,float,46,TRUE,TRUE,NA,MED,FALSE,NA,NA
 significant_w,T-Statistic Is Significant - Winsorized,int,47,FALSE,FALSE,NA,NA,FALSE,NA,NA
