@@ -10,7 +10,7 @@ The reason to keep this repository is to allow for easier version tracking, and 
 
 ## Prerequisites:
  1. Make sure that your working directory contains the following files:
-     - `<NAME_OF_YOUR_DATA_FRAME>.csv` (modifiable below)
+     - `<NAME_OF_YOUR_DATA_FRAME>.csv` (modifiable below, default `data_set_master_thesis_cala.csv`)
      - `endo_kink_master_thesis_cala.R`
      - `main_master_thesis_cala.R`
      - `maive_master_thesis_cala.R`
@@ -18,7 +18,7 @@ The reason to keep this repository is to allow for easier version tracking, and 
      - `selection_model_master_thesis_cala.R`
      - `source_master_thesis_cala.R`
      - `stem_method_master_thesis_cala.R`
-     - `<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv` (modifiable below)
+     - `<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv` (modifiable below, default `var_list_master_thesis_cala.csv`)
  2. Make sure your data frame (`<NAME_OF_YOUR_DATA_FRAME>.csv`) contains **no missing values**.
    If there are any, the script **will not run**
  3. The data frame should contain these columns (named exactly as listed below):
