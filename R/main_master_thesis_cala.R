@@ -5,12 +5,60 @@
 #' Year of defense - 2024
 #' Supervisor - doc. PhDr. Zuzana Havránková Ph.D. 
 #' 
-#' HOW TO RUN:
+#' PREREQUISITES:
 #'  1. Make sure that your working directory contains the following files:
-#'    - diploma_thesis_main.R
-#'    - diploma_thesis_source.R
-#'    - stem_method_ext.R
-#'  2. The script should be ran all at once, which should make for the most
+#'      -<NAME_OF_YOUR_DATA_FRAME>.csv (modifiable below)
+#'      -endo_kink_master_thesis_cala.R
+#'      -main_master_thesis_cala.R
+#'      -maive_master_thesis_cala.R
+#'      -pretty_output_master_thesis_cala.R
+#'      -selection_model_master_thesis_cala.R
+#'      -source_master_thesis_cala.R
+#'      -stem_method_master_thesis_cala.R
+#'      -<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv (modifiable below)
+#'  2. Make sure your data frame (<NAME_OF_YOUR_DATA_FRAME>.csv) contains NO MISSING VALUES.
+#'    If there are any, the script will not run.
+#'  3. The data frame should contain these columns (named exactly as listed below):
+#'    effect -  The main effect/estimate values. Ideally it should be  a transformed effect, such as
+#'      the partial correlation coefficient.
+#'    se - standard error of the effect
+#'    t_stat - t-statistic of the main effect. Can be calculated as a ratio of the effect
+#'      and its standard error.
+#'    n_obs - Number of observations associated with this estimate.
+#'    study_size - Size of the study that the estimate comes from. In Excel, this can be easily
+#'      computed as "=COUNTIF(<COL>:<COL>,<CELL>)", where <COL> is the column with study names or
+#'      study id's, and <CELL> is the cell in that column on the same row you want to calculate the
+#'      study size on. Example: =COUNTIF(B:B,B2). This calculates the study size of the study located
+#'      in cell B2, assuming that the column B contains the study information.
+#'  4. In the file "var_list.R", input the list of variables you are using in your data frame,
+#'    along with these parameters:
+#'    var_name - Name of the variable exactly as it appears in the data frame columns. Must not include
+#'      spaces and various special characters. Underscores are allowed.
+#'    var_name_verbose - A descriptive form of the variable name. Needs not to limit to any subset of characters.
+#'    data_type - Type of the data this variable holds. Can be only one type. Can be one of:
+#'      int - Integer. Any integer.
+#'      category - Categorical variable. Any string.
+#'      float - Float. Any number.
+#'      dummy - Dummy. Either 0 or 1.
+#'      perc - Percentage. Any value between 0 and 1, inclusive.
+#'    group_category - Group of the variable. Group similar together, otherwise make a new group.
+#'      Examples - dummies, gender, urban vs. rural, short-run vs. long-run
+#'    variable_summary - Boolean. If TRUE, this variable will appear in the summary statistics table.
+#'    effect_sum_stats - Boolean. If TRUE, this variable will appear in the effect summary statistics table.
+#'    equal - Float. If set to any value, the effect summary statistics table will print out the statistics
+#'      for the main effect of the data when subsetted to this variable equal to the specified value.
+#'      If set to any value, can not set the "gtlt" column value.
+#'    gtlt - One of "MED", float. Similar to "equal", but if set to MED, will print out the statistics
+#'      for the effect of the data when subsetted to values above/below the median value of this variable.
+#'      If set to float, the subsetting breakpoint will be that value instead.
+#'    bma - Boolean. If TRUE, this variable will be used in the Bayesian model averaging. Do NOT set all
+#'      values of one variable group to TRUE. This would create a dummy trap.
+#'    to_log_for_bma - Boolean. If TRUE, this variable will be converted to logarithm during the 
+#'      Bayesian model averaging.
+#'    bpe - If set to any value, this value will be used when evaluating the best practice estimate.
+#' 
+#' HOW TO RUN:
+#'  1. The script should be ran all at once, which should make for the most
 #'    user-friendly experience. In order to achieve this, you can customize
 #'    which parts of the code should be ran during the global call.
 #'    This is achieved by splitting the script into two parts:
@@ -18,13 +66,13 @@
 #'          to run and with which parameters
 #'      - Technical part: The actual code, which should run without any problems,
 #'          and all at once, if you specify the parameters correctly.
-#'  3. Go to the customizable part, and set which parts of the code you want to run.
+#'  2. Go to the customizable part, and set which parts of the code you want to run.
 #'    T stand for TRUE, F for FALSE. If the name of the part is set to T, that
 #'    part will run. If it is set to F, it will not.
-#'  4. Adjust the parameters with which to run the script. Find the 
+#'  3. Adjust the parameters with which to run the script. Find the 
 #'    'adjustable_parameters' vector, and inside, feel free to adjust the various
 #'    parameters as you see fit.
-#'  5. Run the code ALL AT ONCE, and see the results in the console, and in the
+#'  4. Run the code ALL AT ONCE, and see the results in the console, and in the
 #'    'Plots' section.
 
 ######################################################################
@@ -34,22 +82,26 @@
 # Clean the environment - DO NOT CHANGE THIS
 rm(list = ls()) 
 
+# Customizable data file names
+master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
+var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
+
 #' WHAT PARTS OF THE SCRIPT TO RUN
 #' T - RUN THIS PART
 #' F - DO NOT RUN THIS PART
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
-  "exo_tests" = T,
-  "p_hacking_tests" = T,
-  "bma" = F,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = F,
+  "bma" = T,
   "fma" = F,
   "best_practice_estimate" = F
 )
@@ -96,9 +148,7 @@ if (! getwd() == dirname(getActiveDocumentContext()$path)){
   print(paste0('Setting the working directory to: ', getwd()))
 }
 
-# Source files
-master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
-var_list_source <- "var_list_master_thesis_cala.csv" # Variable info source
+# Source files - unmodifiable
 stem_source <- "stem_method_master_thesis_cala.R" # STEM method (Furukawa, 2019) - fixed package handling
 selection_model_source <- "selection_model_master_thesis_cala.R" # Selection model (Andrew & Kasy, 2019)
 endo_kink_source <- "endo_kink_master_thesis_cala.R" # Endogenous Kink model (Bom & Rachinger, 2019)
@@ -301,5 +351,12 @@ if (run_this["p_hacking_tests"]){
   ###### MAIVE Estimator (Irsova et al., 2023) ######
   maive_results <- getMaiveResults(data,
           method=3, weight=0, instrument=1, studylevel=0, verbose=T)
+}
+
+
+######################### BAYESIAN MODEL AVERAGING #########################
+
+if (run_this["bma"]){
+  runVifTest(data, var_list)
 }
 

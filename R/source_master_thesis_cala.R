@@ -1563,6 +1563,22 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
 }
 
 
+######################### BAYESIAN MODEL AVERAGING #########################
+
+###### HETEROGENEITY - Bayesian Model Averaging in R ######
+
+runVifTest <- function(input_data, input_var_list){
+  # Get the list of variables to run the bma for - assume effect in the first col
+  desired_vars_bool <- input_var_list$bma 
+  desired_vars <- input_var_list$var_name[desired_vars_bool]
+  return(desired_vars)
+  
+  
+  
+}
+
+
+
 
 ######################### GRAPHICS #########################
 
