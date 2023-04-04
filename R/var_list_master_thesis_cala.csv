@@ -7,8 +7,8 @@ se_orig,Effect Standard Error,float,5,TRUE,FALSE,NA,NA,FALSE,NA,NA
 t_stat,T-Statistic,float,6,TRUE,TRUE,NA,MED,FALSE,NA,NA
 95_lower_orig,95% CI Lower Bound of Original Effect,float,7,FALSE,FALSE,NA,NA,FALSE,NA,NA
 95_upper_orig,95% CI Upper Bound of Original Effect,float,7,FALSE,FALSE,NA,NA,FALSE,NA,NA
-effect,Transformed Effect (PCC),float,8,TRUE,FALSE,NA,NA,TRUE,NA,NA
-se,Standard Error of the Transformed Effect,float,9,FALSE,FALSE,NA,NA,TRUE,NA,NA
+effect,Transformed Effect (PCC),float,8,TRUE,FALSE,NA,NA,FALSE,NA,NA
+se,Standard Error of the Transformed Effect,float,9,FALSE,FALSE,NA,NA,FALSE,NA,NA
 se_precision,Preicision,float,9,TRUE,FALSE,NA,NA,FALSE,NA,NA
 95_lower,95% Lower Bound for Precision,float,10,FALSE,FALSE,NA,NA,FALSE,NA,NA
 95_upper,95% Upper Bound for Precision,float,10,FALSE,FALSE,NA,NA,FALSE,NA,NA

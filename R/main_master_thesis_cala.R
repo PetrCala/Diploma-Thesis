@@ -30,7 +30,7 @@
 #'      study id's, and <CELL> is the cell in that column on the same row you want to calculate the
 #'      study size on. Example: =COUNTIF(B:B,B2). This calculates the study size of the study located
 #'      in cell B2, assuming that the column B contains the study information.
-#'  4. In the file "var_list.R", input the list of variables you are using in your data frame,
+#'  4. In the file <NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv, input the list of variables you are using in your data frame,
 #'    along with these parameters:
 #'    var_name - Name of the variable exactly as it appears in the data frame columns. Must not include
 #'      spaces and various special characters. Underscores are allowed.
@@ -167,6 +167,7 @@ source_files <- c(
 packages <- c(
   "AER", # Applied econometrics with R
   "BMS", # bayesian model averaging
+  "car", # Variance Inflation Factor
   "DescTools", # Descriptive statistics and data analysis
   "LowRankQP", # Solving convex quadratic optimization problems
   "bayesm", # bayesian modeling and inference
@@ -357,6 +358,8 @@ if (run_this["p_hacking_tests"]){
 ######################### BAYESIAN MODEL AVERAGING #########################
 
 if (run_this["bma"]){
-  runVifTest(data, var_list)
+  vif_coefs <- runVifTest(data, var_list)
+  print(vif_coefs)
 }
+
 

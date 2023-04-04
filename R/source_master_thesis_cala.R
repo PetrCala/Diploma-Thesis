@@ -1567,15 +1567,45 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
 
+#' Creates a formula for Bayesian model averaging
+#'
+#' This function creates a formula for Bayesian model averaging based on the variables in \code{var_vector}.
+#' The formula includes the variables "effect_w" and "se_w", as well as any other variables specified in \code{var_vector}.
+#'
+#' @param var_vector A character vector of variable names to be included in the formula. Must include
+#'  the strings "effect_w" and "se_w"
+#' @return A formula object (to be used) Bayesian model averaging
+getBMAFormula <- function(var_vector){
+  # Input validation
+  stopifnot(
+    all(c("effect_w","se_w") %in% var_vector)
+  )
+  # Get the formula
+  remaining_vars <- var_vector[var_vector != c("effect_w", "se_w")] # All but the two
+  remaining_vars_verbose <- paste(remaining_vars, sep="", collapse = " + ")
+  all_vars_verbose <- paste0("effect_w ~ se_w + ", remaining_vars_verbose)
+  bma_formula <- as.formula(all_vars_verbose)
+  return(bma_formula)
+}
+
+
 runVifTest <- function(input_data, input_var_list){
-  # Get the list of variables to run the bma for - assume effect in the first col
+  # Get the list of variables to run the bma for - assume they contain 'effect_w', 'se_w'
   desired_vars_bool <- input_var_list$bma 
   desired_vars <- input_var_list$var_name[desired_vars_bool]
-  return(desired_vars)
-  
-  
-  
-}
+  # Validate only after initiating the desired_vars object
+  stopifnot(
+    all(c("effect_w","se_w") %in% colnames(input_data)),
+    all(c("effect_w","se_w") %in% desired_vars),
+    any(is.na(input_data)) # No missing values allowed
+  )
+  #Testing for VIF
+  BMA_formula <- getBMAFormula(desired_vars)
+  BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
+  # Unhandled exception - fails in case of too few observations vs. too many variables
+  vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients
+  return(vif_coefs)
+  }
 
 
 
