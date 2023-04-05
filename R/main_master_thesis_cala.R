@@ -92,16 +92,16 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
-  "exo_tests" = F,
-  "p_hacking_tests" = F,
-  "bma" = T,
+  "variable_summary_stats" = T,
+  "effect_summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
+  "nonlinear_tests" = T,
+  "exo_tests" = T,
+  "p_hacking_tests" = T,
+  "bma" = F,
   "fma" = F,
   "best_practice_estimate" = F
 )
@@ -153,7 +153,6 @@ stem_source <- "stem_method_master_thesis_cala.R" # STEM method (Furukawa, 2019)
 selection_model_source <- "selection_model_master_thesis_cala.R" # Selection model (Andrew & Kasy, 2019)
 endo_kink_source <- "endo_kink_master_thesis_cala.R" # Endogenous Kink model (Bom & Rachinger, 2019)
 maive_source <- "maive_master_thesis_cala.R" # MAIVE Estimator (Irsova et al., 2023)
-
 source_files <- c(
   master_data_set_source,
   var_list_source,

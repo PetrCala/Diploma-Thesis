@@ -468,7 +468,7 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       !any(is.numeric(var_data), na.rm=TRUE), # No numerics
       all(is.na(var_data)), # All NAs
       nrow(var_data) == 0, # Empty data
-      all(var_data == 0) # Only 0s
+      all(var_data %in% c(0,NA)) # Only 0s or NAs
       )){
       missing_data_vars <- append(missing_data_vars, var_name)
       next
