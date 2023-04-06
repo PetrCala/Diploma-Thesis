@@ -9,7 +9,7 @@ t_stat,T-Statistic,float,6,stop,TRUE,TRUE,NA,median,FALSE,NA,NA
 95_upper_orig,95% CI Upper Bound of Original Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,NA,NA
 effect,Transformed Effect (PCC),float,8,stop,TRUE,FALSE,NA,NA,FALSE,NA,NA
 se,Standard Error of the Transformed Effect,float,9,stop,FALSE,FALSE,NA,NA,FALSE,NA,NA
-se_precision,Preicision,float,9,stop,TRUE,FALSE,NA,NA,FALSE,NA,NA
+se_precision,Precision,float,9,stop,TRUE,FALSE,NA,NA,FALSE,NA,NA
 95_lower,95% Lower Bound for Precision,float,10,stop,FALSE,FALSE,NA,NA,FALSE,NA,NA
 95_upper,95% Upper Bound for Precision,float,10,stop,FALSE,FALSE,NA,NA,FALSE,NA,NA
 est_short_run,Estimate - Short Run,dummy,11,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
@@ -99,8 +99,8 @@ citations,Citations,int,40,stop,TRUE,TRUE,NA,median,TRUE,FALSE,NA
 published,Study - Published,dummy,41,stop,TRUE,TRUE,1,NA,TRUE,FALSE,NA
 unpublished,Study - Unpublished,dummy,41,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA
 pub_year,Publication Year,int,42,stop,TRUE,TRUE,NA,median,FALSE,FALSE,NA
-effect_w,Transformed Effect - Winsorized,float,43,allow,TRUE,FALSE,NA,NA,TRUE,NA,NA
-se_w,Standard Error - Winsorized,float,44,allow,TRUE,FALSE,NA,NA,TRUE,NA,NA
-se_precision_w,Precision - Winsorized,float,45,allow,TRUE,FALSE,NA,NA,FALSE,NA,NA
-t_w,T-Statistic - Winsorized,float,46,allow,TRUE,TRUE,NA,median,FALSE,NA,NA
-significant_w,T-Statistic Is Significant - Winsorized,int,47,allow,FALSE,FALSE,NA,NA,FALSE,NA,NA
+effect_w,Transformed Effect - Winsorized,float,43,allow,FALSE,FALSE,NA,NA,TRUE,NA,NA
+se_w,Standard Error - Winsorized,float,44,allow,FALSE,FALSE,NA,NA,TRUE,NA,NA
+se_precision_w,Precision - Winsorized,float,45,allow,FALSE,FALSE,NA,NA,FALSE,NA,NA
+t_w,T-Statistic - Winsorized,float,46,allow,FALSE,TRUE,NA,median,FALSE,NA,NA
+significant_w,T-Statistic Is Significant - Winsorized,float,47,allow,FALSE,FALSE,NA,NA,FALSE,NA,NA

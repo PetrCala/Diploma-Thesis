@@ -119,42 +119,52 @@ validateInputVarList <- function(input_var_list){
   }
 }
 
-#' Winsorize input data
-#'
-#' This function applies Winsorization to the data to minimize the effect of outliers on the statistical analysis.
-#' Winsorization is a process of limiting extreme values by replacing them with the next lowest or
-#' highest value that is within a certain percentile range.
-#'
-#' @param input_data [data.frame] A data frame containing the main effect (effect),
-#' standard error of the effect (se), and t-statistic (t_stat) columns.
-#' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
-#' extreme values to be replaced with the nearest non-extreme value.
-#' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
-#' and t-statistic columns have been Winsorized.
-winsorizeData <- function(input_data, win_level){
-  # Validate input
+#' Preprocess the raw excel data:
+#' - Adjust the source data dimensions
+#' - Transform ALL columns into the correct data type.
+#' 
+#' Check column validity, add winsorized statistics (Effect, SE, t-stat)
+#' @param input_data [data.frame] Main data frame
+#' @param input_var_list [data.frame] Data frame with variable descriptions.
+#' @return [data.frame] The preprocessed data
+preprocessData <- function(input_data, input_var_list){
   stopifnot(
-    win_level > 0,
-    win_level < 1,
-    all(c('effect', 'se') %in% colnames(input_data)),
-    !(any(is.na(input_data$effect))), # No missing effect values
-    !(any(is.na(input_data$se))) # No missing SE values
-    )
-  # Get the winsorization interval
-  win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
-  # Create a t-stat column if it does not exist in the data
-  if (!("t_stat") %in% colnames(input_data)){
-    input_data$t_stat <- input_data$effect / input_data$se
+    is.data.frame(input_data),
+    is.data.frame(input_var_list)
+  )
+  # Remove redundant columns
+  expected_col_n <- nrow(input_var_list)
+  while(ncol(input_data) > expected_col_n){
+    input_data <- input_data[,-ncol(input_data)]
   }
-  # Statistic preprocessing
-  input_data$effect_w <- Winsorize(x = input_data$effect, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$se_w <- Winsorize(x = input_data$se, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$se_precision_w <- 1/input_data$se_w
-  input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$significant_w <- c(rep(0,nrow(input_data)))
-  input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
-  # Return quietly
-  invisible(input_data)
+  
+  # Variable name validity check
+  varnames <- colnames(input_data)
+  expected_varnames <- input_var_list$var_name
+  if(!all(varnames == expected_varnames)){ # A strong, restrictive assumption
+    print("These variables from the source data names do not match the expected names:")
+    print(varnames[!(varnames == expected_varnames)])
+    stop("Mismatching variable names")
+  }
+  
+  # Remove redundant rows
+  while(is.na(input_data[nrow(input_data), "study_name"])) {
+    input_data <- input_data[-nrow(input_data),]
+  }
+  
+  # Preprocess and enforce correct data types
+  for (col_name in varnames) {
+    col_data_type <- input_var_list$data_type[input_var_list$var_name == col_name]
+    if (col_data_type == "int" || col_data_type == "dummy") {
+      input_data[[col_name]] <- as.integer(input_data[[col_name]])
+    } else if (col_data_type == "float" || col_data_type == "perc") {
+      input_data[[col_name]] <- as.numeric(input_data[[col_name]])
+    } else if (col_data_type == "category") {
+      input_data[[col_name]] <- as.character(input_data[[col_name]])
+    }
+  }
+  print("All data preprocessed successfully.")
+  return(input_data)
 }
 
 #' Handle Missing Data in a Data Frame
@@ -231,82 +241,47 @@ handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio 
     }
   }
   
+  print("Missing data handled successfully.")
   return(input_data)
 }
 
-
-
-#### make sure that the interpolated values do not make up the majority of observations - in those cases throw 
-# an error and suggest removing the variable
-#' Preprocess the raw excel data:
-#' - Adjust the source data dimensions
-#' - Handle all missing values (until told explicitly not to do so), allow a certain ratio of missing variables,
-#'  for those that fulfill this ratio, interpolate the missing value.
-#' - Winsorize the data to the desired level, default 1%.
-#' - Transform ALL columns into the correct data type.
-#' 
-#' Check column validity, add winsorized statistics (Effect, SE, t-stat)
-#' @param input_data [data.frame] Main data frame
-#' @param input_var_list [data.frame] Data frame with variable descriptions.
-#' @param win_int [float] Interval for winsirization. If 0.01, winsorize at 1%.
-#'    Defaults to 0.01.
-#' @param allowed_missing_ratio [float] A ratio indicating how many variables can be missing for the function to allow 
-#'  interpolation. Anything above and the function will stop and warn the user. Defaults to 0.8 (80%).
-#' @param ignore_missing [bool] If TRUE, allow the data set to contain missing variables. Defaults to F.
-#' @return [data.frame] The preprocessed data
-preprocessData <- function(input_data, input_var_list, win_level = 0.01, allowed_missing_ratio = 0.8, ignore_missing = F){
+#' Winsorize input data
+#'
+#' This function applies Winsorization to the data to minimize the effect of outliers on the statistical analysis.
+#' Winsorization is a process of limiting extreme values by replacing them with the next lowest or
+#' highest value that is within a certain percentile range.
+#'
+#' @param input_data [data.frame] A data frame containing the main effect (effect),
+#' standard error of the effect (se), and t-statistic (t_stat) columns.
+#' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
+#' extreme values to be replaced with the nearest non-extreme value.
+#' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
+#' and t-statistic columns have been Winsorized.
+winsorizeData <- function(input_data, win_level){
+  # Validate input
   stopifnot(
-    is.data.frame(input_data),
-    is.data.frame(input_var_list),
-    is.numeric(win_level),
-    is.numeric(allowed_missing_ratio),
-    is.logical(ignore_missing),
     win_level > 0,
     win_level < 1,
-    allowed_missing_ratio >= 0,
-    allowed_missing_ratio <= 1
-  )
-  # Remove redundant columns
-  expected_col_n <- nrow(input_var_list)
-  while(ncol(input_data) > expected_col_n){
-    input_data <- input_data[,-ncol(input_data)]
+    all(c('effect', 'se') %in% colnames(input_data)),
+    !(any(is.na(input_data$effect))), # No missing effect values
+    !(any(is.na(input_data$se))) # No missing SE values
+    )
+  # Get the winsorization interval
+  win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
+  # Create a t-stat column if it does not exist in the data
+  if (!("t_stat") %in% colnames(input_data)){
+    input_data$t_stat <- input_data$effect / input_data$se
   }
-  
-  # Variable name validity check
-  varnames <- colnames(input_data)
-  expected_varnames <- input_var_list$var_name
-  if(!all(varnames == expected_varnames)){ # A strong, restrictive assumption
-    print("These variables from the source data names do not match the expected names:")
-    print(varnames[!(varnames == expected_varnames)])
-    stop("Mismatching variable names")
-  }
-  
-  # Remove redundant rows
-  while(is.na(input_data[nrow(input_data), "study_name"])) {
-    input_data <- input_data[-nrow(input_data),]
-  }
-  
-  # Interpolate/validate missing data unless explicitly told otherwise
-  if (!ignore_missing){
-    input_data <- handleMissingData(input_data, input_var_list, allowed_missing_ratio = allowed_missing_ratio)
-  }
-  
-  # Winsorize the data using a custom function
-  input_data <- winsorizeData(input_data, win_level)
-  
-  # Preprocess and enforce correct data types
-  for (col_name in varnames) {
-    col_data_type <- input_var_list$data_type[input_var_list$var_name == col_name]
-    if (col_data_type == "int" || col_data_type == "dummy") {
-      input_data[[col_name]] <- as.integer(input_data[[col_name]])
-    } else if (col_data_type == "float" || col_data_type == "perc") {
-      input_data[[col_name]] <- as.numeric(input_data[[col_name]])
-    } else if (col_data_type == "category") {
-      input_data[[col_name]] <- as.character(input_data[[col_name]])
-    }
-  }
-  print("All data preprocessed successfully.")
-  return(input_data)
+  # Statistic preprocessing
+  input_data$effect_w <- Winsorize(x = input_data$effect, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$se_w <- Winsorize(x = input_data$se, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$se_precision_w <- 1/input_data$se_w
+  input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$significant_w <- c(rep(0,nrow(input_data)))
+  input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
+  # Return quietly
+  print("Data winsorized successfully.")
+  invisible(input_data)
 }
 
 

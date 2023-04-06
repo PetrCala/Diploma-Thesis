@@ -93,14 +93,14 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
   "variable_summary_stats" = T,
-  "effect_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
-  "exo_tests" = F,
-  "p_hacking_tests" = F,
+  "effect_summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
+  "nonlinear_tests" = T,
+  "exo_tests" = T,
+  "p_hacking_tests" = T,
   "bma" = T,
   "fma" = F,
   "best_practice_estimate" = F
@@ -233,17 +233,25 @@ var_list <- readDataCustom(var_list_source)
 
 # Validate the input variable list
 validateInputVarList(var_list)
+
+# Preprocess data - validate dimensions, column names, etc.
+data <- preprocessData(data, var_list)
+
+# Get the raw but preprocessed data summary statistics (without winsorization, missing value handling)
+if (run_this["variable_summary_stats"]){
+  getVariableSummaryStats(data, var_list)
+}
+
+# Handle missing variables
+allow_missing_vars <- as.logical(technical_parameters["allow_missing_vars"]) # Try to always keep FALSE
+if (!allow_missing_vars){
+  allowed_missing_ratio <- as.numeric(adjustable_parameters["allowed_missing_ratio"])
+  data <- handleMissingData(data, var_list, allowed_missing_ratio = allowed_missing_ratio)
+}
+
+# Winsorize the data
 data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
-
-# Get the information about whether to allow missing variables or not - try to always disallow
-allowed_missing_ratio <- as.numeric(adjustable_parameters["allowed_missing_ratio"])
-allow_missing_vars <- as.logical(technical_parameters["allow_missing_vars"])
-
-# Preprocess data - set the winsorization level, permitted missing data value ratio
-data <- preprocessData(data, var_list,
-                       win_level = data_win_level,
-                       allowed_missing_ratio = allowed_missing_ratio,
-                       ignore_missing = allow_missing_vars)
+data <- winsorizeData(data, win_level = data_win_level)
 
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
 validateData(data, var_list, ignore_missing = allow_missing_vars)
@@ -255,11 +263,7 @@ data <- limitDataToOneStudy(data, one_study_subset) # Handle wrong cases inside 
 
 ######################### DATA EXPLORATION #########################
 
-###### SUMMARY STATISTICS ######
-if (run_this["variable_summary_stats"]){
-  getVariableSummaryStats(data, var_list)
-}
-
+###### EFFECT SUMMARY STATISTICS ######
 if (run_this["effect_summary_stats"]){
   effect_sum_stats_conf_level <- as.numeric(adjustable_parameters["effect_summary_stats_conf_level"])
   getEffectSummaryStats(data, var_list, effect_sum_stats_conf_level)
