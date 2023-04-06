@@ -21,7 +21,8 @@ The reason to keep this repository is to allow for easier version tracking, and 
      - `<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv` (modifiable below, default `var_list_master_thesis_cala.csv`)
  2. Make sure your data frame (`<NAME_OF_YOUR_DATA_FRAME>.csv`) contains **no missing values**.
    If there are any, the script **will not run**
- 3. The data frame should contain these columns (named exactly as listed below):
+ 3. The data frame must contain these columns (named exactly as listed below):
+   * **study_name** - Name of the study, such as *Einstein et al. (1935)*.
    * **effect** -  The main effect/estimate values. Ideally it should be  a transformed effect, such as
      the partial correlation coefficient.
    * **se** - standard error of the effect
@@ -46,12 +47,17 @@ The reason to keep this repository is to allow for easier version tracking, and 
      - *perc* - Percentage. Any value between 0 and 1, inclusive.
    * **group_category** - Group of the variable. Group similar together, otherwise make a new group.
      Examples - dummies, gender, urban vs. rural, short-run vs. long-run
+   * **na_handling** - Specify how missing values should be handled for the variable. Can be one of:
+     - *stop* - Do not allow missing values. Throw an error in case there is a missing value.
+     - *mean* - Interpolate with the mean of the existing data.
+     - *median* - Interpolate with the median of the existing data.
+     - *equal* - Allow missing values. Use **only** for variables which whose values will be filled in automatically during preprocessing, meaning for which you can guarantee no missing values.
    * **variable_summary** - Boolean. If `TRUE`, this variable will appear in the summary statistics table.
    * **effect_sum_stats** - Boolean. If `TRUE`, this variable will appear in the effect summary statistics table.
    * **equal** - Float. If set to any value, the effect summary statistics table will print out the statistics
      for the main effect of the data when subsetted to this variable equal to the specified value.
      If set to any value, can not set the `gtlt` column value.
-   * **gtlt** - One of "*MED*", float. Similar to "equal", but if set to *MED*, will print out the statistics
+   * **gtlt** - One of "*median*", "*mean*", float. Similar to "equal", but if set to *median*/*mean*, will print out the statistics
      for the effect of the data when subsetted to values above/below the median value of this variable.
      If set to float, the subsetting breakpoint will be that value instead.
    * **bma** - Boolean. If `TRUE`, this variable will be used in the Bayesian model averaging. Do NOT set all

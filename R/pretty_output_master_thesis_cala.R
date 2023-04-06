@@ -10,3 +10,4 @@ if (! getwd() == dirname(getActiveDocumentContext()$path)){
 
 # Run the main code
 source("main_master_thesis_cala.R")
+

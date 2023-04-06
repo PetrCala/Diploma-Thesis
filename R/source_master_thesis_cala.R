@@ -157,19 +157,117 @@ winsorizeData <- function(input_data, win_level){
   invisible(input_data)
 }
 
+#' Handle Missing Data in a Data Frame
+#'
+#' This function handles missing values in a data frame based on the specified handling methods.
+#' It iterates through the columns specified in the input_var_list and interpolates the missing values
+#' based on the corresponding handling method (stop, mean, or median). If the ratio of missing values
+#' in a column is more than the desired value (default 80%), it throws an error notifying the user to
+#' consider modifying or deleting the variable.
+#'
+#' @param input_data [data.frame] A data frame containing the data with missing values.
+#' @param input_var_list [data.frame] A data frame with two columns: 'var_name' containing the names of the columns in input_data
+#'        and 'na_handling' containing the handling method for the corresponding column (stop, mean, or median).
+#' @param allowed_missing_ratio [float] A ratio indicating how many variables can be missing for the function to allow 
+#'  interpolation. Anything above and the function will stop and warn the user. Defaults to 0.8 (80%).
+#' @return A data frame with the missing values handled based on the specified methods.
+#' @examples
+#' # Create a sample data frame with missing values
+#' sample_data <- data.frame(a = c(1, 2, 3, NA, 5), b = c(2, NA, 4, 6, NA))
+#' 
+#' # Create an input_var_list for handling missing values
+#' input_vars <- data.frame(var_name = c("a", "b"), na_handling = c("mean", "median"))
+#' 
+#' # Handle missing values in the sample_data based on the input_vars
+#' handled_data <- handleMissingData(sample_data, input_vars, allowed_missing_ratio = 0.5)
+handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio = 0.8){
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    allowed_missing_ratio >= 0,
+    allowed_missing_ratio <= 1
+  )
+  # Get the NA values handling information
+  var_names <- input_var_list$var_name
+  na_handling <- input_var_list$na_handling
+  
+  # Iterate through columns
+  for (i in seq_along(var_names)) {
+    column_name <- var_names[i]
+    handling_method <- na_handling[i]
+    
+    # Check if the column exists in the data frame
+    if (!column_name %in% colnames(input_data)) {
+      stop(paste("The column", column_name, "does not exist in the input_data."))
+    }
+    
+    # Do not interpolate or validate missing values for this variable
+    if (handling_method == "allow"){
+      next
+    }
+    
+    column_data <- input_data[[column_name]]
+    na_count <- sum(is.na(column_data))
+    total_count <- length(column_data)
+    
+    # Check if the ratio of missing values is more than the allowed ratio
+    if (na_count / total_count > allowed_missing_ratio) {
+      missing_ratio_verbose <- paste0(as.character(allowed_missing_ratio * 100), "%")
+      stop(paste("The column", column_name, "has more than,", missing_ratio_verbose, "missing values. Consider modifying or deleting the variable."))
+    }
+    
+    # Handle missing values based on the handling method
+    if (handling_method == "stop") {
+      if (any(is.na(input_data[[column_name]]))){
+        stop(paste("No missing values allowed for", column_name))
+      }
+    } else if (handling_method == "mean") {
+      input_data[[column_name]][is.na(column_data)] <- mean(column_data, na.rm = TRUE)
+    } else if (handling_method == "median") {
+      input_data[[column_name]][is.na(column_data)] <- median(column_data, na.rm = TRUE)
+    } else {
+      stop(paste("Invalid handling method for column", column_name, ": ", handling_method))
+    }
+  }
+  
+  return(input_data)
+}
+
+
+
+#### make sure that the interpolated values do not make up the majority of observations - in those cases throw 
+# an error and suggest removing the variable
 #' Preprocess the raw excel data:
 #' - Adjust the source data dimensions
-#' 
+#' - Handle all missing values (until told explicitly not to do so), allow a certain ratio of missing variables,
+#'  for those that fulfill this ratio, interpolate the missing value.
+#' - Winsorize the data to the desired level, default 1%.
+#' - Transform ALL columns into the correct data type.
 #' 
 #' Check column validity, add winsorized statistics (Effect, SE, t-stat)
 #' @param input_data [data.frame] Main data frame
 #' @param input_var_list [data.frame] Data frame with variable descriptions.
 #' @param win_int [float] Interval for winsirization. If 0.01, winsorize at 1%.
 #'    Defaults to 0.01.
+#' @param allowed_missing_ratio [float] A ratio indicating how many variables can be missing for the function to allow 
+#'  interpolation. Anything above and the function will stop and warn the user. Defaults to 0.8 (80%).
+#' @param ignore_missing [bool] If TRUE, allow the data set to contain missing variables. Defaults to F.
 #' @return [data.frame] The preprocessed data
-preprocessData <- function(input_data, input_var_list, win_level = 0.01, ignore_missing = F){
+preprocessData <- function(input_data, input_var_list, win_level = 0.01, allowed_missing_ratio = 0.8, ignore_missing = F){
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.numeric(win_level),
+    is.numeric(allowed_missing_ratio),
+    is.logical(ignore_missing),
+    win_level > 0,
+    win_level < 1,
+    allowed_missing_ratio >= 0,
+    allowed_missing_ratio <= 1
+  )
   # Remove redundant columns
-  expected_col_n <- nrow(var_list)
+  expected_col_n <- nrow(input_var_list)
   while(ncol(input_data) > expected_col_n){
     input_data <- input_data[,-ncol(input_data)]
   }
@@ -188,11 +286,9 @@ preprocessData <- function(input_data, input_var_list, win_level = 0.01, ignore_
     input_data <- input_data[-nrow(input_data),]
   }
   
-  # Do not pass if any values are NA. 
+  # Interpolate/validate missing data unless explicitly told otherwise
   if (!ignore_missing){
-    if(any(is.na(input_data))){
-      stop("This script does not allow for ANY missing values. Make sure your data frame contains no missing values first.")
-    }
+    input_data <- handleMissingData(input_data, input_var_list, allowed_missing_ratio = allowed_missing_ratio)
   }
   
   # Winsorize the data using a custom function
@@ -209,6 +305,7 @@ preprocessData <- function(input_data, input_var_list, win_level = 0.01, ignore_
       input_data[[col_name]] <- as.character(input_data[[col_name]])
     }
   }
+  print("All data preprocessed successfully.")
   return(input_data)
 }
 
@@ -223,19 +320,22 @@ preprocessData <- function(input_data, input_var_list, win_level = 0.01, ignore_
 #' 
 #' @param input_data [data.frame] The data frame to be validated
 #' @param input_var_list [data.frame] The data frame that specifies the data type of each variable
-#' @param ignore_missing [bool] If True, allow missing values in the data frame. Deafults to FALSE.
+#' @param ignore_missing [bool] If TRUE, allow missing values in the data frame. Deafults to FALSE.
 validateData <- function(input_data, input_var_list, ignore_missing = F){
+  # Columns that the data frame must contain
+  expected_columns <- c("study_name", "effect", "se", "t_stat", "n_obs", "study_size")
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
     is.data.frame(input_var_list),
-    is.logical(ignore_missing)
+    is.logical(ignore_missing),
+    all(expected_columns %in% colnames(input_data))
   )
   
   # Do not pass if any values are NA. 
   if (!ignore_missing){
     if(any(is.na(input_data))){
-      stop("This script does not allow for ANY missing values. Make sure your data frame contains no missing values first.")
+      stop("This script does not allow for ANY missing values. Make sure you have called the data preprocessing function.")
     }
   }
   
@@ -333,7 +433,7 @@ limitDataToOneStudy <- function(input_data, input_study_id){
 #' Compute summary statistics for selected variables in a data frame
 #'
 #' This function computes summary statistics for selected variables in a data frame,
-#' including mean, median, minimum, maximum, and standard deviation.
+#' including mean, median, minimum, maximum, standard deviation, and percentage of missing observations.
 #' If a variable contains missing or non-numeric data, the corresponding summary statistics will be omitted.
 #'
 #' @param input_data [data.frame] The input data frame.
@@ -346,7 +446,7 @@ limitDataToOneStudy <- function(input_data, input_study_id){
 getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = T){
   # List of the statistics to compute
   variable_stat_names <- c("Var Name", "Var Class", "Mean", "Median",
-                            "Min", "Max", "SD")
+                            "Min", "Max", "SD", "Missing obs")
   # Variables to preprocess
   desired_vars <- input_var_list[input_var_list$variable_summary == TRUE,]$var_name # Vector
   # Initialize output data frame
@@ -373,6 +473,8 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
     var_sd <- round(sd(var_data, na.rm = TRUE), 3)
     var_min <- round(min(var_data, na.rm = TRUE), 3)
     var_max <- round(max(var_data, na.rm = TRUE), 3)
+    var_missing <- round((sum(is.na(var_data)) / length(var_data)) * 100, 1)
+    var_missing_verbose <- paste0(as.character(var_missing),"%")
     # Aggregate and append to the main DF
     row_data <- c(
       var_name_display,
@@ -381,7 +483,8 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
       var_median,
       var_min,
       var_max,
-      var_sd
+      var_sd,
+      var_missing_verbose
     )
     df[row_idx, ] <- row_data
   }
@@ -484,8 +587,8 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       study_size_data_equal <- study_size_data[var_data == equal_val] # For W. mean - wonky, but straightforward
       cutoff <- equal_val  # For verbose output
     } else { # The specification is gtlt
-      if (gtlt_val %in% c("MEAN", "MED")){
-        cutoff <- ifelse(gtlt_val == 'MEAN', mean(var_data, na.rm=T), median(var_data, na.rm=T))
+      if (gtlt_val %in% c("mean", "median")){
+        cutoff <- ifelse(gtlt_val == 'mean', mean(var_data, na.rm=T), median(var_data, na.rm=T))
         effect_data_gt <- effect_data[var_data >= cutoff]
         effect_data_lt <- effect_data[var_data < cutoff]
         study_size_data_gt <- study_size_data[var_data >= cutoff]

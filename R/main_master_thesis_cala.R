@@ -93,15 +93,15 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
   "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
-  "exo_tests" = T,
-  "p_hacking_tests" = T,
-  "bma" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = F,
+  "bma" = T,
   "fma" = F,
   "best_practice_estimate" = F
 )
@@ -114,6 +114,8 @@ run_this <- c(
 adjustable_parameters <- c(
   # Data winsorization level
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
+  # Handle missing data
+  "allowed_missing_ratio" = 0.6, # Allow ratio*100(%) missing observations for each variable
   # Effect summary statistics confidence level
   "effect_summary_stats_conf_level" = 0.95, # Between 0 and 1 (excluding)
   # Box plot parameters
@@ -127,9 +129,7 @@ adjustable_parameters <- c(
   "funnel_plot_verbose" = T, # If T, print cut outlier information
   # T-statistic histogram parameters
   "t_hist_lower_cutoff" = -150, # Lower cutoff point for t-statistics
-  "t_hist_upper_cutoff" = 150, # Upper cutoff point for t-statistics
-  # Subset data to one study only
-  "subset_this_study_only" = NA # Use index, such as 1,2,3,... Default NA means no subsetting.
+  "t_hist_upper_cutoff" = 150 # Upper cutoff point for t-statistics
 )
 
 ######################################################################
@@ -140,6 +140,13 @@ adjustable_parameters <- c(
 # Static 
 development_on <- T # Turn off when distributing the code
 options(scipen=999) # No scientific notation
+
+technical_parameters <- c(
+  # Handle missing data
+  "allow_missing_vars" = F, # UNSAFE!! Allow missing variables in the data - Do NOT turn on
+  # Subset data to one study only
+  "subset_this_study_only" = NA # Use index, such as 1,2,3,... Default NA means no subsetting.
+)
 
 # Working directory
 if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
@@ -227,14 +234,22 @@ var_list <- readDataCustom(var_list_source)
 # Validate the input variable list
 validateInputVarList(var_list)
 data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
-# Preprocess data - ignore missing values in development only, otherwise require all values
+
+# Get the information about whether to allow missing variables or not - try to always disallow
+allowed_missing_ratio <- as.numeric(adjustable_parameters["allowed_missing_ratio"])
+allow_missing_vars <- as.logical(technical_parameters["allow_missing_vars"])
+
+# Preprocess data - set the winsorization level, permitted missing data value ratio
 data <- preprocessData(data, var_list,
-                       win_level = data_win_level, ignore_missing = development_on)
-# Validate the data types, correct values, etc. VERY restrictive.
-validateData(data, var_list, ignore_missing = development_on)
+                       win_level = data_win_level,
+                       allowed_missing_ratio = allowed_missing_ratio,
+                       ignore_missing = allow_missing_vars)
+
+# Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
+validateData(data, var_list, ignore_missing = allow_missing_vars)
 
 # Subset data to only one study for testing (does nothing by default)
-one_study_subset <- adjustable_parameters["subset_this_study_only"]
+one_study_subset <- technical_parameters["subset_this_study_only"]
 data <- limitDataToOneStudy(data, one_study_subset) # Handle wrong cases inside function, pass in that case
 
 
@@ -357,8 +372,7 @@ if (run_this["p_hacking_tests"]){
 ######################### BAYESIAN MODEL AVERAGING #########################
 
 if (run_this["bma"]){
-  vif_coefs <- runVifTest(data, var_list)
-  print(vif_coefs)
+  #vif_coefs <- runVifTest(data, var_list)
 }
 
 
