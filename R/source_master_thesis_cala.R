@@ -1659,7 +1659,9 @@ getBMAFormula <- function(var_vector){
     all(c("effect_w","se_w") %in% var_vector)
   )
   # Get the formula
-  remaining_vars <- var_vector[var_vector != c("effect_w", "se_w")] # All but the two
+  bool_wo_effect <- var_vector != "effect_w" # Pop effect
+  bool_wo_se <- var_vector != "se_w" # Pop se
+  remaining_vars <- var_vector[bool_wo_effect & bool_wo_se] # All but the two (wonky, might improve sometimes later)
   remaining_vars_verbose <- paste(remaining_vars, sep="", collapse = " + ")
   all_vars_verbose <- paste0("effect_w ~ se_w + ", remaining_vars_verbose)
   bma_formula <- as.formula(all_vars_verbose)
@@ -1667,7 +1669,7 @@ getBMAFormula <- function(var_vector){
 }
 
 
-runVifTest <- function(input_data, input_var_list){
+runVifTest <- function(input_data, input_var_list, print_all_coefs = F){
   # Get the list of variables to run the bma for - assume they contain 'effect_w', 'se_w'
   desired_vars_bool <- input_var_list$bma 
   desired_vars <- input_var_list$var_name[desired_vars_bool]
@@ -1675,13 +1677,24 @@ runVifTest <- function(input_data, input_var_list){
   stopifnot(
     all(c("effect_w","se_w") %in% colnames(input_data)),
     all(c("effect_w","se_w") %in% desired_vars),
-    any(is.na(input_data)) # No missing values allowed
+    !any(is.na(input_data)) # No missing values allowed
   )
   #Testing for VIF
   BMA_formula <- getBMAFormula(desired_vars)
   BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
   # Unhandled exception - fails in case of too few observations vs. too many variables
   vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients
+  if (print_all_coefs){
+    print("There are all the Variance Inflation Coefficients:")
+    print(vif_coefs)
+  }
+  if (any(vif_coefs > 10)){
+    coefs_above_10_vif <- desired_vars[vif_coefs > 10]
+    print("These variables have a Variance Inflation Coefficient larger than 10:")
+    print(coefs_above_10_vif)
+  } else {
+    print("All BMA variables have a Variance Inflation Factor lower than 10. All good to go.")
+  }
   return(vif_coefs)
   }
 

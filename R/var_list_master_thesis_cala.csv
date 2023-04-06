@@ -56,13 +56,13 @@ country,Country,category,29,stop,FALSE,FALSE,NA,NA,FALSE,NA,NA
 region_advanced_economies,Region - Advanced Economies,dummy,30,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 region_east_asia_and_pacific,Region - East Asia and Pacific,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 region_europe_and_central_asia,Region - Europe and Central Asia,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
-region_latin_america_and_caribbean,Region - Latin America and Caribbean,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+region_latin_america_and_caribbean,Region - Latin America and Caribbean,dummy,30,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 region_middle_east_and_north_africa,Region - Middle East and North Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 region_south_asia,Region - South Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 region_sub_saharan_africa,Region - Sub Saharan Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 income_high,Income - High,dummy,31,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-income_middle,Income - Middle,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
-income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+income_middle,Income - Middle,dummy,31,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
+income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 med_exp,Median Expenditure,float,32,stop,TRUE,TRUE,NA,median,TRUE,NA,NA
 min_wage,Minimum Wage,float,33,stop,TRUE,TRUE,NA,median,TRUE,NA,NA
 mean_age,Mean Wage,float,34,median,TRUE,TRUE,NA,median,TRUE,NA,NA

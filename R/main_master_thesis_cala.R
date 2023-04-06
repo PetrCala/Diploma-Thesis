@@ -19,6 +19,7 @@
 #'  2. Make sure your data frame (<NAME_OF_YOUR_DATA_FRAME>.csv) contains NO MISSING VALUES.
 #'    If there are any, the script will not run.
 #'  3. The data frame should contain these columns (named exactly as listed below):
+#'    study_name - Name of the study, such as Einstein et al. (1935).
 #'    effect -  The main effect/estimate values. Ideally it should be  a transformed effect, such as
 #'      the partial correlation coefficient.
 #'    se - standard error of the effect
@@ -43,6 +44,12 @@
 #'      perc - Percentage. Any value between 0 and 1, inclusive.
 #'    group_category - Group of the variable. Group similar together, otherwise make a new group.
 #'      Examples - dummies, gender, urban vs. rural, short-run vs. long-run
+#'    na_handling - Specify how missing values should be handled for the variable. Can be one of:
+#'      stop - Do not allow missing values. Throw an error in case there is a missing value.
+#'      mean - Interpolate with the mean of the existing data.
+#'      median - Interpolate with the median of the existing data.
+#'      equal - Allow missing values. Use only for variables which whose values will be filled in automatically
+#'          during preprocessing, meaning for which you can guarantee no missing values.
 #'    variable_summary - Boolean. If TRUE, this variable will appear in the summary statistics table.
 #'    effect_sum_stats - Boolean. If TRUE, this variable will appear in the effect summary statistics table.
 #'    equal - Float. If set to any value, the effect summary statistics table will print out the statistics
@@ -92,15 +99,15 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
-  "exo_tests" = T,
-  "p_hacking_tests" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = F,
   "bma" = T,
   "fma" = F,
   "best_practice_estimate" = F
@@ -376,7 +383,6 @@ if (run_this["p_hacking_tests"]){
 ######################### BAYESIAN MODEL AVERAGING #########################
 
 if (run_this["bma"]){
-  #vif_coefs <- runVifTest(data, var_list)
+  vif_coefs <- runVifTest(data, var_list, print_all_coefs = T)
 }
-
 
