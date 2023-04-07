@@ -101,14 +101,14 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 run_this <- c(
   "variable_summary_stats" = F,
   "effect_summary_stats" = F,
-  "box_plot" = F,
+  "box_plot" = T,
   "funnel_plot" = F,
   "t_stat_histogram" = F,
   "linear_tests" = F,
   "nonlinear_tests" = F,
   "exo_tests" = F,
   "p_hacking_tests" = F,
-  "bma" = T,
+  "bma" = F,
   "fma" = F,
   "best_practice_estimate" = F
 )
