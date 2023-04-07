@@ -52,6 +52,66 @@ validateFiles <- function(files){
   print("All necessary files located successfully.")
 }
 
+#' Extract multiple parameters from a vector dictionary
+#' 
+#' Input the adjustable parameters dictionary, the name of the parameter to extract
+#' the values for, and the type these values should be. Extract all the values of that
+#' parameters and return the vector of the values
+#' 
+#' @details The reason for having this function is that if the user inputs multiple
+#' values into a vector dictionary in R, the language assigns each value its unique
+#' key, as it can not store a nested element. RRRRRRRR
+#' 
+#' @param adj_params [vector] A vector dictionary of adjustable parameters.
+#' @param desired_param [character] The name of the parameter for which to extract
+#' the values for
+#' @param param_type [character] Type of the character. Can only be one of the two:
+#' numeric, character
+#' @return Vector of values.
+getMultipleParams <- function(adj_params, desired_param, param_type){
+  # Validate input
+  stopifnot(
+    is.vector(adj_params),
+    is.character(desired_param),
+    is.character(param_type),
+    param_type %in% c("numeric", "character")
+  )
+  res <- c()
+  # Assume only one value
+  one_val <- adj_params[desired_param]
+  if (!is.na(one_val)){ # Only one value
+    res <- append(res, one_val)
+  } else {
+    # More values
+    keep_going <- T
+    i <- 1
+    while (keep_going){
+      new_key <- paste0(desired_param,as.character(i))
+      new_param <- adj_params[new_key]
+      if (!is.na(new_param)){
+        res <- append(res, new_param)
+        i <- i + 1
+      } else {
+        keep_going <- F
+      }
+    }
+  }
+  # No values for this key - a single NA - a wonky case
+  if (length(res) == 1){
+    if (is.na(res)){
+      return(NA)
+    }
+  }
+  # Correct types
+  if (param_type == "character"){
+    res <- as.character(res)
+  } else if (param_type == "numeric"){
+    res <- as.numeric(res)
+  } else {
+    stop("This variable type is unaccepted/unhandled for vectors of multiple values.")
+  }
+  return(res)
+}
 
 ####################### PACKAGE HANDLING ########################
 
@@ -1847,6 +1907,9 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
                    number.cex = 0.5,cl.cex=0.8, cl.ratio=0.1) 
   }
   # Return coefficients only
+  if (!print_results == "none"){
+    cat("\n\n")
+  }
   return(bma_coefs)
 }
 
@@ -1967,6 +2030,7 @@ runFMA <- function(bma_data, bma_model, input_var_list, verbose = T){
   if (verbose){
     print("Results of the Frequentist Model Averaging:")
     print(fma_res)
+    cat("\n\n")
   }
   invisible(fma_res)
 }

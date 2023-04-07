@@ -17,7 +17,6 @@
 #'      -stem_method_master_thesis_cala.R
 #'      -<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv (modifiable below)
 #'  2. Make sure your data frame (<NAME_OF_YOUR_DATA_FRAME>.csv) contains NO MISSING VALUES.
-
 #'    data_type - Type of the data this variable holds. Can be only one type. Can be one of:
 #'      int - Integer. Any integer.
 #'      category - Categorical variable. Any string.
@@ -81,15 +80,15 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
-  "exo_tests" = F,
-  "p_hacking_tests" = F,
+  "variable_summary_stats" = T,
+  "effect_summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
+  "nonlinear_tests" = T,
+  "exo_tests" = T,
+  "p_hacking_tests" = T,
   "bma" = T,
   "fma" = T, # Should be ran together with BMA
   "best_practice_estimate" = F
@@ -99,7 +98,7 @@ run_this <- c(
 #' Adjust the parameters by modifying the numbers, or boolean values
 #' Note:
 #'  Do NOT change the variable names (apart from when adding new Box plot factors),
-#'    or the name of the vector
+#'    the names of vectors, or value types (character, integer, vector...)
 adjustable_parameters <- c(
   # Data winsorization level
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
@@ -119,7 +118,10 @@ adjustable_parameters <- c(
   # T-statistic histogram parameters
   "t_hist_lower_cutoff" = -150, # Lower cutoff point for t-statistics
   "t_hist_upper_cutoff" = 150, # Upper cutoff point for t-statistics
-  # Bayesian Model Averaging
+  # Caliper test parameters
+  "caliper_thresholds" = c(0, 1.96, 2.58), # Caliper thresholds - keep as vector
+  "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
+  # Bayesian Model Averaging parameters
   "bma_burn" = 1e4, # Burn-ins (def 1e5)
   "bma_iter" = 3e4, # Draws (def 3e5)
   "bma_g" = "HQ", # g-Prior
@@ -356,10 +358,11 @@ if (run_this["exo_tests"]){
 ######################### P-HACKING TESTS #########################
 
 if (run_this["p_hacking_tests"]){
-  
   ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
+  caliper_thresholds <- getMultipleParams(adjustable_parameters, "caliper_thresholds", "numeric")
+  caliper_widths <- getMultipleParams(adjustable_parameters, "caliper_widths", "numeric")
   caliper_results <- getCaliperResults(data,
-          thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2), verbose = T)
+          thresholds = caliper_thresholds, widths = caliper_widths, verbose = T)
    
   ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
   eliott_results <- getEliott(data)
@@ -368,7 +371,6 @@ if (run_this["p_hacking_tests"]){
   maive_results <- getMaiveResults(data,
           method=3, weight=0, instrument=1, studylevel=0, verbose=T)
 }
-
 
 ######################### MODEL AVERAGING #########################
 
