@@ -136,7 +136,15 @@ adjustable_parameters <- c(
   "funnel_plot_verbose" = T, # If T, print cut outlier information
   # T-statistic histogram parameters
   "t_hist_lower_cutoff" = -150, # Lower cutoff point for t-statistics
-  "t_hist_upper_cutoff" = 150 # Upper cutoff point for t-statistics
+  "t_hist_upper_cutoff" = 150, # Upper cutoff point for t-statistics
+  # Bayesian Model Averaging
+  "bma_burn" = 1e4, # Burn-ins (def 1e5)
+  "bma_iter" = 3e4, # Draws (def 3e5)
+  "bma_g" = "HQ", # g-Prior
+  "bma_mprior" = "random", # Model Prior
+  "bma_nmodel" = 20000, # Number of models (def 50000)
+  "bma_mcmc" = "bd", # Markov Chain Monte Carlo
+  "bma_print_results" = "fast" # Print results - one of c("none", "fast", "verbose", "all")
 )
 
 ######################################################################
@@ -382,7 +390,29 @@ if (run_this["p_hacking_tests"]){
 
 ######################### BAYESIAN MODEL AVERAGING #########################
 
+###### HETEROGENEITY - Bayesian Model Averaging in R ######
 if (run_this["bma"]){
+  # Extract adjustable parameters
+  bma_burn <- as.numeric(adjustable_parameters["bma_burn"])
+  bma_iter <- as.numeric(adjustable_parameters["bma_iter"])
+  bma_g <- as.character(adjustable_parameters["bma_g"])
+  bma_mprior <- as.character(adjustable_parameters["bma_mprior"])
+  bma_nmodel <- as.numeric(adjustable_parameters["bma_nmodel"])
+  bma_mcmc <- as.character(adjustable_parameters["bma_mcmc"])
+  bma_print_results <- as.character(adjustable_parameters["bma_print_results"])
+  # Run the Variance Inflation Test
   vif_coefs <- runVifTest(data, var_list, print_all_coefs = T)
+  # BMA estimation
+  bma_data <- getBMAData(data, var_list)
+  bma_model <- runBMA(
+       bma_data, var_list,
+       burn=bma_burn,
+       iter=bma_iter,
+       g=bma_g,
+       mprior=bma_mprior,
+       nmodel=bma_nmodel,
+       mcmc=bma_mcmc
+  )
+  # Print out the results
+  bma_coefs <- extractBMAResults(bma_model, bma_data, print_results = bma_print_results)
 }
-

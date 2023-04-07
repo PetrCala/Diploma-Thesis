@@ -329,7 +329,7 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   # Validate all groups
   for (i in length(splitted_data_frames)){
     df_to_test <- splitted_data_frames[[i]] # Explicit for indexing clarity
-    # Skip empty groups in development
+    # Skip empty groups in development - should not be used
     if(ignore_missing & all(is.na(df_to_test))){
       next # Empty group
     }
@@ -337,6 +337,9 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
         stop("Invalid dummy group configuration: One and only one dummy variable must be 1 in each group for each row")
     }
   }
+  # Validate that all perc variables sum up to 1
+  # TO-DO
+  
   ### Data type validation
   for (row in 1:nrow(input_var_list)) {
     var_name <- as.character(input_var_list[row, "var_name"])
@@ -1650,46 +1653,72 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
 #' This function creates a formula for Bayesian model averaging based on the variables in \code{var_vector}.
 #' The formula includes the variables "effect_w" and "se_w", as well as any other variables specified in \code{var_vector}.
 #'
-#' @param var_vector A character vector of variable names to be included in the formula. Must include
-#'  the strings "effect_w" and "se_w"
+#' @param input_var_list [data.frame] A data frame that contains the names of the variables, and a boolean vector indicating
+#'  whether they should be used in the formula.
+#' @param get_var_vector_instead [bool] If TRUE, return a vector with variable names instead, with effect and se
+#'  at the first two positions of the vector. Used in BMA itself. Defaults to FALSE.
 #' @return A formula object (to be used) Bayesian model averaging
-getBMAFormula <- function(var_vector){
+getBMAFormula <- function(input_var_list, get_var_vector_instead = F){
   # Input validation
   stopifnot(
-    all(c("effect_w","se_w") %in% var_vector)
+    all(c("bma", "var_name") %in% colnames(input_var_list))
+  )
+  # Get the list of variables to run the bma for
+  desired_vars_bool <- input_var_list$bma 
+  desired_vars <- input_var_list$var_name[desired_vars_bool]
+  # Validate the list again
+  stopifnot(
+    all(c("effect_w","se_w") %in% desired_vars)
   )
   # Get the formula
-  bool_wo_effect <- var_vector != "effect_w" # Pop effect
-  bool_wo_se <- var_vector != "se_w" # Pop se
-  remaining_vars <- var_vector[bool_wo_effect & bool_wo_se] # All but the two (wonky, might improve sometimes later)
+  bool_wo_effect <- desired_vars != "effect_w" # Pop effect
+  bool_wo_se <- desired_vars != "se_w" # Pop se
+  remaining_vars <- desired_vars[bool_wo_effect & bool_wo_se] # All but the two (wonky, might improve sometimes later)
+  if (get_var_vector_instead){
+    var_vector <- c("effect_w", "se_w", remaining_vars)
+    return(var_vector)
+  }
   remaining_vars_verbose <- paste(remaining_vars, sep="", collapse = " + ")
   all_vars_verbose <- paste0("effect_w ~ se_w + ", remaining_vars_verbose)
   bma_formula <- as.formula(all_vars_verbose)
   return(bma_formula)
 }
 
-
+#' Function to test the Variance Inflation Factor of a Linear Regression Model
+#'
+#' @details runVifTest is a function that tests the Variance Inflation Factor (VIF) of a linear regression model.
+#' It takes three arguments: input_data, input_var_list, and print_all_coefs. The function tests whether
+#' the columns "effect_w" and "se_w" are present in the input data frame. If the validation passes, it creates a
+#' linear regression model using the input data and the specified variables. Then, it calculates the VIF coefficients
+#' using the vif function from the car package. If print_all_coefs is set to TRUE, the function prints all the VIF
+#' coefficients. If any of the VIF coefficients is larger than 10, the function prints a message indicating the
+#' variables with a high VIF. Otherwise, it prints a message indicating that all variables have a VIF lower than 10.
+#' Finally, the function returns the VIF coefficients as a numeric vector.
+#' 
+#' @param input_data [data.frame] A data frame containing the data for the regression model.
+#' @param input_var_list [data.frame] A data frame containing variable information.
+#' @param print_all_coefs [bool] A logical value indicating whether to print all the VIF coefficients into
+#'  the console
+#'
+#' @return [vector] A numeric vector with the VIF coefficients.
 runVifTest <- function(input_data, input_var_list, print_all_coefs = F){
-  # Get the list of variables to run the bma for - assume they contain 'effect_w', 'se_w'
-  desired_vars_bool <- input_var_list$bma 
-  desired_vars <- input_var_list$var_name[desired_vars_bool]
-  # Validate only after initiating the desired_vars object
+  # Validate input
   stopifnot(
     all(c("effect_w","se_w") %in% colnames(input_data)),
-    all(c("effect_w","se_w") %in% desired_vars),
     !any(is.na(input_data)) # No missing values allowed
   )
   #Testing for VIF
-  BMA_formula <- getBMAFormula(desired_vars)
+  BMA_formula <- getBMAFormula(input_var_list)
   BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
   # Unhandled exception - fails in case of too few observations vs. too many variables
   vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients
+  return(vif_coefs)
   if (print_all_coefs){
     print("There are all the Variance Inflation Coefficients:")
     print(vif_coefs)
   }
   if (any(vif_coefs > 10)){
-    coefs_above_10_vif <- desired_vars[vif_coefs > 10]
+    coefs_above_10_vif <- names(vif_coefs)[vif_coefs > 10]
     print("These variables have a Variance Inflation Coefficient larger than 10:")
     print(coefs_above_10_vif)
   } else {
@@ -1699,6 +1728,129 @@ runVifTest <- function(input_data, input_var_list, print_all_coefs = F){
   }
 
 
+#' Get the data for Bayesian Model Averaging
+#' 
+#' @details An explicit function to subset the main data frame onto only those columns that are used
+#' during the BMA estimation. The function is explicit for the simple reason that one of the 
+#' plots in the extractBMAResults requires the data object, so this function allows for that
+#' object to exist outside the scope of the runBMA function, where it would be otherwise hidden.
+#'
+#' @note When transforming/subsetting the data, there is a need to convert the data into a
+#' data.frame object, otherwise the plot functions will not recognize the data types correctly
+#' later on. The "bms" function works well even with a tibble, but the plots do not. RRRRRRR
+getBMAData <- function(input_data, input_var_list){
+  # Input validation
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list)
+  )
+  # Subset the data
+  bma_vars <- getBMAFormula(input_var_list, get_var_vector_instead = TRUE) # Vector of BMA variables, effect and se first
+  bma_data <- input_data[bma_vars] # Only desired variables
+  bma_data <- as.data.frame(bma_data) # To a data.frame object, because RRRR
+  return(bma_data)
+}
+
+#' Run a Bayesian model averaging estimation
+#' 
+#' @details Input the BMA data, the variable information data frame
+#' and inhereted parameters, which are all the parameters you want to use for the actual
+#' estimation inside the 'bms' function. Validate correct input, run the estimation, and
+#' return the BMA model without printing any results.
+#' 
+#' @param bma_data [data.frame] The data for BMA. Effect_w must be in the first column.
+#' @param input_var_list [data.frame] A data frame containing variable information, and a "bma"
+#' column indicating whether those variables should be used in the estimation.
+#' @inheritDotParams Parameters to be used inside the "bms" function. These are:
+#' burn, iter, g, mprior, nmodel, mcmc
+#' For more info see the "bms" function documentation.
+#' @return The bma model
+runBMA <- function(bma_data, input_var_list, ...){
+  # Input validation
+  stopifnot(
+    is.data.frame(bma_data),
+    is.data.frame(input_var_list),
+    !any(is.na(bma_data)), # No missing obs
+    all(sapply(bma_data,is.numeric)) # Only numeric obs
+  )
+  # Actual estimation with inhereted parameters
+  print("Running the Bayesian Model Averaging...")
+  quiet(
+    bma_model <- bms(bma_data, ...)
+  )
+  return(bma_model)
+}
+
+#' Extract results from a Bayesian Model Averaging (BMA) regression
+#' 
+#' @details extractBMAResults is a function that extracts results from a Bayesian Model Averaging (BMA) regression model.
+#' The function takes three arguments: bma_model, bma_data, and print_results. bma_model is an object of class bma
+#' containing the BMA regression model. bma_data is a data frame containing the data used to fit the BMA model. print_results
+#' is a character value indicating the level of result printing desired. The possible values for print_results are "none", "fast",
+#' "verbose", and "all".
+#'
+#' The function first validates the input to ensure that the class of bma_model is "bma", bma_data is a data frame, and
+#' print_results is a character value that matches one of the four valid options.
+#'
+#' The function then extracts the coefficients from bma_model using the coef function. The output is a numeric vector containing
+#' the BMA coefficients.
+#'
+#' The function then prints out coefficient and model statistics based on the value of print_results. If print_results is set to
+#' "verbose" or "all", the function prints the coefficients and summary information of bma_model, as well as the top model. If
+#' print_results is set to "fast", the function prints only the BMA coefficients. If print_results is set to "all", the function
+#' also prints the main BMA plots, which may take some time to generate.
+#'
+#' Finally, the function plots the correlation matrix of bma_data using corrplot.mixed, and returns the BMA coefficients as a
+#' numeric vector.
+#' 
+#' @param bma_model [bma] An object of class bma containing the BMA regression model.
+#' @param bma_data [data.frame] A data frame containing the data used to fit the BMA model.
+#' @param print_results [character] A character value indicating the level of result printing desired.
+#'  Can be one of:
+#'  * none - print nothing
+#'  * fast - print only those results that do not take time to print
+#'  * verbose - print all the fast results, plus extra information about the model
+#'  * all - print all results, plots included (takes a long time)
+#'
+#' @return A numeric vector containing only the BMA coefficients.
+
+extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
+  # Validate the input
+  stopifnot(
+    class(bma_model) == "bma",
+    is.data.frame(bma_data),
+    is.character(print_results),
+    print_results %in% c("none", "fast", "verbose", "all")
+  )
+  # Extract the coefficients
+  bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
+  # Print out coefficient and model statistics
+  if (print_results %in% c("verbose","all")){
+    print(bma_model) # Coefficients, summary information
+    print(bma_model$topmod[1]) # Topmod
+  } else if (print_results == "fast"){
+    print(bma_coefs)
+  }
+  # Print out plots (takes time)
+  if (print_results == "all"){
+    # Main BMA plots
+    print("Printing out Bayesian Model Averaging plots. This may take some time...")
+    image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
+          do.axis=TRUE, xlab = "", main = "") # Takes time
+    plot(bma_model)
+  }
+  if (print_results != "none"){
+    # Correlation matrix
+    bma_col<- colorRampPalette(c("red", "white", "blue"))
+    bma_matrix <- cor(bma_data)
+    corrplot.mixed(bma_matrix, lower = "number", upper = "circle",
+                   lower.col=bma_col(200), upper.col=bma_col(200),tl.pos = c("lt"),
+                   diag = c("u"), tl.col="black", tl.srt=70, tl.cex=0.55,
+                   number.cex = 0.5,cl.cex=0.8, cl.ratio=0.1) 
+  }
+  # Return coefficients only
+  return(bma_coefs)
+}
 
 
 ######################### GRAPHICS #########################

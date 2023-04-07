@@ -56,13 +56,12 @@ country,Country,category,29,stop,FALSE,FALSE,NA,NA,FALSE,NA,NA
 region_advanced_economies,Region - Advanced Economies,dummy,30,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 region_east_asia_and_pacific,Region - East Asia and Pacific,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 region_europe_and_central_asia,Region - Europe and Central Asia,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
-region_latin_america_and_caribbean,Region - Latin America and Caribbean,dummy,30,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 region_middle_east_and_north_africa,Region - Middle East and North Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 region_south_asia,Region - South Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 region_sub_saharan_africa,Region - Sub Saharan Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 income_high,Income - High,dummy,31,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-income_middle,Income - Middle,dummy,31,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
+income_middle,Income - Middle,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 med_exp,Median Expenditure,float,32,stop,TRUE,TRUE,NA,median,TRUE,NA,NA
 min_wage,Minimum Wage,float,33,stop,TRUE,TRUE,NA,median,TRUE,NA,NA
 mean_age,Mean Wage,float,34,median,TRUE,TRUE,NA,median,TRUE,NA,NA
@@ -82,19 +81,20 @@ instr_parents_ed,Instrument - Parents Education,int,37,stop,TRUE,TRUE,1,NA,FALSE
 instr_distance_to_school,Instrument - Distance to School,int,37,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 instr_spouse_ed,Instrument - Spouse Education,int,37,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 instr_marital_status,Instrument - Marital Status,int,37,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
+instr_nsiblings,Instrument - Number of Siblings,int,37,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 instr_other,Instument - Other,int,37,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-age_control,Control - Age,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-age_sq_control,Control - Age Squared,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-exp_control,Control - Experience,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-exp_sq_control,Control - Experience Squared,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-ethnicity_control,Control - Ethnicity,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-health_control,Control - Health,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-gender_control,Control - Gender,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-occupation_control,Control - Occupation,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-firm_char_control,Control - Firm Characteristics,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-area_control,Control - Area,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-macro_var_control,Control - Macro Variables,dummy,38,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-impact_factor,Impact Factor,float,39,stop,TRUE,TRUE,NA,median,FALSE,TRUE,NA
+age_control,Control - Age,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+age_sq_control,Control - Age Squared,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+exp_control,Control - Experience,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+exp_sq_control,Control - Experience Squared,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+ethnicity_control,Control - Ethnicity,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+health_control,Control - Health,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+gender_control,Control - Gender,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+occupation_control,Control - Occupation,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+firm_char_control,Control - Firm Characteristics,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+area_control,Control - Area,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+macro_var_control,Control - Macro Variables,int,38,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+impact_factor,Impact Factor,float,39,stop,TRUE,TRUE,NA,median,TRUE,TRUE,NA
 citations,Citations,int,40,stop,TRUE,TRUE,NA,median,TRUE,FALSE,NA
 published,Study - Published,dummy,41,stop,TRUE,TRUE,1,NA,TRUE,FALSE,NA
 unpublished,Study - Unpublished,dummy,41,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA
