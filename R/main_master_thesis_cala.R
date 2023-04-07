@@ -17,25 +17,7 @@
 #'      -stem_method_master_thesis_cala.R
 #'      -<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv (modifiable below)
 #'  2. Make sure your data frame (<NAME_OF_YOUR_DATA_FRAME>.csv) contains NO MISSING VALUES.
-#'    If there are any, the script will not run.
-#'  3. The data frame should contain these columns (named exactly as listed below):
-#'    study_name - Name of the study, such as Einstein et al. (1935).
-#'    effect -  The main effect/estimate values. Ideally it should be  a transformed effect, such as
-#'      the partial correlation coefficient.
-#'    se - standard error of the effect
-#'    t_stat - t-statistic of the main effect. Can be calculated as a ratio of the effect
-#'      and its standard error.
-#'    n_obs - Number of observations associated with this estimate.
-#'    study_size - Size of the study that the estimate comes from. In Excel, this can be easily
-#'      computed as "=COUNTIF(<COL>:<COL>,<CELL>)", where <COL> is the column with study names or
-#'      study id's, and <CELL> is the cell in that column on the same row you want to calculate the
-#'      study size on. Example: =COUNTIF(B:B,B2). This calculates the study size of the study located
-#'      in cell B2, assuming that the column B contains the study information.
-#'  4. In the file <NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv, input the list of variables you are using in your data frame,
-#'    along with these parameters:
-#'    var_name - Name of the variable exactly as it appears in the data frame columns. Must not include
-#'      spaces and various special characters. Underscores are allowed.
-#'    var_name_verbose - A descriptive form of the variable name. Needs not to limit to any subset of characters.
+
 #'    data_type - Type of the data this variable holds. Can be only one type. Can be one of:
 #'      int - Integer. Any integer.
 #'      category - Categorical variable. Any string.
@@ -101,15 +83,15 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 run_this <- c(
   "variable_summary_stats" = F,
   "effect_summary_stats" = F,
-  "box_plot" = T,
+  "box_plot" = F,
   "funnel_plot" = F,
   "t_stat_histogram" = F,
   "linear_tests" = F,
   "nonlinear_tests" = F,
   "exo_tests" = F,
   "p_hacking_tests" = F,
-  "bma" = F,
-  "fma" = F,
+  "bma" = T,
+  "fma" = T, # Should be ran together with BMA
   "best_practice_estimate" = F
 )
 
@@ -388,7 +370,7 @@ if (run_this["p_hacking_tests"]){
 }
 
 
-######################### BAYESIAN MODEL AVERAGING #########################
+######################### MODEL AVERAGING #########################
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
 if (run_this["bma"]){
@@ -408,11 +390,22 @@ if (run_this["bma"]){
        bma_data, var_list,
        burn=bma_burn,
        iter=bma_iter,
-       g=bma_g,
-       mprior=bma_mprior,
+       g=bma_g, # UIP, BRIC, HQ
+       mprior=bma_mprior, # uniform, random
        nmodel=bma_nmodel,
        mcmc=bma_mcmc
   )
   # Print out the results
   bma_coefs <- extractBMAResults(bma_model, bma_data, print_results = bma_print_results)
 }
+
+###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
+
+if (run_this["fma"]){
+  if (!exists("bma_data") || !exists("bma_model")){
+    stop("You must create these two objects first - bma_data, bma_model. Refer to the 'bma' section.")
+  }
+  # Actual estimation
+  fma_coefs <- runFMA(bma_data, bma_model, var_list, verbose = T)
+}
+

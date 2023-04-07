@@ -1644,7 +1644,7 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
 }
 
 
-######################### BAYESIAN MODEL AVERAGING #########################
+######################### MODEL AVERAGING #########################
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
 
@@ -1813,7 +1813,6 @@ runBMA <- function(bma_data, input_var_list, ...){
 #'  * all - print all results, plots included (takes a long time)
 #'
 #' @return A numeric vector containing only the BMA coefficients.
-
 extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
   # Validate the input
   stopifnot(
@@ -1825,6 +1824,7 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
   # Print out coefficient and model statistics
+  print("Results of the Bayesian Model Averaging:")
   if (print_results %in% c("verbose","all")){
     print(bma_model) # Coefficients, summary information
     print(bma_model$topmod[1]) # Topmod
@@ -1838,8 +1838,6 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
     image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
           do.axis=TRUE, xlab = "", main = "") # Takes time
     plot(bma_model)
-  }
-  if (print_results != "none"){
     # Correlation matrix
     bma_col<- colorRampPalette(c("red", "white", "blue"))
     bma_matrix <- cor(bma_data)
@@ -1851,6 +1849,128 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
   # Return coefficients only
   return(bma_coefs)
 }
+
+###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
+
+#' runFMA - Run Frequentist Model Averaging
+#'
+#' This function takes a Bayesian model averaging object, a data frame, and a list of variables
+#' used in the Bayesian model averaging, and runs the frequentist model averaging.
+#' It extracts and prints the final model coefficients and their standard errors.
+#' It also returns the results as a data frame. Optionally, it can print the results.
+#'
+#' @param bma_data [data.frame] A data frame containing the data used to fit the BMA model.
+#' @param bma_model [bma] A Bayesian model averaging object obtained from the BMA package.
+#' @param input_var_list [data.frame] A data frame containing a list of variables used in the Bayesian model averaging.
+#' @param verbose [logical] A logical value. If TRUE, the function prints the results.
+#'
+#' @return The function returns a data frame with the final model coefficients and their standard errors.
+#'
+#' @details
+#' The function first validates the input arguments. Then it extracts the variables used
+#' in the Bayesian model averaging and verifies that they exist in the input data.
+#' Afterward, the frequentist model averaging is performed on the ordered and preprocessed data.
+#' Finally, the function extracts and prints the results as a data frame.
+#'
+#' This function uses the LowRankQP package for optimization.
+runFMA <- function(bma_data, bma_model, input_var_list, verbose = T){
+  # Validate input
+  stopifnot(
+    is.data.frame(bma_data),
+    class(bma_model) == "bma",
+    is.data.frame(input_var_list),
+    names(bma_data[,1]) == "effect_w" # Restrictive, but extra safe
+  )
+  # Validate the input through the external BMA formula
+  bma_vars <- getBMAFormula(input_var_list, get_var_vector_instead = TRUE) # Vector of BMA variables
+  stopifnot(
+    all(bma_vars %in% colnames(bma_data)),
+    all(colnames(bma_data) %in% bma_vars) # Both-sided implication
+  )
+  # Estimation from here
+  print("Running the Frequentist Model Averaging...")
+  # Main data - bma_data without the first column (effect)
+  x.data <- bma_data[,-1]
+  # Reorder the columns according to the bma_model coefficients
+  bma_c <- coef(bma_model,order.by.pip= T, exact=T, include.constant=T) #loading the matrix sorted by PIP
+  FMA_order <- c(0)
+  for (i in 1:nrow(bma_c)-1){
+    FMA_order[i] <- bma_c[i,5]
+  }
+  x.data <- x.data[,c(FMA_order)] # Order the data
+  const_<-c(1) # Vector of ones
+  x.data <-cbind(const_,x.data) # Plus the data set
+  x <- sapply(1:ncol(x.data),function(i){x.data[,i]/max(x.data[,i])})
+  scale.vector <- as.matrix(sapply(1:ncol(x.data),function(i){max(x.data[,i])}))
+  Y <- as.matrix(bma_data[,1]) # The effect
+  # Further groundwork
+  output.colnames <- colnames(x.data)
+  full.fit <- lm(Y~x-1)
+  beta.full <- as.matrix(coef(full.fit))
+  M <- k <- ncol(x)
+  n <- nrow(x)
+  beta <- matrix(0,k,M)
+  e <- matrix(0,n,M)
+  K_vector <- matrix(c(1:M))
+  var.matrix <- matrix(0,k,M)
+  bias.sq <- matrix(0,k,M)
+  
+  # Calculations
+  for(i in 1:M)
+  {
+    X <- as.matrix(x[,1:i])
+    ortho <- eigen(t(X)%*%X)
+    Q <- ortho$vectors ; lambda <- ortho$values
+    x.tilda <- X%*%Q%*%(diag(lambda^-0.5,i,i))
+    beta.star <- t(x.tilda)%*%Y
+    beta.hat <- Q%*%diag(lambda^-0.5,i,i)%*%beta.star
+    beta[1:i,i] <- beta.hat
+    e[,i] <- Y-x.tilda%*%as.matrix(beta.star)
+    bias.sq[,i] <- (beta[,i]-beta.full)^2
+    var.matrix.star <- diag(as.numeric(((t(e[,i])%*%e[,i])/(n-i))),i,i)
+    var.matrix.hat <- var.matrix.star%*%(Q%*%diag(lambda^-1,i,i)%*%t(Q))
+    var.matrix[1:i,i] <- diag(var.matrix.hat)
+    var.matrix[,i] <- var.matrix[,i]+ bias.sq[,i]
+  }
+  
+  e_k <- e[,M]
+  sigma_hat <- as.numeric((t(e_k)%*%e_k)/(n-M))
+  G <- t(e)%*%e
+  a <- ((sigma_hat)^2)*K_vector
+  A <- matrix(1,1,M)
+  b <- matrix(1,1,1)
+  u <- matrix(1,M,1)
+  quiet(
+    optim <- LowRankQP(Vmat=G,dvec=a,Amat=A,bvec=b,uvec=u,method="LU",verbose=FALSE)
+  )
+  weights <- as.matrix(optim$alpha)
+  beta.scaled <- beta%*%weights
+  final.beta <- beta.scaled/scale.vector
+  std.scaled <- sqrt(var.matrix)%*%weights
+  final.std <- std.scaled/scale.vector
+  results.reduced <- as.matrix(cbind(final.beta,final.std))
+  rownames(results.reduced) <- output.colnames; colnames(results.reduced) <- c("Coefficient","SE")
+  MMA.fls <- round(results.reduced,4)
+  MMA.fls <- data.frame(MMA.fls)
+  t <- as.data.frame(MMA.fls$Coefficient/MMA.fls$SE)
+  t[MMA.fls$Coefficient == 0,] <- 0 #added by the author
+  MMA.fls$pv <-round((1-apply(as.data.frame(apply(t,1,abs)), 1, pnorm))*2,3)
+  MMA.fls$pv[MMA.fls$pv == 1] <- 0 #added by the author
+  MMA.fls$names <- rownames(MMA.fls)
+  names <- c(colnames(bma_data))
+  names <- c(names,"const_")
+  MMA.fls <- MMA.fls[match(names, MMA.fls$names),]
+  MMA.fls$names <- NULL
+  
+  # Extract results
+  fma_res <- MMA.fls[-1,]
+  if (verbose){
+    print("Results of the Frequentist Model Averaging:")
+    print(fma_res)
+  }
+  invisible(fma_res)
+}
+
 
 
 ######################### GRAPHICS #########################
