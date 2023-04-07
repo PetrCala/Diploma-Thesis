@@ -1,0 +1,1865 @@
+##################### ENVIRONMENT PREPARATION ########################
+
+#' Function to read multiple sheets from an Excel file and write them as CSV files
+#' USE ONLY IN DEVELOPMENT
+#' @param xlsx_path Path to the Excel file
+#' @param sheet_names A vector of sheet names to read
+#' @return A list of data frames
+readExcelAndWriteCsv <- function(xlsx_path, sheet_names) {
+  # Read each sheet and write it as a CSV file in the working directory
+  quiet(
+    dfs <- lapply(sheet_names, function(sheet_name) {
+      csv_path <- paste0(sheet_name, "_master_thesis_cala.csv")
+      # Read the source file
+      df_xlsx <- read_excel(xlsx_path, sheet = sheet_name)
+      # Remove .
+      df_xlsx[df_xlsx == '.'] <- NA
+      # Overwrite the CSV file
+      write_csv(df_xlsx, csv_path)
+      return(df_xlsx)
+    })
+  )
+  print('Read all data from the source file successfully.')
+  # invisible(dfs) # Return if need be
+}
+
+#' Read_csv with parameters to avoid redundancy
+#' 
+#' @param source_path [str] - Path to the .csv file
+readDataCustom <- function(source_path){
+  data_out <- read_csv(
+    source_path,
+    locale = locale(decimal_mark=".",
+                    grouping_mark=",",
+                    tz="UTC"),
+    show_col_types = FALSE) # Quiet warnings
+  invisible(data_out)
+}
+
+
+#' Input a vector of file names, that should be located in the folder
+#' of the main script, and validate that all are indeed present.
+#' Print out a status message after the validation.
+#' 
+#' @param files[vector] A vector of strings.
+validateFiles <- function(files){
+  for (file in files){
+    if (!file.exists(file)){
+      stop(paste0(file, ' does not exist or could not be located.
+                  Please make sure to include it in the working directory.'))
+    }
+  }
+  print("All necessary files located successfully.")
+}
+
+
+####################### PACKAGE HANDLING ########################
+
+#' Package loading function
+#' 
+#' Insert a vector/list of package names, install all missing ones,
+#'  load all into workspace, and clean the environment
+loadPackages <- function(package_list, load_quietly = F){
+  # Install packages not yet installed
+  installed_packages <- package_list %in% rownames(installed.packages())
+  if (any(installed_packages == FALSE)) {
+    print(paste("Installing package ", package_list[!installed_packages],"...", sep = ""))
+    install.packages(package_list[!installed_packages])
+  }
+  # Package loading
+  if (load_quietly){
+    invisible(lapply(package_list, suppressWarnings(suppressMessages(library)), character.only = TRUE))
+  } else {
+    invisible(lapply(package_list, library, character.only = TRUE))
+  }
+  print('All packages loaded successfully')
+}
+
+######################### DATA PREPROCESSING #########################
+
+
+#' Check that the input variable list specifications are all correct
+#'
+#' @param input_var_list [data.frame] The input variable list
+validateInputVarList <- function(input_var_list){
+  # Validate that data type stays consistent within each group
+  for (i in 1:max(input_var_list$group_category)){
+    data_slice <- input_var_list$data_type[input_var_list$group_category == i]
+    arbitrary_type <- data_slice[1] # Should be equal for all
+    validity_test <- all(data_slice == arbitrary_type)
+    stopifnot(validity_test)
+  }
+  
+  # Validate that specifications are present for all variables where sum stats are required
+  data_to_summarize <- input_var_list[input_var_list$effect_sum_stats == TRUE, ]
+  for (i in 1:nrow(data_to_summarize)){
+    temp_row <- data_to_summarize[i,]
+    # Only one of the two specifications is used
+    validity_test <- xor(!is.na(temp_row$equal),!is.na(temp_row$gtlt))
+    stopifnot(validity_test)
+  }
+    
+  # Check data values
+  dummy_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'dummy',]
+  dummy_data_allowed_values <- c(0, 1)
+  for (i in 1:nrow(dummy_data_to_check)){
+    temp_row <- dummy_data_to_check[i,]
+    validity_test <- temp_row$equal %in% dummy_data_allowed_values
+    stopifnot(all(validity_test))
+  }
+  
+  perc_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'perc',]
+  for (i in 1:nrow(perc_data_to_check)){
+    temp_row <- perc_data_to_check[i,]
+    validity_test <- c(
+      temp_row$gtlt < 1,
+      temp_row$gtlt > 0
+    )
+    stopifnot(all(validity_test))
+  }
+}
+
+#' Preprocess the raw excel data:
+#' - Adjust the source data dimensions
+#' - Transform ALL columns into the correct data type.
+#' 
+#' Check column validity, add winsorized statistics (Effect, SE, t-stat)
+#' @param input_data [data.frame] Main data frame
+#' @param input_var_list [data.frame] Data frame with variable descriptions.
+#' @return [data.frame] The preprocessed data
+preprocessData <- function(input_data, input_var_list){
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list)
+  )
+  # Remove redundant columns
+  expected_col_n <- nrow(input_var_list)
+  while(ncol(input_data) > expected_col_n){
+    input_data <- input_data[,-ncol(input_data)]
+  }
+  
+  # Variable name validity check
+  varnames <- colnames(input_data)
+  expected_varnames <- input_var_list$var_name
+  if(!all(varnames == expected_varnames)){ # A strong, restrictive assumption
+    print("These variables from the source data names do not match the expected names:")
+    print(varnames[!(varnames == expected_varnames)])
+    stop("Mismatching variable names")
+  }
+  
+  # Remove redundant rows
+  while(is.na(input_data[nrow(input_data), "study_name"])) {
+    input_data <- input_data[-nrow(input_data),]
+  }
+  
+  # Preprocess and enforce correct data types
+  for (col_name in varnames) {
+    col_data_type <- input_var_list$data_type[input_var_list$var_name == col_name]
+    if (col_data_type == "int" || col_data_type == "dummy") {
+      input_data[[col_name]] <- as.integer(input_data[[col_name]])
+    } else if (col_data_type == "float" || col_data_type == "perc") {
+      input_data[[col_name]] <- as.numeric(input_data[[col_name]])
+    } else if (col_data_type == "category") {
+      input_data[[col_name]] <- as.character(input_data[[col_name]])
+    }
+  }
+  print("All data preprocessed successfully.")
+  return(input_data)
+}
+
+#' Handle Missing Data in a Data Frame
+#'
+#' This function handles missing values in a data frame based on the specified handling methods.
+#' It iterates through the columns specified in the input_var_list and interpolates the missing values
+#' based on the corresponding handling method (stop, mean, or median). If the ratio of missing values
+#' in a column is more than the desired value (default 80%), it throws an error notifying the user to
+#' consider modifying or deleting the variable.
+#'
+#' @param input_data [data.frame] A data frame containing the data with missing values.
+#' @param input_var_list [data.frame] A data frame with two columns: 'var_name' containing the names of the columns in input_data
+#'        and 'na_handling' containing the handling method for the corresponding column (stop, mean, or median).
+#' @param allowed_missing_ratio [float] A ratio indicating how many variables can be missing for the function to allow 
+#'  interpolation. Anything above and the function will stop and warn the user. Defaults to 0.8 (80%).
+#' @return A data frame with the missing values handled based on the specified methods.
+#' @examples
+#' # Create a sample data frame with missing values
+#' sample_data <- data.frame(a = c(1, 2, 3, NA, 5), b = c(2, NA, 4, 6, NA))
+#' 
+#' # Create an input_var_list for handling missing values
+#' input_vars <- data.frame(var_name = c("a", "b"), na_handling = c("mean", "median"))
+#' 
+#' # Handle missing values in the sample_data based on the input_vars
+#' handled_data <- handleMissingData(sample_data, input_vars, allowed_missing_ratio = 0.5)
+handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio = 0.8){
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    allowed_missing_ratio >= 0,
+    allowed_missing_ratio <= 1
+  )
+  # Get the NA values handling information
+  var_names <- input_var_list$var_name
+  na_handling <- input_var_list$na_handling
+  
+  # Iterate through columns
+  for (i in seq_along(var_names)) {
+    column_name <- var_names[i]
+    handling_method <- na_handling[i]
+    
+    # Check if the column exists in the data frame
+    if (!column_name %in% colnames(input_data)) {
+      stop(paste("The column", column_name, "does not exist in the input_data."))
+    }
+    
+    # Do not interpolate or validate missing values for this variable
+    if (handling_method == "allow"){
+      next
+    }
+    
+    column_data <- input_data[[column_name]]
+    na_count <- sum(is.na(column_data))
+    total_count <- length(column_data)
+    
+    # Check if the ratio of missing values is more than the allowed ratio
+    if (na_count / total_count > allowed_missing_ratio) {
+      missing_ratio_verbose <- paste0(as.character(allowed_missing_ratio * 100), "%")
+      stop(paste("The column", column_name, "has more than,", missing_ratio_verbose, "missing values. Consider modifying or deleting the variable."))
+    }
+    
+    # Handle missing values based on the handling method
+    if (handling_method == "stop") {
+      if (any(is.na(input_data[[column_name]]))){
+        stop(paste("No missing values allowed for", column_name))
+      }
+    } else if (handling_method == "mean") {
+      input_data[[column_name]][is.na(column_data)] <- mean(column_data, na.rm = TRUE)
+    } else if (handling_method == "median") {
+      input_data[[column_name]][is.na(column_data)] <- median(column_data, na.rm = TRUE)
+    } else {
+      stop(paste("Invalid handling method for column", column_name, ": ", handling_method))
+    }
+  }
+  
+  print("Missing data handled successfully.")
+  return(input_data)
+}
+
+#' Winsorize input data
+#'
+#' This function applies Winsorization to the data to minimize the effect of outliers on the statistical analysis.
+#' Winsorization is a process of limiting extreme values by replacing them with the next lowest or
+#' highest value that is within a certain percentile range.
+#'
+#' @param input_data [data.frame] A data frame containing the main effect (effect),
+#' standard error of the effect (se), and t-statistic (t_stat) columns.
+#' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
+#' extreme values to be replaced with the nearest non-extreme value.
+#' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
+#' and t-statistic columns have been Winsorized.
+winsorizeData <- function(input_data, win_level){
+  # Validate input
+  stopifnot(
+    win_level > 0,
+    win_level < 1,
+    all(c('effect', 'se') %in% colnames(input_data)),
+    !(any(is.na(input_data$effect))), # No missing effect values
+    !(any(is.na(input_data$se))) # No missing SE values
+    )
+  # Get the winsorization interval
+  win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
+  # Create a t-stat column if it does not exist in the data
+  if (!("t_stat") %in% colnames(input_data)){
+    input_data$t_stat <- input_data$effect / input_data$se
+  }
+  # Statistic preprocessing
+  input_data$effect_w <- Winsorize(x = input_data$effect, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$se_w <- Winsorize(x = input_data$se, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$se_precision_w <- 1/input_data$se_w
+  input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$significant_w <- c(rep(0,nrow(input_data)))
+  input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
+  # Return quietly
+  print("Data winsorized successfully.")
+  invisible(input_data)
+}
+
+
+#' A very restrictive function for validating the correct data types
+#' 
+#' Check that all values across all columns have the correct data type, check that all dummy groups
+#' are correctly specified across all observations (only one 1, otherwise 0), and 
+#' stop and print out the error message, if it is not so.
+#' 
+#' Allows for skipping NA values, if your data set is incomplete. Otherwise
+#' 
+#' @param input_data [data.frame] The data frame to be validated
+#' @param input_var_list [data.frame] The data frame that specifies the data type of each variable
+#' @param ignore_missing [bool] If TRUE, allow missing values in the data frame. Deafults to FALSE.
+validateData <- function(input_data, input_var_list, ignore_missing = F){
+  # Columns that the data frame must contain
+  expected_columns <- c("study_name", "effect", "se", "t_stat", "n_obs", "study_size")
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.logical(ignore_missing),
+    all(expected_columns %in% colnames(input_data))
+  )
+  
+  # Do not pass if any values are NA. 
+  if (!ignore_missing){
+    if(any(is.na(input_data))){
+      stop("This script does not allow for ANY missing values. Make sure you have called the data preprocessing function.")
+    }
+  }
+  
+  ### Dummy group validation
+  # Names of dummy variable columns
+  dummy_group_vars <- as.vector(unlist(input_var_list[input_var_list$data_type == "dummy", "var_name"]))
+  # Group numbers for these columns (e.g. 11,11,12,12,12,13,13,...)
+  dummy_group_nums <- as.vector(unlist(input_var_list[input_var_list$data_type == "dummy", "group_category"]))
+  # Split the data frame based on the dummy variable groups
+  unique_group_nums <- unique(dummy_group_nums)
+  splitted_data_frames <- list()
+  for (group_num in unique_group_nums){
+    group_col_names <- dummy_group_vars[dummy_group_nums == group_num] # Get col names of the same category
+    splitted_data_frames[[as.character(group_num)]] <- input_data[,group_col_names, drop = FALSE] # To list
+  }
+  # Validate all groups
+  for (i in length(splitted_data_frames)){
+    df_to_test <- splitted_data_frames[[i]] # Explicit for indexing clarity
+    # Skip empty groups in development - should not be used
+    if(ignore_missing & all(is.na(df_to_test))){
+      next # Empty group
+    }
+    if(!any(apply(df_to_test,1,sum) == 1)){ # Check that for all rows of all groups, only one value is 1, other are 0
+        stop("Invalid dummy group configuration: One and only one dummy variable must be 1 in each group for each row")
+    }
+  }
+  # Validate that all perc variables sum up to 1
+  # TO-DO
+  
+  ### Data type validation
+  for (row in 1:nrow(input_var_list)) {
+    var_name <- as.character(input_var_list[row, "var_name"])
+    data_type <- as.character(input_var_list[row, "data_type"])
+    
+    if (ignore_missing) {
+      non_missing_rows <- !is.na(input_data[[var_name]]) & input_data[[var_name]] != "."
+    } else {
+      non_missing_rows <- TRUE
+    }
+    # Check that all values in all columns have the expected value
+    if (data_type == "int") {
+      if (!all(sapply(as.vector(unlist(input_data[non_missing_rows, var_name])), is.integer))) {
+        stop(paste("Invalid data type for variable:", var_name, "Expected integer values"))
+      }
+    } else if (data_type == "category") {
+      if (!all(sapply(as.vector(unlist(input_data[non_missing_rows, var_name])), is.character))) {
+        stop(paste("Invalid data type for variable:", var_name, "Expected categorical (string) values"))
+      }
+    } else if (data_type == "float") {
+      if (!all(sapply(as.vector(unlist(input_data[non_missing_rows, var_name])), is.numeric))) {
+        stop(paste("Invalid data type for variable:", var_name, "Expected float (numeric) values"))
+      }
+    } else if (data_type == "dummy") {
+      if (!all(as.vector(unlist(input_data[non_missing_rows, var_name])) %in% c(0, 1))) {
+        stop(paste("Invalid data type for variable:", var_name, "Expected dummy (0 or 1) values"))
+      }
+    }
+  }
+  print("All values across all columns of the main data frame are of the correct type.")
+}
+
+
+#' An auxiliary method to limit the data frame to one study only. Use only for testing
+#' 
+#' @param input_data [data.frame] The main data frame
+#' @param input_study_id [int] Study ID of the study to subset to
+#' @return data.frame The subsetted data frame
+limitDataToOneStudy <- function(input_data, input_study_id){
+  stopifnot(
+    is.data.frame(input_data)
+  )
+  # Validate the input
+  study_id <- tryCatch(
+    {
+      as.numeric(input_study_id) # Dict value is a character by default
+    },
+    warning = function(e){
+      message("Invalid index for subsetting data. Use an integer.")
+      return(input_data)
+    }
+  )
+  if(is.na(study_id)){ # NAs pass through the as.numeric function, but are not detecable before (jeez)
+    # Do nothing
+    return(input_data)
+  }
+  # Subset to one study
+  stopifnot(study_id %in% input_data$study_id)
+  study_data <- input_data[input_data$study_id == study_id,]
+  stopifnot(nrow(study_data) > 0) # Check valid output
+  # Extract info and return data
+  study_name <- as.character(study_data[1,]$study_name)
+  print(paste0('Subsetting the dataset to ', study_name))
+  invisible(study_data)
+}
+
+######################### DATA EXPLORATION #########################
+
+#' Compute summary statistics for selected variables in a data frame
+#'
+#' This function computes summary statistics for selected variables in a data frame,
+#' including mean, median, minimum, maximum, standard deviation, and percentage of missing observations.
+#' If a variable contains missing or non-numeric data, the corresponding summary statistics will be omitted.
+#'
+#' @param input_data [data.frame] The input data frame.
+#' @param input_var_list [data.frame] A data frame with information about the variables to be summarized.
+#' It should have columns "var_name", "data_type", and "variable_summary".
+#' @param names_verbose [bool] If True, print out the descriptive variable names. If F,
+#' print out the data frame column names. Defaults to TRUE.
+#'
+#' @return [data.frame] A data frame containing summary statistics for selected variables.
+getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = T){
+  # List of the statistics to compute
+  variable_stat_names <- c("Var Name", "Var Class", "Mean", "Median",
+                            "Min", "Max", "SD", "Missing obs")
+  # Variables to preprocess
+  desired_vars <- input_var_list[input_var_list$variable_summary == TRUE,]$var_name # Vector
+  # Initialize output data frame
+  df <- data.frame(matrix(nrow = length(desired_vars), ncol = length(variable_stat_names)))
+  colnames(df) <- variable_stat_names
+  
+  # Iterate over all desired variables and append summary statistics to the main DF
+  missing_data_vars <- c()
+  for (var_name in desired_vars){
+    var_data <- as.vector(unlist(subset(input_data, select = var_name))) # Roundabout way, because types
+    var_specs <- input_var_list[input_var_list$var_name == var_name,] # Specifications for this variable
+    var_class <- var_specs$data_type
+    var_name_display <- ifelse(names_verbose, var_specs$var_name_verbose, var_name) # Variable display name
+    row_idx <- match(var_name, desired_vars) # Append data to this row
+    # Missing all data 
+    if (!any(is.numeric(var_data), na.rm=TRUE) || all(is.na(var_data))){
+      missing_data_vars <- append(missing_data_vars, var_name)
+      df[row_idx, ] <- c(var_name, var_class, rep(NA, length(variable_stat_names) - 2))
+      next
+    }
+    # Calculate the statistics
+    var_mean <- round(mean(var_data, na.rm = TRUE), 3)
+    var_median <- round(median(var_data, na.rm = TRUE), 3)
+    var_sd <- round(sd(var_data, na.rm = TRUE), 3)
+    var_min <- round(min(var_data, na.rm = TRUE), 3)
+    var_max <- round(max(var_data, na.rm = TRUE), 3)
+    var_missing <- round((sum(is.na(var_data)) / length(var_data)) * 100, 1)
+    var_missing_verbose <- paste0(as.character(var_missing),"%")
+    # Aggregate and append to the main DF
+    row_data <- c(
+      var_name_display,
+      var_class,
+      var_mean,
+      var_median,
+      var_min,
+      var_max,
+      var_sd,
+      var_missing_verbose
+    )
+    df[row_idx, ] <- row_data
+  }
+  # Print and return output data frame
+  cat("Variable summary statistics:\n")
+  print(df)
+  cat("\n")
+  if (length(missing_data_vars) > 0){
+    print(paste0("Missing data for: ", length(missing_data_vars), " variables."))
+    cat("\n")
+  }
+  invisible(df)
+}
+
+
+#' The function getEffectSummaryStats() calculates the summary statistics for variables in a given data frame input_data
+#'    using the percentage of correct classification (Effect) effect_w and sample size study_size columns,
+#'    and returns a data frame with the results. The function takes as input input_var_list,
+#'    a data frame that contains metadata about the variables in input_data and which variables to calculate
+#'    summary statistics for. The summary statistics calculated are the mean, median, weighted mean,
+#'    minimum, maximum, standard deviation, and number of observations. For the weighted mean,
+#'    the inverse squared sample size is used as weights. The confidence level for the weighted mean
+#'    confidence interval can be set using the conf.level parameter, which defaults to 0.95.
+#'    If any input data is missing or non-numeric, it is ignored, and the variable is not included in the output.
+#' 
+#' The function returns a data frame with the following columns:
+#' -Var Name: The name of the variable.
+#' -Var Class: The data type of the variable.
+#' -Mean: The arithmetic mean of the effect for the variable.
+#' -Median: The median of the effect for the variable.
+#' -Weighted Mean: The weighted mean of the effect for the variable, using the inverse squared sample size as weights.
+#' -WM CI lower: The lower bound of the confidence interval for the weighted mean.
+#' -WM CI upper: The upper bound of the confidence interval for the weighted mean.
+#' -Min: The minimum effect value for the variable.
+#' -Max: The maximum effect value for the variable.
+#' -SD: The standard deviation of the effect for the variable.
+#' -Obs: The number of observations for the variable.
+#' If a variable has missing or non-numeric data, it will not be included in the output.
+#' If no variables are included in the output, the function returns an empty data frame.
+getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
+  # Parameter checking
+  stopifnot(all(c(conf.level > 0, conf.level < 1)))
+  
+  # Constants
+  z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) # Z value for conf. int. calculation
+  effect_data <- with(input_data, as.vector(effect_w))
+  study_size_data <- with(input_data, as.vector(study_size))
+  
+  # Output columns
+  effect_stat_names <- c("Var Name", "Var Class", "Mean", "Median", "Weighted Mean",
+                     "WM CI lower", "WM CI upper", "Min", "Max", "SD", "Obs")
+  
+  # Variables to preprocess
+  desired_vars <- input_var_list[input_var_list$effect_sum_stats == TRUE,]$var_name # Vector
+  
+  # Initialize output data frame
+  df <- data.frame(col1 = character(),
+                   col2 = character(),
+                   col3 = numeric(),
+                   col4 = numeric(),
+                   col5 = numeric(),
+                   col6 = numeric(),
+                   col7 = numeric(),
+                   col8 = numeric(),
+                   col9 = numeric(),
+                   col10 = numeric(),
+                   col11 = numeric(),
+                   stringsAsFactors = F
+                   )
+  stopifnot(ncol(df) == length(effect_stat_names))
+  
+  # Iterate over all desired variables and append summary statistics to the main DF
+  missing_data_vars <- c()
+  for (var_name in desired_vars){
+    # Get data for this var
+    var_data <- as.vector(unlist(subset(input_data, select = var_name))) # Roundabout way, because types
+    var_specs <- input_var_list[input_var_list$var_name == var_name,] # Specifications for this variable
+    var_class <- var_specs$data_type
+    var_name_verbose <- var_specs$var_name_verbose
+    row_idx <- match(var_name, desired_vars) # Append data to this row
+    
+    # Missing all data 
+    if (any(
+      !any(is.numeric(var_data), na.rm=TRUE), # No numerics
+      all(is.na(var_data)), # All NAs
+      nrow(var_data) == 0, # Empty data
+      all(var_data %in% c(0,NA)) # Only 0s or NAs
+      )){
+      missing_data_vars <- append(missing_data_vars, var_name)
+      next
+    }
+    
+    # Get the specifications and subset the data accordingly
+    equal_val <- var_specs$equal
+    gtlt_val <- var_specs$gtlt
+    stopifnot(xor(is.na(equal_val),is.na(gtlt_val))) # Additional validity check - should never occur
+    # The specification is EQUAL
+    if (!is.na(equal_val)){
+      effect_data_equal <- effect_data[var_data == equal_val]
+      study_size_data_equal <- study_size_data[var_data == equal_val] # For W. mean - wonky, but straightforward
+      cutoff <- equal_val  # For verbose output
+    } else { # The specification is gtlt
+      if (gtlt_val %in% c("mean", "median")){
+        cutoff <- ifelse(gtlt_val == 'mean', mean(var_data, na.rm=T), median(var_data, na.rm=T))
+        effect_data_gt <- effect_data[var_data >= cutoff]
+        effect_data_lt <- effect_data[var_data < cutoff]
+        study_size_data_gt <- study_size_data[var_data >= cutoff]
+        study_size_data_lt <- study_size_data[var_data < cutoff]
+      } else if (!is.na(gtlt_val)){
+        cutoff <- gtlt_val # For verbose output
+        effect_data_gt <- effect_data[var_data >= gtlt_val]
+        effect_data_lt <- effect_data[var_data < gtlt_val]
+        study_size_data_gt <- study_size_data[var_data >= gtlt_val]
+        study_size_data_lt <- study_size_data[var_data < gtlt_val]
+      } else {
+        stop("Value error")
+      }
+    }
+    
+    # A function for statistics calculation
+    getNewDataRow <- function(input_var_name, input_class_name, input_effect_data, input_study_size_data){
+      input_effect_data <- na.omit(input_effect_data)
+      input_study_size_data <- na.omit(input_study_size_data)
+      # Summary stats computation
+      var_mean <- round(mean(input_effect_data), 3)
+      var_median <- round(median(input_effect_data), 3)
+      var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
+      var_sd <- round(sd(input_effect_data), 3)
+      var_ci_lower <- round(var_weighted_mean - var_sd*z, 3)
+      var_ci_upper <- round(var_weighted_mean + var_sd*z, 3)
+      var_min <- round(min(input_effect_data), 3)
+      var_max <- round(max(input_effect_data), 3)
+      var_obs <- length(input_effect_data)
+      
+      new_row <- data.frame(
+        col1 = input_var_name,
+        col2 = input_class_name,
+        col3 = var_mean,
+        col4 = var_median,
+        col5 = var_weighted_mean,
+        col6 = var_ci_lower,
+        col7 = var_ci_upper,
+        col8 = var_min,
+        col9 = var_max,
+        col10 = var_sd,
+        col11 = var_obs
+      )
+      return (new_row)
+    }
+    
+    # EQUAL data
+    if (!is.na(equal_val)){
+      new_varname_equal <- paste0(var_name_verbose, " = ", round(as.numeric(cutoff,3)))
+      new_row <- getNewDataRow(new_varname_equal, var_class, effect_data_equal, study_size_data_equal)
+      df <- rbind(df, new_row)
+    } else { # GTLT data
+      new_varname_gt <- paste0(var_name_verbose, " >= ", round(as.numeric(cutoff,3)))
+      new_varname_lt <- paste0(var_name_verbose, " < ", round(as.numeric(cutoff,3)))
+      new_row_gt <- getNewDataRow(new_varname_gt, var_class, effect_data_gt, study_size_data_gt)
+      new_row_lt <- getNewDataRow(new_varname_lt, var_class, effect_data_lt, study_size_data_lt)
+      df <- rbind(df, new_row_gt)
+      df <- rbind(df, new_row_lt)
+    }
+  }
+  # Put the final output together
+  colnames(df) <- effect_stat_names
+  cat("Summary statistics:\n")
+  print(df)
+  cat("\n")
+  if (length(missing_data_vars) > 0){
+    print(paste0("Missing data for ", length(missing_data_vars), " variables:"))
+    print(missing_data_vars)
+    cat("\n")
+  }
+  invisible(df)
+}
+
+
+#' A quick search function to extract all specified factors for the box plot
+#' 
+#' @param adj_pars_source [vector] Source vector with adjustable parameters.
+#' @param pattern [str] Pattern to search for inside the paramteres vector.
+#' @return factor_names [vector] A vector with specified factor names.
+getBoxPlotFactors <- function(adj_pars_source, pattern){
+  factor_names <- c()
+  i <- 1
+  while (i < 20) {
+    factor_name <- as.character(adj_pars_source[paste0(pattern,i)])
+    if (is.na(factor_name)){ # No more factors specified
+      break
+    }
+    factor_names <- append(factor_names, factor_name)
+    i <- i + 1
+  }
+  invisible(factor_names)
+}
+
+#' Input the main data frame, specify a factor to group by, and create a box plot.
+#' This plot is automatically printed out into the Plots window.
+#' 
+#' @param input_data [data.frame] Input data
+#' @param factor_by [str] Factor to group by. Can be one of the following:
+#'  - 'country'
+#'  - 'study_level'
+#'  Defaults to 'country'
+#' @param verbose [bool] - If T, print out the information about the plot being printed.
+#'  Defaults to T.
+getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
+  # Check column validity
+  expected_cols <- c('effect_w', factor_by)
+  stopifnot(all(expected_cols %in% colnames(input_data)))
+  
+  # Plot variable preparation
+  factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
+  factor_by_verbose <- gsub("_", " ", factor_by) # More legible y-axis label
+  
+  # Construct the plot - use !!sym(factor_by) to cast some more dark magic - makes plot recognize function input
+  box_plot <- ggplot(data = input_data, aes(x = effect_w, y=factor(!!sym(factor_by), levels = factor_levels))) +
+      geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
+      geom_vline(aes(xintercept = mean(effect_w)), color = "red", linewidth = 0.85) + 
+      labs(title = NULL,x="Estimate of the effect of years of schooling on wage", y = "Grouped by " %>% paste0(factor_by_verbose)) +
+      main_theme()
+  
+  # Plot the plot
+  print(paste0('Printing a box plot for the factor: ', factor_by_verbose))
+  suppressWarnings(print(box_plot))
+  cat('\n')
+}
+
+
+#' Identify outliers in the data, return the filter which can be used
+#'  to get the data without these outliers.
+#' 
+#' @param input_data Data to check
+#' @param effect_cutoff Outlier cutoff point for the effect
+#' @param precision_cutoff Outlier cutoff point for the SE precision
+#' @param verbose If true, print out information about the outliers
+#' @return [list] Filter for the data without outliers
+getOutliers <- function(input_data, effect_cutoff = 0.2, precision_cutoff = 0.2, verbose=T) {
+  # Check column validity
+  expected_cols <- c('effect_w', 'se_precision_w')
+  stopifnot(all(expected_cols %in% colnames(input_data)))
+  
+  # Get source values
+  obs <- input_data$obs_n
+  effect <- input_data$effect_w
+  precision <- input_data$se_precision_w
+  
+  # Maximum values
+  max_effect <- max(effect)
+  max_precision <- max(precision)
+  
+  # Percentage of the maximum value - [0.2, 0.8, 0.7, ...]
+  effect_perc <- effect/max_effect
+  precision_perc <- precision/max_precision
+  
+  # Create filters
+  effect_filter <- effect_perc >= effect_cutoff
+  precision_filter <- precision_perc >= precision_cutoff
+  outlier_filter <- effect_filter & precision_filter
+    
+  # Filter suspicious observations
+  outliers <- obs[outlier_filter]
+  if ((length(outliers)>0) & (verbose)) {
+    # Get the list of studies with outliers
+    suspicious_studies <- c()
+    for (outlier in outliers) {
+      study <- as.character(input_data[outlier, 'study_name'])
+      if (!study %in% suspicious_studies) {
+        suspicious_studies <- c(suspicious_studies, study) # Add to the vector
+      }
+    }
+    
+    # Print out the information
+    print("Funnel plot outlier information:")
+    print(paste('Outliers found:', length(outliers)), sep=' ')
+    print('Data rows:')
+    print(outliers)
+    print('Suspicious studies:')
+    print(suspicious_studies)
+    cat('\n\n')
+  }
+  
+  # Return the negated filter
+  return(!outlier_filter)
+  
+}
+
+#' Input the main data frame, several specifications, and create a funnel plot
+#' 
+#' @param input_data [data.frame] Main data frame. Must contain cols 'effect_w', 'se_precision_w'
+#' @param effect_cutoff [float] Cutoff point for the effect.
+#' @param precision_cutoff [float] Cutoff point for precision.
+#' @param verbose [bool] If T, print out outlier information. Defaults to T.
+getFunnelPlot <- function(input_data, effect_cutoff=0.2, precision_cutoff=0.2, verbose = T){
+  # Check column validity
+  expected_cols <- c('effect_w', 'se_precision_w')
+  stopifnot(all(expected_cols %in% colnames(input_data)))
+  
+  # Filter out the outliers
+  filter_effect_w <- getOutliers(input_data, effect_cutoff=effect_cutoff, precision_cutoff=precision_cutoff, verbose=verbose)
+  
+  # Single out the data for the funnel plot
+  funnel_data <- data[filter_effect_w, c('effect_w', 'se_precision_w')] # Only Effect, Precision
+  funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
+  
+  # Plot the plot
+  funnel_win <- ggplot(data = funnel_data, aes(x = effect_w, y = se_precision_w)) + 
+    geom_point(color = "#0d4ed1") + 
+    labs(title = NULL, x = "Partial correlation coefficient", y = "Precision of the estimate (1/SE)") +
+    main_theme()
+    
+  suppressWarnings(print(funnel_win)) # Print out the funnel plot
+}
+
+#' Generate a histogram of the T-statistic values for the given input data, with the 
+#'  option to specify lower and upper cutoffs for filtering outliers.
+#' 
+#' @param input_data A data frame containing the T-statistic values to be plotted.
+#' @param lower_cutoff An optional numeric value specifying the lower cutoff for filtering outliers. Default is -150.
+#' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
+#' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
+#'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
+getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
+  # Specify a cutoff filter
+  t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff) #removing the outliers from the graph
+  # Construct the histogram
+  quiet(
+    t_hist_plot <- ggplot(data = input_data[t_hist_filter,], aes(x = t_w[t_hist_filter], y = after_stat(density))) +
+      geom_histogram(color = "black", fill = "#1261ff", bins = "80") +
+      geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
+      geom_vline(aes(xintercept = -1.96), color = "red", linewidth = 0.5) +
+      geom_vline(aes(xintercept = 1.96), color = "red", linewidth = 0.5) +
+      labs(x = "T-statistic", y = "Density") +
+      scale_x_continuous(breaks = c(-1.96, 1.96, round(mean(data$t_w),2), 50, 100, 130),
+                         limits = c(-10, 130)) + 
+      main_theme(
+        x_axis_tick_text = c("red", "red", "darkorange", "black", "black", "black"))
+  )
+  # Print out the plot
+  suppressWarnings(print(t_hist_plot))
+}
+
+######################### LINEAR TESTS ######################### 
+
+#' Extract the four coefficients from linear test in the order
+#' - Intercept, Intercept SE, Slope, Slope SE
+#' 
+#' @param coeftest_object Coeftest object from the linear test
+#' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
+#'  standard errors as strings wrapped in parentheses. Defaults to T.
+#' @return [vector] - Vector of len 4, with the coefficients
+extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
+  # Check validity of the coeftest object
+  stopifnot(
+    nrow(coeftest_object) == 2,
+    ncol(coeftest_object) == 4,
+    colnames(coeftest_object)[1] == "Estimate",
+    colnames(coeftest_object)[2] == "Std. Error"
+  )
+  
+  # Extract coefficients
+  pub_bias_coef <- round(coeftest_object[2,"Estimate"], 5)
+  pub_bias_se <- round(coeftest_object[2,"Std. Error"], 5)
+  effect_coef <- round(coeftest_object[1,"Estimate"], 5)
+  effect_se <- round(coeftest_object[1,"Std. Error"], 5)
+  # Wrap the standard errors in parenthesis for cleaner presentation
+  if (verbose_coefs){
+    pub_bias_se <- paste0("(", pub_bias_se, ")")
+    effect_se <- paste0("(", effect_se, ")")
+  }
+  # Group and return quietly
+  lin_coefs <- c(pub_bias_coef, pub_bias_se, effect_coef, effect_se)
+  invisible(lin_coefs)
+}
+
+###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
+
+#' Run all the linear tests on data, and return a matrix of results.
+#' These tests are ran: OLS, FE, RE, Weighted OLS (by study size),
+#'  Weighted OLS (by precision).
+#' 
+#' @param data [data.frame] Input data
+getLinearTests <- function(data) {
+  # Validate that the necessary columns are present
+  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
+  stopifnot(all(required_cols %in% names(data)))
+  # OLS
+  ols <- lm(formula = effect_w ~ se_w, data = data)
+  ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
+  ols_coefs <- extractLinearCoefs(ols_res)
+  # FE
+  fe <- rma(effect_w, sei = se_w, mods = ~se_w, data = data, method = "FE")
+  fe_res <- coeftest(fe, vcov = vcov(fe, type = "fixed", cluster = c(data$study_id)))
+  fe_coefs <- extractLinearCoefs(fe_res)
+  # RE
+  re <- rma(effect_w, sei = se_w, mods = ~se_w, data = data, method = "REML")
+  re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
+  re_coefs <- extractLinearCoefs(re_res)
+  # Weighted by number of observations per study
+  ols_w_study <- lm(formula = effect_w ~ se_w, data = data, weight = (data$study_size*data$study_size))
+  ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
+  ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res)
+  # Weighted by precision
+  ols_w_precision <- lm(formula = effect_w ~ se_w, data = data, weight = c(data$se_precision_w*data$se_precision_w))
+  ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
+  ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res)
+  # Combine the results into a data frame
+  results <- data.frame(
+    OLS = ols_coefs,
+    FE = fe_coefs,
+    RE = re_coefs,
+    OLS_weighted_study = ols_w_study_coefs,
+    OLS_weighted_precision = ols_w_precision_coefs
+  )
+  rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)")
+  # Print the results into the console
+  print("Results of the linear tests, clustered by study:")
+  print(results)
+  cat("\n\n")
+  # Return silently
+  invisible(results) 
+}
+
+
+######################### NON-LINEAR TESTS ######################### 
+
+
+#' Extract the four coefficients from linear test in the order
+#' - Intercept, Intercept SE
+#' Assume a very simplitic form of the non-linear objects, where the coefficients
+#' are the the first two positions of the object.
+#' 
+#' @param nonlinear_object Non-linear object from the linear test
+#' @param pub_bias_present [bool] If T, the method returns publication bias coefs too.
+#'  Deafults to F.
+#' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
+#'  standard errors as strings wrapped in parentheses. Defaults to T.
+#' @return [vector] - Vector of len 4, with the coefficients
+extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbose_coefs=T){
+  # Extract coefficients
+  effect_coef <- round(as.numeric(nonlinear_object[1,1]), 5)
+  effect_se <- round(as.numeric(nonlinear_object[1,2]), 5)
+  if (pub_bias_present){
+    pub_coef <- round(as.numeric(nonlinear_object[2,1]), 5)
+    pub_se <- round(as.numeric(nonlinear_object[2,2]), 5)
+  }
+  # Wrap the standard errors in parenthesis for cleaner presentation
+  if (verbose_coefs){
+    effect_se <- paste0("(", effect_se, ")")
+    if (pub_bias_present){
+      pub_se <- paste0("(", pub_se, ")")
+    }
+  }
+  # Group and return quietly
+  if (pub_bias_present){
+    nonlin_coefs <- c(pub_coef, pub_se, effect_coef, effect_se) # First two for pub bias
+  } else {
+    nonlin_coefs <- c("", "", effect_coef, effect_se)
+  }
+  invisible(nonlin_coefs)
+}
+
+###### PUBLICATION BIAS - WAAP (Ioannidis et al., 2017) ######
+
+getWaapResults <- function(data, ...){
+  WLS_FE_avg <- sum(data$effect_w/data$se_w)/sum(1/data$se_w)
+  WAAP_bound <- abs(WLS_FE_avg)/2.8
+  WAAP_reg <- lm(formula = effect_w ~ -se_precision_w, data = data[data$se_w<WAAP_bound,])
+  WAAP_reg_cluster <- coeftest(WAAP_reg, vcov = vcovHC(WAAP_reg, type = "HC0", cluster = c(data$study_id)))
+  WAAP_coefs <- extractNonlinearCoefs(WAAP_reg_cluster, ...)
+  invisible(WAAP_coefs)
+}
+
+###### PUBLICATION BIAS - TOP10 method (Stanley et al., 2010) ######
+
+
+getTop10Results <- function(data, ...){
+  T10_bound <- quantile(data$se_precision_w, probs = 0.9) #Setting the 90th quantile bound
+  T10_reg <- lm(formula = effect_w ~ -se_precision_w, data = data[data$se_precision_w>T10_bound,]) #Regression using the filtered data
+  T10_reg_cluster <- coeftest(T10_reg, vcov = vcovHC(T10_reg, type = "HC0", cluster = c(data$study_id)))
+  T10_coefs <- extractNonlinearCoefs(T10_reg_cluster, ...)
+  invisible(T10_coefs)
+}
+
+
+###### PUBLICATION BIAS - Stem-based method in R (Furukawa, 2019) #####
+
+#' Compute STEM-based method coefficients from input data
+#'
+#' This function computes coefficients using the STEM-based method from the \code{stem}
+#' package (available at \url{https://github.com/Chishio318/stem-based_method}). The input data
+#' should include the necessary columns for the STEM method, and the output will be a numeric
+#' vector containing the estimated coefficients.
+#'
+#' @param data A data frame containing the necessary columns for the STEM-based method
+#' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
+#' for formatting the output.
+#'
+#' @return A numeric vector containing the estimated coefficients for the STEM-based method
+#' in the usual format.
+#' 
+#' @import stem_method_master_thesis_cala.R
+getStemResults <- function(data, ...){
+  source("stem_method_master_thesis_cala.R") #github.com/Chishio318/stem-based_method
+  
+  stem_param <- c(
+    10^(-4), # Tolerance - set level of sufficiently small stem to determine convergence
+    10^3 # max_N_count - set maximum number of iteration before termination
+  )
+  est_stem <- stem(data$effect_w, data$se_w, stem_param)$estimates # Actual esimation
+  
+  # Save results
+  stem_coefs <- extractNonlinearCoefs(est_stem, ...)
+  invisible(stem_coefs)
+}
+
+
+###### PUBLICATION BIAS - FAT-PET hierarchical in R ######
+
+#' Compute hierarchical linear model coefficients from input data
+#'
+#' This function computes hierarchical linear model coefficients from input data using
+#' the \code{rhierLinearModel} function from the \code{bayesm} package. It first organizes
+#' the data by study and creates a list of regression data for each study. It then runs the
+#' hierarchical linear model using default settings and extracts the estimated coefficients.
+#' 
+#' @param data A data frame containing the necessary columns for the hierarchical linear model
+#' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
+#' for formatting the output.
+#'
+#' @return A numeric vector containing the estimated coefficients for the hierarchical linear
+#' model in the usual format.
+#' 
+#' @import bayesm
+getHierResults <- function(data, ...){
+  study_levels_h <- levels(as.factor(data$study_name))
+  nreg_h <- length(study_levels_h)
+  regdata_h <- NULL
+  for (i in 1:nreg_h) {
+    filter <- data$study_name==study_levels_h[i] #T/F vector identifying if the observation is from the i-th study
+    y <- data$effect_w[filter] #Effects from the i-th study
+    X <- cbind(1,
+               data$se_w[filter])
+    regdata_h[[i]] <- list(y=y, X=X)
+  }
+  Data_h <- list(regdata=regdata_h)
+  Mcmc_h <- list(R=6000)
+  
+  # Run the model silently
+  quiet(
+    out_h <- bayesm::rhierLinearModel(
+      Data=Data_h,
+      Mcmc=Mcmc_h),
+  )
+  
+  # Save results
+  quiet(
+    hier_raw_coefs <- summary(out_h$Deltadraw)
+  )
+  hier_coefs <- extractNonlinearCoefs(hier_raw_coefs, ...)
+  invisible(hier_coefs)
+}
+
+###### PUBLICATION BIAS - Selection model (Andrews & Kasy, 2019) ######
+
+#' Estimate the Selection Model and extract the coefficients for Effect and its SE
+#'  - Source: https://maxkasy.github.io/home/metastudy/
+#' 
+#' This function computes selection model coefficients from input data using
+#' the \code{metastudies_estimation} function from the \code{selection_model_master_thesis_cala.R}
+#' package. It extracts the estimated effect and publication bias, as well as their
+#' standard errors, and returns them as a vector..
+#'
+#' @param input_data A data frame containing the necessary columns for the selection model
+#' @param cutoffs A numeric vector of cutoff values for computing the selection model
+#' coefficients. The default is \code{c(1.960)}, corresponding to a 95% confidence interval.
+#' @param symmetric A logical value indicating whether to use the symmetric or asymmetric
+#' selection model. The default is \code{FALSE}, indicating the asymmetric model.
+#' @param modelmu A character string indicating the type of model to use for the mean
+#' effect estimate. The default is \code{"normal"}, corresponding to a normal distribution.
+#' Another option is \code{"t"}, corresponding to a t-distribution.
+#' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
+#' for formatting the output.
+#'
+#' @return A numeric vector containing the estimated effect and publication bias, as well
+#' as their standard errors, in the usual format.
+#' 
+#' @import selection_model_master_thesis_cala.R
+getSelectionResults <- function(data, cutoffs = c(1.960),
+                                symmetric = F, modelmu="normal", ...){
+  # Read the source script
+  source("selection_model_master_thesis_cala.R") 
+  # Validate input
+  stopifnot(all(cutoffs %in% c(1.645, 1.960, 2.576))) # Cutoffs
+  stopifnot(modelmu %in% c("normal", "t")) # Model
+  # Validate that the necessary columns are present
+  required_cols <- c("effect_w", "se_w")
+  stopifnot(all(required_cols %in% names(data)))
+  # Extract winsorized estimates, standard errors
+  sel_X <- data$effect_w # Effect - Winsorized
+  sel_sigma <- data$se_w # SE - Winsorized
+  
+  # Estimation
+  estimates <- metastudies_estimation(sel_X, sel_sigma, cutoffs, symmetric, model = modelmu)
+  # Extract coefficients
+  estimates_psi <- estimates$Psihat
+  estimates_se <- estimates$SE
+  estimates_vec <- c(estimates_psi[1], # Effect
+                     estimates_se[1],  # Effect SE
+                     estimates_psi[2], # Pub Bias
+                     estimates_se[2]   # Pub Bias SE
+                     )
+  estimates_mat <- matrix(estimates_vec, nrow=2, ncol=2, byrow=TRUE)
+  
+  # Extract the coefficients and return as a vector
+  sel_coefs <- extractNonlinearCoefs(estimates_mat, ...)
+  return(sel_coefs)
+}
+  
+###### PUBLICATION BIAS - Endogenous kink (Bom & Rachinger, 2020) ######
+
+#' Estimate the Endogenous Kink model and extract the effect/pub_bias coefficients
+#'  - Source: https://osf.io/f6nzb/
+
+#'  @param data [data.frame] The main data frame on which to run the estimation on.
+#'    Must contain the columns - "effect_w", and "se_w"
+#'  @inheritDotParams Parameters for the extractNonlinearCoefs function.
+#'  
+#'  @return endo_kink_coefs [vector] The four desired coefficients, which are:
+#'    - Pub bias estimate
+#'    - Pub bias standard error
+#'    - Mean effect estimate
+#'    - Mean effect standard error
+#'
+#' @import endo_kink_master_thesis_cala.R
+#'
+#'  Note - The runEndoKink method returns the coefficients in order mean_effect-pub_bias,
+#'    this way is just for easier printing into the console, so be mindful of that.
+getEndoKinkResults <- function(data, ...){
+  # Read the source file
+  source("endo_kink_master_thesis_cala.R")
+  # Validate that the necessary columns are present
+  required_cols <- c("effect_w", "se_w")
+  stopifnot(all(required_cols %in% names(data))) 
+  # Extract winsorized estimates, standard errors
+  data <- data[,required_cols]
+  # Run the model estimation and get the four coefficients
+  estimates_vec <- runEndoKink(data, verbose = F)
+  # Handle output and return verbose coefs
+  estimates_mat <- matrix(estimates_vec, nrow=2, ncol=2, byrow=TRUE)
+  endo_kink_coefs <- extractNonlinearCoefs(estimates_mat, ...)
+  return(endo_kink_coefs)
+}
+  
+###### NON-LINEAR MODELS RESULTS ######
+
+#' Get Non-Linear Tests
+#'
+#' This function takes in a data frame and returns the results of several non-linear regression methods
+#' clustered by study. It first validates that the necessary columns are present in the input data frame.
+#' Then, it calls the functions getWaapResults(), getTop10Results(), getStemResults(), getHierResults(),
+#' getSelectionResults(), and getEndoKinkResults() to get the coefficients for each method. Finally,
+#' it combines the results into a data frame, prints the results to the console, and returns the data
+#' frame silently.
+#'
+#' @param data The main data frame, onto which all the non-linear methods are then called.
+#' @return A data frame containing the results of the non-linear tests, clustered by study.
+getNonlinearTests <- function(input_data) {
+  # Validate the input
+  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
+  stopifnot(
+    is.data.frame(input_data),
+    all(required_cols %in% names(input_data))
+  )
+  # Get coefficients
+  waap_res <- getWaapResults(input_data, pub_bias_present = F, verbose_coefs = T)
+  top10_res <- getTop10Results(input_data, pub_bias_present = F, verbose_coefs = T)
+  stem_res <- getStemResults(input_data, pub_bias_present = F, verbose_coefs = T)
+  hier_res <- getHierResults(input_data, pub_bias_present = T, verbose_coefs = T)
+  sel_res <- getSelectionResults(input_data, pub_bias_present = T, verbose_coefs = T)
+  endo_kink_res <- getEndoKinkResults(input_data, pub_bias_present = T, verbose_coefs = T)
+  
+  # Combine the results into a data frame
+  results <- data.frame(
+    waap_df = waap_res,
+    top10_df = top10_res,
+    stem_df = stem_res,
+    hier_df = hier_res,
+    sel_df = sel_res,
+    endo_kink_df = endo_kink_res)
+  
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
+  colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch", "Selection", "Endogenous Kink")
+  # Print the results into the console
+  print("Results of the non-linear tests, clustered by study:")
+  print(results)
+  cat("\n\n")
+  # Return silently
+  invisible(results) 
+}
+
+######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
+
+#' Extract the four coefficients from an exo test in the order
+#' - Pub bias, Pub bias SE, Effect, Effect SE
+#' Input a 2 by 2 matrix, where in the first row, you have the effect coefficients,
+#'  and in the second row, the pub bias coefficients.
+#' 
+#' @param exo_object [matrix] Object from the exo tests, should be matrix (M(2,2))
+#' @param effect_present [bool] If T, the method returns effect coefs. Defaults to T
+#' @param pub_bias_present [bool] If T, the method returns publication bias coefs too.
+#'  Deafults to T.
+#' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
+#'  standard errors as strings wrapped in parentheses. Defaults to T.
+#' @return [vector] The four desired coefficients, which are, in order:
+#'    - Pub bias estimate
+#'    - Pub bias standard error
+#'    - Mean effect estimate
+#'    - Mean effect standard error
+extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T, verbose_coefs=T){
+  # Validate input
+  stopifnot(
+    is.logical(effect_present),
+    is.logical(pub_bias_present),
+    is.logical(verbose_coefs),
+    effect_present || pub_bias_present # At least one
+  )
+  # Extract coefficients
+  effect_coef <- ifelse(effect_present,
+                        round(as.numeric(exo_object[1,1]), 5),
+                        "")
+  effect_se <- ifelse(effect_present,
+                        round(as.numeric(exo_object[1,2]), 5),
+                        "")
+  pub_coef <- ifelse(pub_bias_present,
+                        round(as.numeric(exo_object[2,1]), 5),
+                        "")
+  pub_se <- ifelse(pub_bias_present,
+                        round(as.numeric(exo_object[2,2]), 5),
+                        "")
+  # Wrap the standard errors in parenthesis for cleaner presentation
+  if (verbose_coefs){
+    if (effect_present){
+      effect_se <- paste0("(", effect_se, ")")
+    }
+    if (pub_bias_present){
+      pub_se <- paste0("(", pub_se, ")")
+    }
+  }
+  # Group and return quietly
+  exo_coefs <- c(pub_coef, pub_se, effect_coef, effect_se)
+  invisible(exo_coefs)
+}
+#' Identify the best instrument(s) from a set of instruments based on IV regression diagnostics.
+#'
+#' This function takes in a data frame, a list of potential instruments, and a vector of verbose names for each instrument. 
+#' The function then runs IV regressions using each of the potential instruments, and returns the instrument(s)
+#' with the best performance based on four different diagnostics: R-squared, weak instruments test, Wu-Hausman test,
+#' and Sargan test. If multiple instruments are tied for the best performance, all of them will be returned.
+#' The function also prints the identified best instrument(s).
+#'
+#' @param input_data [data.frame] A data frame containing the effect (effect_w), its standard error (se_w), study ids, and source
+#' data for the instrument(s) (specified as separate columns). It must have the columns "effect_w", "se_w", "study_id", and "n_obs".
+#' @param instruments [list] A list of potential instruments. Each element of the list should be a vector of numeric values.
+#'  Ideally specify as 1/data$n_obs, etc.
+#' @param instruments_verbose [vector] A vector of verbose names (strings) for each instrument. It must have the same length
+#'  as the number of potential instruments.
+#' @return a character vector containing the best instrument(s) identified by the function.
+#' @examples
+#' data("instrument_data")
+#' instruments <- list(instrument_data$instrument1, instrument_data$instrument2)
+#' instruments_verbose <- c("Instrument 1", "Instrument 2")
+#' findBestInstrument(instrument_data, instruments, instruments_verbose)
+findBestInstrument <- function(input_data, instruments, instruments_verbose){
+  # Validity checks
+  stopifnot(
+    is.data.frame(input_data),
+    is.list(instruments),
+    is.vector(instruments_verbose),
+    all(c("effect_w", "se_w", "study_id", "n_obs") %in% colnames(input_data))
+  )
+  # Initialize an empty data frame - each row will be one instrument
+  results <- data.frame(r_squared = numeric(length(instruments)),
+                        weak_instruments = numeric(length(instruments)),
+                        wu_hausman = numeric(length(instruments)),
+                        sargan = numeric(length(instruments)))
+  # Run the IV regressions and get diagnostics from each of them
+  for (i in seq_along(instruments)) {
+    instrument <- instruments[i][[1]] # Unlist
+    stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
+    model <- ivreg(formula = effect_w ~ se_w | instrument, data = input_data)
+    model_summary <- summary(model, vcov = vcovHC(model, cluster = c(input_data$study_id)), diagnostics=T)
+    # Extract relevant statistics
+    results[i,"r_squared"] <- model_summary$r.squared
+    results[i,"weak_instruments"] <- model_summary$diagnostics["Weak instruments", "p-value"]
+    results[i,"wu_hausman"] <- model_summary$diagnostics["Wu-Hausman", "p-value"]
+    results[i,"sargan"] <- model_summary$diagnostics["Sargan", "p-value"]
+  }
+  rownames(results) <- instruments_verbose
+  # Find the row index with the best performing instrument
+  # R-sq
+  best_r_squared_idx <- ifelse(any(is.na(results$r_squared)), 
+                               NA,
+                               which.max(results$r_squared)) 
+  # Weak instr
+  best_weak_instruments_idx <- ifelse(any(is.na(results$weak_instruments)),
+                              NA,
+                              which.min(results$weak_instruments)) 
+  # Wu Hausman
+  best_wu_hausman_idx <- ifelse(any(is.na(results$wu_hausman)),
+                                NA,
+                                which.min(results$wu_hausman)) 
+  # Sargan
+  best_sargan_idx <- ifelse(any(is.na(results$sargan)),
+                            NA,
+                            which.min(results$sargan))
+  # Get indexes into a table
+  best_instruments_idx <- c(best_r_squared_idx, best_weak_instruments_idx, best_wu_hausman_idx, best_sargan_idx)
+  freqs <- table(best_instruments_idx[!is.na(best_instruments_idx)]) # Remove NAs
+  stopifnot(length(freqs) > 0) # All NAs
+  # Get the most frequent index
+  max_freq <- max(freqs)
+  max_values <- sapply(names(freqs[freqs == max_freq]), as.numeric) # Numeric index of best performing instrument (or instruments)
+  # Get the best instrument(s)
+  best_instruments <- rownames(results[max_values,])
+  # Return results - verbose
+  print(paste0("Identified ", best_instruments, " as the best instrument."))
+  return(best_instruments)
+}
+
+#' getIVResults function
+#'
+#' This function takes in data and finds the best instrument for the IV regression of effect_w against se_w.
+#' It then runs the IV regression and extracts the coefficients. The strength of the function is found
+#' in being able to identify the best instrument automatically. The list of instruments is unmodifiable as of now.
+#' 
+#' The four instruments from which the function chooses are:
+#' - 1/sqrt(data$n_obs)
+#' - 1/data$n_obs
+#' - 1/data$n_obs^2
+#' - log(data$n_obs)
+#'
+#' @param data a data frame containing the data for the IV regression
+#' @inheritDotParams ... additional arguments to be passed to extractExoCoefs
+#'
+#' @return a numeric vector containing the extracted coefficients from the IV regression
+#'
+#' @details The function defines a list of instruments to use, and finds the best instrument
+#' by running a function called findBestInstrument. If multiple best instruments are identified,
+#' the function arbitrarily chooses the first one. The function then runs the IV regression and
+#' extracts the coefficients using extractExoCoefs.
+#'
+#' @examples
+#' data <- data.frame(effect_w = rnorm(10), se_w = rnorm(10), n_obs = rep(10, 10), study_id = rep(1:10, each = 1))
+#' getIVResults(data)
+getIVResults <- function(data, ...){
+  # Define the instruments to use
+  instruments <- list(1/sqrt(data$n_obs), 1/data$n_obs, 1/data$n_obs^2, log(data$n_obs))
+  instruments_verbose <- c('1/sqrt(data$n_obs)', '1/data$n_obs', '1/data$n_obs^2', 'log(data$n_obs)')
+  # Find out the best instrument
+  best_instrument <- findBestInstrument(data, instruments, instruments_verbose)
+  # If more best instruments are identified
+  if (length(best_instrument) > 1){ 
+    best_instrument <- best_instrument[0] # Choose the first one arbitrarily
+    print(paste0("More best instruments identified. Running the regression for ", best_instrument))
+  }
+  stopifnot(
+    best_instrument %in% instruments_verbose,
+    length(best_instrument) == 1 # Should be redundant
+    )
+  # Get instrument values instead of name
+  best_instrument <- instruments[match(best_instrument, instruments_verbose)]
+  # Run the regression
+  instrument <- best_instrument[[1]] # Unlist
+  stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
+  model <- ivreg(formula = effect_w ~ se_w | instrument, data = data)
+  model_summary <- summary(model, vcov = vcovHC(model, cluster = c(data$study_id)), diagnostics=T)
+  # Get the coefficients
+  all_coefs <- model_summary$coefficients
+  IV_coefs_vec <- c(
+    all_coefs["(Intercept)","Estimate"], # Effect
+    all_coefs["(Intercept)", "Std. Error"], # Effect SE
+    all_coefs["se_w", "Estimate"], # Pub Bias
+    all_coefs["se_w", "Std. Error"] # Pub Bias SE
+    ) 
+  iv_coefs_mat <- matrix(IV_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
+  # Extract the coefficients and return as a vector
+  iv_coefs_out <- extractExoCoefs(iv_coefs_mat, ...) 
+  return(iv_coefs_out)
+}
+
+###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
+
+#' getMedians - Calculates the vector of medians for effect_w
+#' Input the data frame, and the name of the column to calculate a vector of medians for,
+#'  grouped by the study levels.
+#' 
+#' @param input_data [data.frame] Main data frame.
+#' @param mec_col [str] Name of the column to compute the medians for. Must be in colnames
+#'  of the input data frame.
+#' @return [vector] Vector of medians by levels of the data frame studies.
+getMedians <- function(input_data, med_col){
+  # Validation
+  stopifnot(all(c(med_col, 'study_name') %in% colnames(input_data)))
+  # Preparation
+  med_vec <- c()
+  study_levels <- levels(as.factor(input_data$study_name)) # Names of studies as levels
+  # Calculation
+  for (study in study_levels) {
+    col_data_numeric <- as.numeric(unlist(input_data[input_data$study_name == study,med_col]))
+    med <- median(col_data_numeric)
+    med_vec <- append(med_vec, med)
+  }
+  stopifnot(length(med_vec) == length(study_levels)) # Calculated median for all studies
+  return(med_vec)
+}
+
+#' getPUniResults - Calculates publication bias test results using the p-uniform method
+#'
+#' This function calculates publication bias test results using the p-uniform method.
+#' It takes in a data frame of the effects with their corresponding standard errors and either uses
+#' the Maximum Likelihood (ML) or Moments (P) method to estimate the publication bias.
+#'
+#' @param data [data.frame] A data frame containing the effects with their corresponding standard errors.
+#' @param method [str] A character string indicating which method to use to estimate publication bias.
+#' "ML" for Maximum Likelihood and "P" for Moments. Default is "ML".
+#'
+#' @return A vector containing the following four elements:
+#' \describe{
+#' \item{Test Statistic for the P-uniform publication bias test}{A character string indicatingthe L test
+#'  statistic for the P-uniform publication bias test.}
+#' \item{P-value for the L test statistic}{A character string indicating the P-value for the L test statistic.}
+#' \item{Effect Beyond Bias}{A numeric value indicating the effect beyond bias estimate.}
+#' \item{Effect Standard Error}{A character string indicating the standard error of the effect beyond bias estimate.}
+#' }
+getPUniResults <- function(data, method="ML",...){
+  # Validation
+  stopifnot(
+    is.data.frame(data),
+    is.character(method),
+    method %in% c("ML", "P") # Max likelihood, Moments
+  )
+  # Calculate medians for all studies
+  med_effect_w <- getMedians(data, 'effect_w') # Effect vector of medians
+  med_se_w <- getMedians(data, 'se_w') # SE vector of medians
+  #Estimation
+  if (method == "ML"){
+    #Maximum likelihood
+    quiet(
+      est_ml <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "ML", alpha = 0.05,
+                             control=list( max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
+    )
+  } else if (method == "P"){
+    # Moments method estimation
+    quiet(
+      est_ml <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "P",
+                          alpha = 0.05,control=list(max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
+    )
+  } else {
+    stop("Broken validity checks") # Should not happen
+  }
+  est_se <- (est_ml$ci.ub - est_ml$ci.lb) / (2*1.96) # Standard error of the estmiate
+  # Extract and save coefficients - using a custom format for this method
+  est_effect_verbose <- round(est_ml$est, 5) # Effect Beyond Bias
+  est_se_verbose <- paste0("(", round(est_se, 5), ")") # Effect Standard Error
+  est_pub_test_verbose <- paste0("L = ", round(est_ml$L.0, 5)) # Test statistic of p-uni publication bias test
+  est_pub_p_val_verbose <- paste0("(p = ", round(est_ml$pval.0, 5), ")") # P-value for the L test statistic
+  # Return as a vector
+  p_uni_coefs_out <- c(
+    est_pub_test_verbose,
+    est_pub_p_val_verbose,
+    est_effect_verbose,
+    est_se_verbose
+  )
+  return(p_uni_coefs_out)
+}
+
+#' getExoTests
+#'
+#' Performs two tests for publication bias and exogeneity in instrumental variable (IV) analyses using clustered data.
+#'
+#' @param input_data [data.frame] A data frame containing the necessary columns: "effect_w", "se_w", "study_id", "study_size", and "se_precision_w".
+#' @return A data frame with the results of the three tests for publication bias and exogeneity in IV analyses using clustered data.
+#'
+#' @details This function first validates that the necessary columns are present in the input data frame.
+#' If the validation is successful, it performs three tests for publication bias and exogeneity in instrumental variable (IV)
+#' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
+#' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
+#' The results are then printed into the console and returned invisibly.
+getExoTests <- function(input_data) {
+  # Validate that the necessary columns are present
+  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
+  stopifnot(
+    is.data.frame(input_data),
+    all(required_cols %in% names(input_data))
+  )
+  # Get coefficients
+  iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  p_uni_res <- getPUniResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  # Combine the results into a data frame
+  results <- data.frame(
+    iv_df = iv_res,
+    p_uni_df = p_uni_res)
+  # Label names
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
+  colnames(results) <- c("IV", "p-Uniform")
+  # Print the results into the console
+  print("Results of the tests relaxing exogeneity, clustered by study:")
+  print(results)
+  cat("\n\n")
+  # Return silently
+  invisible(results) 
+}
+
+######################### P-HACKING TESTS #########################
+
+###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
+
+#' Run a Caliper Test
+#'
+#' This function performs a Caliper test on a data set to detect selective reporting of statistically significant results.
+#'
+#' @param input_data [data.frame] A data.frame containing the data set to be tested. The data.frame must have at least two columns named
+#'  "t_w" and "study_id", and these columns must be numeric.
+#' @param threshold [numeric] The t-statistic threshold used to define statistically significant results. Default is 1.96.
+#' @param width [numeric] The width of the Caliper interval used to define the sub-sample of observations used in the test. Default is 0.05.
+#' @return A numeric vector with four elements: the estimate of the proportion of results reported, the standard error of the estimate,
+#' the number of observations with t-statistics above the threshold, and the number of observations with t-statistics below the threshold.
+
+runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
+  # Validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(threshold),
+    is.numeric(width),
+    all(c("t_w", "study_id") %in% colnames(input_data))
+  )
+  # Add a column indicating which observations have t-stats above (below) threshold
+  if (threshold >= 0){ # Explicit because ifelse does not work, due to some dark spells probably
+    significant_obs <- input_data$t_w > threshold
+  } else {
+    significant_obs <- input_data$t_w < threshold
+  }
+  input_data$significant_w <- ifelse(significant_obs, 1, 0) # Col of 0/1
+  # Initialize variables for output storage
+  caliper_output <- list()
+  # Run the test
+  lower_bound <- input_data$t_w > ( threshold - width ) # Bool vector
+  upper_bound <- input_data$t_w < ( threshold + width ) # Bool vector
+  subsetted_data <- input_data[lower_bound & upper_bound,] # Only desired rows
+  if (nrow(subsetted_data) == 0){
+    return(c(0,0,0,0)) # No observations in the interval
+  }
+  cal_res <- lm(formula = significant_w ~ t_w - 1, data = subsetted_data)
+  cal_res_coefs <- coeftest(cal_res, vcov = vcovHC(cal_res, type = "const", cluster = c(input_data$study_id)))
+  cal_est <- cal_res_coefs["t_w", "Estimate"] # Estimate
+  cal_se <- cal_res_coefs["t_w", "Std. Error"] # Standard Error
+  cal_above <- nrow(subsetted_data[subsetted_data$t_w > threshold, ]) # N. obs above the threshold
+  cal_below <- nrow(subsetted_data[subsetted_data$t_w < threshold, ]) # N. obs below the threshold
+  # Return the output
+  res <- c(
+    round(cal_est, 5),
+    round(cal_se, 5),
+    cal_above,
+    cal_below)
+  invisible(res)
+}
+
+#' Run Caliper tests across all thresholds and widths and store the output in a data frame
+#' 
+#' @param input_data [data.frame] A data frame containing the input data.
+#' @param thresholds [vector] A numeric vector containing the thresholds at which the caliper tests are to be run.
+#'                   Defaults to c(0, 1.96, 2.58).
+#' @param widths [vector] A numeric vector containing the caliper widths at which the tests are to be run. 
+#'               Defaults to c(0.05, 0.1, 0.2).
+#' @param verbose [bool] A logical value indicating whether the results should be printed to the console. 
+#'                Defaults to TRUE.
+#' 
+#' @return A data frame with dimensions nrow = length(widths) * 3 and ncol = length(thresholds),
+#'         where the rows are named with the caliper width and its estimate, standard error, and n1/n2 ratio,
+#'         and the columns are named with the corresponding thresholds.
+getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2), verbose = T){
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.vector(thresholds),
+    is.vector(widths),
+    is.numeric(thresholds),
+    is.numeric(widths)
+  )
+  # Initialize the output data frame
+  num_thresholds <- length(thresholds)
+  num_widths <- length(widths)
+  result_df <- data.frame(matrix(ncol = num_thresholds, nrow = num_widths * 3))
+  colnames(result_df) <- paste0("Threshold ", thresholds)
+  rownames_vec <- c()
+  for (width in widths){
+    rows <- c(
+      paste0("Caliper width ", width, " - Estimate"),
+      paste0("Caliper width ", width, " - SE"),
+      paste0("Caliper width ", width, " - n1/n2")
+    )
+    rownames_vec <- append(rownames_vec, rows)
+  }
+  rownames(result_df) <- rownames_vec
+  # Run caliper tests for all thresholds and widths
+  for (i in 1:num_thresholds){
+    for (j in 1:num_widths){
+      caliper_res <- runCaliperTest(input_data, threshold = thresholds[i], width = widths[j])
+      result_df[j*3-2, i] <- round(caliper_res[1], 5) # Estimate
+      result_df[j*3-1, i] <- paste0("(", round(caliper_res[2], 5), ")") # Standard Error
+      result_df[j*3, i] <- paste0(caliper_res[3], "/", caliper_res[4]) # n1/n2
+    }
+  }
+  if (verbose){
+    print("Results of the Caliper tests:")
+    print(result_df)
+    cat("\n\n")
+  }
+  # Return the data frame
+  invisible(result_df)
+}
+
+###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
+getEliott <- function(input_data){
+  return('eliott results here')
+}
+
+###### MAIVE Estimator (Irsova et al., 2023) ######
+
+#' Run the MAIVE estimation using a modified source script
+#'  - Source: http://meta-analysis.cz/maive/
+#'
+#' @param method [int] Method. Options - PET:1, PEESE:2, PET-PEESE:3, EK:4 (default 3)
+#' @param weight [int] Weighting. Options - no weight: 0 ; weights: 1, adjusted weights: 2 (default 0)
+#' @param instrument [int] Instrumenting. Options - 0;1(default 1)
+#' @param studylevel[int] Correlation at study level. Options -  none: 0 (default), fixed effects: 1, cluster: 2
+#'  (default 0)
+#' @param verbose [bool] Print out the results into the console in a nice format.
+#' @inheritDotParams Parameters for the extractExoCoefs function.
+#' 
+#' @import maive_master_thesis_cala.R
+getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studylevel = 0, verbose = T, ...){
+  # Read the source file
+  source("maive_master_thesis_cala.R")
+  # Validate that the necessary columns are present
+  required_cols <- c("effect_w", "se_w", "study_size", "study_id")
+  stopifnot(
+    all(required_cols %in% names(data)),
+    method %in% c(1,2,3,4),
+    weight %in% c(0,1,2),
+    instrument %in% c(0,1),
+    studylevel %in% c(0,1,2),
+    is.logical(verbose)
+  )
+  # Subset data and rename columns
+  data <- data[,required_cols]
+  colnames(data) <- c('bs', 'sebs', 'Ns', 'studyid')
+  # Run the estimation
+  MAIVE <- maive(dat=data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
+  # Extract (and print) the output
+  if (verbose){
+    object<-c("MAIVE coefficient","MAIVE standard error","F-test of first step in IV",
+              "Hausman-type test (use with caution)","Critical Value of Chi2(1)")
+    maive_coefs_all<-c(MAIVE$beta,MAIVE$SE,MAIVE$`F-test`,MAIVE$Hausman,MAIVE$Chi2)
+    MAIVEresults<-data.frame(object,maive_coefs_all)
+    colnames(MAIVEresults) <- c("Object", "Coefficient")
+    print("Results using the MAIVE estimator:")
+    print(MAIVEresults)
+    cat("\n\n")
+  }
+  # Extract the main two coefficients
+  maive_coefs <- c(
+    as.numeric(MAIVE$beta), # MAIVE Coefficient
+    as.numeric(MAIVE$SE) # MAIVE Standard Error
+    ) 
+  return(maive_coefs) # Return as a simple vector
+}
+
+
+######################### BAYESIAN MODEL AVERAGING #########################
+
+###### HETEROGENEITY - Bayesian Model Averaging in R ######
+
+#' Creates a formula for Bayesian model averaging
+#'
+#' This function creates a formula for Bayesian model averaging based on the variables in \code{var_vector}.
+#' The formula includes the variables "effect_w" and "se_w", as well as any other variables specified in \code{var_vector}.
+#'
+#' @param input_var_list [data.frame] A data frame that contains the names of the variables, and a boolean vector indicating
+#'  whether they should be used in the formula.
+#' @param get_var_vector_instead [bool] If TRUE, return a vector with variable names instead, with effect and se
+#'  at the first two positions of the vector. Used in BMA itself. Defaults to FALSE.
+#' @return A formula object (to be used) Bayesian model averaging
+getBMAFormula <- function(input_var_list, get_var_vector_instead = F){
+  # Input validation
+  stopifnot(
+    all(c("bma", "var_name") %in% colnames(input_var_list))
+  )
+  # Get the list of variables to run the bma for
+  desired_vars_bool <- input_var_list$bma 
+  desired_vars <- input_var_list$var_name[desired_vars_bool]
+  # Validate the list again
+  stopifnot(
+    all(c("effect_w","se_w") %in% desired_vars)
+  )
+  # Get the formula
+  bool_wo_effect <- desired_vars != "effect_w" # Pop effect
+  bool_wo_se <- desired_vars != "se_w" # Pop se
+  remaining_vars <- desired_vars[bool_wo_effect & bool_wo_se] # All but the two (wonky, might improve sometimes later)
+  if (get_var_vector_instead){
+    var_vector <- c("effect_w", "se_w", remaining_vars)
+    return(var_vector)
+  }
+  remaining_vars_verbose <- paste(remaining_vars, sep="", collapse = " + ")
+  all_vars_verbose <- paste0("effect_w ~ se_w + ", remaining_vars_verbose)
+  bma_formula <- as.formula(all_vars_verbose)
+  return(bma_formula)
+}
+
+#' Function to test the Variance Inflation Factor of a Linear Regression Model
+#'
+#' @details runVifTest is a function that tests the Variance Inflation Factor (VIF) of a linear regression model.
+#' It takes three arguments: input_data, input_var_list, and print_all_coefs. The function tests whether
+#' the columns "effect_w" and "se_w" are present in the input data frame. If the validation passes, it creates a
+#' linear regression model using the input data and the specified variables. Then, it calculates the VIF coefficients
+#' using the vif function from the car package. If print_all_coefs is set to TRUE, the function prints all the VIF
+#' coefficients. If any of the VIF coefficients is larger than 10, the function prints a message indicating the
+#' variables with a high VIF. Otherwise, it prints a message indicating that all variables have a VIF lower than 10.
+#' Finally, the function returns the VIF coefficients as a numeric vector.
+#' 
+#' @param input_data [data.frame] A data frame containing the data for the regression model.
+#' @param input_var_list [data.frame] A data frame containing variable information.
+#' @param print_all_coefs [bool] A logical value indicating whether to print all the VIF coefficients into
+#'  the console
+#'
+#' @return [vector] A numeric vector with the VIF coefficients.
+runVifTest <- function(input_data, input_var_list, print_all_coefs = F){
+  # Validate input
+  stopifnot(
+    all(c("effect_w","se_w") %in% colnames(input_data)),
+    !any(is.na(input_data)) # No missing values allowed
+  )
+  #Testing for VIF
+  BMA_formula <- getBMAFormula(input_var_list)
+  BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
+  # Unhandled exception - fails in case of too few observations vs. too many variables
+  vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients
+  return(vif_coefs)
+  if (print_all_coefs){
+    print("There are all the Variance Inflation Coefficients:")
+    print(vif_coefs)
+  }
+  if (any(vif_coefs > 10)){
+    coefs_above_10_vif <- names(vif_coefs)[vif_coefs > 10]
+    print("These variables have a Variance Inflation Coefficient larger than 10:")
+    print(coefs_above_10_vif)
+  } else {
+    print("All BMA variables have a Variance Inflation Factor lower than 10. All good to go.")
+  }
+  return(vif_coefs)
+  }
+
+
+#' Get the data for Bayesian Model Averaging
+#' 
+#' @details An explicit function to subset the main data frame onto only those columns that are used
+#' during the BMA estimation. The function is explicit for the simple reason that one of the 
+#' plots in the extractBMAResults requires the data object, so this function allows for that
+#' object to exist outside the scope of the runBMA function, where it would be otherwise hidden.
+#'
+#' @note When transforming/subsetting the data, there is a need to convert the data into a
+#' data.frame object, otherwise the plot functions will not recognize the data types correctly
+#' later on. The "bms" function works well even with a tibble, but the plots do not. RRRRRRR
+getBMAData <- function(input_data, input_var_list){
+  # Input validation
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list)
+  )
+  # Subset the data
+  bma_vars <- getBMAFormula(input_var_list, get_var_vector_instead = TRUE) # Vector of BMA variables, effect and se first
+  bma_data <- input_data[bma_vars] # Only desired variables
+  bma_data <- as.data.frame(bma_data) # To a data.frame object, because RRRR
+  return(bma_data)
+}
+
+#' Run a Bayesian model averaging estimation
+#' 
+#' @details Input the BMA data, the variable information data frame
+#' and inhereted parameters, which are all the parameters you want to use for the actual
+#' estimation inside the 'bms' function. Validate correct input, run the estimation, and
+#' return the BMA model without printing any results.
+#' 
+#' @param bma_data [data.frame] The data for BMA. Effect_w must be in the first column.
+#' @param input_var_list [data.frame] A data frame containing variable information, and a "bma"
+#' column indicating whether those variables should be used in the estimation.
+#' @inheritDotParams Parameters to be used inside the "bms" function. These are:
+#' burn, iter, g, mprior, nmodel, mcmc
+#' For more info see the "bms" function documentation.
+#' @return The bma model
+runBMA <- function(bma_data, input_var_list, ...){
+  # Input validation
+  stopifnot(
+    is.data.frame(bma_data),
+    is.data.frame(input_var_list),
+    !any(is.na(bma_data)), # No missing obs
+    all(sapply(bma_data,is.numeric)) # Only numeric obs
+  )
+  # Actual estimation with inhereted parameters
+  print("Running the Bayesian Model Averaging...")
+  quiet(
+    bma_model <- bms(bma_data, ...)
+  )
+  return(bma_model)
+}
+
+#' Extract results from a Bayesian Model Averaging (BMA) regression
+#' 
+#' @details extractBMAResults is a function that extracts results from a Bayesian Model Averaging (BMA) regression model.
+#' The function takes three arguments: bma_model, bma_data, and print_results. bma_model is an object of class bma
+#' containing the BMA regression model. bma_data is a data frame containing the data used to fit the BMA model. print_results
+#' is a character value indicating the level of result printing desired. The possible values for print_results are "none", "fast",
+#' "verbose", and "all".
+#'
+#' The function first validates the input to ensure that the class of bma_model is "bma", bma_data is a data frame, and
+#' print_results is a character value that matches one of the four valid options.
+#'
+#' The function then extracts the coefficients from bma_model using the coef function. The output is a numeric vector containing
+#' the BMA coefficients.
+#'
+#' The function then prints out coefficient and model statistics based on the value of print_results. If print_results is set to
+#' "verbose" or "all", the function prints the coefficients and summary information of bma_model, as well as the top model. If
+#' print_results is set to "fast", the function prints only the BMA coefficients. If print_results is set to "all", the function
+#' also prints the main BMA plots, which may take some time to generate.
+#'
+#' Finally, the function plots the correlation matrix of bma_data using corrplot.mixed, and returns the BMA coefficients as a
+#' numeric vector.
+#' 
+#' @param bma_model [bma] An object of class bma containing the BMA regression model.
+#' @param bma_data [data.frame] A data frame containing the data used to fit the BMA model.
+#' @param print_results [character] A character value indicating the level of result printing desired.
+#'  Can be one of:
+#'  * none - print nothing
+#'  * fast - print only those results that do not take time to print
+#'  * verbose - print all the fast results, plus extra information about the model
+#'  * all - print all results, plots included (takes a long time)
+#'
+#' @return A numeric vector containing only the BMA coefficients.
+
+extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
+  # Validate the input
+  stopifnot(
+    class(bma_model) == "bma",
+    is.data.frame(bma_data),
+    is.character(print_results),
+    print_results %in% c("none", "fast", "verbose", "all")
+  )
+  # Extract the coefficients
+  bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
+  # Print out coefficient and model statistics
+  if (print_results %in% c("verbose","all")){
+    print(bma_model) # Coefficients, summary information
+    print(bma_model$topmod[1]) # Topmod
+  } else if (print_results == "fast"){
+    print(bma_coefs)
+  }
+  # Print out plots (takes time)
+  if (print_results == "all"){
+    # Main BMA plots
+    print("Printing out Bayesian Model Averaging plots. This may take some time...")
+    image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
+          do.axis=TRUE, xlab = "", main = "") # Takes time
+    plot(bma_model)
+  }
+  if (print_results != "none"){
+    # Correlation matrix
+    bma_col<- colorRampPalette(c("red", "white", "blue"))
+    bma_matrix <- cor(bma_data)
+    corrplot.mixed(bma_matrix, lower = "number", upper = "circle",
+                   lower.col=bma_col(200), upper.col=bma_col(200),tl.pos = c("lt"),
+                   diag = c("u"), tl.col="black", tl.srt=70, tl.cex=0.55,
+                   number.cex = 0.5,cl.cex=0.8, cl.ratio=0.1) 
+  }
+  # Return coefficients only
+  return(bma_coefs)
+}
+
+
+######################### GRAPHICS #########################
+
+#' Custom ggplot theme
+main_theme <- function(x_axis_tick_text = "black"){
+  theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid"),
+        axis.text.x = element_text(color = x_axis_tick_text), axis.text.y = element_text(color = "black"),
+        panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
+        plot.background = element_rect(fill = "#DCEEF3"))
+}
+
