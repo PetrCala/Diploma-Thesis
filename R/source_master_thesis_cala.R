@@ -358,7 +358,7 @@ winsorizeData <- function(input_data, win_level){
 #' @param ignore_missing [bool] If TRUE, allow missing values in the data frame. Deafults to FALSE.
 validateData <- function(input_data, input_var_list, ignore_missing = F){
   # Columns that the data frame must contain
-  expected_columns <- c("study_name", "effect", "se", "t_stat", "n_obs", "study_size")
+  expected_columns <- c("study_name", "effect", "se", "t_stat", "n_obs", "study_size", "reg_df")
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
@@ -1552,7 +1552,6 @@ getExoTests <- function(input_data) {
 #' @param width [numeric] The width of the Caliper interval used to define the sub-sample of observations used in the test. Default is 0.05.
 #' @return A numeric vector with four elements: the estimate of the proportion of results reported, the standard error of the estimate,
 #' the number of observations with t-statistics above the threshold, and the number of observations with t-statistics below the threshold.
-
 runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
   # Validate input
   stopifnot(
@@ -1648,8 +1647,109 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
 }
 
 ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
-getEliott <- function(input_data){
-  return('eliott results here')
+
+#' getEliottResults - Calculate Elliot's five tests and other statistics for a given dataset
+#'  - Source: https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA18583
+#'
+#' @param input_data A data frame containing at least the "t_w" and "reg_df" columns.
+#' @param data_subsets A character vector with the names of the subsets of data to test. By default, only "All data" is tested.
+#' @param p_min The minimum p-value threshold for the tests. Default is 0.
+#' @param p_max The maximum p-value threshold for the tests. Default is 1.
+#' @param d_point The discontinuity cutoff point for the discontinuity test. Default is 0.15.
+#' @param CS_bins The number of bins for the Cox-Shi test. Default is 10.
+#' @param verbose A logical indicating whether to print the results to console. Default is TRUE.
+#'
+#' @return A data frame with the results of the Elliot tests and other statistics.
+getEliottResults <- function(input_data, data_subsets = c("All data"), 
+      p_min = 0, p_max = 1, d_point = 0.15, CS_bins = 10, verbose = T){
+  # Validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is.vector(data_subsets),
+    is.numeric(p_min),
+    is.numeric(p_max),
+    is.numeric(d_point),
+    is.numeric(CS_bins),
+    is.logical(verbose),
+    all(c("t_w", "reg_df") %in% colnames(input_data))
+  )
+  # Static values, not necessary to adjust (probably)
+  id <- 1 # No dependence
+  h <- 0.01
+  lcm_norm <- 8
+  # Create the data frame with the appropriate dimensions and labels
+  # Rownames
+  threshold1_verbose <- paste0("Observations in [",p_min,", ",p_max,"]")
+  threshold2_verbose <- paste0("Observations <= ", d_point)
+  data_rownames <- c(
+    "Binomial:",
+    "s Test:",
+    "Discontinuity:",
+    "CS1:",
+    "CS2B:",
+    "LCM:",
+    threshold1_verbose,
+    threshold2_verbose
+  )
+  # Colnames
+  data_colnames <- data_subsets
+  # DF
+  elliot_df <- data.frame(matrix(NA, nrow = length(data_rownames), ncol = length(data_colnames)))
+  rownames(elliot_df) <- data_rownames
+  colnames(elliot_df) <- data_colnames
+  # Load the source script
+  source("elliot_master_thesis_cala.R")
+  # Load the file with CDFs (if it does not exist, create one)
+  elliot_source_file <- "elliot_data_master_thesis_cala.csv"
+  if (file.exists(elliot_source_file)){
+    cdfs <- read.csv(elliot_source_file, col.names = "cdfs") # Read if exists
+  } else {
+    cdfs <- getCDFs(create_csv = T) # Generate the file from scratch (takes time)
+  }
+  cdfs <- as.numeric(cdfs[,1]) # To a numeric vector
+  # Run the estimation for all data subsets
+  for (data_col in data_colnames){
+    # Get the data subset
+    data <- input_data # Adjust later if desired
+    
+    # Convert t-statistics to p-values
+    t_w <- data$t_w
+    df <- data$reg_df
+    P <- 2 * pt(abs(t_w), df = df, lower.tail=FALSE) # p-values
+     
+    # Tests (each test returns the corresponding p-value)
+    Bin_test <- Binomial(P, p_min, p_max, "c")
+    Discontinuity <- Discontinuity_test(P,d_point, h)
+    LCM_sup <- LCM(P, p_min,p_max, lcm_norm, cdfs)
+    CS_1 <- CoxShi(P,id, p_min, p_max, CS_bins, 1, 0) #Test for 1-monotonicity
+    CS_2B <- CoxShi(P,id, p_min, p_max, CS_bins, 2, 1) #Test for 2-monotonicity and bounds
+    FM <- Fisher(P, p_min, p_max)
+    
+    # Save the results
+    elliot_res <- c(Bin_test, Discontinuity, LCM_sup, CS_1, CS_2B, FM)
+    elliot_res <- sapply(elliot_res, function(x){round(x,3)})
+    
+    # Thresholds
+    n_obs_between <- length(P[P>=p_min&P<=p_max])
+    n_obs_below <- length(P[P<=d_point&P>=0])
+  
+    # Fill in the data frame with values from elliot_res
+    elliot_df["Binomial:", data_col] <- elliot_res[1]
+    elliot_df["Discontinuity:", data_col] <- elliot_res[2]
+    elliot_df["LCM:", data_col] <- elliot_res[3]
+    elliot_df["CS1:", data_col] <- elliot_res[4]
+    elliot_df["CS2B:", data_col] <- elliot_res[5]
+    elliot_df["s Test:", data_col] <- elliot_res[6]
+    elliot_df[threshold1_verbose, data_col] <- n_obs_between # In between min, max
+    elliot_df[threshold2_verbose, data_col] <- n_obs_below # Below disc cutoff
+  }
+  
+  if (verbose){
+    print(paste0("Results of the Elliot tests:"))
+    print(elliot_df)
+    cat("\n\n")
+  }
+  return(elliot_df)
 }
 
 ###### MAIVE Estimator (Irsova et al., 2023) ######

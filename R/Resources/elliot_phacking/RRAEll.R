@@ -72,6 +72,7 @@ leftb1 = 1.1*p_max/CS_bins
 psiz1 = 1.5
 scaling = 2
 
+  
 for (r in 1:3){
 
   

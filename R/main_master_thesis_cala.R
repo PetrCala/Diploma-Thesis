@@ -8,6 +8,7 @@
 #' PREREQUISITES:
 #'  1. Make sure that your working directory contains the following files:
 #'      -<NAME_OF_YOUR_DATA_FRAME>.csv (modifiable below)
+#'      -elliot_master_thesis_cala.R
 #'      -endo_kink_master_thesis_cala.R
 #'      -main_master_thesis_cala.R
 #'      -maive_master_thesis_cala.R
@@ -16,7 +17,28 @@
 #'      -source_master_thesis_cala.R
 #'      -stem_method_master_thesis_cala.R
 #'      -<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv (modifiable below)
-#'  2. Make sure your data frame (<NAME_OF_YOUR_DATA_FRAME>.csv) contains NO MISSING VALUES.
+#'  2. Try to eliminate as many missing values in your data frame as you can.
+#'    The script will automatically use interpolation for missing data, so that model averaging
+#'    can run, but in case of many missing values, the results may be unstable.
+#'  3. The data frame should contain these columns (named exactly as listed below):
+#'    study_name - Name of the study, such as Einstein et al. (1935).
+#'    effect -  The main effect/estimate values. Ideally it should be  a transformed effect, such as
+#'      the partial correlation coefficient.
+#'    se - standard error of the effect
+#'    t_stat - t-statistic of the main effect. Can be calculated as a ratio of the effect
+#'      and its standard error.
+#'    n_obs - Number of observations associated with this estimate.
+#'    study_size - Size of the study that the estimate comes from. In Excel, this can be easily
+#'      computed as "=COUNTIF(<COL>:<COL>,<CELL>)", where <COL> is the column with study names or
+#'      study id's, and <CELL> is the cell in that column on the same row you want to calculate the
+#'      study size on. Example: =COUNTIF(B:B,B2). This calculates the study size of the study located
+#'      in cell B2, assuming that the column B contains the study information.
+#'    reg_df - Degrees of freedom associated with this estimate.
+#'  4. In the file <NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv, input the list of variables you are using in your data frame,
+#'    along with these parameters:
+#'    var_name - Name of the variable exactly as it appears in the data frame columns. Must not include
+#'      spaces and various special characters. Underscores are allowed.
+#'    var_name_verbose - A descriptive form of the variable name. Needs not to limit to any subset of characters.
 #'    data_type - Type of the data this variable holds. Can be only one type. Can be one of:
 #'      int - Integer. Any integer.
 #'      category - Categorical variable. Any string.
@@ -80,17 +102,17 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
-  "exo_tests" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
+  "exo_tests" = F,
   "p_hacking_tests" = T,
-  "bma" = T,
-  "fma" = T, # Should be ran together with BMA
+  "bma" = F,
+  "fma" = F, # Should be ran together with BMA
   "best_practice_estimate" = F
 )
 
@@ -121,6 +143,13 @@ adjustable_parameters <- c(
   # Caliper test parameters
   "caliper_thresholds" = c(0, 1.96, 2.58), # Caliper thresholds - keep as vector
   "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
+  # Eliott test parameters
+  "eliott_data_subsets" = c("All data"), # Data subsets to run the tests on
+  "eliott_p_min" = 0,
+  "eliott_p_max" = 0.05,
+  "eliott_d_point" = 0.03,
+  "eliott_cs_bins" = 10,
+  "eliott_verbose" = T,
   # Bayesian Model Averaging parameters
   "bma_burn" = 1e4, # Burn-ins (def 1e5)
   "bma_iter" = 3e4, # Draws (def 3e5)
@@ -180,7 +209,10 @@ packages <- c(
   "data.table", # Fast data manipulation and aggregation
   "ddpcr", # Analysis of Droplet Digital PCR (ddPCR) data
   "dplyr", # Data manipulation and data wrangling
+  "fdrtool", # Eliott et al. (2022)
   "foreign", # Reading and writing data stored by other statistical software
+  "gdata", # Eliott et al. (2022)
+  "grDevices", # Eliott et al. (2022)
   "ggplot2", # Creating graphics and data visualizations
   "haven", # Importing and exporting data from SAS, SPSS, and Stata
   "lmtest", # Hypothesis testing and diagnostics for linear regression models
@@ -188,12 +220,15 @@ packages <- c(
   "metafor", # Conducting meta-analyses
   "multcomp", # Simultaneous inference for general linear hypotheses
   "multiwayvcov", # Computing clustered covariance matrix estimators
+  "NlcOptim", # Eliott et al. (2022) - CoxShi
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
-  "pracma", # MAIVE Estimator
+  "pracma", # MAIVE Estimator, Eliott et al. (2022)
+  "rddensity", # Eliott et al. (2022)
   "readr", # Reading data into R from various file formats
   "readxl", # Reading Excel files
   "sandwich", # Computing robust covariance matrix estimators, MAIVE estimator
   "shiny", # Andrew & Kasy (2019) Selection model
+  "spatstat", # Eliott et al. (2022)
   "stats", # Statistical analysis and modeling
   "testthat", # Unit testing for R
   "tidyverse", # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
@@ -341,7 +376,6 @@ if (run_this["exo_tests"]){
   global_exo_tests <- T # Set to false if tests should be ran separately
   
   if (!global_exo_tests) {
-    
     ###### PUBLICATION BIAS - FAT-PET with IV ######
     iv_results <- getIVResults(data,
             effect_present = T, pub_bias_present = T, verbose_coefs = T)
@@ -365,7 +399,14 @@ if (run_this["p_hacking_tests"]){
           thresholds = caliper_thresholds, widths = caliper_widths, verbose = T)
    
   ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
-  eliott_results <- getEliott(data)
+  eliott_data_subsets <- getMultipleParams(adjustable_parameters, "eliott_data_subsets", "character")
+  eliott_p_min <- as.numeric(adjustable_parameters["eliott_p_min"])
+  eliott_p_max <- as.numeric(adjustable_parameters["eliott_p_max"])
+  eliott_d_point <- as.numeric(adjustable_parameters["eliott_d_point"])
+  eliott_cs_bins <- as.numeric(adjustable_parameters["eliott_cs_bins"])
+  eliott_verbose <- as.logical(adjustable_parameters["eliott_verbose"])
+  eliott_results <- getEliottResults(data, eliott_data_subsets,
+      eliott_p_min, eliott_p_max, eliott_d_point, eliott_cs_bins, eliott_verbose)
    
   ###### MAIVE Estimator (Irsova et al., 2023) ######
   maive_results <- getMaiveResults(data,
@@ -410,4 +451,3 @@ if (run_this["fma"]){
   # Actual estimation
   fma_coefs <- runFMA(bma_data, bma_model, var_list, verbose = T)
 }
-

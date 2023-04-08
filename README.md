@@ -11,6 +11,7 @@ The reason to keep this repository is to allow for easier version tracking, and 
 ## Prerequisites:
  1. Make sure that your working directory contains the following files:
      - `<NAME_OF_YOUR_DATA_FRAME>.csv` (modifiable below, default `data_set_master_thesis_cala.csv`)
+     - `elliot_master_thesis_cala.R`
      - `endo_kink_master_thesis_cala.R`
      - `main_master_thesis_cala.R`
      - `maive_master_thesis_cala.R`
@@ -19,8 +20,9 @@ The reason to keep this repository is to allow for easier version tracking, and 
      - `source_master_thesis_cala.R`
      - `stem_method_master_thesis_cala.R`
      - `<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv` (modifiable below, default `var_list_master_thesis_cala.csv`)
- 2. Make sure your data frame (`<NAME_OF_YOUR_DATA_FRAME>.csv`) contains **no missing values**.
-   If there are any, the script **will not run**
+ 2. Try to eliminate as many missing values in your data frame as you can.
+    The script will automatically use interpolation for missing data, so that model averaging
+    can run, but in case of many missing values, the results may be unstable.
  3. The data frame must contain these columns (named exactly as listed below):
    * **study_name** - Name of the study, such as *Einstein et al. (1935)*.
    * **effect** -  The main effect/estimate values. Ideally it should be  a transformed effect, such as
@@ -34,6 +36,7 @@ The reason to keep this repository is to allow for easier version tracking, and 
      study id's, and `<CELL>` is the cell in that column on the same row you want to calculate the
      study size on. Example: `=COUNTIF(B:B,B2)`. This calculates the study size of the study located
      in cell B2, assuming that the column `B` contains the study information.
+   * **reg_df** - Degrees of freedom associated with this estimate.
  4. In the file `<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv`, input the list of variables you are using in your data frame,
    along with these parameters:
    * **var_name** - Name of the variable exactly as it appears in the data frame columns. Must not include
