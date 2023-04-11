@@ -27,10 +27,10 @@ years_of_schooling,Years of Schooling,float,15,median,TRUE,TRUE,NA,median,TRUE,N
 years_of_experience,Years of Experience,float,16,median,TRUE,TRUE,NA,median,TRUE,NA,NA
 schooling_years,Education - Years of Schooling,dummy,17,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 schooling_levels,Education - Levels of Schooling,dummy,17,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
-wage_mean_annual_earnings,Wage - Mean Annual Earnings,dummy,18,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 wage_log_hourly,Wage - Log Hourly,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 wage_log_daily,Wage - Log Daily,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 wage_log_monthly,Wage - Log Monthly,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
+wage_mean_annual_earnings,Wage - Mean Annual Earnings,dummy,18,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
 data_type_micro,Data Source - Micro,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 data_type_survey,Data Source - Survey,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,NA,NA
 data_type_national_register,Data Source - National Register,dummy,19,stop,TRUE,TRUE,1,NA,FALSE,NA,NA
