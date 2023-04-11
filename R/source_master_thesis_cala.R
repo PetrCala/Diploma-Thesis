@@ -1808,32 +1808,104 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
 
+#' This function searches for an optimal Bayesian Model Averaging (BMA) formula by removing the variables
+#' with the highest Variance Inflation Factor (VIF) until the VIF coefficients of the remaining variables
+#' are below 10 or the maximum number of groups to remove is reached.
+#'
+#' @param input_data A data frame containing the input data.
+#' @param input_var_list A data frame containing the variable names, a boolean indicating whether the variable
+#' is a potential variable for the model, and a grouping category for each variable.
+#' @param max_groups_to_remove An integer indicating the maximum number of variable groups to remove.
+#' @param return_variable_vector_instead A logical value indicating whether the function should return
+#' a vector of remaining variables instead of the BMA formula.
+#' @param verbose A logical value indicating whether the function should print the progress and the suggested BMA formula.
+#'
+#' @return If return_variable_vector_instead is TRUE, the function returns a character vector of the remaining variables.
+#' Otherwise, it returns a formula object of the suggested BMA formula.
+findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remove = 30,
+                                    return_variable_vector_instead = F, verbose = T) {
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.numeric(max_groups_to_remove),
+    is.logical(return_variable_vector_instead),
+    is.logical(verbose),
+    all(c("bma_potential_var", "var_name", "group_category") %in% colnames(input_var_list))
+  )
+  # Extract the information from source data
+  bma_potential_vars_bool <- input_var_list$bma_potential_var
+  potential_vars <- input_var_list$var_name[bma_potential_vars_bool]
+  var_grouping <- input_var_list$group_category[bma_potential_vars_bool]
+  
+  # Pop the effect from var grouping (not used in the iteration)
+  var_grouping <- var_grouping[!potential_vars == "effect_w"]
+  
+  # Get initial BMA formula and VIF coefficients
+  bma_formula <- getBMAFormula(potential_vars)
+  bma_lm <- lm(bma_formula, data = input_data)
+  vif_coefs <- car::vif(bma_lm)
+  if (length(var_grouping) != length(vif_coefs)){
+    print("The lengths of the variable vectors do not match")
+  }
+  
+  removed_groups <- 0
+  while (any(vif_coefs > 10) && max_groups_to_remove > 0) {
+    # Get the group with the highest VIF coefficient
+    highest_vif_coef <- which.max(vif_coefs)
+    highest_vif_group <- var_grouping[highest_vif_coef]
+    # Get new potential vars, new grouping
+    vars_to_remove <- potential_vars[var_grouping == highest_vif_group]
+    potential_vars <- potential_vars[!potential_vars %in% vars_to_remove]
+    var_grouping <- var_grouping[!var_grouping %in% highest_vif_group]
+    # Get modified BMA formula and VIF coefficients
+    bma_formula <- getBMAFormula(potential_vars)
+    bma_lm <- lm(bma_formula, data = input_data)
+    vif_coefs <- car::vif(bma_lm)
+    if (length(var_grouping) != length(vif_coefs)){
+      print("The lengths of the variable vectors do not match")
+    }
+    # Decrease the maximum number of groups to remove
+    max_groups_to_remove <- max_groups_to_remove - 1
+    removed_groups <- removed_groups + 1
+  }
+  # Print out the information about the procedure outcome
+  if (max_groups_to_remove == 0) {
+    message("Maximum number of groups to remove reached. Returning variables found so far.")
+  }
+  if (verbose) {
+    print(paste("Removed", removed_groups, "groups with VIF > 10. The suggested BMA formula is:"))
+    print(bma_formula)
+  }
+  # Return the outcome
+  if (return_variable_vector_instead){
+    return(potencial_vars)
+  }
+  return(bma_formula)
+}
+
 #' Creates a formula for Bayesian model averaging
 #'
 #' This function creates a formula for Bayesian model averaging based on the variables in \code{var_vector}.
 #' The formula includes the variables "effect_w" and "se_w", as well as any other variables specified in \code{var_vector}.
 #'
-#' @param input_var_list [data.frame] A data frame that contains the names of the variables, and a boolean vector indicating
-#'  whether they should be used in the formula.
+#' @param input_var [vector] A vector of variables that should be used to construct the formula. Must include
+#' "effect_w" and "se_w".
 #' @param get_var_vector_instead [bool] If TRUE, return a vector with variable names instead, with effect and se
-#'  at the first two positions of the vector. Used in BMA itself. Defaults to FALSE.
+#'  at the first two positions of the vector. Used for a simple rearrangement. Defaults to FALSE.
 #' @return A formula object (to be used) Bayesian model averaging
-getBMAFormula <- function(input_var_list, get_var_vector_instead = F){
-  # Input validation
+#' 
+#' @note To get the vector itself from the formula, you can use the in-built "all.vars()" method instead.
+getBMAFormula <- function(input_var, get_var_vector_instead = F){
+  # Validate the input
   stopifnot(
-    all(c("bma", "var_name") %in% colnames(input_var_list))
+    all(c("effect_w","se_w") %in% input_var)
   )
-  # Get the list of variables to run the bma for
-  desired_vars_bool <- input_var_list$bma 
-  desired_vars <- input_var_list$var_name[desired_vars_bool]
-  # Validate the list again
-  stopifnot(
-    all(c("effect_w","se_w") %in% desired_vars)
-  )
+  # Separate the effect and SE from the remaining variables
+  bool_wo_effect <- input_var != "effect_w" # Pop effect
+  bool_wo_se <- input_var != "se_w" # Pop se
+  remaining_vars <- input_var[bool_wo_effect & bool_wo_se] # Remaining variables
   # Get the formula
-  bool_wo_effect <- desired_vars != "effect_w" # Pop effect
-  bool_wo_se <- desired_vars != "se_w" # Pop se
-  remaining_vars <- desired_vars[bool_wo_effect & bool_wo_se] # All but the two (wonky, might improve sometimes later)
   if (get_var_vector_instead){
     var_vector <- c("effect_w", "se_w", remaining_vars)
     return(var_vector)
@@ -1847,34 +1919,40 @@ getBMAFormula <- function(input_var_list, get_var_vector_instead = F){
 #' Function to test the Variance Inflation Factor of a Linear Regression Model
 #'
 #' @details runVifTest is a function that tests the Variance Inflation Factor (VIF) of a linear regression model.
-#' It takes three arguments: input_data, input_var_list, and print_all_coefs. The function tests whether
-#' the columns "effect_w" and "se_w" are present in the input data frame. If the validation passes, it creates a
-#' linear regression model using the input data and the specified variables. Then, it calculates the VIF coefficients
+#' It takes three arguments: input_, and print_all_coefs. The function tests whether the input_ is either a vector
+#' or a formula. If it is a vector of variables, it transforms it into a formula. Then, it calculates the VIF coefficients
 #' using the vif function from the car package. If print_all_coefs is set to TRUE, the function prints all the VIF
 #' coefficients. If any of the VIF coefficients is larger than 10, the function prints a message indicating the
 #' variables with a high VIF. Otherwise, it prints a message indicating that all variables have a VIF lower than 10.
 #' Finally, the function returns the VIF coefficients as a numeric vector.
 #' 
-#' @param input_data [data.frame] A data frame containing the data for the regression model.
-#' @param input_var_list [data.frame] A data frame containing variable information.
+#' @param input_var [vector | formula] One of - vector of variable names, formula. If it is a vector, the function
+#' transforms the input into a formula.
+#' @param input_data [data.frame] Data to run the test on.
 #' @param print_all_coefs [bool] A logical value indicating whether to print all the VIF coefficients into
 #'  the console
 #'
 #' @return [vector] A numeric vector with the VIF coefficients.
-runVifTest <- function(input_data, input_var_list, print_all_coefs = F){
+runVifTest <- function(input_var, input_data, print_all_coefs = F){
   # Validate input
   stopifnot(
-    all(c("effect_w","se_w") %in% colnames(input_data)),
-    !any(is.na(input_data)) # No missing values allowed
+    any(
+      is_formula(input_var),
+      is.vector(input_var)
+    ),
+    is.data.frame(input_data)
   )
-  #Testing for VIF
-  BMA_formula <- getBMAFormula(input_var_list)
+  # Get the BMA formula - explicit because RRRRRR
+  if (is.vector(input_var)){
+    BMA_formula <- getBMAFormula(input_var)
+  } else{
+    BMA_formula <- input_var
+  }
   BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
   # Unhandled exception - fails in case of too few observations vs. too many variables
   vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients
-  return(vif_coefs)
   if (print_all_coefs){
-    print("There are all the Variance Inflation Coefficients:")
+    print("These are all the Variance Inflation Coefficients for this formula:")
     print(vif_coefs)
   }
   if (any(vif_coefs > 10)){
@@ -1895,18 +1973,38 @@ runVifTest <- function(input_data, input_var_list, print_all_coefs = F){
 #' plots in the extractBMAResults requires the data object, so this function allows for that
 #' object to exist outside the scope of the runBMA function, where it would be otherwise hidden.
 #'
+#' @param input_data [data.frame] A data from containing the BMA data (and more)
+#' @param variable_info [data.frame | vector] Either a data frame containing the variable information,
+#'  or a vector of variables. In the latter case, the "from_vector" variable must be set to T.
+#' @param from_vector [logical] If True, the "variable_info" must be specified as a vector, otherwise
+#'  as a data frame. Defaults to FALSE.
 #' @note When transforming/subsetting the data, there is a need to convert the data into a
 #' data.frame object, otherwise the plot functions will not recognize the data types correctly
 #' later on. The "bms" function works well even with a tibble, but the plots do not. RRRRRRR
-getBMAData <- function(input_data, input_var_list){
+getBMAData <- function(input_data, variable_info, from_vector = T){
   # Input validation
   stopifnot(
     is.data.frame(input_data),
-    is.data.frame(input_var_list)
+    any(
+      is.data.frame(variable_info),
+      is.vector(variable_info)
+    ),
+    is.logical(from_vector)
   )
   # Subset the data
-  bma_vars <- getBMAFormula(input_var_list, get_var_vector_instead = TRUE) # Vector of BMA variables, effect and se first
-  bma_data <- input_data[bma_vars] # Only desired variables
+  if (from_vector & !is.vector(variable_info)){
+    stop("You must provide a vector if you wish to extract the variable information form a vector.")
+  }
+  if (!from_vector & !is.data.frame(variable_info)){
+    stop("You must provide a data frame if you wish to extract the variable information form a data frame.")
+  }
+  if (is.data.frame(variable_info)){ # Input data frame
+    desired_vars_bool <- variable_info$bma
+    desired_vars <- variable_info$var_name[desired_vars_bool]
+  } else { # Input vector
+   desired_vars <- variable_info
+  }
+  bma_data <- input_data[desired_vars] # Only desired variables
   bma_data <- as.data.frame(bma_data) # To a data.frame object, because RRRR
   return(bma_data)
 }
@@ -1918,20 +2016,18 @@ getBMAData <- function(input_data, input_var_list){
 #' estimation inside the 'bms' function. Validate correct input, run the estimation, and
 #' return the BMA model without printing any results.
 #' 
-#' @param bma_data [data.frame] The data for BMA. Effect_w must be in the first column.
-#' @param input_var_list [data.frame] A data frame containing variable information, and a "bma"
-#' column indicating whether those variables should be used in the estimation.
+#' @param bma_data [data.frame] The data for BMA. "effect_w" must be in the first column.
 #' @inheritDotParams Parameters to be used inside the "bms" function. These are:
 #' burn, iter, g, mprior, nmodel, mcmc
 #' For more info see the "bms" function documentation.
 #' @return The bma model
-runBMA <- function(bma_data, input_var_list, ...){
+runBMA <- function(bma_data, ...){
   # Input validation
   stopifnot(
     is.data.frame(bma_data),
-    is.data.frame(input_var_list),
     !any(is.na(bma_data)), # No missing obs
-    all(sapply(bma_data,is.numeric)) # Only numeric obs
+    all(sapply(bma_data,is.numeric)), # Only numeric obs
+    colnames(bma_data[,1]) == "effect_w"
   )
   # Actual estimation with inhereted parameters
   print("Running the Bayesian Model Averaging...")
@@ -2036,19 +2132,12 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
 #' Finally, the function extracts and prints the results as a data frame.
 #'
 #' This function uses the LowRankQP package for optimization.
-runFMA <- function(bma_data, bma_model, input_var_list, verbose = T){
+runFMA <- function(bma_data, bma_model, verbose = T){
   # Validate input
   stopifnot(
     is.data.frame(bma_data),
     class(bma_model) == "bma",
-    is.data.frame(input_var_list),
     names(bma_data[,1]) == "effect_w" # Restrictive, but extra safe
-  )
-  # Validate the input through the external BMA formula
-  bma_vars <- getBMAFormula(input_var_list, get_var_vector_instead = TRUE) # Vector of BMA variables
-  stopifnot(
-    all(bma_vars %in% colnames(bma_data)),
-    all(colnames(bma_data) %in% bma_vars) # Both-sided implication
   )
   # Estimation from here
   print("Running the Frequentist Model Averaging...")

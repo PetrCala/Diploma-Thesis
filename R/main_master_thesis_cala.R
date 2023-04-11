@@ -102,15 +102,15 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
-  "exo_tests" = T,
-  "p_hacking_tests" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = F,
   "bma" = T,
   "fma" = T, # Should be ran together with BMA
   "best_practice_estimate" = F
@@ -151,6 +151,7 @@ adjustable_parameters <- c(
   "eliott_cs_bins" = 10,
   "eliott_verbose" = T,
   # Bayesian Model Averaging parameters
+  "automatic_bma" = T, # If TRUE, automatically generate a formula for BMA with all VIF < 10
   "bma_burn" = 1e4, # Burn-ins (def 1e5)
   "bma_iter" = 3e4, # Draws (def 3e5)
   "bma_g" = "HQ", # g-Prior
@@ -294,7 +295,6 @@ validateData(data, var_list, ignore_missing = allow_missing_vars)
 one_study_subset <- technical_parameters["subset_this_study_only"]
 data <- limitDataToOneStudy(data, one_study_subset) # Handle wrong cases inside function, pass in that case
 
-
 ######################### DATA EXPLORATION #########################
 
 ###### EFFECT SUMMARY STATISTICS ######
@@ -417,6 +417,7 @@ if (run_this["p_hacking_tests"]){
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
 if (run_this["bma"]){
+  automatic_bma <- as.logical(adjustable_parameters["automatic_bma"])
   # Extract adjustable parameters
   bma_burn <- as.numeric(adjustable_parameters["bma_burn"])
   bma_iter <- as.numeric(adjustable_parameters["bma_iter"])
@@ -425,12 +426,20 @@ if (run_this["bma"]){
   bma_nmodel <- as.numeric(adjustable_parameters["bma_nmodel"])
   bma_mcmc <- as.character(adjustable_parameters["bma_mcmc"])
   bma_print_results <- as.character(adjustable_parameters["bma_print_results"])
+  if (automatic_bma){
+    # Get the optimal BMA formula automatically
+    bma_formula <- findOptimalBMAFormula(data, var_list, verbose = T)
+  } else {
+    # From the variable information instead
+    bma_formula <- getBMAFormula(var_list)
+  }
   # Run the Variance Inflation Test
-  vif_coefs <- runVifTest(data, var_list, print_all_coefs = T)
+  vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = T)
   # BMA estimation
-  bma_data <- getBMAData(data, var_list)
+  bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
+  bma_data <- getBMAData(data, bma_vars)
   bma_model <- runBMA(
-       bma_data, var_list,
+       bma_data,
        burn=bma_burn,
        iter=bma_iter,
        g=bma_g, # UIP, BRIC, HQ
@@ -449,5 +458,9 @@ if (run_this["fma"]){
     stop("You must create these two objects first - bma_data, bma_model. Refer to the 'bma' section.")
   }
   # Actual estimation
-  fma_coefs <- runFMA(bma_data, bma_model, var_list, verbose = T)
+  fma_coefs <- runFMA(bma_data, bma_model, verbose = T)
 }
+
+
+
+
