@@ -437,7 +437,7 @@ if (run_this["bma"]){
   vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = T)
   # BMA estimation
   bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
-  bma_data <- getBMAData(data, bma_vars)
+  bma_data <- getBMAData(data, var_list, bma_vars)
   bma_model <- runBMA(
        bma_data,
        burn=bma_burn,
@@ -449,6 +449,8 @@ if (run_this["bma"]){
   )
   # Print out the results
   bma_coefs <- extractBMAResults(bma_model, bma_data, print_results = bma_print_results)
+  # Get the vector of variables used in the BMA
+  bma_bool <- getBMAExcelBool(var_list, bma_formula, verbose=T)
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
@@ -460,7 +462,4 @@ if (run_this["fma"]){
   # Actual estimation
   fma_coefs <- runFMA(bma_data, bma_model, verbose = T)
 }
-
-
-
 

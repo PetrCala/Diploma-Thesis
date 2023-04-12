@@ -1807,7 +1807,7 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
 ######################### MODEL AVERAGING #########################
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
-
+    
 #' This function searches for an optimal Bayesian Model Averaging (BMA) formula by removing the variables
 #' with the highest Variance Inflation Factor (VIF) until the VIF coefficients of the remaining variables
 #' are below 10 or the maximum number of groups to remove is reached.
@@ -1848,7 +1848,7 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
   if (length(var_grouping) != length(vif_coefs)){
     print("The lengths of the variable vectors do not match")
   }
-  
+
   removed_groups <- 0
   while (any(vif_coefs > 10) && max_groups_to_remove > 0) {
     # Get the group with the highest VIF coefficient
@@ -1974,6 +1974,7 @@ runVifTest <- function(input_var, input_data, print_all_coefs = F){
 #' object to exist outside the scope of the runBMA function, where it would be otherwise hidden.
 #'
 #' @param input_data [data.frame] A data from containing the BMA data (and more)
+#' @param input_var_list [data.frame] A data frame containing the variable information.
 #' @param variable_info [data.frame | vector] Either a data frame containing the variable information,
 #'  or a vector of variables. In the latter case, the "from_vector" variable must be set to T.
 #' @param from_vector [logical] If True, the "variable_info" must be specified as a vector, otherwise
@@ -1981,10 +1982,11 @@ runVifTest <- function(input_var, input_data, print_all_coefs = F){
 #' @note When transforming/subsetting the data, there is a need to convert the data into a
 #' data.frame object, otherwise the plot functions will not recognize the data types correctly
 #' later on. The "bms" function works well even with a tibble, but the plots do not. RRRRRRR
-getBMAData <- function(input_data, variable_info, from_vector = T){
+getBMAData <- function(input_data, input_var_list, variable_info, from_vector = T){
   # Input validation
   stopifnot(
     is.data.frame(input_data),
+    is.data.frame(input_var_list),
     any(
       is.data.frame(variable_info),
       is.vector(variable_info)
@@ -2006,6 +2008,8 @@ getBMAData <- function(input_data, variable_info, from_vector = T){
   }
   bma_data <- input_data[desired_vars] # Only desired variables
   bma_data <- as.data.frame(bma_data) # To a data.frame object, because RRRR
+  # Convert all specified columns to logs
+  # TO-DO
   return(bma_data)
 }
 
@@ -2107,6 +2111,32 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
     cat("\n\n")
   }
   return(bma_coefs)
+}
+
+#' A helper function (not used in the main analysis) that allows the user to generate
+#' a boolean vector for the excel variable info sheet - namely the "bma" column.
+#' 
+#' Serves as a way to extract the list of variables that the optimal BMA formula chooses.
+#' 
+#' @param input_var_list [data.frame] The data frame with variable information.
+#' @param bma_formula [formula] Formula of the BMA model.
+#' @param verbose [bool] If TRUE, print out the resulting boolean vector into the console.
+#' Defaults to TRUE.
+#' @return Boolean vector.
+getBMAExcelBool <- function(input_var_list, bma_formula, verbose = T){
+  # Input validation
+  stopifnot(
+    is.data.frame(input_var_list),
+    is_formula(bma_formula),
+    is.logical(verbose)
+  )
+  # Get the excel "bma" boolean
+  bma_vars <- all.vars(bma_formula)
+  bma_bool <- input_var_list$var_name %in% bma_vars
+  if (verbose){
+    print(bma_bool)
+  }
+  invisible(bma_bool)
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
