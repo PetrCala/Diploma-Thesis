@@ -102,18 +102,18 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
-  "exo_tests" = F,
-  "p_hacking_tests" = F,
+  "variable_summary_stats" = T,
+  "effect_summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
+  "nonlinear_tests" = T,
+  "exo_tests" = T,
+  "p_hacking_tests" = T,
   "bma" = T,
   "fma" = T, # Should be ran together with BMA
-  "best_practice_estimate" = F
+  "best_practice_estimate" = T
 )
 
 #' ADJUSTABLE PARAMETERS
@@ -429,6 +429,8 @@ if (run_this["bma"]){
   if (automatic_bma){
     # Get the optimal BMA formula automatically
     bma_formula <- findOptimalBMAFormula(data, var_list, verbose = T)
+    # Get the vector of variables used in the automatic BMA
+    bma_bool <- getBMAExcelBool(var_list, bma_formula, verbose=F)
   } else {
     # From the variable information instead
     bma_formula <- getBMAFormula(var_list)
@@ -449,8 +451,6 @@ if (run_this["bma"]){
   )
   # Print out the results
   bma_coefs <- extractBMAResults(bma_model, bma_data, print_results = bma_print_results)
-  # Get the vector of variables used in the BMA
-  bma_bool <- getBMAExcelBool(var_list, bma_formula, verbose=T)
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
