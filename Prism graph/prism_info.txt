@@ -1,0 +1,5 @@
+%Notes on the prisma diagram:
+% Identification - 574
+% Screening - 200
+% Eligibility - 122 -> studies excluded due to insufficient data - 48
+% Collected - 74
