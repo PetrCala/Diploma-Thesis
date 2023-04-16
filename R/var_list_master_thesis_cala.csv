@@ -2,16 +2,14 @@ var_name,var_name_verbose,data_type,group_category,na_handling,variable_summary,
 obs_n,Observation Number,int,1,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
 study_id,Study ID,int,2,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
 study_name,Study Name,category,3,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-effect_orig,Original Effect,float,4,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-se_orig,Effect Standard Error,float,5,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
+effect,Effect,float,4,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
+se,Effect Standard Error,float,5,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
 t_stat,T-Statistic,float,6,stop,TRUE,TRUE,NA,median,FALSE,FALSE,NA,NA
-95_lower_orig,95% CI Lower Bound of Original Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-95_upper_orig,95% CI Upper Bound of Original Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-effect,Transformed Effect (PCC),float,8,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-se,Standard Error of the Transformed Effect,float,9,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-se_precision,Precision,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-95_lower,95% Lower Bound for Precision,float,10,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-95_upper,95% Upper Bound for Precision,float,10,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
+95_lower,95% CI Lower Bound of the Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
+95_upper,95% CI Upper Bound of the Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
+pcc,Partial Correlation Coefficient,float,8,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
+se_pcc,Standard Error of the PCC,float,9,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
+se_pcc_precision,Precision,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
 est_short_run,Estimate - Short Run,dummy,11,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
 est_long_run,Estimate - Long Run,dummy,11,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
 est_agg_city,Estimate - City,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA

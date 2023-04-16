@@ -102,13 +102,13 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
   "exo_tests" = T,
   "p_hacking_tests" = T,
   "bma" = T,
@@ -122,6 +122,7 @@ run_this <- c(
 #'  Do NOT change the variable names (apart from when adding new Box plot factors),
 #'    the names of vectors, or value types (character, integer, vector...)
 adjustable_parameters <- c(
+  "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
   # Data winsorization level
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
   # Handle missing data
@@ -138,8 +139,8 @@ adjustable_parameters <- c(
   "funnel_plot_precision_cutoff" = 0.2, # Precision axis cutoff point
   "funnel_plot_verbose" = T, # If T, print cut outlier information
   # T-statistic histogram parameters
-  "t_hist_lower_cutoff" = -150, # Lower cutoff point for t-statistics
-  "t_hist_upper_cutoff" = 150, # Upper cutoff point for t-statistics
+  "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
+  "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
   # Caliper test parameters
   "caliper_thresholds" = c(0, 1.96, 2.58), # Caliper thresholds - keep as vector
   "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
@@ -305,22 +306,26 @@ if (run_this["effect_summary_stats"]){
 
 ###### BOX PLOT ######
 if (run_this["box_plot"]){
-  # Automatically extract all specified factor names
+  # Adjustable parameters
+  effect_name <- as.character(adjustable_parameters["effect_name"]) # Inside this scope for safety
   factor_names <- getBoxPlotFactors(adj_pars_source = adjustable_parameters, pattern = "box_plot_group_by_factor_")
   box_plot_verbose <- as.logical(adjustable_parameters["box_plot_verbose"])
   
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
-    getBoxPlot(data, factor_by = factor_name, verbose = run_verbose)
+    getBoxPlot(data, factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
   }
 }
 
 ###### FUNNEL PLOT ######
 
 if (run_this["funnel_plot"]){
+  # Adjustable parameters
   custom_effect_cutoff <- as.numeric(adjustable_parameters["funnel_plot_effect_cutoff"])
   custom_precision_cutoff <- as.numeric(adjustable_parameters["funnel_plot_precision_cutoff"])
   custom_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
+  
+  # Plot the funnel plot
   getFunnelPlot(data, custom_effect_cutoff, custom_precision_cutoff, custom_verbose)
 }
 
@@ -369,7 +374,6 @@ if (run_this["nonlinear_tests"]){
     getNonlinearTests(data)
   }
 }
-
 
 ######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
 if (run_this["exo_tests"]){

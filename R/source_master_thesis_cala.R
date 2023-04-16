@@ -728,12 +728,19 @@ getBoxPlotFactors <- function(adj_pars_source, pattern){
 #'  - 'country'
 #'  - 'study_level'
 #'  Defaults to 'country'
-#' @param verbose [bool] - If T, print out the information about the plot being printed.
+#' @param verbose [bool] If T, print out the information about the plot being printed.
 #'  Defaults to T.
-getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
-  # Check column validity
+#' @param effect_name [character] Verbose explanation of the effect.
+getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name = 'effect'){
+  # Check column and input validity
   expected_cols <- c('effect_w', factor_by)
-  stopifnot(all(expected_cols %in% colnames(input_data)))
+  stopifnot(
+    all(expected_cols %in% colnames(input_data)),
+    is.data.frame(input_data),
+    is.character(factor_by),
+    is.logical(verbose),
+    is.character(effect_name)
+  )
   
   # Plot variable preparation
   factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
@@ -743,7 +750,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
   box_plot <- ggplot(data = input_data, aes(x = effect_w, y=factor(!!sym(factor_by), levels = factor_levels))) +
       geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
       geom_vline(aes(xintercept = mean(effect_w)), color = "red", linewidth = 0.85) + 
-      labs(title = NULL,x="Estimate of the effect of years of schooling on wage", y = "Grouped by " %>% paste0(factor_by_verbose)) +
+      labs(title = NULL,x=paste("Effect of", tolower(effect_name)), y = "Grouped by " %>% paste0(factor_by_verbose)) +
       main_theme()
   
   # Plot the plot
@@ -832,7 +839,7 @@ getFunnelPlot <- function(input_data, effect_cutoff=0.2, precision_cutoff=0.2, v
   # Plot the plot
   funnel_win <- ggplot(data = funnel_data, aes(x = effect_w, y = se_precision_w)) + 
     geom_point(color = "#0d4ed1") + 
-    labs(title = NULL, x = "Partial correlation coefficient", y = "Precision of the estimate (1/SE)") +
+    labs(title = NULL, x = "Estimate of the effect", y = "Precision of the effect (1/SE)") +
     main_theme()
     
   suppressWarnings(print(funnel_win)) # Print out the funnel plot
@@ -846,7 +853,7 @@ getFunnelPlot <- function(input_data, effect_cutoff=0.2, precision_cutoff=0.2, v
 #' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
-getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
+getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120){
   # Specify a cutoff filter
   t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff) #removing the outliers from the graph
   # Construct the histogram
@@ -1350,7 +1357,12 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
   # Get the best instrument(s)
   best_instruments <- rownames(results[max_values,])
   # Return results - verbose
-  print(paste0("Identified ", best_instruments, " as the best instrument."))
+  if (length(best_instruments > 1)){
+    print(paste0("Identified multiple best instruments:"))
+    print(best_instruments)
+  } else {
+    print(paste0("Identified ", best_instruments, " as the best instrument."))
+  }
   return(best_instruments)
 }
 
@@ -1387,8 +1399,8 @@ getIVResults <- function(data, ...){
   best_instrument <- findBestInstrument(data, instruments, instruments_verbose)
   # If more best instruments are identified
   if (length(best_instrument) > 1){ 
-    best_instrument <- best_instrument[0] # Choose the first one arbitrarily
-    print(paste0("More best instruments identified. Running the regression for ", best_instrument))
+    best_instrument <- best_instrument[1] # Choose the first one arbitrarily
+    print(paste("Choosing", best_instrument, "arbitrarily as an instrument for the regression."))
   }
   stopifnot(
     best_instrument %in% instruments_verbose,
@@ -1473,24 +1485,25 @@ getPUniResults <- function(data, method="ML",...){
   if (method == "ML"){
     #Maximum likelihood
     quiet(
-      est_ml <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "ML", alpha = 0.05,
+      est_main <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "ML", alpha = 0.05,
                              control=list( max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
     )
   } else if (method == "P"){
     # Moments method estimation
     quiet(
-      est_ml <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "P",
+      est_main <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "P",
                           alpha = 0.05,control=list(max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
     )
   } else {
     stop("Broken validity checks") # Should not happen
   }
-  est_se <- (est_ml$ci.ub - est_ml$ci.lb) / (2*1.96) # Standard error of the estmiate
+  print(est_main)
+  est_se <- (est_main$ci.ub - est_main$ci.lb) / (2*1.96) # Standard error of the estmiate
   # Extract and save coefficients - using a custom format for this method
-  est_effect_verbose <- round(est_ml$est, 5) # Effect Beyond Bias
+  est_effect_verbose <- round(est_main$est, 5) # Effect Beyond Bias
   est_se_verbose <- paste0("(", round(est_se, 5), ")") # Effect Standard Error
-  est_pub_test_verbose <- paste0("L = ", round(est_ml$L.0, 5)) # Test statistic of p-uni publication bias test
-  est_pub_p_val_verbose <- paste0("(p = ", round(est_ml$pval.0, 5), ")") # P-value for the L test statistic
+  est_pub_test_verbose <- paste0("L = ", round(est_main$L.0, 5)) # Test statistic of p-uni publication bias test
+  est_pub_p_val_verbose <- paste0("(p = ", round(est_main$pval.0, 5), ")") # P-value for the L test statistic
   # Return as a vector
   p_uni_coefs_out <- c(
     est_pub_test_verbose,
