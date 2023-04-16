@@ -921,12 +921,12 @@ getLinearTests <- function(data) {
   ols <- lm(formula = effect_w ~ se_w, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
   ols_coefs <- extractLinearCoefs(ols_res)
-  # FE
-  fe <- rma(effect_w, sei = se_w, mods = ~se_w, data = data, method = "FE")
-  fe_res <- coeftest(fe, vcov = vcov(fe, type = "fixed", cluster = c(data$study_id)))
-  fe_coefs <- extractLinearCoefs(fe_res)
-  # RE
-  re <- rma(effect_w, sei = se_w, mods = ~se_w, data = data, method = "REML")
+  # Between effects
+  be <- plm(effect_w ~ se_w, model = "between", index = "study_id", data = data)
+  be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
+  be_coefs <- extractLinearCoefs(be_res)
+  # Random Effects
+  re <- plm(effect_w ~ se_w, model = "random", index = "study_id", data = data)
   re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
   re_coefs <- extractLinearCoefs(re_res)
   # Weighted by number of observations per study
@@ -940,12 +940,13 @@ getLinearTests <- function(data) {
   # Combine the results into a data frame
   results <- data.frame(
     OLS = ols_coefs,
-    FE = fe_coefs,
+    BE = be_coefs,
     RE = re_coefs,
     OLS_weighted_study = ols_w_study_coefs,
     OLS_weighted_precision = ols_w_precision_coefs
   )
   rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)")
+  colnames(results) <- c("OLS", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
   # Print the results into the console
   print("Results of the linear tests, clustered by study:")
   print(results)
