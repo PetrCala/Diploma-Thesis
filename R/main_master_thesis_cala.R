@@ -102,13 +102,13 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
+  "variable_summary_stats" = T,
+  "effect_summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
+  "nonlinear_tests" = T,
   "exo_tests" = T,
   "p_hacking_tests" = T,
   "bma" = T,
@@ -223,6 +223,7 @@ packages <- c(
   "multcomp", # Simultaneous inference for general linear hypotheses
   "multiwayvcov", # Computing clustered covariance matrix estimators
   "NlcOptim", # Eliott et al. (2022) - CoxShi
+  "plm", # Random Effects, Between Effects
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
   "pracma", # MAIVE Estimator, Eliott et al. (2022)
   "rddensity", # Eliott et al. (2022)
