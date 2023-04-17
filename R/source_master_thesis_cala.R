@@ -115,25 +115,73 @@ getMultipleParams <- function(adj_params, desired_param, param_type){
 
 ####################### PACKAGE HANDLING ########################
 
-#' Package loading function
-#' 
-#' Insert a vector/list of package names, install all missing ones,
-#'  load all into workspace, and clean the environment
-loadPackages <- function(package_list, load_quietly = F){
+#' Create a custom error object
+#'
+#' This function creates a custom error object with a given message. The custom
+#' error object can be used in tryCatch expressions to handle specific errors.
+#'
+#' @param message [character] The error message.
+#'
+#' @return A custom error object with the specified message and class "custom_error".
+customError <- function(message) {
+  structure(list(message = message), class = "custom_error")
+}
+
+#' Quietly execute an expression
+#'
+#' This function suppresses package startup messages, warnings, and messages
+#' while executing an expression. It is useful for keeping the console output
+#' clean when loading or installing packages.
+#'
+#' @param expr [expression] The expression to be executed quietly.
+#'
+#' @return The result of the executed expression without any messages, warnings, or package startup messages.
+quietPackages <- function(expr) {
+  suppressPackageStartupMessages(suppressWarnings(suppressMessages(expr)))
+}
+
+#' Load and install a list of R packages
+#'
+#' This function checks if the specified packages are installed, installs any missing
+#' packages, and then loads all of them. If an error occurs during the installation
+#' or loading process, the function stops execution and displays an error message.
+#'
+#' @param package_list [character] A character vector of package names.
+#'
+#' @return A message indicating that all packages were loaded successfully or an error message if the process fails.
+loadPackages <- function(package_list) {
   # Install packages not yet installed
   installed_packages <- package_list %in% rownames(installed.packages())
   if (any(installed_packages == FALSE)) {
-    print(paste("Installing package ", package_list[!installed_packages],"...", sep = ""))
-    install.packages(package_list[!installed_packages])
+    print(paste("Installing package ", package_list[!installed_packages], "...", sep = ""))
+    tryCatch(
+      {
+        quietPackages(
+          install.packages(package_list[!installed_packages])
+        )
+      },
+      error = function(e) {
+        message("Package installation failed. Exiting the function...")
+        stop(customError("Package installation failed"))
+      }
+    )
   }
   # Package loading
-  if (load_quietly){
-    invisible(lapply(package_list, suppressWarnings(suppressMessages(library)), character.only = TRUE))
-  } else {
-    invisible(lapply(package_list, library, character.only = TRUE))
-  }
-  print('All packages loaded successfully')
+  print("Attempting to load the packages...")
+  tryCatch(
+    {
+      quietPackages(
+        invisible(lapply(package_list, library, character.only = TRUE))
+      )
+    },
+    error = function(e) {
+      message("Package loading failed. Exiting the function...")
+      stop(customError("Package loading failed"))
+    }
+  )
+  print("All packages loaded successfully")
 }
+
 
 ######################### DATA PREPROCESSING #########################
 
@@ -1041,6 +1089,7 @@ getStemResults <- function(data, ...){
     10^(-4), # Tolerance - set level of sufficiently small stem to determine convergence
     10^3 # max_N_count - set maximum number of iteration before termination
   )
+  
   est_stem <- stem(data$effect_w, data$se_w, stem_param)$estimates # Actual esimation
   
   # Save results
