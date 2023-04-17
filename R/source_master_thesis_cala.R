@@ -1498,7 +1498,6 @@ getPUniResults <- function(data, method="ML",...){
   } else {
     stop("Broken validity checks") # Should not happen
   }
-  print(est_main)
   est_se <- (est_main$ci.ub - est_main$ci.lb) / (2*1.96) # Standard error of the estmiate
   # Extract and save coefficients - using a custom format for this method
   est_effect_verbose <- round(est_main$est, 5) # Effect Beyond Bias

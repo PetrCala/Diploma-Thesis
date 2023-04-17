@@ -178,11 +178,13 @@ technical_parameters <- c(
   "subset_this_study_only" = NA # Use index, such as 1,2,3,... Default NA means no subsetting.
 )
 
-# Working directory
-if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
-if (! getwd() == dirname(getActiveDocumentContext()$path)){
-  setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
-  print(paste0('Setting the working directory to: ', getwd()))
+# Working directory - change only if the script is being ran as the master script (not imported)
+if (length(commandArgs()) == 0) {
+  if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
+  if (! getwd() == dirname(getActiveDocumentContext()$path)){
+    setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
+    print(paste0('Setting the working directory to: ', getwd()))
+  }
 }
 
 # Source files - unmodifiable
