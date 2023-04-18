@@ -1,104 +1,103 @@
 var_name,var_name_verbose,data_type,group_category,na_handling,variable_summary,effect_sum_stats,equal,gtlt,bma_potential_var,bma,to_log_for_bma,bpe
-obs_n,Observation Number,int,1,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-study_id,Study ID,int,2,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-study_name,Study Name,category,3,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-effect,Effect,float,4,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-se,Effect Standard Error,float,5,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-t_stat,T-Statistic,float,6,stop,TRUE,TRUE,NA,median,FALSE,FALSE,NA,NA
-95_lower,95% CI Lower Bound of the Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-95_upper,95% CI Upper Bound of the Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-pcc,Partial Correlation Coefficient,float,8,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-se_pcc,Standard Error of the PCC,float,9,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-se_pcc_precision,Precision,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-est_short_run,Estimate - Short Run,dummy,11,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-est_long_run,Estimate - Long Run,dummy,11,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-est_agg_city,Estimate - City,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-est_agg_subregion,Estimate - Sub-region,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-est_agg_region,Estimate - Region,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-est_agg_country,Estimate - Country,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-est_agg_continent,Estimate - Continent,dummy,12,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-n_obs,Number of Observations,int,13,stop,TRUE,TRUE,NA,median,TRUE,FALSE,NA,NA
-regressands,Number of Regressands,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-reg_df,Degrees of Freedom,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-study_size,Study Size,int,14,stop,TRUE,TRUE,NA,median,TRUE,TRUE,NA,NA
-years_of_schooling,Years of Schooling,float,15,median,TRUE,TRUE,NA,median,TRUE,TRUE,NA,NA
-years_of_experience,Years of Experience,float,16,median,TRUE,TRUE,NA,median,TRUE,TRUE,NA,NA
-schooling_years,Education - Years of Schooling,dummy,17,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-schooling_levels,Education - Levels of Schooling,dummy,17,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-wage_log_hourly,Wage - Log Hourly,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-wage_log_daily,Wage - Log Daily,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-wage_log_monthly,Wage - Log Monthly,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-wage_mean_annual_earnings,Wage - Mean Annual Earnings,dummy,18,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-data_type_micro,Data Source - Micro,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-data_type_survey,Data Source - Survey,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-data_type_national_register,Data Source - National Register,dummy,19,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-data_cross_section,Data Type - Cross Section,dummy,20,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-data_panel,Data Type - Panel,dummy,20,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-TEMP_data_avgyear,TEMP - Data Year,float,21,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-data_avgyear,Data Year - Log of Avergage,float,21,median,TRUE,TRUE,NA,median,TRUE,TRUE,NA,NA
-no_ed,Attained Education - None,perc,22,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-prim_ed,Attained Education - Primary,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,NA,NA
-sec_ed,Attained Education - Secondary,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,NA,NA
-higher_ed,Attained Education - Higher,perc,22,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,NA,NA
-wage_earners,Employees - Wage Earners,perc,24,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,NA,NA
-self_employed,Employees - Self-Employed,perc,24,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-gender_male,Gender - Male,perc,25,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,NA,NA
-gender_female,Gender - Female,perc,25,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-private_sector,Sector - Private,perc,26,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,NA,NA
-public_sector,Sector - Public,perc,26,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-ethnicity_caucasian,Ethnicity - Caucasian,perc,27,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,NA,NA
-ethnicity_other,Ethnicity - Other,perc,27,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-sector_rural,Sector - Rural,perc,28,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,NA,NA
-sector_urban,Sector - Urban,perc,28,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-country,Country,category,29,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-region_advanced_economies,Region - Advanced Economies,dummy,30,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-region_east_asia_and_pacific,Region - East Asia and Pacific,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-region_europe_and_central_asia,Region - Europe and Central Asia,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-region_middle_east_and_north_africa,Region - Middle East and North Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-region_south_asia,Region - South Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-region_sub_saharan_africa,Region - Sub Saharan Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-income_high,Income - High,dummy,31,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-income_middle,Income - Middle,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-med_exp,Median Expenditure,float,32,stop,TRUE,TRUE,NA,median,TRUE,TRUE,NA,NA
-min_wage,Minimum Wage,float,33,stop,TRUE,TRUE,NA,median,TRUE,TRUE,NA,NA
-mean_age,Mean Wage,float,34,median,TRUE,TRUE,NA,median,TRUE,TRUE,NA,NA
-method_ols,Method - OLS,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-method_hurdle,Method - Hurdle,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-method_cohort,Method - Cohort,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-method_fe,Method - Fixed Effects,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-method_2sls,Method - 2SLS,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-method_heckman,Method - Heckman,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-method_probit,Method - Probit,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-method_IV,Method - IV,dummy,35,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-ability_direct,Ability - Direct,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-ability_proxy,Ability - Proxied,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-ability_uncontrolled,Ability - Uncontrolled,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-ability_unmentioned,Ability - Unmentioned,dummy,36,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-instr_parents_ed,Instrument - Parents Education,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-instr_distance_to_school,Instrument - Distance to School,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-instr_spouse_ed,Instrument - Spouse Education,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-instr_marital_status,Instrument - Marital Status,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-instr_nsiblings,Instrument - Number of Siblings,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-instr_other,Instument - Other,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,NA,NA
-age_control,Control - Age,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-age_sq_control,Control - Age Squared,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-exp_control,Control - Experience,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-exp_sq_control,Control - Experience Squared,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-ethnicity_control,Control - Ethnicity,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-health_control,Control - Health,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-gender_control,Control - Gender,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-occupation_control,Control - Occupation,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-firm_char_control,Control - Firm Characteristics,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-area_control,Control - Area,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
-macro_var_control,Control - Macro Variables,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,NA,NA
+obs_n,Observation Number,int,1,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+study_id,Study ID,int,2,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+study_name,Study Name,category,3,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+effect,Effect,float,4,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+se,Effect Standard Error,float,5,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+t_stat,T-Statistic,float,6,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,NA
+95_lower,95% CI Lower Bound of the Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+95_upper,95% CI Upper Bound of the Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+pcc,Partial Correlation Coefficient,float,8,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+se_pcc,Standard Error of the PCC,float,9,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+se_pcc_precision,Precision,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+est_short_run,Estimate - Short Run,dummy,11,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+est_long_run,Estimate - Long Run,dummy,11,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+est_agg_city,Estimate - City,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+est_agg_subregion,Estimate - Sub-region,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+est_agg_region,Estimate - Region,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+est_agg_country,Estimate - Country,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+est_agg_continent,Estimate - Continent,dummy,12,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+n_obs,Number of Observations,int,13,stop,TRUE,TRUE,NA,median,TRUE,FALSE,TRUE,NA
+regressands,Number of Regressands,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+reg_df,Degrees of Freedom,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+study_size,Study Size,int,14,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+years_of_schooling,Years of Schooling,float,15,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,NA
+years_of_experience,Years of Experience,float,16,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,NA
+schooling_years,Education - Years of Schooling,dummy,17,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+schooling_levels,Education - Levels of Schooling,dummy,17,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+wage_log_hourly,Wage - Log Hourly,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+wage_log_daily,Wage - Log Daily,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+wage_log_monthly,Wage - Log Monthly,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+wage_mean_annual_earnings,Wage - Mean Annual Earnings,dummy,18,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+data_type_micro,Data Source - Micro,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+data_type_survey,Data Source - Survey,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+data_type_national_register,Data Source - National Register,dummy,19,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+data_cross_section,Data Type - Cross Section,dummy,20,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+data_panel,Data Type - Panel,dummy,20,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+data_avgyear,Data Year - Average,int,21,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+no_ed,Attained Education - None,perc,22,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+prim_ed,Attained Education - Primary,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,NA
+sec_ed,Attained Education - Secondary,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,NA
+higher_ed,Attained Education - Higher,perc,22,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,NA
+wage_earners,Employees - Wage Earners,perc,24,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,NA
+self_employed,Employees - Self-Employed,perc,24,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+gender_male,Gender - Male,perc,25,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,NA
+gender_female,Gender - Female,perc,25,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+private_sector,Sector - Private,perc,26,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,NA
+public_sector,Sector - Public,perc,26,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+ethnicity_caucasian,Ethnicity - Caucasian,perc,27,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,NA
+ethnicity_other,Ethnicity - Other,perc,27,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+sector_rural,Sector - Rural,perc,28,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,NA
+sector_urban,Sector - Urban,perc,28,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+country,Country,category,29,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+region_advanced_economies,Region - Advanced Economies,dummy,30,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+region_east_asia_and_pacific,Region - East Asia and Pacific,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+region_europe_and_central_asia,Region - Europe and Central Asia,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+region_middle_east_and_north_africa,Region - Middle East and North Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+region_south_asia,Region - South Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+region_sub_saharan_africa,Region - Sub Saharan Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+income_high,Income - High,dummy,31,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+income_middle,Income - Middle,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+med_exp,Median Expenditure,float,32,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+min_wage,Minimum Wage,float,33,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+mean_age,Mean Wage,float,34,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+method_ols,Method - OLS,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_hurdle,Method - Hurdle,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_cohort,Method - Cohort,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_fe,Method - Fixed Effects,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_2sls,Method - 2SLS,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_heckman,Method - Heckman,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_probit,Method - Probit,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_IV,Method - IV,dummy,35,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+ability_direct,Ability - Direct,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+ability_proxy,Ability - Proxied,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+ability_uncontrolled,Ability - Uncontrolled,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+ability_unmentioned,Ability - Unmentioned,dummy,36,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_parents_ed,Instrument - Parents Education,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_distance_to_school,Instrument - Distance to School,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_spouse_ed,Instrument - Spouse Education,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_marital_status,Instrument - Marital Status,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_nsiblings,Instrument - Number of Siblings,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_other,Instument - Other,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+age_control,Control - Age,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+age_sq_control,Control - Age Squared,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+exp_control,Control - Experience,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+exp_sq_control,Control - Experience Squared,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+ethnicity_control,Control - Ethnicity,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+health_control,Control - Health,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+gender_control,Control - Gender,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+occupation_control,Control - Occupation,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+firm_char_control,Control - Firm Characteristics,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+area_control,Control - Area,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+macro_var_control,Control - Macro Variables,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 impact_factor,Impact Factor,float,39,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
-citations,Citations,int,40,stop,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,NA
+citations,Citations,int,40,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
 published,Study - Published,dummy,41,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 unpublished,Study - Unpublished,dummy,41,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-pub_year,Publication Year,int,42,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,NA
-effect_w,Transformed Effect - Winsorized,float,43,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,NA,NA
-se_w,Standard Error - Winsorized,float,44,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,NA,NA
-se_precision_w,Precision - Winsorized,float,45,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
-t_w,T-Statistic - Winsorized,float,46,allow,FALSE,TRUE,NA,median,FALSE,FALSE,NA,NA
-significant_w,T-Statistic Is Significant - Winsorized,float,47,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,NA,NA
+pub_year,Publication Year,int,42,stop,TRUE,TRUE,NA,median,FALSE,FALSE,TRUE,NA
+effect_w,Transformed Effect - Winsorized,float,43,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,NA
+se_w,Standard Error - Winsorized,float,44,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,NA
+se_precision_w,Precision - Winsorized,float,45,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+t_w,T-Statistic - Winsorized,float,46,allow,FALSE,TRUE,NA,median,FALSE,FALSE,FALSE,NA
+significant_w,T-Statistic Is Significant - Winsorized,float,47,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA

@@ -2070,8 +2070,16 @@ getBMAData <- function(input_data, input_var_list, variable_info, from_vector = 
   }
   bma_data <- input_data[desired_vars] # Only desired variables
   bma_data <- as.data.frame(bma_data) # To a data.frame object, because RRRR
-  # Convert all specified columns to logs
-  # TO-DO
+  
+  # Convert all specified columns to logs - sub-optimal approach
+  for (column in colnames(bma_data)){
+    row_idx <- match(column, input_var_list$var_name)
+    to_log <- as.logical(input_var_list[row_idx, "to_log_for_bma"])
+    if (to_log){
+      bma_data[,column] <- log(bma_data[,column])
+      bma_data[is.infinite(bma_data[,column]),column] <- 0 # Replace infinite values with 0
+    }
+  }
   return(bma_data)
 }
 
