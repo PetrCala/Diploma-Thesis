@@ -17,7 +17,7 @@ est_agg_subregion,Estimate - Sub-region,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,F
 est_agg_region,Estimate - Region,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 est_agg_country,Estimate - Country,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 est_agg_continent,Estimate - Continent,dummy,12,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-n_obs,Number of Observations,int,13,stop,TRUE,TRUE,NA,median,TRUE,FALSE,TRUE,NA
+n_obs,Number of Observations,int,13,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,NA
 regressands,Number of Regressands,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
 reg_df,Degrees of Freedom,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
 study_size,Study Size,int,14,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
