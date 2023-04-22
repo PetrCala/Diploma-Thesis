@@ -1,0 +1,23 @@
+on:
+  push:
+    branches: [ main ]
+    
+jobs:
+  update_dist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Copy R files to Dist folder
+        run: |
+          rsync -a --exclude='.git' R/ Dist/
+          cp README.md Dist/
+          
+      - name: Commit changes to Dist folder
+        uses: EndBug/git-push@v2.5.0
+        with:
+          branch: main
+          directory: Dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          force: true
