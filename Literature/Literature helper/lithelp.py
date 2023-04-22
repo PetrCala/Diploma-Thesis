@@ -2,7 +2,8 @@
 # such as the author, year of publication, etc.
 
 #### HOW TO: ####
-# 1. Place the list of study citations in the empty text file 'Source.txt'.
+# 1. Place the list of study citations in the empty text file 'citations_source.txt'. Place the list of
+#   titles in the file "titles_source".
 # 2. Run the script
 # 3. A new file will be created, 'output.csv', where the information will be stored
 
@@ -12,7 +13,7 @@ import pandas as pd
 
 
 SOURCE_NAME = 'source'
-CITATION_LEN = 574 # Manually input the number of citations  you want to handle - check for validity of the file
+CITATION_LEN = 55 # Manually input the number of citations  you want to handle - check for validity of the file
 
 R_NAME = r'([\p{L}]+(?:\s[\p{L}]\.)?)' # Matches Newman L., or Newman, with any special characters included
 
