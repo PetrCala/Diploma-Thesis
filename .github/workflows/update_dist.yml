@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main]
+    branches: [master]
 
 jobs:
   update_dist:
@@ -31,7 +31,7 @@ jobs:
       - name: Commit changes to Dist folder
         uses: EndBug/git-push@v2.5.0
         with:
-          branch: main
+          branch: master
           directory: Dist
           github_token: ${{ secrets.GITHUB_TOKEN }}
           force: true
