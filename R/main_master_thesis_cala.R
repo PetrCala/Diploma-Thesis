@@ -109,7 +109,7 @@ run_this <- c(
   "t_stat_histogram" = F,
   "linear_tests" = F,
   "nonlinear_tests" = F,
-  "exo_tests" = F,
+  "exo_tests" = T,
   "p_hacking_tests" = F,
   "bma" = F,
   "fma" = F, # Should be ran together with BMA

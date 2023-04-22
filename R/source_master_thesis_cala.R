@@ -1529,20 +1529,20 @@ getPUniResults <- function(data, method="ML",...){
     method %in% c("ML", "P") # Max likelihood, Moments
   )
   # Calculate medians for all studies
-  med_effect_w <- getMedians(data, 'effect_w') # Effect vector of medians
-  med_se_w <- getMedians(data, 'se_w') # SE vector of medians
+  med_t <- getMedians(data, 't_w') # T-stat vector of medians
+  med_nobs <- getMedians(data, 'n_obs') # N-obs vector of medians
   #Estimation
   if (method == "ML"){
     #Maximum likelihood
     quiet(
-      est_main <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "ML", alpha = 0.05,
-                             control=list( max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
+      est_main <- puni_star(tobs = med_t, ni = med_nobs, side = "right", method = "ML", alpha = 0.05,
+                             control=list(stval.tau=0.5, max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
     )
   } else if (method == "P"){
     # Moments method estimation
     quiet(
-      est_main <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "P",
-                          alpha = 0.05,control=list(max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
+      est_main <- puni_star(tobs = med_t, ni = med_nobs, side = "right", method = "P",
+                          alpha = 0.05,control=list(stval.tau = 0.5, max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
     )
   } else {
     stop("Broken validity checks") # Should not happen
