@@ -1,19 +1,33 @@
 on:
   push:
-    branches: [ main ]
-    
+    branches: [main]
+
 jobs:
   update_dist:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Copy R files to Dist folder
+      - name: Get list of R files
         run: |
-          rsync -a --exclude='.git' R/ Dist/
+          cd R
+          R_FILES=$(ls -1 *)
+
+      - name: Copy updated R files to Dist folder
+        run: |
+          cd Dist
+          for f in ${{ steps.get_r_files.outputs.r_files }}; do
+            if test -f "$f"; then
+              cp ../R/$f .
+            fi
+          done
+
+      - name: Copy README.md to Dist folder
+        run: |
           cp README.md Dist/
-          
+
       - name: Commit changes to Dist folder
         uses: EndBug/git-push@v2.5.0
         with:
