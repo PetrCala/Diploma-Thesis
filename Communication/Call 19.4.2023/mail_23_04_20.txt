@@ -1,0 +1,19 @@
+Petře,
+
+pár poznámek ke včerejší diskuzi
+funnel: mrknout na ty outliers, jestli jsou OK
+economic freedom index / freedom to education index 
+academic freedom, equality of education, basic freedoms: https://www.v-dem.net/data/the-v-dem-dataset/country-year-v-dem-fullothers-v13/ (v příloze)
+nebo economic/personal freedom od CATO (v příloze)  https://www.cato.org/human-freedom-index, Heritage Foundation's Index of Economic Freedom: https://www.heritage.org/index/, Fraser Institute's Economic Freedom of the World: https://www.fraserinstitute.org/economic-freedom, World Bank's Doing Business report: https://www.doingbusiness.org/
+Elliot parametry
+počet binů není úplně lineární, pro 600 pozorování je 15 OK, pro menší sample 40 pozorování 4 biny => tohle je největší kritika metody, neměla by být vázána na arbitrární volby jakou je tahle takže pro transparenci ideálně udělat výpočet pro třreba 50 binů (pokud to lze vypočítat), 30, 15, 10.
+p_max=0.15 (pro malé samples 0.2, pro větší 0.1, v 0.15 se defaultně nic neskazí)
+Bom & Rachinger: přepsání kódu do R bude jedním z Tvých contributions
+Mrkni na to, co se děje v samplu 2SLS. Je v IV silnější bias než v jiných pozorováních? Zajímalo by mně, jestli je nějaký subsample, kde publication bias není (top journals? tj AER, Econometrica, JEL, JPE, QJE)
+PDFs s meta-analýzami přikládám do příloh.
+pošleš mi tu Tvoji query pro Google Scholar? Něco mně tam překvapilo, mezičasem jsem zapomněla, co to bylo :) 
+
+Nenech se tím nějak rozhodit, možná jsem čekala, že bude těch pozorování trochu víc na private returns, ale nejspíše to tak skutečně není. Mohla bych Tě poprosit o nasdílení datasetu a pdfs, jestli tam máme všechny ty "must have" studies Card, Angrist, Acemoglu, Heckman, Duflo... a tak dále, zejména ty z top5 in economics a top field labor economics?
+
+Díky,
+z 
