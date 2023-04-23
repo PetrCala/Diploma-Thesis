@@ -102,15 +102,15 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
   "box_plot" = F,
   "funnel_plot" = F,
   "t_stat_histogram" = F,
   "linear_tests" = F,
   "nonlinear_tests" = F,
-  "exo_tests" = T,
-  "p_hacking_tests" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = T,
   "bma" = F,
   "fma" = F, # Should be ran together with BMA
   "best_practice_estimate" = F
@@ -147,9 +147,9 @@ adjustable_parameters <- c(
   # Eliott test parameters
   "eliott_data_subsets" = c("All data"), # Data subsets to run the tests on
   "eliott_p_min" = 0,
-  "eliott_p_max" = 0.05,
-  "eliott_d_point" = 0.03,
-  "eliott_cs_bins" = 10,
+  "eliott_p_max" = 0.1,
+  "eliott_d_point" = 0.1,
+  "eliott_cs_bins" = 15,
   "eliott_verbose" = T,
   # Bayesian Model Averaging parameters
   "automatic_bma" = T, # If TRUE, automatically generate a formula for BMA with all VIF < 10
@@ -389,7 +389,6 @@ if (run_this["exo_tests"]){
     iv_results <- getIVResults(data,
             effect_present = T, pub_bias_present = T, verbose_coefs = T)
     
-    ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
     p_uni_results <- getPUniResults(data, method = "ML",
             effect_present=T, pub_bias_present=T, verbose_coefs=T)
     

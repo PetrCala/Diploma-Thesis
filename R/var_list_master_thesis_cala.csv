@@ -78,7 +78,6 @@ instr_parents_ed,Instrument - Parents Education,int,37,stop,TRUE,TRUE,1,NA,FALSE
 instr_distance_to_school,Instrument - Distance to School,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
 instr_spouse_ed,Instrument - Spouse Education,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
 instr_marital_status,Instrument - Marital Status,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-instr_nsiblings,Instrument - Number of Siblings,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
 instr_other,Instument - Other,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
 age_control,Control - Age,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 age_sq_control,Control - Age Squared,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
