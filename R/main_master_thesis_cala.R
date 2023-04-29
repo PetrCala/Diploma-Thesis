@@ -102,18 +102,18 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
   "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
-  "exo_tests" = T,
-  "p_hacking_tests" = T,
-  "bma" = T,
-  "fma" = T, # Should be ran together with BMA
-  "best_practice_estimate" = T
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = F,
+  "bma" = F,
+  "fma" = F, # Should be ran together with BMA
+  "best_practice_estimate" = F
 )
 
 #' ADJUSTABLE PARAMETERS
@@ -135,8 +135,8 @@ adjustable_parameters <- c(
   # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
   "box_plot_verbose" = T, # Get information about the plots being printed
   # Funnel plot parameters
-  "funnel_plot_effect_cutoff" = 0.8, # Effect axis cutoff point
-  "funnel_plot_precision_cutoff" = 0.2, # Precision axis cutoff point
+  "funnel_plot_effect_proximity" = 0.2, # Effect axis cutoff point (perc) on either side of mean
+  "funnel_plot_maximum_precision" = 0.2, # Precision axis maximum value cutoff point (perc)
   "funnel_plot_verbose" = T, # If T, print cut outlier information
   # T-statistic histogram parameters
   "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
@@ -324,12 +324,12 @@ if (run_this["box_plot"]){
 
 if (run_this["funnel_plot"]){
   # Adjustable parameters
-  custom_effect_cutoff <- as.numeric(adjustable_parameters["funnel_plot_effect_cutoff"])
-  custom_precision_cutoff <- as.numeric(adjustable_parameters["funnel_plot_precision_cutoff"])
-  custom_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
+  funnel_effect_proximity <- as.numeric(adjustable_parameters["funnel_plot_effect_proximity"])
+  funnel_maximum_precision <- as.numeric(adjustable_parameters["funnel_plot_maximum_precision"])
+  funnel_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
   
   # Plot the funnel plot
-  getFunnelPlot(data, custom_effect_cutoff, custom_precision_cutoff, custom_verbose)
+  getFunnelPlot(data, funnel_effect_proximity, funnel_maximum_precision, funnel_verbose)
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######

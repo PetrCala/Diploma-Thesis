@@ -810,33 +810,61 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name
 
 #' Identify outliers in the data, return the filter which can be used
 #'  to get the data without these outliers.
+#'  
+#' How it works:
+#'  In order for an observation to be identified as an outlier, both specifications
+#'  must be FALSE. These specifications are:
+#'  -'effect_proximity' - specifies, how far from the mean the observations are allow
+#'    to appear for them to still not be considered outliers. As an example, for
+#'    effect_proximity = 0.2, all observations that are 20% of observations away on
+#'    either side will be marked as outliers by this specification.
+#'  - 'maximum_precision' - specifies the maximum precision where the observations can
+#'    appear for them not to be marked as outliers. Anything above things point will
+#'    be considered an outlier by this specification.
+#'  Keep in mind that both these specifications must be violated in order for the point
+#'    to be marked as outlier.
 #' 
 #' @param input_data Data to check
-#' @param effect_cutoff Outlier cutoff point for the effect
-#' @param precision_cutoff Outlier cutoff point for the SE precision
+#' @param effect_proximity A float indicating how many percentage points (this value times 100)
+#'  away from the mean on either side can an observation appear.
+#' @param maximum_precision A flot indicating the maximum precision of the sample in
+#'  percentage (this value times 100) can the observations observe not to be considered outliers.
 #' @param verbose If true, print out information about the outliers
 #' @return [list] Filter for the data without outliers
-getOutliers <- function(input_data, effect_cutoff = 0.2, precision_cutoff = 0.2, verbose=T) {
+getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 0.2, verbose=T) {
   # Check column validity
   expected_cols <- c('effect_w', 'se_precision_w')
-  stopifnot(all(expected_cols %in% colnames(input_data)))
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(effect_proximity),
+    is.numeric(maximum_precision),
+    is.logical(verbose),
+    all(expected_cols %in% colnames(input_data)),
+    effect_proximity <= 1,
+    effect_proximity >= 0,
+    maximum_precision <= 1,
+    maximum_precision >= 0
+  )
   
   # Get source values
   obs <- input_data$obs_n
   effect <- input_data$effect_w
-  precision <- input_data$se_precision_w
+  precision <- 1 / input_data$se_w
   
-  # Maximum values
+  # Maximum values and effect mean value
   max_effect <- max(effect)
   max_precision <- max(precision)
+  effect_mean <- mean(effect)
   
-  # Percentage of the maximum value - [0.2, 0.8, 0.7, ...]
-  effect_perc <- effect/max_effect
-  precision_perc <- precision/max_precision
+  # Calculate the cutoff bounds for both effect and precision as percentages of max value
+  effect_cutoff <- max_effect * effect_proximity
+  precision_cutoff <- max_precision * maximum_precision
   
   # Create filters
-  effect_filter <- effect_perc >= effect_cutoff
-  precision_filter <- precision_perc >= precision_cutoff
+  effect_filter_lbound <- effect < effect_mean - effect_cutoff # Below lower bound
+  effect_filter_ubound <- effect > effect_mean + effect_cutoff # Above upper bounds
+  effect_filter <- effect_filter_lbound | effect_filter_ubound # Out of the proximity bound
+  precision_filter <- precision >= precision_cutoff
   outlier_filter <- effect_filter & precision_filter
     
   # Filter suspicious observations
@@ -869,26 +897,40 @@ getOutliers <- function(input_data, effect_cutoff = 0.2, precision_cutoff = 0.2,
 #' Input the main data frame, several specifications, and create a funnel plot
 #' 
 #' @param input_data [data.frame] Main data frame. Must contain cols 'effect_w', 'se_precision_w'
-#' @param effect_cutoff [float] Cutoff point for the effect.
-#' @param precision_cutoff [float] Cutoff point for precision.
+#' @param effect_proximity [float] Cutoff point for the effect. See getOutliers() for more.
+#' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
-getFunnelPlot <- function(input_data, effect_cutoff=0.2, precision_cutoff=0.2, verbose = T){
+getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2, verbose = T){
   # Check column validity
   expected_cols <- c('effect_w', 'se_precision_w')
   stopifnot(all(expected_cols %in% colnames(input_data)))
   
   # Filter out the outliers
-  filter_effect_w <- getOutliers(input_data, effect_cutoff=effect_cutoff, precision_cutoff=precision_cutoff, verbose=verbose)
+  filter_effect_w <- getOutliers(input_data, effect_proximity=effect_proximity, maximum_precision=maximum_precision, verbose=verbose)
   
   # Single out the data for the funnel plot
   funnel_data <- data[filter_effect_w, c('effect_w', 'se_precision_w')] # Only Effect, Precision
   funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
   
   # Plot the plot
-  funnel_win <- ggplot(data = funnel_data, aes(x = effect_w, y = se_precision_w)) + 
-    geom_point(color = "#0d4ed1") + 
-    labs(title = NULL, x = "Estimate of the effect", y = "Precision of the effect (1/SE)") +
-    main_theme()
+  funnel_x_lbound <- min(funnel_data$effect_w)
+  funnel_x_ubound <- max(funnel_data$effect_w)
+  quiet(
+    funnel_win <- ggplot(data = funnel_data, aes(x = effect_w, y = se_precision_w)) + 
+      geom_point(color = "#0d4ed1") + 
+      geom_vline(aes(xintercept = mean(effect_w)), color = "red", linewidth = 0.5) + 
+      labs(title = NULL, x = "Estimate of the effect", y = "Precision of the effect (1/SE)") +
+      scale_x_continuous(breaks = c(
+              round(funnel_x_lbound,2),
+              0,
+              round(mean(funnel_data$effect_w),2),
+              10, 20,
+              round(funnel_x_ubound, 2)
+              )) +
+      main_theme(
+          x_axis_tick_text = c("black", "black", "red","black", "black", "black")
+      )
+  )
     
   suppressWarnings(print(funnel_win)) # Print out the funnel plot
 }
