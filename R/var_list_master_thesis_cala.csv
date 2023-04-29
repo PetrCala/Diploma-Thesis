@@ -53,14 +53,15 @@ country,Country,category,29,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
 region_advanced_economies,Region - Advanced Economies,dummy,30,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
 region_east_asia_and_pacific,Region - East Asia and Pacific,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 region_europe_and_central_asia,Region - Europe and Central Asia,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+region_latin_america_and_caribbean,Region - Latin America and Caribbean,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 region_middle_east_and_north_africa,Region - Middle East and North Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 region_south_asia,Region - South Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 region_sub_saharan_africa,Region - Sub Saharan Africa,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 income_high,Income - High,dummy,31,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
 income_middle,Income - Middle,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-med_exp,Median Expenditure,float,32,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
-min_wage,Minimum Wage,float,33,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+med_exp,Median Expenditure,float,32,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+min_wage,Minimum Wage,float,33,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
 mean_age,Mean Wage,float,34,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
 method_ols,Method - OLS,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 method_hurdle,Method - Hurdle,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
