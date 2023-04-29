@@ -1,0 +1,3 @@
+med_exp - Median household expenditure per month in real dollars - source: worldbank.org
+min_wage - Monthly minimum wage in real dollars, 2021 USD PPP - source: https://stats.oecd.org/Index.aspx?DataSetCode=RMW,
+	https://alrei.org/research/data-bases/minimum-wages/<country_name>/minimum-wage-timeline

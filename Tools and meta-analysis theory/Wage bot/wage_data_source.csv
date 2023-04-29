@@ -418,9 +418,9 @@
 1988,Egypt,1617.092241,0
 1998,Egypt,1881.115397,0
 2006,Egypt,2166.296235,0
-1988,Iran,,
-1998,Iran,,
-2006,Iran,,
+1988,Iran,1437.11795,0
+1998,Iran,1756.743198,0
+2006,Iran,2597.654913,0
 1988,Turkey,3251.546871,0
 1998,Turkey,4148.199358,0
 2006,Turkey,4893.103923,0
@@ -746,15 +746,15 @@
 1960,Italy,,0
 1960,Italy,,0
 1960,Italy,,0
-2001,Tanzania,,
-2006,Tanzania,,
-2014,Tanzania,,
-2001,Tanzania,,
-2006,Tanzania,,
-2014,Tanzania,,
-2001,Tanzania,,
-2006,Tanzania,,
-2014,Tanzania,,
+2001,Tanzania,430.3189697,0
+2006,Tanzania,510.4151001,0
+2014,Tanzania,571.46875,0
+2001,Tanzania,430.3189697,0
+2006,Tanzania,510.4151001,0
+2014,Tanzania,571.46875,0
+2001,Tanzania,430.3189697,0
+2006,Tanzania,510.4151001,0
+2014,Tanzania,571.46875,0
 2000,Indonesia,1172.268713,0
 2000,Indonesia,1172.268713,0
 2000,Indonesia,1172.268713,0
@@ -810,18 +810,18 @@
 1958,United Kingdom,,0
 1958,United Kingdom,,0
 1958,United Kingdom,,0
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
+2017,Palestine,3012.544881,0
 2011,Belgium,20406.39715,0
 2011,Belgium,20406.39715,0
 2011,Belgium,20406.39715,0
@@ -1171,12 +1171,12 @@
 1979,United States,19538.60595,0
 1979,United States,19538.60595,0
 1979,United States,19538.60595,0
-1991,Russia,,
-1993,Russia,,
-1994,Russia,,
-1991,Russia,,
-1993,Russia,,
-1994,Russia,,
+1991,Russia,,0
+1993,Russia,,0
+1994,Russia,,0
+1991,Russia,,0
+1993,Russia,,0
+1994,Russia,,0
 2002,France,18137.26081,0
 2002,France,18137.26081,0
 2002,France,18137.26081,0
@@ -1301,26 +1301,26 @@
 1991,United States,24597.83295,0
 1991,United States,24597.83295,0
 1991,United States,24597.83295,0
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
+1984,Czech Republic,,0
+1993,Czech Republic,4843.125128,0
+1984,Czech Republic,,0
+1993,Czech Republic,4843.125128,0
 1984,Slovakia,,0
 1993,Slovakia,4456.213821,0
 1984,Slovakia,,0
 1993,Slovakia,4456.213821,0
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
+1984,Czech Republic,,0
+1993,Czech Republic,4843.125128,0
+1984,Czech Republic,,0
+1993,Czech Republic,4843.125128,0
+1984,Czech Republic,,0
+1993,Czech Republic,4843.125128,0
+1984,Czech Republic,,0
+1993,Czech Republic,4843.125128,0
+1984,Czech Republic,,0
+1993,Czech Republic,4843.125128,0
+1984,Czech Republic,,0
+1993,Czech Republic,4843.125128,0
 1984,Slovakia,,0
 1993,Slovakia,4456.213821,0
 1984,Slovakia,,0
@@ -1454,22 +1454,22 @@
 1994,United States,26357.01059,0
 1994,United States,26357.01059,0
 1994,United States,26357.01059,0
-1985,Russia,,
-1990,Russia,,
-1996,Russia,,
-1998,Russia,,
-2000,Russia,,
-2002,Russia,,
+1985,Russia,,0
+1990,Russia,,0
+1996,Russia,1836.555176,0
+1998,Russia,1867.986572,0
+2000,Russia,1958.11731,0
+2002,Russia,2337.509277,0
 1986,Ukraine,,0
 1991,Ukraine,971.6345215,0
 1997,Ukraine,543.8438721,0
 1998,Ukraine,557.9178467,0
 2000,Ukraine,570.5427246,0
 2002,Ukraine,679.8040161,0
-1996,Russia,,
-1998,Russia,,
-2000,Russia,,
-2002,Russia,,
+1996,Russia,1836.555176,0
+1998,Russia,1867.986572,0
+2000,Russia,1958.11731,0
+2002,Russia,2337.509277,0
 1997,Ukraine,543.8438721,0
 1998,Ukraine,557.9178467,0
 2000,Ukraine,570.5427246,0
