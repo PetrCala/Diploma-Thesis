@@ -418,9 +418,9 @@ data_avgyear,country,med_exp,min_wage
 1988,Egypt,1617.09224084016,0.0
 1998,Egypt,1881.11539674552,0.0
 2006,Egypt,2166.29623477043,0.0
-1988,Iran,,
-1998,Iran,,
-2006,Iran,,
+1988,Iran,1437.11795048392,0.0
+1998,Iran,1756.74319789301,0.0
+2006,Iran,2597.65491252057,0.0
 1988,Turkey,3251.54687064388,0.0
 1998,Turkey,4148.19935843338,0.0
 2006,Turkey,4893.10392305177,0.0
@@ -746,15 +746,15 @@ data_avgyear,country,med_exp,min_wage
 1960,Italy,,0.0
 1960,Italy,,0.0
 1960,Italy,,0.0
-2001,Tanzania,,
-2006,Tanzania,,
-2014,Tanzania,,
-2001,Tanzania,,
-2006,Tanzania,,
-2014,Tanzania,,
-2001,Tanzania,,
-2006,Tanzania,,
-2014,Tanzania,,
+2001,Tanzania,430.318969726563,0.0
+2006,Tanzania,510.415100097656,0.0
+2014,Tanzania,571.46875,0.0
+2001,Tanzania,430.318969726563,0.0
+2006,Tanzania,510.415100097656,0.0
+2014,Tanzania,571.46875,0.0
+2001,Tanzania,430.318969726563,0.0
+2006,Tanzania,510.415100097656,0.0
+2014,Tanzania,571.46875,0.0
 2000,Indonesia,1172.26871302282,0.0
 2000,Indonesia,1172.26871302282,0.0
 2000,Indonesia,1172.26871302282,0.0
@@ -810,18 +810,18 @@ data_avgyear,country,med_exp,min_wage
 1958,United Kingdom,,0.0
 1958,United Kingdom,,0.0
 1958,United Kingdom,,0.0
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
-2017,Palestine,,
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
+2017,Palestine,3012.54488131355,0.0
 2011,Belgium,20406.3971454384,0.0
 2011,Belgium,20406.3971454384,0.0
 2011,Belgium,20406.3971454384,0.0
@@ -1171,12 +1171,12 @@ data_avgyear,country,med_exp,min_wage
 1979,United States,19538.6059541001,0.0
 1979,United States,19538.6059541001,0.0
 1979,United States,19538.6059541001,0.0
-1991,Russia,,
-1993,Russia,,
-1994,Russia,,
-1991,Russia,,
-1993,Russia,,
-1994,Russia,,
+1991,Russia,,0.0
+1993,Russia,,0.0
+1994,Russia,,0.0
+1991,Russia,,0.0
+1993,Russia,,0.0
+1994,Russia,,0.0
 2002,France,18137.2608139176,0.0
 2002,France,18137.2608139176,0.0
 2002,France,18137.2608139176,0.0
@@ -1301,26 +1301,26 @@ data_avgyear,country,med_exp,min_wage
 1991,United States,24597.8329518818,0.0
 1991,United States,24597.8329518818,0.0
 1991,United States,24597.8329518818,0.0
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
+1984,Czech Republic,,0.0
+1993,Czech Republic,4843.12512849439,0.0
+1984,Czech Republic,,0.0
+1993,Czech Republic,4843.12512849439,0.0
 1984,Slovakia,,0.0
 1993,Slovakia,4456.2138212278,0.0
 1984,Slovakia,,0.0
 1993,Slovakia,4456.2138212278,0.0
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
-1984,Czech Republic,,
-1993,Czech Republic,,
+1984,Czech Republic,,0.0
+1993,Czech Republic,4843.12512849439,0.0
+1984,Czech Republic,,0.0
+1993,Czech Republic,4843.12512849439,0.0
+1984,Czech Republic,,0.0
+1993,Czech Republic,4843.12512849439,0.0
+1984,Czech Republic,,0.0
+1993,Czech Republic,4843.12512849439,0.0
+1984,Czech Republic,,0.0
+1993,Czech Republic,4843.12512849439,0.0
+1984,Czech Republic,,0.0
+1993,Czech Republic,4843.12512849439,0.0
 1984,Slovakia,,0.0
 1993,Slovakia,4456.2138212278,0.0
 1984,Slovakia,,0.0
@@ -1454,22 +1454,22 @@ data_avgyear,country,med_exp,min_wage
 1994,United States,26357.0105918837,0.0
 1994,United States,26357.0105918837,0.0
 1994,United States,26357.0105918837,0.0
-1985,Russia,,
-1990,Russia,,
-1996,Russia,,
-1998,Russia,,
-2000,Russia,,
-2002,Russia,,
+1985,Russia,,0.0
+1990,Russia,,0.0
+1996,Russia,1836.55517578125,0.0
+1998,Russia,1867.98657226563,0.0
+2000,Russia,1958.11730957031,0.0
+2002,Russia,2337.50927734375,0.0
 1986,Ukraine,,0.0
 1991,Ukraine,971.634521484375,0.0
 1997,Ukraine,543.843872070313,0.0
 1998,Ukraine,557.917846679688,0.0
 2000,Ukraine,570.542724609375,0.0
 2002,Ukraine,679.804016113281,0.0
-1996,Russia,,
-1998,Russia,,
-2000,Russia,,
-2002,Russia,,
+1996,Russia,1836.55517578125,0.0
+1998,Russia,1867.98657226563,0.0
+2000,Russia,1958.11730957031,0.0
+2002,Russia,2337.50927734375,0.0
 1997,Ukraine,543.843872070313,0.0
 1998,Ukraine,557.917846679688,0.0
 2000,Ukraine,570.542724609375,0.0

@@ -1,24 +1,49 @@
 ﻿# A script for fetching minimum wage and household median expenditure
 # from the world bank online
 
+# How to run
+# 1. Into the working directory, add a file called "wage_data_source.csv", where four columns should indicate the year, country name, med household expenditure placeholder, and min wage placeholder. See the existing file for inspiration.
+# 2. Run the script.
+# 3. In the WD, a file called wage_data_output.csv will be created (if all goes well), and inside will be the updated mhe/min_wage data.
+
+# How it works
+# The script calls the worldbank api to obtain the MHE data based on the year and the country name. This is smooth so far. Possibly, it should also be able to call the ILO database to obtain the min wage, but I am not sure whether I will make it work.
+# In case the script fails to obtain the data via the API, None (or 0) will be returned instead of the actual value.
+
 import time
 
 import pandas as pd
 import requests
 import pycountry
 
+
+API_KEY = 'e7e85108d710932be3ec29a39fb6dd1b' 
+COUNTRY_ISOS = {
+    "Iran": "Iran, Islamic Republic of",
+    "Tanzania": "Tanzania, United Republic of",
+    "Palestine": "Palestine, State of",
+    "Russia": "Russian Federation",
+    "Czech Republic": "Czechia",
+}
+
 def main():
+    if API_KEY is None:
+        raise ValueError("Please provide the ILO database API key first.")
     input_file = "wage_data_source.csv"
     output_file = "wage_data_output.csv"
 
     data_frame = pd.read_csv(input_file)
     updated_data_frame = update_data_frame(data_frame)
     updated_data_frame.to_csv(output_file, index=False)
-    print("Output csv created in the working directory")
 
+    print("Output csv created in the working directory")
     return None
 
 def country_name_to_iso(country_name):
+    # Replace with pycountry recognized name if not already
+    if country_name in COUNTRY_ISOS.keys():
+        country_name = COUNTRY_ISOS.get(country_name)
+    # Get ISO
     try:
         country = pycountry.countries.get(name=country_name)
         return country.alpha_2
@@ -100,9 +125,4 @@ def update_data_frame(data_frame):
     return data_frame
 
 if __name__ == "__main__":
-    input_file = "wage_data_source.csv"
-    output_file = "wage_data_output.csv"
-
-    data_frame = pd.read_csv(input_file)
-    updated_data_frame = update_data_frame(data_frame)
-    updated_data_frame.to_csv(output_file, index=False)
+    main()
