@@ -102,18 +102,18 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = F,
-  "box_plot" = F,
+  "variable_summary_stats" = T,
+  "effect_summary_stats" = T,
+  "box_plot" = T,
   "funnel_plot" = T,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
-  "exo_tests" = F,
-  "p_hacking_tests" = F,
-  "bma" = F,
-  "fma" = F, # Should be ran together with BMA
-  "best_practice_estimate" = F
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
+  "nonlinear_tests" = T,
+  "exo_tests" = T,
+  "p_hacking_tests" = T,
+  "bma" = T,
+  "fma" = T, # Should be ran together with BMA
+  "best_practice_estimate" = T
 )
 
 #' ADJUSTABLE PARAMETERS
@@ -126,7 +126,7 @@ adjustable_parameters <- c(
   # Data winsorization level
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
   # Handle missing data
-  "allowed_missing_ratio" = 0.6, # Allow ratio*100(%) missing observations for each variable
+  "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
   # Effect summary statistics confidence level
   "effect_summary_stats_conf_level" = 0.95, # Between 0 and 1 (excluding)
   # Box plot parameters
