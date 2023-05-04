@@ -136,8 +136,8 @@ adjustable_parameters <- c(
   # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
   "box_plot_verbose" = T, # Get information about the plots being printed
   # Funnel plot parameters
-  "funnel_plot_effect_proximity" = 0.05, # Effect axis cutoff point (perc) on either side of mean
-  "funnel_plot_maximum_precision" = 0.2, # Precision axis maximum value cutoff point (perc)
+  "funnel_plot_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
+  "funnel_plot_maximum_precision" = 1, # Precision axis maximum value cutoff point (perc)
   "funnel_plot_verbose" = T, # If T, print cut outlier information
   # T-statistic histogram parameters
   "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
@@ -323,7 +323,6 @@ if (run_this["box_plot"]){
 }
 
 ###### FUNNEL PLOT ######
-
 if (run_this["funnel_plot"]){
   # Adjustable parameters
   funnel_effect_proximity <- as.numeric(adjustable_parameters["funnel_plot_effect_proximity"])
