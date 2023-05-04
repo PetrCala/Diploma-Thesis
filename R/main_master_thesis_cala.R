@@ -330,7 +330,9 @@ if (run_this["funnel_plot"]){
   funnel_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
   
   # Plot the funnel plot
-  getFunnelPlot(data, funnel_effect_proximity, funnel_maximum_precision, funnel_verbose)
+  getFunnelPlot(data, funnel_effect_proximity, funnel_maximum_precision, use_study_medians = F, funnel_verbose)
+  getFunnelPlot(data, funnel_effect_proximity, funnel_maximum_precision, use_study_medians = T, funnel_verbose)
+  
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
@@ -471,4 +473,3 @@ if (run_this["fma"]){
   # Actual estimation
   fma_coefs <- runFMA(bma_data, bma_model, verbose = T)
 }
-

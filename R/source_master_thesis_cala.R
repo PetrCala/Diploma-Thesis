@@ -420,7 +420,7 @@ winsorizeData <- function(input_data, win_level, precision_type = "DoF"){
 #' @param ignore_missing [bool] If TRUE, allow missing values in the data frame. Deafults to FALSE.
 validateData <- function(input_data, input_var_list, ignore_missing = F){
   # Columns that the data frame must contain
-  expected_columns <- c("study_name", "effect", "se", "t_stat", "n_obs", "study_size", "reg_df")
+  expected_columns <- c("study_name", "study_id", "effect", "se", "t_stat", "n_obs", "study_size", "reg_df")
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
@@ -908,6 +908,49 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
   
 }
 
+#' Generate ticks for a funnel plot
+#'
+#' This function takes a vector of three numbers as input, which represent the lower bound,
+#' upper bound, and mean value. It generates a sorted vector of tick values between the lower
+#' and upper bounds, where ticks are spaced at intervals of 10, excluding ticks that are closer
+#' than 2 to either bound. The input mean value is also included in the output vector. Additionally,
+#' the function generates a vector of colors ("black" or "red") with the same length as the output
+#' vector, where the "red" color corresponds to the position of the mean value.
+#'
+#' @param input_vec [numeric(3)] A numeric vector of length 3, containing the lower bound, upper bound, and mean value.
+#' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values and the mean value,
+#'         and "x_axis_tick_text", a character vector of the same length as "output_vec", 
+#'         with "red" indicating the position of the mean value and "black" for all other positions.
+generateFunnelTicks <- function(input_vec){
+  lower_bound <- input_vec[1]
+  upper_bound <- input_vec[2]
+  mean_value <- input_vec[3]
+  
+  ticks <- c(lower_bound, upper_bound)
+  current_tick <- ceiling(lower_bound / 10) * 10 # Closest number divisible by 10 higher than lower bound
+  
+  while (current_tick < upper_bound) {
+    if (abs(current_tick - lower_bound) >= 2 && abs(current_tick - upper_bound) >= 2) {
+      ticks <- c(ticks, round(current_tick, 2))
+    }
+    current_tick <- current_tick + 10
+  }
+  
+  # Add the mean value and sort the vector
+  funnel_ticks <- sort(c(ticks, mean_value))
+  
+  # Create the color vector
+  x_axis_tick_text <- rep("black", length(funnel_ticks))
+  mean_index <- which(funnel_ticks == mean_value)
+  x_axis_tick_text[mean_index] <- "red"
+  
+  # Round all ticks to 2 decimal spaces
+  funnel_ticks <- round(funnel_ticks, 2)
+  
+  return(list("funnel_ticks" = funnel_ticks, "x_axis_tick_text" = x_axis_tick_text))
+}
+
+
 #' Input the main data frame, several specifications, and create a funnel plot
 #' 
 #' @Note: In accordance with Stanley (2005), we decide to use the square root of the degrees of freedom
@@ -916,8 +959,11 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
 #' @param input_data [data.frame] Main data frame. Must contain cols 'effect_w', 'se_precision_w'
 #' @param effect_proximity [float] Cutoff point for the effect. See getOutliers() for more.
 #' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
+#' @param use_study_medians [bool] If TRUE, plot medians of studies instead of all observations.
+#'  Defaults to FALSE.
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
-getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2, verbose = T){
+getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
+                          use_study_medians = F, verbose = T){
   # Check input validity
   expected_cols <- c('effect_w', 'se_precision_w')
   stopifnot(
@@ -936,26 +982,38 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
   filter_effect_w <- getOutliers(input_data, effect_proximity=effect_proximity, maximum_precision=maximum_precision, verbose=verbose)
   
   # Create the data frame for the funnel plot
-  funnel_data <- data[filter_effect_w, c('effect_w', 'se_precision_w')] # Only Effect, Precision
+  funnel_data <- data[filter_effect_w, c('study_id', 'effect_w', 'se_precision_w')] # Only Effect, Precision
   funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
   
-  # Plot the plot
+  # Plot study medians instead
+  if (use_study_medians){
+    funnel_data <- funnel_data %>%
+      group_by(study_id) %>% 
+      summarize(median_effect_w = median(effect_w),
+              median_se_precision_w = se_precision_w[which.min(abs(effect_w - median_effect_w))])
+    colnames(funnel_data) <- c("study_id", "effect_w", "se_precision_w")
+  }
+  
+  # Get visual bounds and tick colors
   funnel_x_lbound <- min(funnel_data$effect_w)
   funnel_x_ubound <- max(funnel_data$effect_w)
+  mean_x_tick <- mean(funnel_data$effect_w)
+  # Generate and extract the info
+  base_funnel_ticks <- c(funnel_x_lbound, funnel_x_ubound, mean_x_tick) # c(lbound, ubound, mean)
+  funnel_visual_info <- generateFunnelTicks(base_funnel_ticks)
+  funnel_ticks <- funnel_visual_info$funnel_ticks
+  funnel_tick_text <- funnel_visual_info$x_axis_tick_text
+  
+  # Plot the plot
+  x_title <- ifelse(use_study_medians, "study median values", "all observations")
   quiet(
     funnel_win <- ggplot(data = funnel_data, aes(x = effect_w, y = se_precision_w)) + 
       geom_point(color = "#0d4ed1") + 
       geom_vline(aes(xintercept = mean(effect_w)), color = "red", linewidth = 0.5) + 
-      labs(title = NULL, x = "Estimate of the effect", y = "Precision of the effect (1/SE)") +
-      scale_x_continuous(breaks = c(
-              round(funnel_x_lbound,2),
-              0,
-              round(mean(funnel_data$effect_w),2),
-              10, 20,
-              round(funnel_x_ubound, 2)
-              )) +
+      labs(title = NULL, x = paste("Estimate of the effect -",x_title), y = "Precision of the effect") +
+      scale_x_continuous(breaks = funnel_ticks) +
       main_theme(
-          x_axis_tick_text = c("black", "black", "red","black", "black", "black")
+          x_axis_tick_text = funnel_tick_text
       )
   )
     
