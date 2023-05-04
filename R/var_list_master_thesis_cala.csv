@@ -62,43 +62,44 @@ income_middle,Income - Middle,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
 med_exp,Median Expenditure,float,32,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
 min_wage,Minimum Wage,float,33,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
-mean_age,Mean Wage,float,34,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
-method_ols,Method - OLS,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-method_hurdle,Method - Hurdle,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-method_cohort,Method - Cohort,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-method_fe,Method - Fixed Effects,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-method_2sls,Method - 2SLS,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-method_heckman,Method - Heckman,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-method_probit,Method - Probit,dummy,35,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-method_IV,Method - IV,dummy,35,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-ability_direct,Ability - Direct,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-ability_proxy,Ability - Proxied,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-ability_uncontrolled,Ability - Uncontrolled,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-ability_unmentioned,Ability - Unmentioned,dummy,36,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-instr_parents_ed,Instrument - Parents Education,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-instr_distance_to_school,Instrument - Distance to School,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-instr_spouse_ed,Instrument - Spouse Education,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-instr_marital_status,Instrument - Marital Status,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-instr_other,Instument - Other,int,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-age_control,Control - Age,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-age_sq_control,Control - Age Squared,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-exp_control,Control - Experience,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-exp_sq_control,Control - Experience Squared,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-ethnicity_control,Control - Ethnicity,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-health_control,Control - Health,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-gender_control,Control - Gender,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-marriage_control,Control - Marriage,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-occupation_control,Control - Occupation,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-firm_char_control,Control - Firm Characteristics,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-area_control,Control - Area,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-macro_var_control,Control - Macro Variables,int,38,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-impact_factor,Impact Factor,float,39,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
-citations,Citations,int,40,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
-published,Study - Published,dummy,41,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
-unpublished,Study - Unpublished,dummy,41,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
-pub_year,Publication Year,int,42,stop,TRUE,TRUE,NA,median,FALSE,FALSE,TRUE,NA
-effect_w,Transformed Effect - Winsorized,float,43,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,NA
-se_w,Standard Error - Winsorized,float,44,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,NA
-se_precision_w,Precision - Winsorized,float,45,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
-t_w,T-Statistic - Winsorized,float,46,allow,FALSE,TRUE,NA,median,FALSE,FALSE,FALSE,NA
-significant_w,T-Statistic Is Significant - Winsorized,float,47,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+freedom_index,Academic Freedom Index,float,34,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,NA
+mean_age,Mean Wage,float,35,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+method_ols,Method - OLS,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_hurdle,Method - Hurdle,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_cohort,Method - Cohort,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_fe,Method - Fixed Effects,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_2sls,Method - 2SLS,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_heckman,Method - Heckman,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_probit,Method - Probit,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+method_IV,Method - IV,dummy,36,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+ability_direct,Ability - Direct,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+ability_proxy,Ability - Proxied,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+ability_uncontrolled,Ability - Uncontrolled,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+ability_unmentioned,Ability - Unmentioned,dummy,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_parents_ed,Instrument - Parents Education,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_distance_to_school,Instrument - Distance to School,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_spouse_ed,Instrument - Spouse Education,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_marital_status,Instrument - Marital Status,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+instr_other,Instument - Other,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+age_control,Control - Age,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+age_sq_control,Control - Age Squared,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+exp_control,Control - Experience,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+exp_sq_control,Control - Experience Squared,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+ethnicity_control,Control - Ethnicity,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+health_control,Control - Health,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+gender_control,Control - Gender,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+marriage_control,Control - Marriage,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+occupation_control,Control - Occupation,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+firm_char_control,Control - Firm Characteristics,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+area_control,Control - Area,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+macro_var_control,Control - Macro Variables,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+impact_factor,Impact Factor,float,40,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+citations,Citations,int,41,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,NA
+published,Study - Published,dummy,42,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,NA
+unpublished,Study - Unpublished,dummy,42,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,NA
+pub_year,Publication Year,int,43,stop,TRUE,TRUE,NA,median,FALSE,FALSE,TRUE,NA
+effect_w,Transformed Effect - Winsorized,float,44,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,NA
+se_w,Standard Error - Winsorized,float,45,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,NA
+se_precision_w,Precision - Winsorized,float,46,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
+t_w,T-Statistic - Winsorized,float,47,allow,FALSE,TRUE,NA,median,FALSE,FALSE,FALSE,NA
+significant_w,T-Statistic Is Significant - Winsorized,float,48,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,NA
