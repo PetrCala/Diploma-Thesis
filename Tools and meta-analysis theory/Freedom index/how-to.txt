@@ -1,0 +1,12 @@
+Link here: https://v-dem.net/data/the-v-dem-dataset/
+
+Data downloaded - the V-Dem dataset -> used academic freedom index "v2xca_academ"
+
+Overview:
+economic freedom index / freedom to education index 
+
+academic freedom, equality of education, basic freedoms: https://www.v-dem.net/data/the-v-dem-dataset/country-year-v-dem-fullothers-v13/ (v příloze)
+nebo economic/personal freedom od CATO (v příloze)  https://www.cato.org/human-freedom-index,
+	Heritage Foundation's Index of Economic Freedom: https://www.heritage.org/index/,
+	Fraser Institute's Economic Freedom of the World: https://www.fraserinstitute.org/economic-freedom,
+	World Bank's Doing Business report: https://www.doingbusiness.org/

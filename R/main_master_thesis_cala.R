@@ -105,7 +105,7 @@ run_this <- c(
   "variable_summary_stats" = F,
   "effect_summary_stats" = F,
   "box_plot" = F,
-  "funnel_plot" = F,
+  "funnel_plot" = T,
   "t_stat_histogram" = T,
   "linear_tests" = F,
   "nonlinear_tests" = F,
