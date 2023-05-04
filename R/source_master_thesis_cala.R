@@ -1020,29 +1020,112 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
   suppressWarnings(print(funnel_win)) # Print out the funnel plot
 }
 
+#' Generate ticks for a histogram plot
+#'
+#' This function takes a vector of five numbers as input, which represent the lower bound,
+#' upper bound, mean value, lower t-statictic, and upper t-statistic. It generates a sorted vector of
+#' tick values between the lower and upper bounds, where ticks are spaced at intervals of 50, excluding ticks
+#' that are closer than 2 to either bound or the t-stats. The input mean value, as well as the two t-statistics
+#' are included in the output vector. Additionally, the function generates a vector of
+#' colors ("black", "red", or "darkorange") with the same length as the output vector, where the
+#' "red" color corresponds to the positions of the t-statistics values and "darkorange" corresponds
+#' to the position of the mean value.
+#'
+#' @param input_vec [numeric(3)] A numeric vector of length 5, containing the lower bound, upper bound, mean value, and the t-stats.
+#' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values, the mean value,
+#'         and the t-statistics values, and "x_axis_tick_text", a character vector of the same length as "output_vec",
+#'         with "red" indicating the positions of the t-statistics values, "darkoran
+generateHistTicks <- function(input_vec) {
+  lower_bound <- input_vec[1]
+  upper_bound <- input_vec[2]
+  mean_value <- input_vec[3]
+  t_stat_low <- input_vec[4]
+  t_stat_high <- input_vec[5]
+  
+  # Exclude lower or upper bound if it's closer than 2 to any of the t-statistics values
+  ticks <- c()
+  if (abs(lower_bound - t_stat_low) >= 2 && abs(lower_bound - t_stat_high) >= 2) {
+    ticks <- c(ticks, lower_bound)
+  }
+  if (abs(upper_bound - t_stat_low) >= 2 && abs(upper_bound - t_stat_high) >= 2) {
+    ticks <- c(ticks, upper_bound)
+  }
+  
+  ticks <- c(ticks, t_stat_low, t_stat_high)
+  current_tick <- ceiling(lower_bound / 50) * 50 # Closest number divisible by 50 higher than lower bound
+  
+  while (current_tick < upper_bound) {
+    if (abs(current_tick - lower_bound) >= 2 && 
+        abs(current_tick - upper_bound) >= 2 &&
+        abs(current_tick - t_stat_low) >= 2 &&
+        abs(current_tick - t_stat_high) >= 2
+        ) {
+      ticks <- c(ticks, round(current_tick, 2))
+    }
+    current_tick <- current_tick + 50
+  }
+  
+  # Add the mean value and sort the vector
+  hist_ticks <- sort(c(ticks, mean_value))
+  
+  # Create the color vector
+  x_axis_tick_text <- rep("black", length(hist_ticks))
+  mean_index <- which(hist_ticks == mean_value)
+  t_stat_low_index <- which(hist_ticks == t_stat_low)
+  t_stat_high_index <- which(hist_ticks == t_stat_high)
+  
+  x_axis_tick_text[mean_index] <- "darkorange"
+  x_axis_tick_text[t_stat_low_index] <- "red"
+  x_axis_tick_text[t_stat_high_index] <- "red"
+  
+  # Round the tick values to 2 decimal points
+  hist_ticks <- round(hist_ticks, 2)
+  
+  return(list("hist_ticks" = hist_ticks, "x_axis_tick_text" = x_axis_tick_text))
+}
+
+
 #' Generate a histogram of the T-statistic values for the given input data, with the 
 #'  option to specify lower and upper cutoffs for filtering outliers.
 #' 
 #' @param input_data A data frame containing the T-statistic values to be plotted.
 #' @param lower_cutoff An optional numeric value specifying the lower cutoff for filtering outliers. Default is -150.
 #' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
+#' @param lower_tstat A numeric value specifying which t statistic should be highlighted in the plot
+#' @param higher_tstat Similar to lower_tstat
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
-getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120){
+getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
+                         lower_tstat = -1.96, upper_tstat = 1.96){
   # Specify a cutoff filter
   t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff) #removing the outliers from the graph
+  hist_data <- input_data[t_hist_filter,]
+  
+  # Get lower bound
+  lbound_choices <- c(lower_cutoff, min(hist_data$t_w)) # Either lowest t-stat, or cutoff point
+  hist_lbound <- lbound_choices[which.max(lbound_choices)] # Choose the higher one
+  # Get upper bound
+  ubound_choices <- c(upper_cutoff, max(hist_data$t_w)) # Either highest t-stat, or cutoff point
+  hist_ubound <- ubound_choices[which.min(ubound_choices)] # Choose the lower one
+  # Put all the visual information input together
+  hist_mean <- mean(hist_data$t_w)
+  base_hist_ticks <- c(hist_lbound, hist_ubound, hist_mean, lower_tstat, upper_tstat)
+  # Generate and extract variable visual information
+  hist_visual_info <- generateHistTicks(base_hist_ticks)
+  hist_ticks <- hist_visual_info$hist_ticks
+  hist_ticks_text <- hist_visual_info$x_axis_tick_text
+  
   # Construct the histogram
   quiet(
-    t_hist_plot <- ggplot(data = input_data[t_hist_filter,], aes(x = t_w[t_hist_filter], y = after_stat(density))) +
+    t_hist_plot <- ggplot(data = hist_data, aes(x = t_w, y = after_stat(density))) +
       geom_histogram(color = "black", fill = "#1261ff", bins = "80") +
       geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
-      geom_vline(aes(xintercept = -1.96), color = "red", linewidth = 0.5) +
-      geom_vline(aes(xintercept = 1.96), color = "red", linewidth = 0.5) +
+      geom_vline(aes(xintercept = lower_tstat), color = "red", linewidth = 0.5) +
+      geom_vline(aes(xintercept = upper_tstat), color = "red", linewidth = 0.5) +
       labs(x = "T-statistic", y = "Density") +
-      scale_x_continuous(breaks = c(-1.96, 1.96, round(mean(data$t_w),2), 50, 100, 130),
-                         limits = c(-10, 130)) + 
+      scale_x_continuous(breaks = hist_ticks) + 
       main_theme(
-        x_axis_tick_text = c("red", "red", "darkorange", "black", "black", "black"))
+        x_axis_tick_text = hist_ticks_text)
   )
   # Print out the plot
   suppressWarnings(print(t_hist_plot))
