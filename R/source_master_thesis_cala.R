@@ -2122,6 +2122,7 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
   }
 
   removed_groups <- 0
+  removed_groups_verbose <- c()
   while (any(vif_coefs > 10) && max_groups_to_remove > 0) {
     # Get the group with the highest VIF coefficient
     highest_vif_coef <- which.max(vif_coefs)
@@ -2140,13 +2141,17 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
     # Decrease the maximum number of groups to remove
     max_groups_to_remove <- max_groups_to_remove - 1
     removed_groups <- removed_groups + 1
+    removed_groups_verbose <- append(removed_groups_verbose, vars_to_remove)
   }
   # Print out the information about the procedure outcome
   if (max_groups_to_remove == 0) {
     message("Maximum number of groups to remove reached. Returning variables found so far.")
   }
   if (verbose) {
-    print(paste("Removed", removed_groups, "groups with VIF > 10. The suggested BMA formula is:"))
+    print(paste("Removed", removed_groups, "groups with VIF > 10."))
+    print("The removed groups contained these variables:")
+    print(removed_groups_verbose)
+    print("The suggested BMA formula is:")
     print(bma_formula)
   }
   # Return the outcome

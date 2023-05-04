@@ -102,15 +102,15 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
-  "exo_tests" = T,
-  "p_hacking_tests" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = F,
   "bma" = T,
   "fma" = T, # Should be ran together with BMA
   "best_practice_estimate" = T
@@ -160,7 +160,7 @@ adjustable_parameters <- c(
   "bma_mprior" = "random", # Model Prior
   "bma_nmodel" = 20000, # Number of models (def 50000)
   "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-  "bma_print_results" = "all" # Print results - one of c("none", "fast", "verbose", "all")
+  "bma_print_results" = "fast" # Print results - one of c("none", "fast", "verbose", "all")
 )
 
 ######################################################################
