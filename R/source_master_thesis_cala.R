@@ -363,16 +363,24 @@ handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio 
 #' standard error of the effect (se), and t-statistic (t_stat) columns.
 #' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
 #' extreme values to be replaced with the nearest non-extreme value.
+#' @param precision_type [character] Type of precision to use. Can be one of the following:
+#'  1/SE - Inverse of the standard error is used.
+#'  DoF - Square root of the degrees of freedom is used.
+#'  Deafults to "DoF".
 #' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
 #' and t-statistic columns have been Winsorized.
-winsorizeData <- function(input_data, win_level){
+winsorizeData <- function(input_data, win_level, precision_type = "DoF"){
   # Validate input
   stopifnot(
+    is.data.frame(input_data),
+    is.numeric(win_level),
+    is.character(precision_type),
     win_level > 0,
     win_level < 1,
     all(c('effect', 'se') %in% colnames(input_data)),
     !(any(is.na(input_data$effect))), # No missing effect values
-    !(any(is.na(input_data$se))) # No missing SE values
+    !(any(is.na(input_data$se))), # No missing SE values
+    precision_type %in% c("1/SE", "DoF")
     )
   # Get the winsorization interval
   win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
@@ -383,7 +391,13 @@ winsorizeData <- function(input_data, win_level){
   # Statistic preprocessing
   input_data$effect_w <- Winsorize(x = input_data$effect, minval = NULL, maxval = NULL, probs = win_int)
   input_data$se_w <- Winsorize(x = input_data$se, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$se_precision_w <- 1/input_data$se_w
+  if (precision_type == "1/SE"){
+    input_data$se_precision_w <- 1/input_data$se_w
+  } else if (precision_type == "DoF"){
+    input_data$se_precision_w <- sqrt(input_data$reg_df)
+  } else {
+    stop("Invalid type of precision")
+  }
   input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
   input_data$significant_w <- c(rep(0,nrow(input_data)))
   input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
@@ -849,7 +863,7 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
   # Get source values
   obs <- input_data$obs_n
   effect <- input_data$effect_w
-  precision <- 1 / input_data$se_w
+  precision <- input_data$se_precision_w
   
   # Maximum values and effect mean value
   max_effect <- max(effect)
@@ -896,19 +910,32 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
 
 #' Input the main data frame, several specifications, and create a funnel plot
 #' 
+#' @Note: In accordance with Stanley (2005), we decide to use the square root of the degrees of freedom
+#'  isntead of 1/SE as a measure of precision, to account for study size.
+#'  
 #' @param input_data [data.frame] Main data frame. Must contain cols 'effect_w', 'se_precision_w'
 #' @param effect_proximity [float] Cutoff point for the effect. See getOutliers() for more.
 #' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
 getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2, verbose = T){
-  # Check column validity
+  # Check input validity
   expected_cols <- c('effect_w', 'se_precision_w')
-  stopifnot(all(expected_cols %in% colnames(input_data)))
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(effect_proximity),
+    is.numeric(maximum_precision),
+    is.logical(verbose),
+    all(expected_cols %in% colnames(input_data)),
+    effect_proximity <= 1,
+    effect_proximity >= 0,
+    maximum_precision <= 1,
+    maximum_precision >= 0
+  )
   
   # Filter out the outliers
   filter_effect_w <- getOutliers(input_data, effect_proximity=effect_proximity, maximum_precision=maximum_precision, verbose=verbose)
   
-  # Single out the data for the funnel plot
+  # Create the data frame for the funnel plot
   funnel_data <- data[filter_effect_w, c('effect_w', 'se_precision_w')] # Only Effect, Precision
   funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
   

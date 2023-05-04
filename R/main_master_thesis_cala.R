@@ -102,18 +102,18 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
   "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
-  "exo_tests" = T,
-  "p_hacking_tests" = T,
-  "bma" = T,
-  "fma" = T, # Should be ran together with BMA
-  "best_practice_estimate" = T
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = F,
+  "bma" = F,
+  "fma" = F, # Should be ran together with BMA
+  "best_practice_estimate" = F
 )
 
 #' ADJUSTABLE PARAMETERS
@@ -123,8 +123,9 @@ run_this <- c(
 #'    the names of vectors, or value types (character, integer, vector...)
 adjustable_parameters <- c(
   "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
-  # Data winsorization level
+  # Data winsorization characteristics
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
+  "data_precision_type" = "DoF", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
   # Handle missing data
   "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
   # Effect summary statistics confidence level
@@ -135,7 +136,7 @@ adjustable_parameters <- c(
   # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
   "box_plot_verbose" = T, # Get information about the plots being printed
   # Funnel plot parameters
-  "funnel_plot_effect_proximity" = 0.15, # Effect axis cutoff point (perc) on either side of mean
+  "funnel_plot_effect_proximity" = 0.05, # Effect axis cutoff point (perc) on either side of mean
   "funnel_plot_maximum_precision" = 0.2, # Precision axis maximum value cutoff point (perc)
   "funnel_plot_verbose" = T, # If T, print cut outlier information
   # T-statistic histogram parameters
@@ -290,7 +291,8 @@ if (!allow_missing_vars){
 
 # Winsorize the data
 data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
-data <- winsorizeData(data, win_level = data_win_level)
+data_precision_type <- as.character(adjustable_parameters["data_precision_type"])
+data <- winsorizeData(data, win_level = data_win_level, precision_type = data_precision_type)
 
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
 validateData(data, var_list, ignore_missing = allow_missing_vars)
