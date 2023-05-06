@@ -204,6 +204,7 @@ weighted_mean <- function(beta, se, sigma){
   return(Y)
 }
 
+# External note - sub-optimal performance
 weighted_mean_squared <- function(beta, se, sigma){
   N <- length(beta)
   Y <- vector(mode = 'numeric', length = N)
