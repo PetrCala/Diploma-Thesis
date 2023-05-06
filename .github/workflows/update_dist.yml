@@ -17,11 +17,6 @@ jobs:
         id: get_source_files
         run: |
           cd R
-          # check existence of the distribution file
-          if ! test -f dist_info.txt; then
-            echo "Error: Dist file not found in R folder"
-            exit 1
-          fi
           # Read dist_info.txt, remove carriage return characters and store the result in SOURCE_FILES variable
           SOURCE_FILES=$(cat dist_info.txt | tr -d '\r')
           for f in $SOURCE_FILES; do
