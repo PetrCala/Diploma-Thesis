@@ -26,23 +26,21 @@ jobs:
               exit 1
             fi
           done
-          # Set the output of this step to be used in the next step
-          echo "::set-output name=source_files::SOURCE_FILES"
 
       # Copy the updated files from the R folder to the Dist folder based on the file names in SOURCE_FILES
       - name: Copy updated Source files to Dist folder
         run: |
-          cd Dist
-          for f in ${{ steps.get_source_files.outputs.source_files }}; do
+          cd R
+          SOURCE_FILES=$(cat dist_info.txt | tr -d '\r')
+          cd ../Dist
+          for f in $SOURCE_FILES; do
             # Get the source file path considering both .R and .r extensions
             source_file="../R/$f"
             if test -f "${source_file%.*}.r"; then
               source_file="${source_file%.*}.r"
             fi
-
-
             # Check if the file doesn't exist in the Dist folder or if it's different from the one in the R folder
-            if ! test -f "$f" || ! cmp -s "$source_file "$f"; then
+            if ! test -f "$f" || ! cmp -s "$source_file" "$f"; then
               # Copy the file from the R folder to the Dist folder
               cp "$source_file" .
             fi
