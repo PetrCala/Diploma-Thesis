@@ -102,12 +102,12 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
+  "variable_summary_stats" = T,
+  "effect_summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
   "nonlinear_tests" = F,
   "exo_tests" = F,
   "p_hacking_tests" = F,
@@ -122,7 +122,14 @@ run_this <- c(
 #'  Do NOT change the variable names (apart from when adding new Box plot factors),
 #'    the names of vectors, or value types (character, integer, vector...)
 adjustable_parameters <- c(
+  # Effect name
   "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
+  # Data subsetting conditions
+  # Note - if you do not with to use any conditions, set the conditions to NA
+  # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
+  "data_subset_condition_1" = "ability_direct == 1",
+  "data_subset_condition_1" = NA,
+  # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
   # Data winsorization characteristics
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
   "data_precision_type" = "DoF", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
@@ -174,9 +181,7 @@ options(scipen=999) # No scientific notation
 
 technical_parameters <- c(
   # Handle missing data
-  "allow_missing_vars" = F, # UNSAFE!! Allow missing variables in the data - Do NOT turn on
-  # Subset data to one study only
-  "subset_this_study_only" = NA # Use index, such as 1,2,3,... Default NA means no subsetting.
+  "allow_missing_vars" = F # UNSAFE!! Allow missing variables in the data - Do NOT turn on
 )
 
 # Working directory - change only if the script is being ran as the master script (not imported)
@@ -297,9 +302,9 @@ data <- winsorizeData(data, win_level = data_win_level, precision_type = data_pr
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
 validateData(data, var_list, ignore_missing = allow_missing_vars)
 
-# Subset data to only one study for testing (does nothing by default)
-one_study_subset <- technical_parameters["subset_this_study_only"]
-data <- limitDataToOneStudy(data, one_study_subset) # Handle wrong cases inside function, pass in that case
+# Subset data using the conditions specified in the customizable section
+subset_conditions <- getMultipleParams(adjustable_parameters, "data_subset_condition_", "character") # Extract all the data subset conditions
+data <- applyDataSubsetConditions(data, subset_conditions)
 
 ######################### DATA EXPLORATION #########################
 

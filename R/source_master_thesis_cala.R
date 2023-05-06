@@ -113,6 +113,35 @@ getMultipleParams <- function(adj_params, desired_param, param_type){
   return(res)
 }
 
+#' Apply data subsetting conditions to the input data frame
+#'
+#' This function applies all the specified subset conditions to the input data frame. Users can
+#' add any number of conditions to subset the data, and these conditions will be applied
+#' to the data frame before the script continues.
+#'
+#' @param data [data.frame] The input data frame on which to apply the data subsetting conditions.
+#' @param conditions [vector] A vector of data subset conditions.
+#' @return A data frame with the specified data subsetting conditions applied.
+applyDataSubsetConditions <- function(data, conditions) {
+  # Validate input
+  stopifnot(
+    is.data.frame(data),
+    is.vector(conditions)
+  )
+  # Subset the data given the conditions
+  if (!is.na(conditions)) {
+    for (condition in conditions) {
+      if (!is.na(condition)){
+        # Evaluate each condition and apply it to the data frame
+        data <- data[eval(parse(text = paste0("data$", condition))),]
+      }
+    }
+  }
+  return(data)
+}
+
+
+
 ####################### PACKAGE HANDLING ########################
 
 #' Create a custom error object
