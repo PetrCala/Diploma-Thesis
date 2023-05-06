@@ -18,7 +18,7 @@ jobs:
         run: |
           cd R
           # check existence of the distribution file
-          if ! test -f dist_info.txt; then
+          if ! test -f "dist_info.txt"; then
             echo "Error: Dist file not found in R folder"
             exit 1
           fi
