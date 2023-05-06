@@ -111,9 +111,9 @@ run_this <- c(
   "nonlinear_tests" = F,
   "exo_tests" = F,
   "p_hacking_tests" = F,
-  "bma" = T,
-  "fma" = T, # Should be ran together with BMA
-  "best_practice_estimate" = T
+  "bma" = F,
+  "fma" = F, # Should be ran together with BMA
+  "best_practice_estimate" = F
 )
 
 #' ADJUSTABLE PARAMETERS
