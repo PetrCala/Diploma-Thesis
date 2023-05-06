@@ -22,6 +22,7 @@
 #'    can run, but in case of many missing values, the results may be unstable.
 #'  3. The data frame should contain these columns (named exactly as listed below):
 #'    study_name - Name of the study, such as Einstein et al. (1935).
+#'    study_id - ID of the study. Should be numeric and unique for each study.
 #'    effect -  The main effect/estimate values. Ideally it should be  a transformed effect, such as
 #'      the partial correlation coefficient.
 #'    se - standard error of the effect

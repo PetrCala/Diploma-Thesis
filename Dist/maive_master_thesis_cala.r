@@ -107,10 +107,12 @@ maive <- function(dat=dat,method=method,weight=weight,instrument=instrument,stud
       x2 <- sebs2fit1
       F_hac<-round(F_hac,3)
   }                          
+  
                            
   #choose dependent variable and regressor
     y <- bs/w 
     x <- x 
+    x[is.na(x)] <- median(x, na.rm=T) # Added externally - remove missing variables
     x2 <- x2
     X <- matrix(c(ones(M,1)[,1], x)/w,nrow=M)     
     X_d <- matrix(c(X, D/w), nrow=M)

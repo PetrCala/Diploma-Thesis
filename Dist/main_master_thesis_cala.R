@@ -8,6 +8,7 @@
 #' PREREQUISITES:
 #'  1. Make sure that your working directory contains the following files:
 #'      -<NAME_OF_YOUR_DATA_FRAME>.csv (modifiable below)
+#'      -elliot_master_thesis_cala.R
 #'      -endo_kink_master_thesis_cala.R
 #'      -main_master_thesis_cala.R
 #'      -maive_master_thesis_cala.R
@@ -16,10 +17,12 @@
 #'      -source_master_thesis_cala.R
 #'      -stem_method_master_thesis_cala.R
 #'      -<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv (modifiable below)
-#'  2. Make sure your data frame (<NAME_OF_YOUR_DATA_FRAME>.csv) contains NO MISSING VALUES.
-#'    If there are any, the script will not run.
+#'  2. Try to eliminate as many missing values in your data frame as you can.
+#'    The script will automatically use interpolation for missing data, so that model averaging
+#'    can run, but in case of many missing values, the results may be unstable.
 #'  3. The data frame should contain these columns (named exactly as listed below):
 #'    study_name - Name of the study, such as Einstein et al. (1935).
+#'    study_id - ID of the study. Should be numeric and unique for each study.
 #'    effect -  The main effect/estimate values. Ideally it should be  a transformed effect, such as
 #'      the partial correlation coefficient.
 #'    se - standard error of the effect
@@ -31,6 +34,7 @@
 #'      study id's, and <CELL> is the cell in that column on the same row you want to calculate the
 #'      study size on. Example: =COUNTIF(B:B,B2). This calculates the study size of the study located
 #'      in cell B2, assuming that the column B contains the study information.
+#'    reg_df - Degrees of freedom associated with this estimate.
 #'  4. In the file <NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv, input the list of variables you are using in your data frame,
 #'    along with these parameters:
 #'    var_name - Name of the variable exactly as it appears in the data frame columns. Must not include
@@ -48,7 +52,7 @@
 #'      stop - Do not allow missing values. Throw an error in case there is a missing value.
 #'      mean - Interpolate with the mean of the existing data.
 #'      median - Interpolate with the median of the existing data.
-#'      equal - Allow missing values. Use only for variables which whose values will be filled in automatically
+#'      allow - Allow missing values. Use only for variables which whose values will be filled in automatically
 #'          during preprocessing, meaning for which you can guarantee no missing values.
 #'    variable_summary - Boolean. If TRUE, this variable will appear in the summary statistics table.
 #'    effect_sum_stats - Boolean. If TRUE, this variable will appear in the effect summary statistics table.
@@ -99,17 +103,17 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = F,
+  "variable_summary_stats" = T,
+  "effect_summary_stats" = T,
   "box_plot" = T,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
   "nonlinear_tests" = F,
   "exo_tests" = F,
   "p_hacking_tests" = F,
   "bma" = F,
-  "fma" = F,
+  "fma" = F, # Should be ran together with BMA
   "best_practice_estimate" = F
 )
 
@@ -117,12 +121,21 @@ run_this <- c(
 #' Adjust the parameters by modifying the numbers, or boolean values
 #' Note:
 #'  Do NOT change the variable names (apart from when adding new Box plot factors),
-#'    or the name of the vector
+#'    the names of vectors, or value types (character, integer, vector...)
 adjustable_parameters <- c(
-  # Data winsorization level
+  # Effect name
+  "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
+  # Data subsetting conditions
+  # Note - if you do not with to use any conditions, set the conditions to NA
+  # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
+  "data_subset_condition_1" = "ability_direct == 1",
+  "data_subset_condition_2" = NA,
+  # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
+  # Data winsorization characteristics
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
+  "data_precision_type" = "DoF", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
   # Handle missing data
-  "allowed_missing_ratio" = 0.6, # Allow ratio*100(%) missing observations for each variable
+  "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
   # Effect summary statistics confidence level
   "effect_summary_stats_conf_level" = 0.95, # Between 0 and 1 (excluding)
   # Box plot parameters
@@ -131,13 +144,24 @@ adjustable_parameters <- c(
   # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
   "box_plot_verbose" = T, # Get information about the plots being printed
   # Funnel plot parameters
-  "funnel_plot_effect_cutoff" = 0.8, # Effect axis cutoff point
-  "funnel_plot_precision_cutoff" = 0.2, # Precision axis cutoff point
+  "funnel_plot_effect_proximity" = 0.15, # Effect axis cutoff point (perc) on either side of mean
+  "funnel_plot_maximum_precision" = 0.2, # Precision axis maximum value cutoff point (perc)
   "funnel_plot_verbose" = T, # If T, print cut outlier information
   # T-statistic histogram parameters
-  "t_hist_lower_cutoff" = -150, # Lower cutoff point for t-statistics
-  "t_hist_upper_cutoff" = 150, # Upper cutoff point for t-statistics
-  # Bayesian Model Averaging
+  "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
+  "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
+  # Caliper test parameters
+  "caliper_thresholds" = c(0, 1.96, 2.58), # Caliper thresholds - keep as vector
+  "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
+  # Eliott test parameters
+  "eliott_data_subsets" = c("All data"), # Data subsets to run the tests on
+  "eliott_p_min" = 0,
+  "eliott_p_max" = 0.1,
+  "eliott_d_point" = 0.1,
+  "eliott_cs_bins" = 15,
+  "eliott_verbose" = T,
+  # Bayesian Model Averaging parameters
+  "automatic_bma" = T, # If TRUE, automatically generate a formula for BMA with all VIF < 10
   "bma_burn" = 1e4, # Burn-ins (def 1e5)
   "bma_iter" = 3e4, # Draws (def 3e5)
   "bma_g" = "HQ", # g-Prior
@@ -158,16 +182,16 @@ options(scipen=999) # No scientific notation
 
 technical_parameters <- c(
   # Handle missing data
-  "allow_missing_vars" = F, # UNSAFE!! Allow missing variables in the data - Do NOT turn on
-  # Subset data to one study only
-  "subset_this_study_only" = NA # Use index, such as 1,2,3,... Default NA means no subsetting.
+  "allow_missing_vars" = F # UNSAFE!! Allow missing variables in the data - Do NOT turn on
 )
 
-# Working directory
-if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
-if (! getwd() == dirname(getActiveDocumentContext()$path)){
-  setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
-  print(paste0('Setting the working directory to: ', getwd()))
+# Working directory - change only if the script is being ran as the master script (not imported)
+if (length(commandArgs()) == 0) {
+  if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
+  if (! getwd() == dirname(getActiveDocumentContext()$path)){
+    setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
+    print(paste0('Setting the working directory to: ', getwd()))
+  }
 }
 
 # Source files - unmodifiable
@@ -196,7 +220,10 @@ packages <- c(
   "data.table", # Fast data manipulation and aggregation
   "ddpcr", # Analysis of Droplet Digital PCR (ddPCR) data
   "dplyr", # Data manipulation and data wrangling
+  "fdrtool", # Eliott et al. (2022)
   "foreign", # Reading and writing data stored by other statistical software
+  "gdata", # Eliott et al. (2022)
+  "grDevices", # Eliott et al. (2022)
   "ggplot2", # Creating graphics and data visualizations
   "haven", # Importing and exporting data from SAS, SPSS, and Stata
   "lmtest", # Hypothesis testing and diagnostics for linear regression models
@@ -204,12 +231,16 @@ packages <- c(
   "metafor", # Conducting meta-analyses
   "multcomp", # Simultaneous inference for general linear hypotheses
   "multiwayvcov", # Computing clustered covariance matrix estimators
+  "NlcOptim", # Eliott et al. (2022) - CoxShi
+  "plm", # Random Effects, Between Effects
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
-  "pracma", # MAIVE Estimator
+  "pracma", # MAIVE Estimator, Eliott et al. (2022)
+  "rddensity", # Eliott et al. (2022)
   "readr", # Reading data into R from various file formats
   "readxl", # Reading Excel files
   "sandwich", # Computing robust covariance matrix estimators, MAIVE estimator
   "shiny", # Andrew & Kasy (2019) Selection model
+  "spatstat", # Eliott et al. (2022)
   "stats", # Statistical analysis and modeling
   "testthat", # Unit testing for R
   "tidyverse", # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
@@ -228,7 +259,7 @@ if (!file.exists("source_master_thesis_cala.R")){
 }
 
 # Load packages
-loadPackages(packages, load_quietly = development_on)
+loadPackages(packages)
 
 if (development_on) {
   # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files if necessary)
@@ -266,15 +297,15 @@ if (!allow_missing_vars){
 
 # Winsorize the data
 data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
-data <- winsorizeData(data, win_level = data_win_level)
+data_precision_type <- as.character(adjustable_parameters["data_precision_type"])
+data <- winsorizeData(data, win_level = data_win_level, precision_type = data_precision_type)
 
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
 validateData(data, var_list, ignore_missing = allow_missing_vars)
 
-# Subset data to only one study for testing (does nothing by default)
-one_study_subset <- technical_parameters["subset_this_study_only"]
-data <- limitDataToOneStudy(data, one_study_subset) # Handle wrong cases inside function, pass in that case
-
+# Subset data using the conditions specified in the customizable section
+subset_conditions <- getMultipleParams(adjustable_parameters, "data_subset_condition_", "character") # Extract all the data subset conditions
+data <- applyDataSubsetConditions(data, subset_conditions)
 
 ######################### DATA EXPLORATION #########################
 
@@ -286,23 +317,28 @@ if (run_this["effect_summary_stats"]){
 
 ###### BOX PLOT ######
 if (run_this["box_plot"]){
-  # Automatically extract all specified factor names
+  # Adjustable parameters
+  effect_name <- as.character(adjustable_parameters["effect_name"]) # Inside this scope for safety
   factor_names <- getBoxPlotFactors(adj_pars_source = adjustable_parameters, pattern = "box_plot_group_by_factor_")
   box_plot_verbose <- as.logical(adjustable_parameters["box_plot_verbose"])
   
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
-    getBoxPlot(data, factor_by = factor_name, verbose = run_verbose)
+    getBoxPlot(data, factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
   }
 }
 
 ###### FUNNEL PLOT ######
-
 if (run_this["funnel_plot"]){
-  custom_effect_cutoff <- as.numeric(adjustable_parameters["funnel_plot_effect_cutoff"])
-  custom_precision_cutoff <- as.numeric(adjustable_parameters["funnel_plot_precision_cutoff"])
-  custom_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
-  getFunnelPlot(data, custom_effect_cutoff, custom_precision_cutoff, custom_verbose)
+  # Adjustable parameters
+  funnel_effect_proximity <- as.numeric(adjustable_parameters["funnel_plot_effect_proximity"])
+  funnel_maximum_precision <- as.numeric(adjustable_parameters["funnel_plot_maximum_precision"])
+  funnel_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
+  
+  # Plot the funnel plot
+  getFunnelPlot(data, funnel_effect_proximity, funnel_maximum_precision, use_study_medians = F, funnel_verbose)
+  getFunnelPlot(data, funnel_effect_proximity, funnel_maximum_precision, use_study_medians = T, funnel_verbose)
+  
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
@@ -351,18 +387,17 @@ if (run_this["nonlinear_tests"]){
   }
 }
 
+### Apply p-uniform* method using sample means
 
 ######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
 if (run_this["exo_tests"]){
   global_exo_tests <- T # Set to false if tests should be ran separately
   
   if (!global_exo_tests) {
-    
     ###### PUBLICATION BIAS - FAT-PET with IV ######
     iv_results <- getIVResults(data,
             effect_present = T, pub_bias_present = T, verbose_coefs = T)
     
-    ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
     p_uni_results <- getPUniResults(data, method = "ML",
             effect_present=T, pub_bias_present=T, verbose_coefs=T)
     
@@ -374,24 +409,32 @@ if (run_this["exo_tests"]){
 ######################### P-HACKING TESTS #########################
 
 if (run_this["p_hacking_tests"]){
-  
   ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
+  caliper_thresholds <- getMultipleParams(adjustable_parameters, "caliper_thresholds", "numeric")
+  caliper_widths <- getMultipleParams(adjustable_parameters, "caliper_widths", "numeric")
   caliper_results <- getCaliperResults(data,
-          thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2), verbose = T)
+          thresholds = caliper_thresholds, widths = caliper_widths, verbose = T)
    
   ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
-  eliott_results <- getEliott(data)
+  eliott_data_subsets <- getMultipleParams(adjustable_parameters, "eliott_data_subsets", "character")
+  eliott_p_min <- as.numeric(adjustable_parameters["eliott_p_min"])
+  eliott_p_max <- as.numeric(adjustable_parameters["eliott_p_max"])
+  eliott_d_point <- as.numeric(adjustable_parameters["eliott_d_point"])
+  eliott_cs_bins <- as.numeric(adjustable_parameters["eliott_cs_bins"])
+  eliott_verbose <- as.logical(adjustable_parameters["eliott_verbose"])
+  eliott_results <- getEliottResults(data, eliott_data_subsets,
+      eliott_p_min, eliott_p_max, eliott_d_point, eliott_cs_bins, eliott_verbose)
    
   ###### MAIVE Estimator (Irsova et al., 2023) ######
   maive_results <- getMaiveResults(data,
           method=3, weight=0, instrument=1, studylevel=0, verbose=T)
 }
 
-
-######################### BAYESIAN MODEL AVERAGING #########################
+######################### MODEL AVERAGING #########################
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
 if (run_this["bma"]){
+  automatic_bma <- as.logical(adjustable_parameters["automatic_bma"])
   # Extract adjustable parameters
   bma_burn <- as.numeric(adjustable_parameters["bma_burn"])
   bma_iter <- as.numeric(adjustable_parameters["bma_iter"])
@@ -400,19 +443,39 @@ if (run_this["bma"]){
   bma_nmodel <- as.numeric(adjustable_parameters["bma_nmodel"])
   bma_mcmc <- as.character(adjustable_parameters["bma_mcmc"])
   bma_print_results <- as.character(adjustable_parameters["bma_print_results"])
+  if (automatic_bma){
+    # Get the optimal BMA formula automatically
+    bma_formula <- findOptimalBMAFormula(data, var_list, verbose = T)
+    # Get the vector of variables used in the automatic BMA
+    bma_bool <- getBMAExcelBool(var_list, bma_formula, verbose=F)
+  } else {
+    # From the variable information instead
+    bma_formula <- getBMAFormula(var_list)
+  }
   # Run the Variance Inflation Test
-  vif_coefs <- runVifTest(data, var_list, print_all_coefs = T)
+  vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = T)
   # BMA estimation
-  bma_data <- getBMAData(data, var_list)
+  bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
+  bma_data <- getBMAData(data, var_list, bma_vars)
   bma_model <- runBMA(
-       bma_data, var_list,
+       bma_data,
        burn=bma_burn,
        iter=bma_iter,
-       g=bma_g,
-       mprior=bma_mprior,
+       g=bma_g, # UIP, BRIC, HQ
+       mprior=bma_mprior, # uniform, random
        nmodel=bma_nmodel,
        mcmc=bma_mcmc
   )
   # Print out the results
   bma_coefs <- extractBMAResults(bma_model, bma_data, print_results = bma_print_results)
+}
+
+###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
+
+if (run_this["fma"]){
+  if (!exists("bma_data") || !exists("bma_model")){
+    stop("You must create these two objects first - bma_data, bma_model. Refer to the 'bma' section.")
+  }
+  # Actual estimation
+  fma_coefs <- runFMA(bma_data, bma_model, verbose = T)
 }

@@ -52,28 +52,165 @@ validateFiles <- function(files){
   print("All necessary files located successfully.")
 }
 
+#' Extract multiple parameters from a vector dictionary
+#' 
+#' Input the adjustable parameters dictionary, the name of the parameter to extract
+#' the values for, and the type these values should be. Extract all the values of that
+#' parameters and return the vector of the values
+#' 
+#' @details The reason for having this function is that if the user inputs multiple
+#' values into a vector dictionary in R, the language assigns each value its unique
+#' key, as it can not store a nested element. RRRRRRRR
+#' 
+#' @param adj_params [vector] A vector dictionary of adjustable parameters.
+#' @param desired_param [character] The name of the parameter for which to extract
+#' the values for
+#' @param param_type [character] Type of the character. Can only be one of the two:
+#' numeric, character
+#' @return Vector of values.
+getMultipleParams <- function(adj_params, desired_param, param_type){
+  # Validate input
+  stopifnot(
+    is.vector(adj_params),
+    is.character(desired_param),
+    is.character(param_type),
+    param_type %in% c("numeric", "character")
+  )
+  res <- c()
+  # Assume only one value
+  one_val <- adj_params[desired_param]
+  if (!is.na(one_val)){ # Only one value
+    res <- append(res, one_val)
+  } else {
+    # More values
+    keep_going <- T
+    i <- 1
+    while (keep_going){
+      new_key <- paste0(desired_param,as.character(i))
+      new_param <- adj_params[new_key]
+      if (!is.na(new_param)){
+        res <- append(res, new_param)
+        i <- i + 1
+      } else {
+        keep_going <- F
+      }
+    }
+  }
+  # No values for this key - a single NA - a wonky case
+  if (length(res) == 1){
+    if (is.na(res)){
+      return(NA)
+    }
+  }
+  # Correct types
+  if (param_type == "character"){
+    res <- as.character(res)
+  } else if (param_type == "numeric"){
+    res <- as.numeric(res)
+  } else {
+    stop("This variable type is unaccepted/unhandled for vectors of multiple values.")
+  }
+  return(res)
+}
+
+#' Apply data subsetting conditions to the input data frame
+#'
+#' This function applies all the specified subset conditions to the input data frame. Users can
+#' add any number of conditions to subset the data, and these conditions will be applied
+#' to the data frame before the script continues.
+#'
+#' @param data [data.frame] The input data frame on which to apply the data subsetting conditions.
+#' @param conditions [vector] A vector of data subset conditions.
+#' @return A data frame with the specified data subsetting conditions applied.
+applyDataSubsetConditions <- function(data, conditions) {
+  # Validate input
+  stopifnot(
+    is.data.frame(data),
+    is.vector(conditions)
+  )
+  # Subset the data given the conditions
+  if (length(conditions) > 0) {
+    for (condition in conditions) {
+      if (!is.na(condition)){
+        # Evaluate each condition and apply it to the data frame
+        data <- data[eval(parse(text = paste0("data$", condition))),]
+      }
+    }
+  }
+  return(data)
+}
+
+
 
 ####################### PACKAGE HANDLING ########################
 
-#' Package loading function
-#' 
-#' Insert a vector/list of package names, install all missing ones,
-#'  load all into workspace, and clean the environment
-loadPackages <- function(package_list, load_quietly = F){
+#' Create a custom error object
+#'
+#' This function creates a custom error object with a given message. The custom
+#' error object can be used in tryCatch expressions to handle specific errors.
+#'
+#' @param message [character] The error message.
+#'
+#' @return A custom error object with the specified message and class "custom_error".
+customError <- function(message) {
+  structure(list(message = message), class = "custom_error")
+}
+
+#' Quietly execute an expression
+#'
+#' This function suppresses package startup messages, warnings, and messages
+#' while executing an expression. It is useful for keeping the console output
+#' clean when loading or installing packages.
+#'
+#' @param expr [expression] The expression to be executed quietly.
+#'
+#' @return The result of the executed expression without any messages, warnings, or package startup messages.
+quietPackages <- function(expr) {
+  suppressPackageStartupMessages(suppressWarnings(suppressMessages(expr)))
+}
+
+#' Load and install a list of R packages
+#'
+#' This function checks if the specified packages are installed, installs any missing
+#' packages, and then loads all of them. If an error occurs during the installation
+#' or loading process, the function stops execution and displays an error message.
+#'
+#' @param package_list [character] A character vector of package names.
+#'
+#' @return A message indicating that all packages were loaded successfully or an error message if the process fails.
+loadPackages <- function(package_list) {
   # Install packages not yet installed
   installed_packages <- package_list %in% rownames(installed.packages())
   if (any(installed_packages == FALSE)) {
-    print(paste("Installing package ", package_list[!installed_packages],"...", sep = ""))
-    install.packages(package_list[!installed_packages])
+    print(paste("Installing package ", package_list[!installed_packages], "...", sep = ""))
+    tryCatch(
+      {
+        quietPackages(
+          install.packages(package_list[!installed_packages])
+        )
+      },
+      error = function(e) {
+        message("Package installation failed. Exiting the function...")
+        stop(customError("Package installation failed"))
+      }
+    )
   }
   # Package loading
-  if (load_quietly){
-    invisible(lapply(package_list, suppressWarnings(suppressMessages(library)), character.only = TRUE))
-  } else {
-    invisible(lapply(package_list, library, character.only = TRUE))
-  }
-  print('All packages loaded successfully')
+  print("Attempting to load the packages...")
+  tryCatch(
+    {
+      quietPackages(
+        invisible(lapply(package_list, library, character.only = TRUE))
+      )
+    },
+    error = function(e) {
+      message("Package loading failed. Exiting the function...")
+      stop(customError("Package loading failed"))
+    }
+  )
+  print("All packages loaded successfully")
 }
+
 
 ######################### DATA PREPROCESSING #########################
 
@@ -255,16 +392,24 @@ handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio 
 #' standard error of the effect (se), and t-statistic (t_stat) columns.
 #' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
 #' extreme values to be replaced with the nearest non-extreme value.
+#' @param precision_type [character] Type of precision to use. Can be one of the following:
+#'  1/SE - Inverse of the standard error is used.
+#'  DoF - Square root of the degrees of freedom is used.
+#'  Deafults to "DoF".
 #' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
 #' and t-statistic columns have been Winsorized.
-winsorizeData <- function(input_data, win_level){
+winsorizeData <- function(input_data, win_level, precision_type = "DoF"){
   # Validate input
   stopifnot(
+    is.data.frame(input_data),
+    is.numeric(win_level),
+    is.character(precision_type),
     win_level > 0,
     win_level < 1,
     all(c('effect', 'se') %in% colnames(input_data)),
     !(any(is.na(input_data$effect))), # No missing effect values
-    !(any(is.na(input_data$se))) # No missing SE values
+    !(any(is.na(input_data$se))), # No missing SE values
+    precision_type %in% c("1/SE", "DoF")
     )
   # Get the winsorization interval
   win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
@@ -275,7 +420,13 @@ winsorizeData <- function(input_data, win_level){
   # Statistic preprocessing
   input_data$effect_w <- Winsorize(x = input_data$effect, minval = NULL, maxval = NULL, probs = win_int)
   input_data$se_w <- Winsorize(x = input_data$se, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$se_precision_w <- 1/input_data$se_w
+  if (precision_type == "1/SE"){
+    input_data$se_precision_w <- 1/input_data$se_w
+  } else if (precision_type == "DoF"){
+    input_data$se_precision_w <- sqrt(input_data$reg_df)
+  } else {
+    stop("Invalid type of precision")
+  }
   input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
   input_data$significant_w <- c(rep(0,nrow(input_data)))
   input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
@@ -298,7 +449,7 @@ winsorizeData <- function(input_data, win_level){
 #' @param ignore_missing [bool] If TRUE, allow missing values in the data frame. Deafults to FALSE.
 validateData <- function(input_data, input_var_list, ignore_missing = F){
   # Columns that the data frame must contain
-  expected_columns <- c("study_name", "effect", "se", "t_stat", "n_obs", "study_size")
+  expected_columns <- c("study_name", "study_id", "effect", "se", "t_stat", "n_obs", "study_size", "reg_df")
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
@@ -668,12 +819,19 @@ getBoxPlotFactors <- function(adj_pars_source, pattern){
 #'  - 'country'
 #'  - 'study_level'
 #'  Defaults to 'country'
-#' @param verbose [bool] - If T, print out the information about the plot being printed.
+#' @param verbose [bool] If T, print out the information about the plot being printed.
 #'  Defaults to T.
-getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
-  # Check column validity
+#' @param effect_name [character] Verbose explanation of the effect.
+getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name = 'effect'){
+  # Check column and input validity
   expected_cols <- c('effect_w', factor_by)
-  stopifnot(all(expected_cols %in% colnames(input_data)))
+  stopifnot(
+    all(expected_cols %in% colnames(input_data)),
+    is.data.frame(input_data),
+    is.character(factor_by),
+    is.logical(verbose),
+    is.character(effect_name)
+  )
   
   # Plot variable preparation
   factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
@@ -683,7 +841,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
   box_plot <- ggplot(data = input_data, aes(x = effect_w, y=factor(!!sym(factor_by), levels = factor_levels))) +
       geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
       geom_vline(aes(xintercept = mean(effect_w)), color = "red", linewidth = 0.85) + 
-      labs(title = NULL,x="Estimate of the effect of years of schooling on wage", y = "Grouped by " %>% paste0(factor_by_verbose)) +
+      labs(title = NULL,x=paste("Effect of", tolower(effect_name)), y = "Grouped by " %>% paste0(factor_by_verbose)) +
       main_theme()
   
   # Plot the plot
@@ -695,33 +853,61 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T){
 
 #' Identify outliers in the data, return the filter which can be used
 #'  to get the data without these outliers.
+#'  
+#' How it works:
+#'  In order for an observation to be identified as an outlier, both specifications
+#'  must be FALSE. These specifications are:
+#'  -'effect_proximity' - specifies, how far from the mean the observations are allow
+#'    to appear for them to still not be considered outliers. As an example, for
+#'    effect_proximity = 0.2, all observations that are 20% of observations away on
+#'    either side will be marked as outliers by this specification.
+#'  - 'maximum_precision' - specifies the maximum precision where the observations can
+#'    appear for them not to be marked as outliers. Anything above things point will
+#'    be considered an outlier by this specification.
+#'  Keep in mind that both these specifications must be violated in order for the point
+#'    to be marked as outlier.
 #' 
 #' @param input_data Data to check
-#' @param effect_cutoff Outlier cutoff point for the effect
-#' @param precision_cutoff Outlier cutoff point for the SE precision
+#' @param effect_proximity A float indicating how many percentage points (this value times 100)
+#'  away from the mean on either side can an observation appear.
+#' @param maximum_precision A flot indicating the maximum precision of the sample in
+#'  percentage (this value times 100) can the observations observe not to be considered outliers.
 #' @param verbose If true, print out information about the outliers
 #' @return [list] Filter for the data without outliers
-getOutliers <- function(input_data, effect_cutoff = 0.2, precision_cutoff = 0.2, verbose=T) {
+getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 0.2, verbose=T) {
   # Check column validity
   expected_cols <- c('effect_w', 'se_precision_w')
-  stopifnot(all(expected_cols %in% colnames(input_data)))
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(effect_proximity),
+    is.numeric(maximum_precision),
+    is.logical(verbose),
+    all(expected_cols %in% colnames(input_data)),
+    effect_proximity <= 1,
+    effect_proximity >= 0,
+    maximum_precision <= 1,
+    maximum_precision >= 0
+  )
   
   # Get source values
   obs <- input_data$obs_n
   effect <- input_data$effect_w
   precision <- input_data$se_precision_w
   
-  # Maximum values
+  # Maximum values and effect mean value
   max_effect <- max(effect)
   max_precision <- max(precision)
+  effect_mean <- mean(effect)
   
-  # Percentage of the maximum value - [0.2, 0.8, 0.7, ...]
-  effect_perc <- effect/max_effect
-  precision_perc <- precision/max_precision
+  # Calculate the cutoff bounds for both effect and precision as percentages of max value
+  effect_cutoff <- max_effect * effect_proximity
+  precision_cutoff <- max_precision * maximum_precision
   
   # Create filters
-  effect_filter <- effect_perc >= effect_cutoff
-  precision_filter <- precision_perc >= precision_cutoff
+  effect_filter_lbound <- effect < effect_mean - effect_cutoff # Below lower bound
+  effect_filter_ubound <- effect > effect_mean + effect_cutoff # Above upper bounds
+  effect_filter <- effect_filter_lbound | effect_filter_ubound # Out of the proximity bound
+  precision_filter <- precision >= precision_cutoff
   outlier_filter <- effect_filter & precision_filter
     
   # Filter suspicious observations
@@ -751,32 +937,182 @@ getOutliers <- function(input_data, effect_cutoff = 0.2, precision_cutoff = 0.2,
   
 }
 
+#' Generate ticks for a funnel plot
+#'
+#' This function takes a vector of three numbers as input, which represent the lower bound,
+#' upper bound, and mean value. It generates a sorted vector of tick values between the lower
+#' and upper bounds, where ticks are spaced at intervals of 10, excluding ticks that are closer
+#' than 2 to either bound. The input mean value is also included in the output vector. Additionally,
+#' the function generates a vector of colors ("black" or "red") with the same length as the output
+#' vector, where the "red" color corresponds to the position of the mean value.
+#'
+#' @param input_vec [numeric(3)] A numeric vector of length 3, containing the lower bound, upper bound, and mean value.
+#' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values and the mean value,
+#'         and "x_axis_tick_text", a character vector of the same length as "output_vec", 
+#'         with "red" indicating the position of the mean value and "black" for all other positions.
+generateFunnelTicks <- function(input_vec){
+  lower_bound <- input_vec[1]
+  upper_bound <- input_vec[2]
+  mean_value <- input_vec[3]
+  
+  ticks <- c(lower_bound, upper_bound)
+  current_tick <- ceiling(lower_bound / 10) * 10 # Closest number divisible by 10 higher than lower bound
+  
+  while (current_tick < upper_bound) {
+    if (abs(current_tick - lower_bound) >= 2 && abs(current_tick - upper_bound) >= 2) {
+      ticks <- c(ticks, round(current_tick, 2))
+    }
+    current_tick <- current_tick + 10
+  }
+  
+  # Add the mean value and sort the vector
+  funnel_ticks <- sort(c(ticks, mean_value))
+  
+  # Create the color vector
+  x_axis_tick_text <- rep("black", length(funnel_ticks))
+  mean_index <- which(funnel_ticks == mean_value)
+  x_axis_tick_text[mean_index] <- "red"
+  
+  # Round all ticks to 2 decimal spaces
+  funnel_ticks <- round(funnel_ticks, 2)
+  
+  return(list("funnel_ticks" = funnel_ticks, "x_axis_tick_text" = x_axis_tick_text))
+}
+
+
 #' Input the main data frame, several specifications, and create a funnel plot
 #' 
+#' @Note: In accordance with Stanley (2005), we decide to use the square root of the degrees of freedom
+#'  isntead of 1/SE as a measure of precision, to account for study size.
+#'  
 #' @param input_data [data.frame] Main data frame. Must contain cols 'effect_w', 'se_precision_w'
-#' @param effect_cutoff [float] Cutoff point for the effect.
-#' @param precision_cutoff [float] Cutoff point for precision.
+#' @param effect_proximity [float] Cutoff point for the effect. See getOutliers() for more.
+#' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
+#' @param use_study_medians [bool] If TRUE, plot medians of studies instead of all observations.
+#'  Defaults to FALSE.
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
-getFunnelPlot <- function(input_data, effect_cutoff=0.2, precision_cutoff=0.2, verbose = T){
-  # Check column validity
+getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
+                          use_study_medians = F, verbose = T){
+  # Check input validity
   expected_cols <- c('effect_w', 'se_precision_w')
-  stopifnot(all(expected_cols %in% colnames(input_data)))
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(effect_proximity),
+    is.numeric(maximum_precision),
+    is.logical(verbose),
+    all(expected_cols %in% colnames(input_data)),
+    effect_proximity <= 1,
+    effect_proximity >= 0,
+    maximum_precision <= 1,
+    maximum_precision >= 0
+  )
   
   # Filter out the outliers
-  filter_effect_w <- getOutliers(input_data, effect_cutoff=effect_cutoff, precision_cutoff=precision_cutoff, verbose=verbose)
+  filter_effect_w <- getOutliers(input_data, effect_proximity=effect_proximity, maximum_precision=maximum_precision, verbose=verbose)
   
-  # Single out the data for the funnel plot
-  funnel_data <- data[filter_effect_w, c('effect_w', 'se_precision_w')] # Only Effect, Precision
+  # Create the data frame for the funnel plot
+  funnel_data <- data[filter_effect_w, c('study_id', 'effect_w', 'se_precision_w')] # Only Effect, Precision
   funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
   
+  # Plot study medians instead
+  if (use_study_medians){
+    funnel_data <- funnel_data %>%
+      group_by(study_id) %>% 
+      summarize(median_effect_w = median(effect_w),
+              median_se_precision_w = se_precision_w[which.min(abs(effect_w - median_effect_w))])
+    colnames(funnel_data) <- c("study_id", "effect_w", "se_precision_w")
+  }
+  
+  # Get visual bounds and tick colors
+  funnel_x_lbound <- min(funnel_data$effect_w)
+  funnel_x_ubound <- max(funnel_data$effect_w)
+  mean_x_tick <- mean(funnel_data$effect_w)
+  # Generate and extract the info
+  base_funnel_ticks <- c(funnel_x_lbound, funnel_x_ubound, mean_x_tick) # c(lbound, ubound, mean)
+  funnel_visual_info <- generateFunnelTicks(base_funnel_ticks)
+  funnel_ticks <- funnel_visual_info$funnel_ticks
+  funnel_tick_text <- funnel_visual_info$x_axis_tick_text
+  
   # Plot the plot
-  funnel_win <- ggplot(data = funnel_data, aes(x = effect_w, y = se_precision_w)) + 
-    geom_point(color = "#0d4ed1") + 
-    labs(title = NULL, x = "Partial correlation coefficient", y = "Precision of the estimate (1/SE)") +
-    main_theme()
+  x_title <- ifelse(use_study_medians, "study median values", "all observations")
+  quiet(
+    funnel_win <- ggplot(data = funnel_data, aes(x = effect_w, y = se_precision_w)) + 
+      geom_point(color = "#0d4ed1") + 
+      geom_vline(aes(xintercept = mean(effect_w)), color = "red", linewidth = 0.5) + 
+      labs(title = NULL, x = paste("Estimate of the effect -",x_title), y = "Precision of the effect") +
+      scale_x_continuous(breaks = funnel_ticks) +
+      main_theme(
+          x_axis_tick_text = funnel_tick_text
+      )
+  )
     
   suppressWarnings(print(funnel_win)) # Print out the funnel plot
 }
+
+#' Generate ticks for a histogram plot
+#'
+#' This function takes a vector of five numbers as input, which represent the lower bound,
+#' upper bound, mean value, lower t-statictic, and upper t-statistic. It generates a sorted vector of
+#' tick values between the lower and upper bounds, where ticks are spaced at intervals of 50, excluding ticks
+#' that are closer than 2 to either bound or the t-stats. The input mean value, as well as the two t-statistics
+#' are included in the output vector. Additionally, the function generates a vector of
+#' colors ("black", "red", or "darkorange") with the same length as the output vector, where the
+#' "red" color corresponds to the positions of the t-statistics values and "darkorange" corresponds
+#' to the position of the mean value.
+#'
+#' @param input_vec [numeric(3)] A numeric vector of length 5, containing the lower bound, upper bound, mean value, and the t-stats.
+#' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values, the mean value,
+#'         and the t-statistics values, and "x_axis_tick_text", a character vector of the same length as "output_vec",
+#'         with "red" indicating the positions of the t-statistics values, "darkoran
+generateHistTicks <- function(input_vec) {
+  lower_bound <- input_vec[1]
+  upper_bound <- input_vec[2]
+  mean_value <- input_vec[3]
+  t_stat_low <- input_vec[4]
+  t_stat_high <- input_vec[5]
+  
+  # Exclude lower or upper bound if it's closer than 2 to any of the t-statistics values
+  ticks <- c()
+  if (abs(lower_bound - t_stat_low) >= 2 && abs(lower_bound - t_stat_high) >= 2) {
+    ticks <- c(ticks, lower_bound)
+  }
+  if (abs(upper_bound - t_stat_low) >= 2 && abs(upper_bound - t_stat_high) >= 2) {
+    ticks <- c(ticks, upper_bound)
+  }
+  
+  ticks <- c(ticks, t_stat_low, t_stat_high)
+  current_tick <- ceiling(lower_bound / 50) * 50 # Closest number divisible by 50 higher than lower bound
+  
+  while (current_tick < upper_bound) {
+    if (abs(current_tick - lower_bound) >= 2 && 
+        abs(current_tick - upper_bound) >= 2 &&
+        abs(current_tick - t_stat_low) >= 2 &&
+        abs(current_tick - t_stat_high) >= 2
+        ) {
+      ticks <- c(ticks, round(current_tick, 2))
+    }
+    current_tick <- current_tick + 50
+  }
+  
+  # Add the mean value and sort the vector
+  hist_ticks <- sort(c(ticks, mean_value))
+  
+  # Create the color vector
+  x_axis_tick_text <- rep("black", length(hist_ticks))
+  mean_index <- which(hist_ticks == mean_value)
+  t_stat_low_index <- which(hist_ticks == t_stat_low)
+  t_stat_high_index <- which(hist_ticks == t_stat_high)
+  
+  x_axis_tick_text[mean_index] <- "darkorange"
+  x_axis_tick_text[t_stat_low_index] <- "red"
+  x_axis_tick_text[t_stat_high_index] <- "red"
+  
+  # Round the tick values to 2 decimal points
+  hist_ticks <- round(hist_ticks, 2)
+  
+  return(list("hist_ticks" = hist_ticks, "x_axis_tick_text" = x_axis_tick_text))
+}
+
 
 #' Generate a histogram of the T-statistic values for the given input data, with the 
 #'  option to specify lower and upper cutoffs for filtering outliers.
@@ -784,23 +1120,41 @@ getFunnelPlot <- function(input_data, effect_cutoff=0.2, precision_cutoff=0.2, v
 #' @param input_data A data frame containing the T-statistic values to be plotted.
 #' @param lower_cutoff An optional numeric value specifying the lower cutoff for filtering outliers. Default is -150.
 #' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
+#' @param lower_tstat A numeric value specifying which t statistic should be highlighted in the plot
+#' @param higher_tstat Similar to lower_tstat
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
-getTstatHist <- function(input_data, lower_cutoff = -150, upper_cutoff = 150){
+getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
+                         lower_tstat = -1.96, upper_tstat = 1.96){
   # Specify a cutoff filter
   t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff) #removing the outliers from the graph
+  hist_data <- input_data[t_hist_filter,]
+  
+  # Get lower bound
+  lbound_choices <- c(lower_cutoff, min(hist_data$t_w)) # Either lowest t-stat, or cutoff point
+  hist_lbound <- lbound_choices[which.max(lbound_choices)] # Choose the higher one
+  # Get upper bound
+  ubound_choices <- c(upper_cutoff, max(hist_data$t_w)) # Either highest t-stat, or cutoff point
+  hist_ubound <- ubound_choices[which.min(ubound_choices)] # Choose the lower one
+  # Put all the visual information input together
+  hist_mean <- mean(hist_data$t_w)
+  base_hist_ticks <- c(hist_lbound, hist_ubound, hist_mean, lower_tstat, upper_tstat)
+  # Generate and extract variable visual information
+  hist_visual_info <- generateHistTicks(base_hist_ticks)
+  hist_ticks <- hist_visual_info$hist_ticks
+  hist_ticks_text <- hist_visual_info$x_axis_tick_text
+  
   # Construct the histogram
   quiet(
-    t_hist_plot <- ggplot(data = input_data[t_hist_filter,], aes(x = t_w[t_hist_filter], y = after_stat(density))) +
+    t_hist_plot <- ggplot(data = hist_data, aes(x = t_w, y = after_stat(density))) +
       geom_histogram(color = "black", fill = "#1261ff", bins = "80") +
       geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
-      geom_vline(aes(xintercept = -1.96), color = "red", linewidth = 0.5) +
-      geom_vline(aes(xintercept = 1.96), color = "red", linewidth = 0.5) +
+      geom_vline(aes(xintercept = lower_tstat), color = "red", linewidth = 0.5) +
+      geom_vline(aes(xintercept = upper_tstat), color = "red", linewidth = 0.5) +
       labs(x = "T-statistic", y = "Density") +
-      scale_x_continuous(breaks = c(-1.96, 1.96, round(mean(data$t_w),2), 50, 100, 130),
-                         limits = c(-10, 130)) + 
+      scale_x_continuous(breaks = hist_ticks) + 
       main_theme(
-        x_axis_tick_text = c("red", "red", "darkorange", "black", "black", "black"))
+        x_axis_tick_text = hist_ticks_text)
   )
   # Print out the plot
   suppressWarnings(print(t_hist_plot))
@@ -854,12 +1208,12 @@ getLinearTests <- function(data) {
   ols <- lm(formula = effect_w ~ se_w, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
   ols_coefs <- extractLinearCoefs(ols_res)
-  # FE
-  fe <- rma(effect_w, sei = se_w, mods = ~se_w, data = data, method = "FE")
-  fe_res <- coeftest(fe, vcov = vcov(fe, type = "fixed", cluster = c(data$study_id)))
-  fe_coefs <- extractLinearCoefs(fe_res)
-  # RE
-  re <- rma(effect_w, sei = se_w, mods = ~se_w, data = data, method = "REML")
+  # Between effects
+  be <- plm(effect_w ~ se_w, model = "between", index = "study_id", data = data)
+  be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
+  be_coefs <- extractLinearCoefs(be_res)
+  # Random Effects
+  re <- plm(effect_w ~ se_w, model = "random", index = "study_id", data = data)
   re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
   re_coefs <- extractLinearCoefs(re_res)
   # Weighted by number of observations per study
@@ -873,12 +1227,13 @@ getLinearTests <- function(data) {
   # Combine the results into a data frame
   results <- data.frame(
     OLS = ols_coefs,
-    FE = fe_coefs,
+    BE = be_coefs,
     RE = re_coefs,
     OLS_weighted_study = ols_w_study_coefs,
     OLS_weighted_precision = ols_w_precision_coefs
   )
   rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)")
+  colnames(results) <- c("OLS", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
   # Print the results into the console
   print("Results of the linear tests, clustered by study:")
   print(results)
@@ -973,6 +1328,7 @@ getStemResults <- function(data, ...){
     10^(-4), # Tolerance - set level of sufficiently small stem to determine convergence
     10^3 # max_N_count - set maximum number of iteration before termination
   )
+  
   est_stem <- stem(data$effect_w, data$se_w, stem_param)$estimates # Actual esimation
   
   # Save results
@@ -1290,7 +1646,12 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
   # Get the best instrument(s)
   best_instruments <- rownames(results[max_values,])
   # Return results - verbose
-  print(paste0("Identified ", best_instruments, " as the best instrument."))
+  if (length(best_instruments > 1)){
+    print(paste0("Identified multiple best instruments:"))
+    print(best_instruments)
+  } else {
+    print(paste0("Identified ", best_instruments, " as the best instrument."))
+  }
   return(best_instruments)
 }
 
@@ -1327,8 +1688,8 @@ getIVResults <- function(data, ...){
   best_instrument <- findBestInstrument(data, instruments, instruments_verbose)
   # If more best instruments are identified
   if (length(best_instrument) > 1){ 
-    best_instrument <- best_instrument[0] # Choose the first one arbitrarily
-    print(paste0("More best instruments identified. Running the regression for ", best_instrument))
+    best_instrument <- best_instrument[1] # Choose the first one arbitrarily
+    print(paste("Choosing", best_instrument, "arbitrarily as an instrument for the regression."))
   }
   stopifnot(
     best_instrument %in% instruments_verbose,
@@ -1407,30 +1768,30 @@ getPUniResults <- function(data, method="ML",...){
     method %in% c("ML", "P") # Max likelihood, Moments
   )
   # Calculate medians for all studies
-  med_effect_w <- getMedians(data, 'effect_w') # Effect vector of medians
-  med_se_w <- getMedians(data, 'se_w') # SE vector of medians
+  med_t <- getMedians(data, 't_w') # T-stat vector of medians
+  med_nobs <- getMedians(data, 'n_obs') # N-obs vector of medians
   #Estimation
   if (method == "ML"){
     #Maximum likelihood
     quiet(
-      est_ml <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "ML", alpha = 0.05,
-                             control=list( max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
+      est_main <- puni_star(tobs = med_t, ni = med_nobs, side = "right", method = "ML", alpha = 0.05,
+                             control=list(stval.tau=0.5, max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
     )
   } else if (method == "P"){
     # Moments method estimation
     quiet(
-      est_ml <- puni_star(yi = med_effect_w, vi = med_se_w^2, side = "right", method = "P",
-                          alpha = 0.05,control=list(max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
+      est_main <- puni_star(tobs = med_t, ni = med_nobs, side = "right", method = "P",
+                          alpha = 0.05,control=list(stval.tau = 0.5, max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
     )
   } else {
     stop("Broken validity checks") # Should not happen
   }
-  est_se <- (est_ml$ci.ub - est_ml$ci.lb) / (2*1.96) # Standard error of the estmiate
+  est_se <- (est_main$ci.ub - est_main$ci.lb) / (2*1.96) # Standard error of the estmiate
   # Extract and save coefficients - using a custom format for this method
-  est_effect_verbose <- round(est_ml$est, 5) # Effect Beyond Bias
+  est_effect_verbose <- round(est_main$est, 5) # Effect Beyond Bias
   est_se_verbose <- paste0("(", round(est_se, 5), ")") # Effect Standard Error
-  est_pub_test_verbose <- paste0("L = ", round(est_ml$L.0, 5)) # Test statistic of p-uni publication bias test
-  est_pub_p_val_verbose <- paste0("(p = ", round(est_ml$pval.0, 5), ")") # P-value for the L test statistic
+  est_pub_test_verbose <- paste0("L = ", round(est_main$L.0, 5)) # Test statistic of p-uni publication bias test
+  est_pub_p_val_verbose <- paste0("(p = ", round(est_main$pval.0, 5), ")") # P-value for the L test statistic
   # Return as a vector
   p_uni_coefs_out <- c(
     est_pub_test_verbose,
@@ -1492,7 +1853,6 @@ getExoTests <- function(input_data) {
 #' @param width [numeric] The width of the Caliper interval used to define the sub-sample of observations used in the test. Default is 0.05.
 #' @return A numeric vector with four elements: the estimate of the proportion of results reported, the standard error of the estimate,
 #' the number of observations with t-statistics above the threshold, and the number of observations with t-statistics below the threshold.
-
 runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
   # Validate input
   stopifnot(
@@ -1588,8 +1948,109 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
 }
 
 ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
-getEliott <- function(input_data){
-  return('eliott results here')
+
+#' getEliottResults - Calculate Elliot's five tests and other statistics for a given dataset
+#'  - Source: https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA18583
+#'
+#' @param input_data A data frame containing at least the "t_w" and "reg_df" columns.
+#' @param data_subsets A character vector with the names of the subsets of data to test. By default, only "All data" is tested.
+#' @param p_min The minimum p-value threshold for the tests. Default is 0.
+#' @param p_max The maximum p-value threshold for the tests. Default is 1.
+#' @param d_point The discontinuity cutoff point for the discontinuity test. Default is 0.15.
+#' @param CS_bins The number of bins for the Cox-Shi test. Default is 10.
+#' @param verbose A logical indicating whether to print the results to console. Default is TRUE.
+#'
+#' @return A data frame with the results of the Elliot tests and other statistics.
+getEliottResults <- function(input_data, data_subsets = c("All data"), 
+      p_min = 0, p_max = 1, d_point = 0.15, CS_bins = 10, verbose = T){
+  # Validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is.vector(data_subsets),
+    is.numeric(p_min),
+    is.numeric(p_max),
+    is.numeric(d_point),
+    is.numeric(CS_bins),
+    is.logical(verbose),
+    all(c("t_w", "reg_df") %in% colnames(input_data))
+  )
+  # Static values, not necessary to adjust (probably)
+  id <- 1 # No dependence
+  h <- 0.01
+  lcm_norm <- 8
+  # Create the data frame with the appropriate dimensions and labels
+  # Rownames
+  threshold1_verbose <- paste0("Observations in [",p_min,", ",p_max,"]")
+  threshold2_verbose <- paste0("Observations <= ", d_point)
+  data_rownames <- c(
+    "Binomial:",
+    "s Test:",
+    "Discontinuity:",
+    "CS1:",
+    "CS2B:",
+    "LCM:",
+    threshold1_verbose,
+    threshold2_verbose
+  )
+  # Colnames
+  data_colnames <- data_subsets
+  # DF
+  elliot_df <- data.frame(matrix(NA, nrow = length(data_rownames), ncol = length(data_colnames)))
+  rownames(elliot_df) <- data_rownames
+  colnames(elliot_df) <- data_colnames
+  # Load the source script
+  source("elliot_master_thesis_cala.R")
+  # Load the file with CDFs (if it does not exist, create one)
+  elliot_source_file <- "elliot_data_master_thesis_cala.csv"
+  if (file.exists(elliot_source_file)){
+    cdfs <- read.csv(elliot_source_file, col.names = "cdfs") # Read if exists
+  } else {
+    cdfs <- getCDFs(create_csv = T) # Generate the file from scratch (takes time)
+  }
+  cdfs <- as.numeric(cdfs[,1]) # To a numeric vector
+  # Run the estimation for all data subsets
+  for (data_col in data_colnames){
+    # Get the data subset
+    data <- input_data # Adjust later if desired
+    
+    # Convert t-statistics to p-values
+    t_w <- data$t_w
+    df <- data$reg_df
+    P <- 2 * pt(abs(t_w), df = df, lower.tail=FALSE) # p-values
+     
+    # Tests (each test returns the corresponding p-value)
+    Bin_test <- Binomial(P, p_min, p_max, "c")
+    Discontinuity <- Discontinuity_test(P,d_point, h)
+    LCM_sup <- LCM(P, p_min,p_max, lcm_norm, cdfs)
+    CS_1 <- CoxShi(P,id, p_min, p_max, CS_bins, 1, 0) #Test for 1-monotonicity
+    CS_2B <- CoxShi(P,id, p_min, p_max, CS_bins, 2, 1) #Test for 2-monotonicity and bounds
+    FM <- Fisher(P, p_min, p_max)
+    
+    # Save the results
+    elliot_res <- c(Bin_test, Discontinuity, LCM_sup, CS_1, CS_2B, FM)
+    elliot_res <- sapply(elliot_res, function(x){round(x,3)})
+    
+    # Thresholds
+    n_obs_between <- length(P[P>=p_min&P<=p_max])
+    n_obs_below <- length(P[P<=d_point&P>=0])
+  
+    # Fill in the data frame with values from elliot_res
+    elliot_df["Binomial:", data_col] <- elliot_res[1]
+    elliot_df["Discontinuity:", data_col] <- elliot_res[2]
+    elliot_df["LCM:", data_col] <- elliot_res[3]
+    elliot_df["CS1:", data_col] <- elliot_res[4]
+    elliot_df["CS2B:", data_col] <- elliot_res[5]
+    elliot_df["s Test:", data_col] <- elliot_res[6]
+    elliot_df[threshold1_verbose, data_col] <- n_obs_between # In between min, max
+    elliot_df[threshold2_verbose, data_col] <- n_obs_below # Below disc cutoff
+  }
+  
+  if (verbose){
+    print(paste0("Results of the Elliot tests:"))
+    print(elliot_df)
+    cat("\n\n")
+  }
+  return(elliot_df)
 }
 
 ###### MAIVE Estimator (Irsova et al., 2023) ######
@@ -1644,36 +2105,113 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
 }
 
 
-######################### BAYESIAN MODEL AVERAGING #########################
+######################### MODEL AVERAGING #########################
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
+    
+#' This function searches for an optimal Bayesian Model Averaging (BMA) formula by removing the variables
+#' with the highest Variance Inflation Factor (VIF) until the VIF coefficients of the remaining variables
+#' are below 10 or the maximum number of groups to remove is reached.
+#'
+#' @param input_data A data frame containing the input data.
+#' @param input_var_list A data frame containing the variable names, a boolean indicating whether the variable
+#' is a potential variable for the model, and a grouping category for each variable.
+#' @param max_groups_to_remove An integer indicating the maximum number of variable groups to remove.
+#' @param return_variable_vector_instead A logical value indicating whether the function should return
+#' a vector of remaining variables instead of the BMA formula.
+#' @param verbose A logical value indicating whether the function should print the progress and the suggested BMA formula.
+#'
+#' @return If return_variable_vector_instead is TRUE, the function returns a character vector of the remaining variables.
+#' Otherwise, it returns a formula object of the suggested BMA formula.
+findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remove = 30,
+                                    return_variable_vector_instead = F, verbose = T) {
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.numeric(max_groups_to_remove),
+    is.logical(return_variable_vector_instead),
+    is.logical(verbose),
+    all(c("bma_potential_var", "var_name", "group_category") %in% colnames(input_var_list))
+  )
+  # Extract the information from source data
+  bma_potential_vars_bool <- input_var_list$bma_potential_var
+  potential_vars <- input_var_list$var_name[bma_potential_vars_bool]
+  var_grouping <- input_var_list$group_category[bma_potential_vars_bool]
+  
+  # Pop the effect from var grouping (not used in the iteration)
+  var_grouping <- var_grouping[!potential_vars == "effect_w"]
+  
+  # Get initial BMA formula and VIF coefficients
+  bma_formula <- getBMAFormula(potential_vars)
+  bma_lm <- lm(bma_formula, data = input_data)
+  vif_coefs <- car::vif(bma_lm)
+  if (length(var_grouping) != length(vif_coefs)){
+    print("The lengths of the variable vectors do not match")
+  }
+
+  removed_groups <- 0
+  removed_groups_verbose <- c()
+  while (any(vif_coefs > 10) && max_groups_to_remove > 0) {
+    # Get the group with the highest VIF coefficient
+    highest_vif_coef <- which.max(vif_coefs)
+    highest_vif_group <- var_grouping[highest_vif_coef]
+    # Get new potential vars, new grouping
+    vars_to_remove <- potential_vars[var_grouping == highest_vif_group]
+    potential_vars <- potential_vars[!potential_vars %in% vars_to_remove]
+    var_grouping <- var_grouping[!var_grouping %in% highest_vif_group]
+    # Get modified BMA formula and VIF coefficients
+    bma_formula <- getBMAFormula(potential_vars)
+    bma_lm <- lm(bma_formula, data = input_data)
+    vif_coefs <- car::vif(bma_lm)
+    if (length(var_grouping) != length(vif_coefs)){
+      print("The lengths of the variable vectors do not match")
+    }
+    # Decrease the maximum number of groups to remove
+    max_groups_to_remove <- max_groups_to_remove - 1
+    removed_groups <- removed_groups + 1
+    removed_groups_verbose <- append(removed_groups_verbose, vars_to_remove)
+  }
+  # Print out the information about the procedure outcome
+  if (max_groups_to_remove == 0) {
+    message("Maximum number of groups to remove reached. Returning variables found so far.")
+  }
+  if (verbose) {
+    print(paste("Removed", removed_groups, "groups with VIF > 10."))
+    print("The removed groups contained these variables:")
+    print(removed_groups_verbose)
+    print("The suggested BMA formula is:")
+    print(bma_formula)
+  }
+  # Return the outcome
+  if (return_variable_vector_instead){
+    return(potencial_vars)
+  }
+  return(bma_formula)
+}
 
 #' Creates a formula for Bayesian model averaging
 #'
 #' This function creates a formula for Bayesian model averaging based on the variables in \code{var_vector}.
 #' The formula includes the variables "effect_w" and "se_w", as well as any other variables specified in \code{var_vector}.
 #'
-#' @param input_var_list [data.frame] A data frame that contains the names of the variables, and a boolean vector indicating
-#'  whether they should be used in the formula.
+#' @param input_var [vector] A vector of variables that should be used to construct the formula. Must include
+#' "effect_w" and "se_w".
 #' @param get_var_vector_instead [bool] If TRUE, return a vector with variable names instead, with effect and se
-#'  at the first two positions of the vector. Used in BMA itself. Defaults to FALSE.
+#'  at the first two positions of the vector. Used for a simple rearrangement. Defaults to FALSE.
 #' @return A formula object (to be used) Bayesian model averaging
-getBMAFormula <- function(input_var_list, get_var_vector_instead = F){
-  # Input validation
+#' 
+#' @note To get the vector itself from the formula, you can use the in-built "all.vars()" method instead.
+getBMAFormula <- function(input_var, get_var_vector_instead = F){
+  # Validate the input
   stopifnot(
-    all(c("bma", "var_name") %in% colnames(input_var_list))
+    all(c("effect_w","se_w") %in% input_var)
   )
-  # Get the list of variables to run the bma for
-  desired_vars_bool <- input_var_list$bma 
-  desired_vars <- input_var_list$var_name[desired_vars_bool]
-  # Validate the list again
-  stopifnot(
-    all(c("effect_w","se_w") %in% desired_vars)
-  )
+  # Separate the effect and SE from the remaining variables
+  bool_wo_effect <- input_var != "effect_w" # Pop effect
+  bool_wo_se <- input_var != "se_w" # Pop se
+  remaining_vars <- input_var[bool_wo_effect & bool_wo_se] # Remaining variables
   # Get the formula
-  bool_wo_effect <- desired_vars != "effect_w" # Pop effect
-  bool_wo_se <- desired_vars != "se_w" # Pop se
-  remaining_vars <- desired_vars[bool_wo_effect & bool_wo_se] # All but the two (wonky, might improve sometimes later)
   if (get_var_vector_instead){
     var_vector <- c("effect_w", "se_w", remaining_vars)
     return(var_vector)
@@ -1687,34 +2225,40 @@ getBMAFormula <- function(input_var_list, get_var_vector_instead = F){
 #' Function to test the Variance Inflation Factor of a Linear Regression Model
 #'
 #' @details runVifTest is a function that tests the Variance Inflation Factor (VIF) of a linear regression model.
-#' It takes three arguments: input_data, input_var_list, and print_all_coefs. The function tests whether
-#' the columns "effect_w" and "se_w" are present in the input data frame. If the validation passes, it creates a
-#' linear regression model using the input data and the specified variables. Then, it calculates the VIF coefficients
+#' It takes three arguments: input_, and print_all_coefs. The function tests whether the input_ is either a vector
+#' or a formula. If it is a vector of variables, it transforms it into a formula. Then, it calculates the VIF coefficients
 #' using the vif function from the car package. If print_all_coefs is set to TRUE, the function prints all the VIF
 #' coefficients. If any of the VIF coefficients is larger than 10, the function prints a message indicating the
 #' variables with a high VIF. Otherwise, it prints a message indicating that all variables have a VIF lower than 10.
 #' Finally, the function returns the VIF coefficients as a numeric vector.
 #' 
-#' @param input_data [data.frame] A data frame containing the data for the regression model.
-#' @param input_var_list [data.frame] A data frame containing variable information.
+#' @param input_var [vector | formula] One of - vector of variable names, formula. If it is a vector, the function
+#' transforms the input into a formula.
+#' @param input_data [data.frame] Data to run the test on.
 #' @param print_all_coefs [bool] A logical value indicating whether to print all the VIF coefficients into
 #'  the console
 #'
 #' @return [vector] A numeric vector with the VIF coefficients.
-runVifTest <- function(input_data, input_var_list, print_all_coefs = F){
+runVifTest <- function(input_var, input_data, print_all_coefs = F){
   # Validate input
   stopifnot(
-    all(c("effect_w","se_w") %in% colnames(input_data)),
-    !any(is.na(input_data)) # No missing values allowed
+    any(
+      is_formula(input_var),
+      is.vector(input_var)
+    ),
+    is.data.frame(input_data)
   )
-  #Testing for VIF
-  BMA_formula <- getBMAFormula(input_var_list)
+  # Get the BMA formula - explicit because RRRRRR
+  if (is.vector(input_var)){
+    BMA_formula <- getBMAFormula(input_var)
+  } else{
+    BMA_formula <- input_var
+  }
   BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
   # Unhandled exception - fails in case of too few observations vs. too many variables
   vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients
-  return(vif_coefs)
   if (print_all_coefs){
-    print("There are all the Variance Inflation Coefficients:")
+    print("These are all the Variance Inflation Coefficients for this formula:")
     print(vif_coefs)
   }
   if (any(vif_coefs > 10)){
@@ -1735,19 +2279,51 @@ runVifTest <- function(input_data, input_var_list, print_all_coefs = F){
 #' plots in the extractBMAResults requires the data object, so this function allows for that
 #' object to exist outside the scope of the runBMA function, where it would be otherwise hidden.
 #'
+#' @param input_data [data.frame] A data from containing the BMA data (and more)
+#' @param input_var_list [data.frame] A data frame containing the variable information.
+#' @param variable_info [data.frame | vector] Either a data frame containing the variable information,
+#'  or a vector of variables. In the latter case, the "from_vector" variable must be set to T.
+#' @param from_vector [logical] If True, the "variable_info" must be specified as a vector, otherwise
+#'  as a data frame. Defaults to FALSE.
 #' @note When transforming/subsetting the data, there is a need to convert the data into a
 #' data.frame object, otherwise the plot functions will not recognize the data types correctly
 #' later on. The "bms" function works well even with a tibble, but the plots do not. RRRRRRR
-getBMAData <- function(input_data, input_var_list){
+getBMAData <- function(input_data, input_var_list, variable_info, from_vector = T){
   # Input validation
   stopifnot(
     is.data.frame(input_data),
-    is.data.frame(input_var_list)
+    is.data.frame(input_var_list),
+    any(
+      is.data.frame(variable_info),
+      is.vector(variable_info)
+    ),
+    is.logical(from_vector)
   )
   # Subset the data
-  bma_vars <- getBMAFormula(input_var_list, get_var_vector_instead = TRUE) # Vector of BMA variables, effect and se first
-  bma_data <- input_data[bma_vars] # Only desired variables
+  if (from_vector & !is.vector(variable_info)){
+    stop("You must provide a vector if you wish to extract the variable information form a vector.")
+  }
+  if (!from_vector & !is.data.frame(variable_info)){
+    stop("You must provide a data frame if you wish to extract the variable information form a data frame.")
+  }
+  if (is.data.frame(variable_info)){ # Input data frame
+    desired_vars_bool <- variable_info$bma
+    desired_vars <- variable_info$var_name[desired_vars_bool]
+  } else { # Input vector
+   desired_vars <- variable_info
+  }
+  bma_data <- input_data[desired_vars] # Only desired variables
   bma_data <- as.data.frame(bma_data) # To a data.frame object, because RRRR
+  
+  # Convert all specified columns to logs - sub-optimal approach
+  for (column in colnames(bma_data)){
+    row_idx <- match(column, input_var_list$var_name)
+    to_log <- as.logical(input_var_list[row_idx, "to_log_for_bma"])
+    if (to_log){
+      bma_data[,column] <- log(bma_data[,column])
+      bma_data[is.infinite(bma_data[,column]),column] <- 0 # Replace infinite values with 0
+    }
+  }
   return(bma_data)
 }
 
@@ -1758,20 +2334,18 @@ getBMAData <- function(input_data, input_var_list){
 #' estimation inside the 'bms' function. Validate correct input, run the estimation, and
 #' return the BMA model without printing any results.
 #' 
-#' @param bma_data [data.frame] The data for BMA. Effect_w must be in the first column.
-#' @param input_var_list [data.frame] A data frame containing variable information, and a "bma"
-#' column indicating whether those variables should be used in the estimation.
+#' @param bma_data [data.frame] The data for BMA. "effect_w" must be in the first column.
 #' @inheritDotParams Parameters to be used inside the "bms" function. These are:
 #' burn, iter, g, mprior, nmodel, mcmc
 #' For more info see the "bms" function documentation.
 #' @return The bma model
-runBMA <- function(bma_data, input_var_list, ...){
+runBMA <- function(bma_data, ...){
   # Input validation
   stopifnot(
     is.data.frame(bma_data),
-    is.data.frame(input_var_list),
     !any(is.na(bma_data)), # No missing obs
-    all(sapply(bma_data,is.numeric)) # Only numeric obs
+    all(sapply(bma_data,is.numeric)), # Only numeric obs
+    colnames(bma_data[,1]) == "effect_w"
   )
   # Actual estimation with inhereted parameters
   print("Running the Bayesian Model Averaging...")
@@ -1813,7 +2387,6 @@ runBMA <- function(bma_data, input_var_list, ...){
 #'  * all - print all results, plots included (takes a long time)
 #'
 #' @return A numeric vector containing only the BMA coefficients.
-
 extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
   # Validate the input
   stopifnot(
@@ -1825,6 +2398,7 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
   # Print out coefficient and model statistics
+  print("Results of the Bayesian Model Averaging:")
   if (print_results %in% c("verbose","all")){
     print(bma_model) # Coefficients, summary information
     print(bma_model$topmod[1]) # Topmod
@@ -1838,8 +2412,6 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
     image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
           do.axis=TRUE, xlab = "", main = "") # Takes time
     plot(bma_model)
-  }
-  if (print_results != "none"){
     # Correlation matrix
     bma_col<- colorRampPalette(c("red", "white", "blue"))
     bma_matrix <- cor(bma_data)
@@ -1849,8 +2421,153 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
                    number.cex = 0.5,cl.cex=0.8, cl.ratio=0.1) 
   }
   # Return coefficients only
+  if (!print_results == "none"){
+    cat("\n\n")
+  }
   return(bma_coefs)
 }
+
+#' A helper function (not used in the main analysis) that allows the user to generate
+#' a boolean vector for the excel variable info sheet - namely the "bma" column.
+#' 
+#' Serves as a way to extract the list of variables that the optimal BMA formula chooses.
+#' 
+#' @param input_var_list [data.frame] The data frame with variable information.
+#' @param bma_formula [formula] Formula of the BMA model.
+#' @param verbose [bool] If TRUE, print out the resulting boolean vector into the console.
+#' Defaults to TRUE.
+#' @return Boolean vector.
+getBMAExcelBool <- function(input_var_list, bma_formula, verbose = T){
+  # Input validation
+  stopifnot(
+    is.data.frame(input_var_list),
+    is_formula(bma_formula),
+    is.logical(verbose)
+  )
+  # Get the excel "bma" boolean
+  bma_vars <- all.vars(bma_formula)
+  bma_bool <- input_var_list$var_name %in% bma_vars
+  if (verbose){
+    print(bma_bool)
+  }
+  invisible(bma_bool)
+}
+
+###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
+
+#' runFMA - Run Frequentist Model Averaging
+#'
+#' This function takes a Bayesian model averaging object, a data frame, and a list of variables
+#' used in the Bayesian model averaging, and runs the frequentist model averaging.
+#' It extracts and prints the final model coefficients and their standard errors.
+#' It also returns the results as a data frame. Optionally, it can print the results.
+#'
+#' @param bma_data [data.frame] A data frame containing the data used to fit the BMA model.
+#' @param bma_model [bma] A Bayesian model averaging object obtained from the BMA package.
+#' @param input_var_list [data.frame] A data frame containing a list of variables used in the Bayesian model averaging.
+#' @param verbose [logical] A logical value. If TRUE, the function prints the results.
+#'
+#' @return The function returns a data frame with the final model coefficients and their standard errors.
+#'
+#' @details
+#' The function first validates the input arguments. Then it extracts the variables used
+#' in the Bayesian model averaging and verifies that they exist in the input data.
+#' Afterward, the frequentist model averaging is performed on the ordered and preprocessed data.
+#' Finally, the function extracts and prints the results as a data frame.
+#'
+#' This function uses the LowRankQP package for optimization.
+runFMA <- function(bma_data, bma_model, verbose = T){
+  # Validate input
+  stopifnot(
+    is.data.frame(bma_data),
+    class(bma_model) == "bma",
+    names(bma_data[,1]) == "effect_w" # Restrictive, but extra safe
+  )
+  # Estimation from here
+  print("Running the Frequentist Model Averaging...")
+  # Main data - bma_data without the first column (effect)
+  x.data <- bma_data[,-1]
+  # Reorder the columns according to the bma_model coefficients
+  bma_c <- coef(bma_model,order.by.pip= T, exact=T, include.constant=T) #loading the matrix sorted by PIP
+  FMA_order <- c(0)
+  for (i in 1:nrow(bma_c)-1){
+    FMA_order[i] <- bma_c[i,5]
+  }
+  x.data <- x.data[,c(FMA_order)] # Order the data
+  const_<-c(1) # Vector of ones
+  x.data <-cbind(const_,x.data) # Plus the data set
+  x <- sapply(1:ncol(x.data),function(i){x.data[,i]/max(x.data[,i])})
+  scale.vector <- as.matrix(sapply(1:ncol(x.data),function(i){max(x.data[,i])}))
+  Y <- as.matrix(bma_data[,1]) # The effect
+  # Further groundwork
+  output.colnames <- colnames(x.data)
+  full.fit <- lm(Y~x-1)
+  beta.full <- as.matrix(coef(full.fit))
+  M <- k <- ncol(x)
+  n <- nrow(x)
+  beta <- matrix(0,k,M)
+  e <- matrix(0,n,M)
+  K_vector <- matrix(c(1:M))
+  var.matrix <- matrix(0,k,M)
+  bias.sq <- matrix(0,k,M)
+  
+  # Calculations
+  for(i in 1:M)
+  {
+    X <- as.matrix(x[,1:i])
+    ortho <- eigen(t(X)%*%X)
+    Q <- ortho$vectors ; lambda <- ortho$values
+    x.tilda <- X%*%Q%*%(diag(lambda^-0.5,i,i))
+    beta.star <- t(x.tilda)%*%Y
+    beta.hat <- Q%*%diag(lambda^-0.5,i,i)%*%beta.star
+    beta[1:i,i] <- beta.hat
+    e[,i] <- Y-x.tilda%*%as.matrix(beta.star)
+    bias.sq[,i] <- (beta[,i]-beta.full)^2
+    var.matrix.star <- diag(as.numeric(((t(e[,i])%*%e[,i])/(n-i))),i,i)
+    var.matrix.hat <- var.matrix.star%*%(Q%*%diag(lambda^-1,i,i)%*%t(Q))
+    var.matrix[1:i,i] <- diag(var.matrix.hat)
+    var.matrix[,i] <- var.matrix[,i]+ bias.sq[,i]
+  }
+  
+  e_k <- e[,M]
+  sigma_hat <- as.numeric((t(e_k)%*%e_k)/(n-M))
+  G <- t(e)%*%e
+  a <- ((sigma_hat)^2)*K_vector
+  A <- matrix(1,1,M)
+  b <- matrix(1,1,1)
+  u <- matrix(1,M,1)
+  quiet(
+    optim <- LowRankQP(Vmat=G,dvec=a,Amat=A,bvec=b,uvec=u,method="LU",verbose=FALSE)
+  )
+  weights <- as.matrix(optim$alpha)
+  beta.scaled <- beta%*%weights
+  final.beta <- beta.scaled/scale.vector
+  std.scaled <- sqrt(var.matrix)%*%weights
+  final.std <- std.scaled/scale.vector
+  results.reduced <- as.matrix(cbind(final.beta,final.std))
+  rownames(results.reduced) <- output.colnames; colnames(results.reduced) <- c("Coefficient","SE")
+  MMA.fls <- round(results.reduced,4)
+  MMA.fls <- data.frame(MMA.fls)
+  t <- as.data.frame(MMA.fls$Coefficient/MMA.fls$SE)
+  t[MMA.fls$Coefficient == 0,] <- 0 #added by the author
+  MMA.fls$pv <-round((1-apply(as.data.frame(apply(t,1,abs)), 1, pnorm))*2,3)
+  MMA.fls$pv[MMA.fls$pv == 1] <- 0 #added by the author
+  MMA.fls$names <- rownames(MMA.fls)
+  names <- c(colnames(bma_data))
+  names <- c(names,"const_")
+  MMA.fls <- MMA.fls[match(names, MMA.fls$names),]
+  MMA.fls$names <- NULL
+  
+  # Extract results
+  fma_res <- MMA.fls[-1,]
+  if (verbose){
+    print("Results of the Frequentist Model Averaging:")
+    print(fma_res)
+    cat("\n\n")
+  }
+  invisible(fma_res)
+}
+
 
 
 ######################### GRAPHICS #########################
