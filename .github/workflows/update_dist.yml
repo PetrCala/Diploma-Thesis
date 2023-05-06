@@ -7,19 +7,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Get list of R files
+       # Get the file names listed in dist_info.txt, remove carriage return characters,
+       # and check if they exist in the R folder
+      - name: Get Source Files
+        id: get_source_files
         run: |
           cd R
-          R_FILES=$(ls -1 *)
+          # check existence of the distribution file
+          if ! test -f dist_info.txt; then
+            echo "Error: Dist file not found in R folder"
+            exit 1
+          fi
+          # Read dist_info.txt, remove carriage return characters and store the result in SOURCE_FILES variable
+          SOURCE_FILES=$(cat dist_info.txt | tr -d '\r')
+          for f in $SOURCE_FILES; do
+            if ! test -f "$f"; then
+              echo "Error: $f not found in R folder"
+              exit 1
+            fi
+          done
+          # Set the output of this step to be used in the next step
+          echo "::set-output name=source_files::SOURCE_FILES"
 
-      - name: Copy updated R files to Dist folder
+      # Copy the updated files from the R folder to the Dist folder based on the file names in SOURCE_FILES
+      - name: Copy updated Source files to Dist folder
         run: |
           cd Dist
-          for f in ${{ steps.get_r_files.outputs.r_files }}; do
-            if test -f "$f"; then
+          for f in ${{ steps.get_source_files.outputs.source_files }}; do
+            # Check if the file doesn't exist in the Dist folder or if it's different from the one in the R folder
+            if ! test -f "$f" || ! cmp -s "../R/$f" "$f"; then
+              # Copy the file from the R folder to the Dist folder
               cp ../R/$f .
             fi
           done
@@ -28,6 +49,7 @@ jobs:
         run: |
           cp README.md Dist/
 
+      # Commit the changes to the repository and push them
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Update the Dist files automatically
