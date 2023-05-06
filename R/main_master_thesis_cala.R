@@ -128,7 +128,7 @@ adjustable_parameters <- c(
   # Note - if you do not with to use any conditions, set the conditions to NA
   # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
   "data_subset_condition_1" = "ability_direct == 1",
-  "data_subset_condition_1" = NA,
+  "data_subset_condition_2" = NA,
   # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
   # Data winsorization characteristics
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)

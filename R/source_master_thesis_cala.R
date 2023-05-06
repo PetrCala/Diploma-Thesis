@@ -129,7 +129,7 @@ applyDataSubsetConditions <- function(data, conditions) {
     is.vector(conditions)
   )
   # Subset the data given the conditions
-  if (!is.na(conditions)) {
+  if (length(conditions) > 0) {
     for (condition in conditions) {
       if (!is.na(condition)){
         # Evaluate each condition and apply it to the data frame
