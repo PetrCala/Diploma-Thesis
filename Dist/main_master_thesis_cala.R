@@ -114,7 +114,7 @@ run_this <- c(
   "p_hacking_tests" = F,
   "bma" = F,
   "fma" = F, # Should be ran together with BMA
-  "best_practice_estimate" = T
+  "best_practice_estimate" = T # Should be ran together with BMA
 )
 
 #' ADJUSTABLE PARAMETERS
@@ -491,10 +491,13 @@ if (run_this["fma"]){
 ######################### BEST-PRACTICE ESTIMATE #########################
 
 if (run_this["best_practice_estimate"]){
+  if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
+    stop("You must create these two objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
+  }
+  # Actual estimation
   bpe_study_ids <- getMultipleParams(adjustable_parameters, "bpe_studies", "numeric")
   bpe_use_ci <- as.logical(adjustable_parameters["bpe_use_ci"])
   bpe_res <- generateBPEResultTable(bpe_study_ids,
                     data, var_list, bma_model, bma_formula, bma_data,
                     use_ci = bpe_use_ci, verbose_output = TRUE)
 }
-
