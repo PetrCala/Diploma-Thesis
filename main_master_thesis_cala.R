@@ -114,7 +114,7 @@ run_this <- c(
   "p_hacking_tests" = F,
   "bma" = F,
   "fma" = F, # Should be ran together with BMA
-  "best_practice_estimate" = F
+  "best_practice_estimate" = T
 )
 
 #' ADJUSTABLE PARAMETERS
@@ -168,7 +168,14 @@ adjustable_parameters <- c(
   "bma_mprior" = "random", # Model Prior
   "bma_nmodel" = 20000, # Number of models (def 50000)
   "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-  "bma_print_results" = "fast" # Print results - one of c("none", "fast", "verbose", "all")
+  "bma_print_results" = "fast", # Print results - one of c("none", "fast", "verbose", "all")
+  # Best practice estimate parameters
+  "bpe_studies" = c( # Vector of study indexes for which to run the BPE. For author's BPE, use 0.
+    0,
+    1,
+    2
+  ),
+  "bpe_use_ci" = TRUE # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
 )
 
 ######################################################################
@@ -483,4 +490,11 @@ if (run_this["fma"]){
 
 ######################### BEST-PRACTICE ESTIMATE #########################
 
-temp <- getBPE(data, var_list, bma_model, bma_formula, bma_data, study_id = 9, include_intercept = TRUE)
+if (run_this["best_practice_estimate"]){
+  bpe_study_ids <- getMultipleParams(adjustable_parameters, "bpe_studies", "numeric")
+  bpe_use_ci <- as.logical(adjustable_parameters["bpe_use_ci"])
+  bpe_res <- generateBPEResultTable(bpe_study_ids,
+                    data, var_list, bma_model, bma_formula, bma_data,
+                    use_ci = bpe_use_ci, verbose_output = TRUE)
+}
+
