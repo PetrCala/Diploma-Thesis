@@ -471,7 +471,7 @@ if (run_this["bma"]){
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
-
+  
 if (run_this["fma"]){
   if (!exists("bma_data") || !exists("bma_model")){
     stop("You must create these two objects first - bma_data, bma_model. Refer to the 'bma' section.")
@@ -483,6 +483,4 @@ if (run_this["fma"]){
 
 ######################### BEST-PRACTICE ESTIMATE #########################
 
-getBPE(data, var_list, bma_model, bma_formula, bma_data)
-
-
+temp <- getBPE(data, var_list, bma_model, bma_formula, bma_data, study_id = 9, include_intercept = TRUE)
