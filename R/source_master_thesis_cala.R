@@ -2569,6 +2569,84 @@ runFMA <- function(bma_data, bma_model, verbose = T){
 }
 
 
+######################### BEST-PRACTICE ESTIMATE #########################
+
+
+
+
+
+# Write docstring later, used for constructing the formula for GLHT -> obtaining SE
+constructBPEFormula <- function(input_var_list, bma_data, bma_coefs) {
+  allowed_characters <- c('mean', 'median', 'min', 'max')
+  bma_vars <- rownames(bma_coefs)
+  # Check if all bma_vars except (Intercept) are present in source data
+  stopifnot(
+    all(bma_vars[bma_vars != "(Intercept)"] %in% input_var_list$var_name),
+    all(bma_vars[bma_vars != "(Intercept)"] %in% colnames(bma_data))
+  )
+  # Initialize the bpe_est_string with (Intercept)
+  bpe_est_string <- "(Intercept)"
+  # Iterate over the bma_vars and add the corresponding coefficients from input_var_list
+  for (bma_var in bma_vars) {
+    if (bma_var != "(Intercept)") {
+      coef <- input_var_list$bpe[input_var_list$var_name == bma_var] # All coerced to character - RRRRRR
+      # Handle unassigned variables
+      if (coef == "stop"){
+        stop("Make sure to assign values to all variables that appear in the BMA model.")
+      }
+      # Handle numeric coefficients
+      quiet(
+        numeric_var <- !is.na(as.numeric(coef)) # Recognize numeric values based on lack of error - not ideal
+      )
+      if(numeric_var){
+        coef <- as.numeric(coef) # To numeric
+        if (coef == 0){ # Do not add to the formula
+          next
+        }
+      } else { # char
+      # Handle character coefficients
+        stopifnot(
+          is.character(coef),
+          coef %in% allowed_characters
+          )
+        func <- get(coef) # Get the function to evaluate the value with - mean, median,...
+        coef <- func(bma_data[[bma_var]], na.rm=TRUE) # Evaluate on BMA data column of this variable
+        coef <- as.character(round(coef, 3)) # Back to character
+      }
+      # Handle output different than static numbers
+      bpe_est_string <- paste0(bpe_est_string, " + ", coef, "*", bma_var)
+    }
+  }
+  # Append =0 to finish the formula
+  bpe_est_string <- paste(bpe_est_string, "= 0")
+  return(bpe_est_string)
+}
+
+# Input the Est, SE, return a verbose output - maybe put as a part of the main function
+prettifyBPEOutput <- function(){
+}
+
+
+getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data){
+  # Input preprocessing
+  bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) # Extract the coefficients
+  bma_vars <- rownames(bma_coefs) # Variables used in the BMA
+  
+  # Get the BPE estimate
+  
+  # Get the BPE Standard error - first construct the formula, linear model, then run glht
+  bpe_formula <- constructBPEFormula(input_var_list, bma_data, bma_coefs) # Formula as a string (intercept + coefs = 0)
+  bpe_ols <- lm(formula = bma_formula, data = bma_data) #constructing an OLS model
+  bpe_glht <- glht(bpe_ols, linfct = c(bpe_formula), vcov = vcovHC(bpe_ols, type = "HC0", cluster = c(input_data$study_id)))
+  bpe_se <- as.numeric(summary(bpe_glht)$test$sigma)
+  
+  print(bpe_formula)
+  
+  return(bpe_se) # Change later
+}
+
+
+
 
 ######################### GRAPHICS #########################
 
