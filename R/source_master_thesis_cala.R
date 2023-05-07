@@ -2584,19 +2584,20 @@ runFMA <- function(bma_data, bma_model, verbose = T){
 #' @param bma_formula Formula used to generate the BMA model
 #' @param bma_data [data.frame] Data frame used to generate the BMA model
 #' @param study_id [numeric] ID of the study for which to run the BPE for. If equal
-#'  to NA, the variable list BPE information is used. Defaults to NA.
+#'  to 0, the variable list BPE information is used (author's BPE). Defaults to 0.
 #' @param include_intercept [logical] If TRUE, include intercept in the BPE.
 #'   Defaults to TRUE.
 #' @param get_se [logical] If TRUE, return the formula for SE evaluation instead (for
 #'   explanation see the getBPE function). Defaults to FALSE.
 #' @return [character] The formula as a string.
 constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
-                                study_id = NA, include_intercept = TRUE, get_se = FALSE) {
+                                study_id = 0, include_intercept = TRUE, get_se = FALSE) {
   # Check input
   stopifnot(
     is.data.frame(input_data),
     is.data.frame(input_var_list),
     is.data.frame(bma_data),
+    is.numeric(study_id),
     is.logical(include_intercept),
     nrow(input_data)==nrow(bma_data) # Input data used for indexing BMA data
   )
@@ -2621,7 +2622,7 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
   for (bma_var in bma_vars) {
     if (!bma_var %in% c("(Intercept)","se_w")){
       # Use a study
-      if (!is.na(study_id)){
+      if (study_id != 0){
         coef <- median(bma_data[input_data$study_id==study_id,bma_var])
       } else {
       # Use author's BPE - variable list information
@@ -2677,16 +2678,25 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
 #' @param bma_model Main model on which to evaluate the BPE on.
 #' @param bma_formula Formula used to generate the BMA model
 #' @param bma_data [data.frame] Data frame used to generate the BMA model
-#' @param study_id [NA|integer] ID of the study to run the BPE on. If set to NA,
-#'  run the author's BPE (using the variable information DF). Defaults to NA.
+#' @param study_id [numeric] ID of the study to run the BPE on. If set to 0,
+#'  run the author's BPE (using the variable information DF). Defaults to 0.
 #' @param include_intercept [logical] If TRUE, include intercept in the equation.
 #' Defaults to TRUE.
 #' @param verbose_output [logical] If TRUE, print out the output information into the console.
 #' Defaults to TRUE.
 getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
-                   study_id = NA, include_intercept = TRUE, verbose_output = TRUE){
+                   study_id = 0, include_intercept = TRUE, verbose_output = TRUE){
+  # Check input
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.data.frame(bma_data),
+    is.numeric(study_id),
+    is.logical(include_intercept),
+    is.logical(verbose_output)
+  )
   # Run information
-  if (is.na(study_id)){
+  if (study_id == 0){
     print("Running the author's best practice estimate...")
   } else {
     study_name <- input_data$study_name[input_data$study_id == study_id][1]
@@ -2725,8 +2735,19 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
 
 #' Generate a table with best multiple best practice estimate results
 #' 
-#' Input any number of the estimate and SE vectors and put them into a neat data frame.
-generateBPEResultTable <- function(bpe_est, bpe_se){
+#' Input the main data, specify for which studies the BPE should be ran, and 
+#' run the estimation using these specifications. Return a pretty table where 
+#' all results are presented neatly as estimates and their 95% confidence bounds.
+#' Alternatively, they can be presented as estimates and their standard errors.
+#' 
+#' @param input_data [data.frame] The main data frame that contains the study names and
+#' indexes.
+#' @param study_indexes [NA|vector] A vector with indexes of studies for which the 
+#' estimation shall be ran.
+#' @param use_ci [logical] If TRUE, use confidence intervals in the output. If FALSE,
+#' use standard errors instead. Defaults to TRUE.
+generateBPEResultTable <- function(input_data, study_indexes, use_ci = TRUE){
+  res <- data.frame()
 
   return("hi")
 }
