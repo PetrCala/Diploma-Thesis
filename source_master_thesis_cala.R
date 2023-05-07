@@ -2575,8 +2575,38 @@ runFMA <- function(bma_data, bma_model, verbose = T){
 
 
 
-# Write docstring later, used for constructing the formula for GLHT -> obtaining SE
-constructBPEFormula <- function(input_var_list, bma_data, bma_coefs) {
+#' Generate the formula for evaluation of the best practice estimate. Can either be
+#' used for obtaining of the BPE estimate, or the BPE standard error.
+#'
+#' @param input_data [data.frame] Main data frame.
+#' @param input_var_list [data.frame] Data frame with variable information.
+#' @param bma_model Main model on which to evaluate the BPE on.
+#' @param bma_formula Formula used to generate the BMA model
+#' @param bma_data [data.frame] Data frame used to generate the BMA model
+#' @param study_id [numeric] ID of the study for which to run the BPE for. If equal
+#'  to NA, the variable list BPE information is used. Defaults to NA.
+#' @param include_intercept [logical] If TRUE, include intercept in the BPE.
+#'   Defaults to TRUE.
+#' @param get_se [logical] If TRUE, return the formula for SE evaluation instead (for
+#'   explanation see the getBPE function). Defaults to FALSE.
+#' @return [character] The formula as a string.
+constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
+                                study_id = NA, include_intercept = TRUE, get_se = FALSE) {
+  # Check input
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.data.frame(bma_data),
+    is.logical(include_intercept),
+    nrow(input_data)==nrow(bma_data) # Input data used for indexing BMA data
+  )
+  # Define a bma_coefs lookup function - get value of the coefficient inside the coef object
+  getBMACoefValue <- function(coef_name, bma_coefs){
+    idx <- match(coef_name, rownames(bma_coefs))
+    val <- bma_coefs[idx,"Post Mean"]
+    return(val)
+  }
+  # Define static variables
   allowed_characters <- c('mean', 'median', 'min', 'max')
   bma_vars <- rownames(bma_coefs)
   # Check if all bma_vars except (Intercept) are present in source data
@@ -2584,12 +2614,19 @@ constructBPEFormula <- function(input_var_list, bma_data, bma_coefs) {
     all(bma_vars[bma_vars != "(Intercept)"] %in% input_var_list$var_name),
     all(bma_vars[bma_vars != "(Intercept)"] %in% colnames(bma_data))
   )
-  # Initialize the bpe_est_string with (Intercept)
-  bpe_est_string <- "(Intercept)"
+  # Initialize the bpe_est_string with (Intercept), or its value in case of BPE est
+  bpe_string_base <- ifelse(get_se, "(Intercept)", getBMACoefValue("(Intercept)", bma_coefs)) # Value for estimate
+  bpe_est_string <- ifelse(include_intercept, bpe_string_base, "") # Empty for no intercept
   # Iterate over the bma_vars and add the corresponding coefficients from input_var_list
   for (bma_var in bma_vars) {
-    if (bma_var != "(Intercept)") {
-      coef <- input_var_list$bpe[input_var_list$var_name == bma_var] # All coerced to character - RRRRRR
+    if (!bma_var %in% c("(Intercept)","se_w")){
+      # Use a study
+      if (!is.na(study_id)){
+        coef <- median(bma_data[input_data$study_id==study_id,bma_var])
+      } else {
+      # Use author's BPE - variable list information
+        coef <- input_var_list$bpe[input_var_list$var_name == bma_var] # Automatically coerced to character - RRRRRR
+      }
       # Handle unassigned variables
       if (coef == "stop"){
         stop("Make sure to assign values to all variables that appear in the BMA model.")
@@ -2603,6 +2640,7 @@ constructBPEFormula <- function(input_var_list, bma_data, bma_coefs) {
         if (coef == 0){ # Do not add to the formula
           next
         }
+        coef <- round(coef, 3)
       } else { # char
       # Handle character coefficients
         stopifnot(
@@ -2614,35 +2652,83 @@ constructBPEFormula <- function(input_var_list, bma_data, bma_coefs) {
         coef <- as.character(round(coef, 3)) # Back to character
       }
       # Handle output different than static numbers
-      bpe_est_string <- paste0(bpe_est_string, " + ", coef, "*", bma_var)
+      output_var_name <- ifelse(get_se, bma_var, getBMACoefValue(bma_var, bma_coefs)) # Var name for SE, value for EST
+      bpe_est_string <- paste0(bpe_est_string, " + ", coef, "*", output_var_name)
     }
   }
-  # Append =0 to finish the formula
-  bpe_est_string <- paste(bpe_est_string, "= 0")
+  # Append =0 to finish the formula in case of SE
+  if (get_se){
+    bpe_est_string <- paste(bpe_est_string, "= 0")
+  }
   return(bpe_est_string)
 }
 
-# Input the Est, SE, return a verbose output - maybe put as a part of the main function
-prettifyBPEOutput <- function(){
-}
 
-
-getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data){
+#' Get the Best practice estimate
+#' 
+#' Input all the necessary data and BMA outcome information, specify for which study
+#' you want to run the estimate for, whether to include the intercept, and whether to
+#' get a verbose output, and generate the best practice estimate. In case of no
+#' verbose output, a vector of two coefficients is returned - BPE mean, and BPE SE.
+#' In case of verbose output, three coefficients are returned - BPE mean, and 95% CI bounds.
+#' 
+#' @param input_data [data.frame] Main data frame.
+#' @param input_var_list [data.frame] Data frame with variable information.
+#' @param bma_model Main model on which to evaluate the BPE on.
+#' @param bma_formula Formula used to generate the BMA model
+#' @param bma_data [data.frame] Data frame used to generate the BMA model
+#' @param study_id [NA|integer] ID of the study to run the BPE on. If set to NA,
+#'  run the author's BPE (using the variable information DF). Defaults to NA.
+#' @param include_intercept [logical] If TRUE, include intercept in the equation.
+#' Defaults to TRUE.
+#' @param verbose_output [logical] If TRUE, print out the output information into the console.
+#' Defaults to TRUE.
+getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
+                   study_id = NA, include_intercept = TRUE, verbose_output = TRUE){
+  # Run information
+  if (is.na(study_id)){
+    print("Running the author's best practice estimate...")
+  } else {
+    study_name <- input_data$study_name[input_data$study_id == study_id][1]
+    print(paste("Running the best practice estimate for",study_name))
+  }
   # Input preprocessing
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) # Extract the coefficients
   bma_vars <- rownames(bma_coefs) # Variables used in the BMA
   
   # Get the BPE estimate
+  # Get formula as a string - ((intercept) + coefs * values)
+  bpe_formula_est <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
+                                     study_id, include_intercept, get_se = FALSE)
+  bpe_est <- eval(parse(text = bpe_formula_est)) # Evaluate the formula
   
-  # Get the BPE Standard error - first construct the formula, linear model, then run glht
-  bpe_formula <- constructBPEFormula(input_var_list, bma_data, bma_coefs) # Formula as a string (intercept + coefs = 0)
-  bpe_ols <- lm(formula = bma_formula, data = bma_data) #constructing an OLS model
-  bpe_glht <- glht(bpe_ols, linfct = c(bpe_formula), vcov = vcovHC(bpe_ols, type = "HC0", cluster = c(input_data$study_id)))
-  bpe_se <- as.numeric(summary(bpe_glht)$test$sigma)
+  # Get the BPE Standard error
+  # Get formula as a string ((intercept) + coefs * variable_names = 0)
+  bpe_formula_se <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
+                                     study_id, include_intercept, get_se = TRUE)
+  bpe_ols <- lm(formula = bma_formula, data = bma_data) # Constructing an OLS model
+  bpe_glht <- glht(bpe_ols, linfct = c(bpe_formula_se), # GLHT
+                   vcov = vcovHC(bpe_ols, type = "HC0", cluster = c(input_data$study_id)))
+  bpe_se <- as.numeric(summary(bpe_glht)$test$sigma) # Extract output
   
-  print(bpe_formula)
-  
-  return(bpe_se) # Change later
+  # Extract the results and return
+  res <- c(bpe_est, bpe_se) # Result vector - c(BPE Estimate, BPE Standard Error)
+  res <- round(res, 3) # Round up
+  # Return the output
+  if (verbose_output){
+    print(paste("BPE Estimate:", res[1]))
+    print(paste("BPE Standard Error:", res[2]))
+  }
+  return(res)
+}
+
+
+#' Generate a table with best multiple best practice estimate results
+#' 
+#' Input any number of the estimate and SE vectors and put them into a neat data frame.
+generateBPEResultTable <- function(bpe_est, bpe_se){
+
+  return("hi")
 }
 
 
