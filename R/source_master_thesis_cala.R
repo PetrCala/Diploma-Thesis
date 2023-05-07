@@ -2740,16 +2740,55 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
 #' all results are presented neatly as estimates and their 95% confidence bounds.
 #' Alternatively, they can be presented as estimates and their standard errors.
 #' 
-#' @param input_data [data.frame] The main data frame that contains the study names and
-#' indexes.
 #' @param study_indexes [NA|vector] A vector with indexes of studies for which the 
 #' estimation shall be ran.
+#' @param input_data [data.frame] Main data frame.
+#' @param input_var_list [data.frame] Data frame with variable information.
+#' @param bma_model Main model on which to evaluate the BPE on.
+#' @param bma_formula Formula used to generate the BMA model
+#' @param bma_data [data.frame] Data frame used to generate the BMA model
 #' @param use_ci [logical] If TRUE, use confidence intervals in the output. If FALSE,
 #' use standard errors instead. Defaults to TRUE.
-generateBPEResultTable <- function(input_data, study_indexes, use_ci = TRUE){
-  res <- data.frame()
-
-  return("hi")
+#' @param verbose_output [logical] If TRUE, print out the result table into the console.
+generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_model, bma_formula, bma_data,
+                                   use_ci = TRUE, verbose_output = TRUE){
+  # Initialize the data frame
+  if (use_ci) {
+    res_df <- data.frame("estimate" = numeric(0), "ci_95_lower" = numeric(0), "ci_95_higher" = numeric(0))
+  } else {
+    res_df <- data.frame("estimate" = numeric(0), "standard_error" = numeric(0))
+  }
+  # Loop through study ids
+  for (study_id in study_ids) {
+    study_name <- ifelse(study_id == 0,
+                         "Author",
+                         as.character(input_data$study_name[input_data$study_id == study_id][1]))
+    # BPE estimation
+    bpe_result <- getBPE(input_data, input_var_list, bma_model, bma_formula, bma_data, study_id,
+                         include_intercept = TRUE, verbose_output = FALSE)
+    # Extract the results
+    est <- bpe_result[1] # BPE Estimate
+    se <- bpe_result[2] # BPE Standard error
+    # Obtain the data frame values, save them in a temporary data frame
+    if (use_ci) {
+      ci_lbound <- est - 1.96 * se
+      ci_ubound <- est + 1.96 * se
+      temp_df <- data.frame("estimate" = round(est, 3),
+                            "ci_95_lower" = round(ci_lbound, 3),
+                            "ci_95_higher" = round(ci_ubound, 3))
+    } else {
+      temp_df <- data.frame("estimate" = round(est, 3),
+                            "standard_error" = round(se, 3))
+    }
+    # Join together
+    row.names(temp_df) <- study_name
+    res_df <- rbind(res_df, temp_df)
+  }
+  # Return the output
+  if (verbose_output) {
+    print(res_df)
+  }
+  return(res_df)
 }
 
 

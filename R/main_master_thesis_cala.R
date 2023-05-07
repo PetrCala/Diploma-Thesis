@@ -173,9 +173,9 @@ adjustable_parameters <- c(
   "bpe_studies" = c( # Vector of study indexes for which to run the BPE. For author's BPE, use 0.
     0,
     1,
-    2,
-    3
-  )
+    2
+  ),
+  "bpe_use_ci" = TRUE # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
 )
 
 ######################################################################
@@ -491,9 +491,10 @@ if (run_this["fma"]){
 ######################### BEST-PRACTICE ESTIMATE #########################
 
 if (run_this["best_practice_estimate"]){
-  bpe_study_indexes <- getMultipleParams(adjustable_parameters, "bpe_studies", "numeric")
-  print(bpe_study_indexes)
+  bpe_study_ids <- getMultipleParams(adjustable_parameters, "bpe_studies", "numeric")
+  bpe_use_ci <- as.logical(adjustable_parameters["bpe_use_ci"])
+  bpe_res <- generateBPEResultTable(bpe_study_ids,
+                    data, var_list, bma_model, bma_formula, bma_data,
+                    use_ci = bpe_use_ci, verbose_output = TRUE)
 }
-temp <- getBPE(data, var_list, bma_model, bma_formula, bma_data, study_id = 0, include_intercept = TRUE)
 
-temp
