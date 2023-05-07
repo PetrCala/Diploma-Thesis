@@ -2571,10 +2571,6 @@ runFMA <- function(bma_data, bma_model, verbose = T){
 
 ######################### BEST-PRACTICE ESTIMATE #########################
 
-
-
-
-
 #' Generate the formula for evaluation of the best practice estimate. Can either be
 #' used for obtaining of the BPE estimate, or the BPE standard error.
 #'
@@ -2740,7 +2736,7 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
 #' all results are presented neatly as estimates and their 95% confidence bounds.
 #' Alternatively, they can be presented as estimates and their standard errors.
 #' 
-#' @param study_indexes [NA|vector] A vector with indexes of studies for which the 
+#' @param study_indexes [numeric|vector] A vector with indexes of studies for which the 
 #' estimation shall be ran.
 #' @param input_data [data.frame] Main data frame.
 #' @param input_var_list [data.frame] Data frame with variable information.
