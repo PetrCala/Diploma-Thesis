@@ -91,7 +91,7 @@
 ######################################################################
 
 # Clean the environment - DO NOT CHANGE THIS
-rm(list = ls()) 
+#rm(list = ls()) 
 
 # Customizable data file names
 master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
@@ -103,12 +103,12 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
   "nonlinear_tests" = F,
   "exo_tests" = F,
   "p_hacking_tests" = F,
@@ -128,8 +128,8 @@ adjustable_parameters <- c(
   # Data subsetting conditions
   # Note - if you do not with to use any conditions, set the conditions to NA
   # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
-  "data_subset_condition_1" = "ability_direct == 1",
-  "data_subset_condition_2" = NA,
+  "data_subset_condition_1" = NA,
+  #"data_subset_condition_2" = "ability_direct == 1",
   # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
   # Data winsorization characteristics
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
@@ -479,3 +479,10 @@ if (run_this["fma"]){
   # Actual estimation
   fma_coefs <- runFMA(bma_data, bma_model, verbose = T)
 }
+
+
+######################### BEST-PRACTICE ESTIMATE #########################
+
+getBPE(data, var_list, bma_model, bma_formula, bma_data)
+
+
