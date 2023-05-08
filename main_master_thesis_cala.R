@@ -501,3 +501,7 @@ if (run_this["best_practice_estimate"]){
                     data, var_list, bma_model, bma_formula, bma_data,
                     use_ci = bpe_use_ci, verbose_output = TRUE)
 }
+
+bpe_est <- bpe_res[1,1]
+getEconomicSignificance(bpe_est, var_list, bma_data, bma_model,
+                        display_large_pip_only = FALSE, verbose_output = TRUE)

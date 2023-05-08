@@ -2571,6 +2571,23 @@ runFMA <- function(bma_data, bma_model, verbose = T){
 
 ######################### BEST-PRACTICE ESTIMATE #########################
 
+
+#' Fetch the BMA coefficient value from the list of BMA coefficients
+#' 
+#' @param coef_name [character] Name of the coefficient whose value to fetch.
+#' @param bma_coefs All BMA coefficients. A data frame with 5 columns.
+#' @param value_type [character] Name of the coefficient to extract. Can be
+#'  One of the following - "PIP", "Post Mean", "Post SD", "Cond.Pos.Sign", "Idx"
+#' @return [numeric] The value of the coefficient
+getBMACoefValue <- function(coef_name, bma_coefs, value_type = "Post Mean"){
+  stopifnot(
+    value_type %in% c("PIP", "Post Mean", "Post SD", "Cond.Pos.Sign", "Idx")
+  )
+  idx <- match(coef_name, rownames(bma_coefs))
+  val <- bma_coefs[idx,value_type]
+  return(val)
+}
+
 #' Generate the formula for evaluation of the best practice estimate. Can either be
 #' used for obtaining of the BPE estimate, or the BPE standard error.
 #'
@@ -2597,12 +2614,6 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
     is.logical(include_intercept),
     nrow(input_data)==nrow(bma_data) # Input data used for indexing BMA data
   )
-  # Define a bma_coefs lookup function - get value of the coefficient inside the coef object
-  getBMACoefValue <- function(coef_name, bma_coefs){
-    idx <- match(coef_name, rownames(bma_coefs))
-    val <- bma_coefs[idx,"Post Mean"]
-    return(val)
-  }
   # Define static variables
   allowed_characters <- c('mean', 'median', 'min', 'max')
   bma_vars <- rownames(bma_coefs)
@@ -2787,6 +2798,65 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
   return(res_df)
 }
 
+
+getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model,
+                                    display_large_pip_only = FALSE, verbose_output = TRUE){
+  # Input preprocessing
+  stopifnot(
+    is.numeric(bpe_est),
+    is.data.frame(input_var_list),
+    is.data.frame(bma_data),
+    is.logical(display_large_pip_only),
+    is.logical(verbose_output),
+    length(bpe_est) == 1
+  )
+  bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) # Extract the coefficients
+  bma_vars <- rownames(bma_coefs) # Variables used in the BMA - vector of characters/names
+  # Remove "(intercept)" from the list of BMA variables for this function
+  intercept_index <- which(bma_vars == "(Intercept)")
+  bma_vars <- bma_vars[-intercept_index]
+  # Check that there are no undefined variables in the BMA vector now
+  stopifnot(all(bma_vars %in% input_var_list$var_name))
+  # Initialize the empty data frame
+  res_df <- data.frame("effect_sd_change" = numeric(0), "perc_of_best_sd_change" = numeric(0),
+                       "effect_max_change" = numeric(0), "perc_of_best_max_change" = numeric(0))
+  # Iterate over BMA vars, add the results for each variable seaprately
+  for (bma_var in bma_vars) {
+    # Get numeric values for the variable
+    coef_value <- getBMACoefValue(bma_var, bma_coefs, value_type = "Post Mean")
+    coef_pip <- getBMACoefValue(bma_var, bma_coefs, value_type = "PIP")
+    bma_data_values <- as.numeric(unlist(bma_data[bma_var])) # A numeric vectors with data for this variable
+    max_ <- max(bma_data_values)
+    min_ <- min(bma_data_values)
+    stdev_ <- sd(bma_data_values)
+    # Skip for variables with PIP below 0.5
+    if ((display_large_pip_only) & (coef_pip < 0.5)){
+      next
+    }
+    # Calculate the four main measures
+    effect_sd_change <- coef_value * stdev_
+    perc_sd_change <- effect_sd_change / bpe_est
+    effect_max_change <- coef_value * (max_ - min_)
+    perc_max_change <- effect_max_change / bpe_est
+    # Get percentages in verbose
+    perc_sd_change_verbose <- paste0(as.character(round(perc_sd_change * 100, 3)),"%")
+    perc_max_change_verbose <- paste0(as.character(round(perc_max_change * 100, 3)),"%")
+    # Create a temporary data frame with the results
+    temp_df <- data.frame("effect_sd_change" = round(effect_sd_change, 3),
+                          "%_of_best_sd_change" = perc_sd_change_verbose,
+                          "effect_max_change" = round(effect_max_change, 3),
+                          "%_of_best_max_change" = perc_max_change_verbose)
+    # Join together
+    bma_var_verbose <- input_var_list$var_name_verbose[input_var_list$var_name == bma_var]
+    row.names(temp_df) <- bma_var_verbose
+    res_df <- rbind(res_df, temp_df)
+  }
+  # Return the output
+  if (verbose_output) {
+    print(res_df)
+  }
+  return(res_df)
+}
 
 
 
