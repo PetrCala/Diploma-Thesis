@@ -15,9 +15,6 @@ __pycache__/
 **/~$*.xlsx
 **/~$*.xlsm
 
-# Other temp files
-update_dist.sh
-
 # Large literature files
 **/Studies/
 **/Studies list/

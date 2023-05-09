@@ -2849,6 +2849,7 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
     # Join together
     bma_var_verbose <- input_var_list$var_name_verbose[input_var_list$var_name == bma_var]
     row.names(temp_df) <- bma_var_verbose
+    # Rename column names
     res_df <- rbind(res_df, temp_df)
   }
   # Return the output
