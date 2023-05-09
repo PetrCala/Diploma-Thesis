@@ -126,10 +126,10 @@ adjustable_parameters <- c(
   # Effect name
   "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
   # Data subsetting conditions
-  # Note - if you do not with to use any conditions, set the conditions to NA
+  # Note - if you do not with to use any conditions, set the first condition to NA
   # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
   "data_subset_condition_1" = NA,
-  #"data_subset_condition_2" = "ability_direct == 1",
+  "data_subset_condition_2" = "ability_uncontrolled == 1",
   # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
   # Data winsorization characteristics
   "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
@@ -455,11 +455,9 @@ if (run_this["bma"]){
   if (automatic_bma){
     # Get the optimal BMA formula automatically
     bma_formula <- findOptimalBMAFormula(data, var_list, verbose = T)
-    # Get the vector of variables used in the automatic BMA
-    bma_bool <- getBMAExcelBool(var_list, bma_formula, verbose=F)
   } else {
     # From the variable information instead
-    bma_formula <- getBMAFormula(var_list)
+    bma_formula <- getBMAFormula(var_list, input_data)
   }
   # Run the Variance Inflation Test
   vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = T)
@@ -508,3 +506,4 @@ if (run_this["best_practice_estimate"]){
   bpe_econ_sig <- getEconomicSignificance(bpe_est, var_list, bma_data, bma_model,
                           display_large_pip_only = TRUE, verbose_output = TRUE)
 }
+

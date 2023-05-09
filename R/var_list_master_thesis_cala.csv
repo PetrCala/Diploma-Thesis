@@ -9,7 +9,7 @@ t_stat,T-Statistic,float,6,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,stop
 95_upper,95% CI Upper Bound of the Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
 pcc,Partial Correlation Coefficient,float,8,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
 se_pcc,Standard Error of the PCC,float,9,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-se_pcc_precision,Precision,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
+se_pcc_precision,Precision of the PCC,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
 est_short_run,Estimate - Short Run,dummy,11,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
 est_long_run,Estimate - Long Run,dummy,11,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
 est_agg_city,Estimate - City,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean

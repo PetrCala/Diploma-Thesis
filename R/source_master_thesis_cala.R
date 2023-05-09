@@ -2136,38 +2136,43 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
     is.logical(verbose),
     all(c("bma_potential_var", "var_name", "group_category") %in% colnames(input_var_list))
   )
+  # Remove any variables for which all values in data are the same
+  non_const_cols <- apply(input_data, 2, function(col){length(unique(col)) > 1})
+  input_data <- input_data[,non_const_cols]
   # Extract the information from source data
-  bma_potential_vars_bool <- input_var_list$bma_potential_var
+  bma_potential_vars_bool <- input_var_list$bma_potential_var & non_const_cols # BMA OK and non constant
   potential_vars <- input_var_list$var_name[bma_potential_vars_bool]
   var_grouping <- input_var_list$group_category[bma_potential_vars_bool]
   
-  # Pop the effect from var grouping (not used in the iteration)
+  # Pop the effect from var grouping and potential vars (not used in the iteration)
   var_grouping <- var_grouping[!potential_vars == "effect_w"]
+  potential_vars <- potential_vars[!potential_vars == "effect_w"]
   
   # Get initial BMA formula and VIF coefficients
-  bma_formula <- getBMAFormula(potential_vars)
+  bma_formula <- getBMAFormula(potential_vars, input_data)
   bma_lm <- lm(bma_formula, data = input_data)
   vif_coefs <- car::vif(bma_lm)
-  if (length(var_grouping) != length(vif_coefs)){
-    print("The lengths of the variable vectors do not match")
+  if (length(var_grouping) != length(vif_coefs)){ # 1 less variable in VIF coefs
+   stop("The lengths of the variable vectors do not match")
   }
 
   removed_groups <- 0
   removed_groups_verbose <- c()
   while (any(vif_coefs > 10) && max_groups_to_remove > 0) {
     # Get the group with the highest VIF coefficient
-    highest_vif_coef <- which.max(vif_coefs)
-    highest_vif_group <- var_grouping[highest_vif_coef]
+    highest_vif_coef_name <- names(which.max(vif_coefs)) # Name of the coefficient with highest VIF
+    highest_vif_coef_idx <- which(potential_vars == highest_vif_coef_name) # Index of the highest VIF coef
+    highest_vif_group <- var_grouping[highest_vif_coef_idx] # Index of group to remove
     # Get new potential vars, new grouping
     vars_to_remove <- potential_vars[var_grouping == highest_vif_group]
     potential_vars <- potential_vars[!potential_vars %in% vars_to_remove]
     var_grouping <- var_grouping[!var_grouping %in% highest_vif_group]
     # Get modified BMA formula and VIF coefficients
-    bma_formula <- getBMAFormula(potential_vars)
+    bma_formula <- getBMAFormula(potential_vars, input_data)
     bma_lm <- lm(bma_formula, data = input_data)
     vif_coefs <- car::vif(bma_lm)
     if (length(var_grouping) != length(vif_coefs)){
-      print("The lengths of the variable vectors do not match")
+      stop("The lengths of the variable vectors do not match")
     }
     # Decrease the maximum number of groups to remove
     max_groups_to_remove <- max_groups_to_remove - 1
@@ -2199,20 +2204,21 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
 #'
 #' @param input_var [vector] A vector of variables that should be used to construct the formula. Must include
 #' "effect_w" and "se_w".
+#' @param input_data [data.frame] A data frame on which the formula will later be used. Skip adding any variables
+#'  where all values of this data frame are 0 for the variable.
 #' @param get_var_vector_instead [bool] If TRUE, return a vector with variable names instead, with effect and se
 #'  at the first two positions of the vector. Used for a simple rearrangement. Defaults to FALSE.
 #' @return A formula object (to be used) Bayesian model averaging
 #' 
 #' @note To get the vector itself from the formula, you can use the in-built "all.vars()" method instead.
-getBMAFormula <- function(input_var, get_var_vector_instead = F){
-  # Validate the input
-  stopifnot(
-    all(c("effect_w","se_w") %in% input_var)
-  )
+getBMAFormula <- function(input_var, input_data, get_var_vector_instead = F){
   # Separate the effect and SE from the remaining variables
   bool_wo_effect <- input_var != "effect_w" # Pop effect
   bool_wo_se <- input_var != "se_w" # Pop se
   remaining_vars <- input_var[bool_wo_effect & bool_wo_se] # Remaining variables
+  # Remove any variables for which all values in data are the same
+  zero_vars <- input_data %>% select_if(~ length(unique(.)) == 1) %>% names
+  remaining_vars <- remaining_vars[!remaining_vars %in% zero_vars]
   # Get the formula
   if (get_var_vector_instead){
     var_vector <- c("effect_w", "se_w", remaining_vars)
@@ -2234,6 +2240,9 @@ getBMAFormula <- function(input_var, get_var_vector_instead = F){
 #' variables with a high VIF. Otherwise, it prints a message indicating that all variables have a VIF lower than 10.
 #' Finally, the function returns the VIF coefficients as a numeric vector.
 #' 
+#' @note If you input the formula, all data for these variables must be a vector with at least some variation.
+#' Otherwise the function will return an error.
+#' 
 #' @param input_var [vector | formula] One of - vector of variable names, formula. If it is a vector, the function
 #' transforms the input into a formula.
 #' @param input_data [data.frame] Data to run the test on.
@@ -2252,10 +2261,14 @@ runVifTest <- function(input_var, input_data, print_all_coefs = F){
   )
   # Get the BMA formula - explicit because RRRRRR
   if (is.vector(input_var)){
-    BMA_formula <- getBMAFormula(input_var)
+    BMA_formula <- getBMAFormula(input_var) # Automatically validates that all vectors are non-0
   } else{
-    BMA_formula <- input_var
+    if (nrow(input_data %>% select_if(~ length(unique(.)) > 1)) < nrow(input_data)){
+      stop("All data must have at least some variation.")
+    }
+    BMA_formula <- input_var # Formula is valid
   }
+  # Run the test
   BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
   # Unhandled exception - fails in case of too few observations vs. too many variables
   vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients

@@ -9,7 +9,7 @@ t_stat,T-Statistic,float,6,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,stop
 95_upper,95% CI Upper Bound of the Effect,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
 pcc,Partial Correlation Coefficient,float,8,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
 se_pcc,Standard Error of the PCC,float,9,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-se_pcc_precision,Precision,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
+se_pcc_precision,Precision of the PCC,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
 est_short_run,Estimate - Short Run,dummy,11,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
 est_long_run,Estimate - Long Run,dummy,11,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
 est_agg_city,Estimate - City,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
@@ -63,7 +63,7 @@ income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
 med_exp,Median Expenditure,float,32,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
 min_wage,Minimum Wage,float,33,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
 freedom_index,Academic Freedom Index,float,34,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,mean
-mean_age,Mean Wage,float,35,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
+mean_age,Mean Age,float,35,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
 method_ols,Method - OLS,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
 method_hurdle,Method - Hurdle,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
 method_cohort,Method - Cohort,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
