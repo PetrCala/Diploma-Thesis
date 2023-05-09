@@ -103,17 +103,17 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
-  "exo_tests" = F,
-  "p_hacking_tests" = F,
-  "bma" = F,
-  "fma" = F, # Should be ran together with BMA
+  "variable_summary_stats" = T,
+  "effect_summary_stats" = T,
+  "box_plot" = T,
+  "funnel_plot" = T,
+  "t_stat_histogram" = T,
+  "linear_tests" = T,
+  "nonlinear_tests" = T,
+  "exo_tests" = T,
+  "p_hacking_tests" = T,
+  "bma" = T,
+  "fma" = T, # Should be ran together with BMA
   "best_practice_estimate" = T # Should be ran together with BMA
 )
 
@@ -171,9 +171,10 @@ adjustable_parameters <- c(
   "bma_print_results" = "fast", # Print results - one of c("none", "fast", "verbose", "all")
   # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
   "bpe_studies" = c( # Vector of study indexes for which to run the BPE. For author's BPE, use 0.
-    0,
-    1,
-    2
+    0, # Author
+    2, # Bartlolj et al. (2013) - Most years of schooling
+    112, # Staiger et al. (1997) - Most citations
+    7 # Webbink (2004) - Random, unpublished, uncited work
   ),
   "bpe_use_ci" = TRUE, # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
   "bpe_econ_sig_large_pip_only" = TRUE # If TRUE, display econ. significance for variables with PIP >= 0.5

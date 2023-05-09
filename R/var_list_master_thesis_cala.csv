@@ -63,7 +63,7 @@ income_low,Income - Low,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
 med_exp,Median Expenditure,float,32,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
 min_wage,Minimum Wage,float,33,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
 freedom_index,Academic Freedom Index,float,34,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,mean
-mean_age,Mean Wage,float,35,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
+mean_age,Mean Age,float,35,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
 method_ols,Method - OLS,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
 method_hurdle,Method - Hurdle,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
 method_cohort,Method - Cohort,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean

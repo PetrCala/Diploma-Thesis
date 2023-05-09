@@ -1573,6 +1573,8 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
   exo_coefs <- c(pub_coef, pub_se, effect_coef, effect_se)
   invisible(exo_coefs)
 }
+
+
 #' Identify the best instrument(s) from a set of instruments based on IV regression diagnostics.
 #'
 #' This function takes in a data frame, a list of potential instruments, and a vector of verbose names for each instrument. 
