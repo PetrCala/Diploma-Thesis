@@ -2735,6 +2735,7 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
   if (verbose_output){
     print(paste("BPE Estimate:", res[1]))
     print(paste("BPE Standard Error:", res[2]))
+    cat("\n\n")
   }
   return(res)
 }
@@ -2793,12 +2794,35 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
   }
   # Return the output
   if (verbose_output) {
+    print("Best practice estimate results:")
     print(res_df)
+    cat("\n\n")
   }
   return(res_df)
 }
 
-
+#' getEconomicSignificance
+#'
+#' This function calculates and returns the economic significance of variables included in a Bayesian Model Averaging (BMA) model.
+#' It computes the effects of standard deviation change and maximum change in variable values on the model output.
+#'
+#' @param bpe_est [numeric] The estimate of the model's dependent variable. It should be a single numeric value.
+#' @param input_var_list [data.frame] A data frame containing the list of input variables used in the BMA model.
+#' This data frame should have at least one column, 'var_name', containing the names of the variables.
+#' If the verbose_output argument is set to TRUE, it should also have a 'var_name_verbose' column containing the verbose
+#' (extended) names of the variables.
+#' @param bma_data [data.frame] A data frame containing the BMA data, including all variables listed in the input_var_list.
+#' @param bma_model [object] The BMA model object from which the coefficients will be extracted. This object should be
+#' of a type that can be processed by the coef() function.
+#' @param display_large_pip_only [logical] An optional argument specifying whether the function should only consider
+#' variables with a posterior inclusion probability (PIP) of at least 0.5. Defaults to FALSE.
+#' @param verbose_output [logical] An optional argument specifying whether the function should display verbose output,
+#' including the verbose names of variables and percentage values. Defaults to TRUE.
+#' @return [data.frame] A data frame where each row represents a variable from the BMA model, and columns contain the following values:
+#' - Effect on Sigma (1ΔSD): Effect of a one standard deviation change in the variable value.
+#' - % of best (1ΔSD): The percentage of the best possible estimate represented by the effect of a one standard deviation change.
+#' - Effect on Sigma (ΔMax): Effect of a change from the minimum to the maximum value of the variable.
+#' - % of best(ΔMax): The percentage of the best possible estimate represented by the effect of a change from the minimum to the maximum value.
 getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model,
                                     display_large_pip_only = FALSE, verbose_output = TRUE){
   # Input preprocessing
@@ -2849,12 +2873,16 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
     # Join together
     bma_var_verbose <- input_var_list$var_name_verbose[input_var_list$var_name == bma_var]
     row.names(temp_df) <- bma_var_verbose
-    # Rename column names
+    colnames(temp_df) <- c("Effect on Sigma (1*ΔSD)", "% of best (1*ΔSD)",
+                           "Effect on Sigma (ΔMax)", "% of best(ΔMax)")
     res_df <- rbind(res_df, temp_df)
   }
   # Return the output
   if (verbose_output) {
+    pip_info <- ifelse(display_large_pip_only, " with PIP at least 0.5","")
+    print(paste0("Economic significance of variables", pip_info,":"))
     print(res_df)
+    cat("\n\n")
   }
   return(res_df)
 }
