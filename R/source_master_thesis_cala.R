@@ -638,6 +638,11 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
 #'    the inverse squared sample size is used as weights. The confidence level for the weighted mean
 #'    confidence interval can be set using the conf.level parameter, which defaults to 0.95.
 #'    If any input data is missing or non-numeric, it is ignored, and the variable is not included in the output.
+#'    
+#' @param input_data [data.frame] Main data frame.
+#' @param input_var_list [data.frame] Data frame with variable information.
+#' @param conf.level [numeric] Confidence level for the confidence intervals. Defaults to 0.95 (95%).
+#' @param formal_output [logical] If TRUE, return the table in a form that can be used in LaTeX. Defaults to FALSE.    
 #' 
 #' The function returns a data frame with the following columns:
 #' -Var Name: The name of the variable.
@@ -653,7 +658,7 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
 #' -Obs: The number of observations for the variable.
 #' If a variable has missing or non-numeric data, it will not be included in the output.
 #' If no variables are included in the output, the function returns an empty data frame.
-getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
+getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95, formal_output = FALSE) {
   # Parameter checking
   stopifnot(all(c(conf.level > 0, conf.level < 1)))
   
@@ -763,10 +768,10 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       )
       return (new_row)
     }
-    
     # EQUAL data
     if (!is.na(equal_val)){
-      new_varname_equal <- paste0(var_name_verbose, " = ", round(as.numeric(cutoff,3)))
+      equal_cutoff <- ifelse(cutoff == 1, "", paste0(" = ", round(cutoff, 3))) # None if equal to 1
+      new_varname_equal <- paste0(var_name_verbose, equal_cutoff)
       new_row <- getNewDataRow(new_varname_equal, var_class, effect_data_equal, study_size_data_equal)
       df <- rbind(df, new_row)
     } else { # GTLT data
@@ -778,8 +783,17 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       df <- rbind(df, new_row_lt)
     }
   }
+  # Add a row on top of the data frame with all observations
+  first_row <- getNewDataRow("All Data", "any", effect_data, study_size_data)
+  df <- rbind(first_row, df)
   # Put the final output together
   colnames(df) <- effect_stat_names
+  # Format into a more presentable form
+  if (formal_output){
+    cols_to_drop <- c("Var Class", "Min", "Max", "SD")
+    df <- df[,!names(df) %in% cols_to_drop]
+  }
+  # Print the data frame into the console and return
   cat("Summary statistics:\n")
   print(df)
   cat("\n")

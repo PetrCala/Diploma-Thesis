@@ -125,6 +125,8 @@ run_this <- c(
 adjustable_parameters <- c(
   # Effect name
   "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
+  # Formal output
+  "formal_output_on" = TRUE, # If TRUE, return tables in a form presentable in text
   # Data subsetting conditions
   # Note - if you do not with to use any conditions, set the first condition to NA
   # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
@@ -187,6 +189,7 @@ adjustable_parameters <- c(
 ##################### ENVIRONMENT PREPARATION ########################
 # Static 
 development_on <- T # Turn off when distributing the code
+formal_output_on <- adjustable_parameters["formal_output_on"]
 options(scipen=999) # No scientific notation
 
 technical_parameters <- c(
@@ -321,7 +324,7 @@ data <- applyDataSubsetConditions(data, subset_conditions)
 ###### EFFECT SUMMARY STATISTICS ######
 if (run_this["effect_summary_stats"]){
   effect_sum_stats_conf_level <- as.numeric(adjustable_parameters["effect_summary_stats_conf_level"])
-  getEffectSummaryStats(data, var_list, effect_sum_stats_conf_level)
+  getEffectSummaryStats(data, var_list, effect_sum_stats_conf_level, formal_output_on)
 }
 
 ###### BOX PLOT ######
