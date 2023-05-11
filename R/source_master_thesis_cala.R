@@ -880,7 +880,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name
 #' 
 #' @param input_data [data.frame] Main data frame.
 #' @param max_studies [numeric] Maximum studies to display in a single plot.
-#' Defaults to 60.\
+#' Defaults to 60.
 #' @inheritDotParams getBoxPlot Parameters that should be used in the getBoxPlot function
 #' call.
 getLargeBoxPlot <- function(input_data, max_studies = 60, ...){
@@ -892,25 +892,20 @@ getLargeBoxPlot <- function(input_data, max_studies = 60, ...){
   )
   # Split the data into subsets
   n_studies <- max(input_data$study_id)
-  if (n_studies > max_studies){
-    datasets <- list()
-    remaining_studies <- n_studies
-    splits <- 0
-    while (remaining_studies > 0){
-      temp_df <- input_data[input_data$study_id > splits * max_studies &
-                            input_data$study_id <= (splits + 1) * max_studies,]
-      datasets[[splits + 1]] <- temp_df
-      remaining_studies <- remaining_studies - max_studies
-      splits <- splits + 1
-    }
-  } else {
-    # Number of studies in main data frame is small enough
-    datasets <- list(input_data)
+  datasets <- list()
+  remaining_studies <- n_studies
+  splits <- 0
+  while (remaining_studies > 0){
+    temp_df <- input_data[input_data$study_id > splits * max_studies &
+                          input_data$study_id <= (splits + 1) * max_studies,]
+    datasets[[splits + 1]] <- temp_df
+    remaining_studies <- remaining_studies - max_studies
+    splits <- splits + 1
   }
-    # Print a box plot for each subset of data
-    for (dataset in datasets){
-      getBoxPlot(dataset, ...)
-    }
+  # Print a box plot for each subset of data
+  for (dataset in datasets){
+    getBoxPlot(dataset, ...)
+  }
 }
 
 #' Identify outliers in the data, return the filter which can be used
