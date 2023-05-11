@@ -103,9 +103,9 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
+  "variable_summary_stats" = F,
   "effect_summary_stats" = F,
-  "box_plot" = F,
+  "box_plot" = T,
   "funnel_plot" = F,
   "t_stat_histogram" = F,
   "linear_tests" = F,
@@ -336,7 +336,13 @@ if (run_this["box_plot"]){
   
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
-    getBoxPlot(data, factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
+    # Handle factors with large number of boxes - automatically split them into multiple plots
+    if (factor_name %in% c("study_name", "study_id")){
+      getLargeBoxPlot(data, max_studies = 60,
+                      factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
+    } else {
+      getBoxPlot(data, factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
+    }
   }
 }
 
@@ -509,4 +515,3 @@ if (run_this["best_practice_estimate"]){
   bpe_econ_sig <- getEconomicSignificance(bpe_est, var_list, bma_data, bma_model,
                           display_large_pip_only = TRUE, verbose_output = TRUE)
 }
-

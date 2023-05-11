@@ -1,0 +1,2 @@
+These prompts serve as ways of converting the R output into presentable LaTeX tables. Parts of the prompts always tell the model what is
+the expected format of the table, and parts of the prompt input the code from R. Copy paste the prompt into a GPT model and get the results.

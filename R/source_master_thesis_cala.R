@@ -670,8 +670,8 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
   study_size_data <- with(input_data, as.vector(study_size))
   
   # Output columns
-  effect_stat_names <- c("Var Name", "Var Class", "Mean", "Median", "Weighted Mean",
-                     "WM CI lower", "WM CI upper", "Min", "Max", "SD", "Obs")
+  effect_stat_names <- c("Var Name", "Var Class", "Mean", "CI lower", "CI upper", "Weighted Mean",
+                     "WM CI lower", "WM CI upper", "Median", "Min", "Max", "SD", "Obs")
   
   # Variables to preprocess
   desired_vars <- input_var_list[input_var_list$effect_sum_stats == TRUE,]$var_name # Vector
@@ -688,6 +688,8 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
                    col9 = numeric(),
                    col10 = numeric(),
                    col11 = numeric(),
+                   col12 = numeric(),
+                   col13 = numeric(),
                    stringsAsFactors = F
                    )
   stopifnot(ncol(df) == length(effect_stat_names))
@@ -746,11 +748,13 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       input_study_size_data <- na.omit(input_study_size_data)
       # Summary stats computation
       var_mean <- round(mean(input_effect_data), 3)
-      var_median <- round(median(input_effect_data), 3)
-      var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
       var_sd <- round(sd(input_effect_data), 3)
-      var_ci_lower <- round(var_weighted_mean - var_sd*z, 3)
-      var_ci_upper <- round(var_weighted_mean + var_sd*z, 3)
+      var_ci_lower <- round(var_mean - var_sd*z, 3)
+      var_ci_upper <- round(var_mean + var_sd*z, 3)
+      var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
+      var_ci_lower_w <- round(var_weighted_mean - var_sd*z, 3)
+      var_ci_upper_w <- round(var_weighted_mean + var_sd*z, 3)
+      var_median <- round(median(input_effect_data), 3)
       var_min <- round(min(input_effect_data), 3)
       var_max <- round(max(input_effect_data), 3)
       var_obs <- length(input_effect_data)
@@ -759,14 +763,16 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
         col1 = input_var_name,
         col2 = input_class_name,
         col3 = var_mean,
-        col4 = var_median,
-        col5 = var_weighted_mean,
-        col6 = var_ci_lower,
-        col7 = var_ci_upper,
-        col8 = var_min,
-        col9 = var_max,
-        col10 = var_sd,
-        col11 = var_obs
+        col4 = var_ci_lower,
+        col5 = var_ci_upper,
+        col6 = var_weighted_mean,
+        col7 = var_ci_lower_w,
+        col8 = var_ci_upper_w,
+        col9 = var_median,
+        col10 = var_min,
+        col11 = var_max,
+        col12 = var_sd,
+        col13 = var_obs
       )
       return (new_row)
     }
@@ -792,7 +798,7 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
   colnames(df) <- effect_stat_names
   # Format into a more presentable form
   if (formal_output){
-    cols_to_drop <- c("Var Class", "Min", "Max", "SD")
+    cols_to_drop <- c("Var Class", "Median", "Min", "Max", "SD")
     df <- df[,!names(df) %in% cols_to_drop]
   }
   # Print the data frame into the console and return
@@ -866,6 +872,46 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name
   cat('\n')
 }
 
+#' Plot multiple box plots for datasets that have too large a number of studies
+#' 
+#' Input the data, specify how many studies should be displayed on a single box plot,
+#' and plot a box plot for the subsets of data. If the data has fewer studies than
+#' the maximum allowed amount, plot a single plot.
+#' 
+#' @param input_data [data.frame] Main data frame.
+#' @param max_studies [numeric] Maximum studies to display in a single plot.
+#' Defaults to 60.\
+#' @inheritDotParams getBoxPlot Parameters that should be used in the getBoxPlot function
+#' call.
+getLargeBoxPlot <- function(input_data, max_studies = 60, ...){
+  # Check that the number of studies is traceable, validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(max_studies),
+    "study_id" %in% colnames(input_data)
+  )
+  # Split the data into subsets
+  n_studies <- max(input_data$study_id)
+  if (n_studies > max_studies){
+    datasets <- list()
+    remaining_studies <- n_studies
+    splits <- 0
+    while (remaining_studies > 0){
+      temp_df <- input_data[input_data$study_id > splits * max_studies &
+                            input_data$study_id <= (splits + 1) * max_studies,]
+      datasets[[splits + 1]] <- temp_df
+      remaining_studies <- remaining_studies - max_studies
+      splits <- splits + 1
+    }
+  } else {
+    # Number of studies in main data frame is small enough
+    datasets <- list(input_data)
+  }
+    # Print a box plot for each subset of data
+    for (dataset in datasets){
+      getBoxPlot(dataset, ...)
+    }
+}
 
 #' Identify outliers in the data, return the filter which can be used
 #'  to get the data without these outliers.
