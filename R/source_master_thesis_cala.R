@@ -575,7 +575,7 @@ limitDataToOneStudy <- function(input_data, input_study_id){
 getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = T){
   # List of the statistics to compute
   variable_stat_names <- c("Var Name", "Var Class", "Mean", "Median",
-                            "Min", "Max", "SD", "Missing obs")
+                            "Min", "Max", "SD", "Obs", "Missing obs")
   # Variables to preprocess
   desired_vars <- input_var_list[input_var_list$variable_summary == TRUE,]$var_name # Vector
   # Initialize output data frame
@@ -602,6 +602,7 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
     var_sd <- round(sd(var_data, na.rm = TRUE), 3)
     var_min <- round(min(var_data, na.rm = TRUE), 3)
     var_max <- round(max(var_data, na.rm = TRUE), 3)
+    var_obs <- sum(!is.na(var_data) & var_data != 0)
     var_missing <- round((sum(is.na(var_data)) / length(var_data)) * 100, 1)
     var_missing_verbose <- paste0(as.character(var_missing),"%")
     # Aggregate and append to the main DF
@@ -613,6 +614,7 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
       var_min,
       var_max,
       var_sd,
+      var_obs,
       var_missing_verbose
     )
     df[row_idx, ] <- row_data

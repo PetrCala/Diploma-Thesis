@@ -103,8 +103,8 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = T,
+  "variable_summary_stats" = T,
+  "effect_summary_stats" = F,
   "box_plot" = F,
   "funnel_plot" = F,
   "t_stat_histogram" = F,
