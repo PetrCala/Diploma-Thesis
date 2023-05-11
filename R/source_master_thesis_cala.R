@@ -770,8 +770,8 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       new_row <- getNewDataRow(new_varname_equal, var_class, effect_data_equal, study_size_data_equal)
       df <- rbind(df, new_row)
     } else { # GTLT data
-      new_varname_gt <- paste0(var_name_verbose, " >= ", round(as.numeric(cutoff,3)))
-      new_varname_lt <- paste0(var_name_verbose, " < ", round(as.numeric(cutoff,3)))
+      new_varname_gt <- paste0(var_name_verbose, " >= ", round(as.numeric(cutoff), 3))
+      new_varname_lt <- paste0(var_name_verbose, " < ", round(as.numeric(cutoff),3))
       new_row_gt <- getNewDataRow(new_varname_gt, var_class, effect_data_gt, study_size_data_gt)
       new_row_lt <- getNewDataRow(new_varname_lt, var_class, effect_data_lt, study_size_data_lt)
       df <- rbind(df, new_row_gt)
