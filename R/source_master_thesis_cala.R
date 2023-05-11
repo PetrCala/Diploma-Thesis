@@ -890,7 +890,7 @@ getLargeBoxPlot <- function(input_data, max_studies = 60, ...){
     is.numeric(max_studies),
     "study_id" %in% colnames(input_data)
   )
-  # Split the data into subsets
+  # Split the data into subsets - works well with one split too
   n_studies <- max(input_data$study_id)
   datasets <- list()
   remaining_studies <- n_studies
@@ -1236,10 +1236,10 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
   )
   
   # Extract coefficients
-  pub_bias_coef <- round(coeftest_object[2,"Estimate"], 5)
-  pub_bias_se <- round(coeftest_object[2,"Std. Error"], 5)
-  effect_coef <- round(coeftest_object[1,"Estimate"], 5)
-  effect_se <- round(coeftest_object[1,"Std. Error"], 5)
+  pub_bias_coef <- round(coeftest_object[2,"Estimate"], 3)
+  pub_bias_se <- round(coeftest_object[2,"Std. Error"], 3)
+  effect_coef <- round(coeftest_object[1,"Estimate"], 3)
+  effect_se <- round(coeftest_object[1,"Std. Error"], 3)
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){
     pub_bias_se <- paste0("(", pub_bias_se, ")")
@@ -1316,11 +1316,11 @@ getLinearTests <- function(data) {
 #' @return [vector] - Vector of len 4, with the coefficients
 extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbose_coefs=T){
   # Extract coefficients
-  effect_coef <- round(as.numeric(nonlinear_object[1,1]), 5)
-  effect_se <- round(as.numeric(nonlinear_object[1,2]), 5)
+  effect_coef <- round(as.numeric(nonlinear_object[1,1]), 3)
+  effect_se <- round(as.numeric(nonlinear_object[1,2]), 3)
   if (pub_bias_present){
-    pub_coef <- round(as.numeric(nonlinear_object[2,1]), 5)
-    pub_se <- round(as.numeric(nonlinear_object[2,2]), 5)
+    pub_coef <- round(as.numeric(nonlinear_object[2,1]), 3)
+    pub_se <- round(as.numeric(nonlinear_object[2,2]), 3)
   }
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){

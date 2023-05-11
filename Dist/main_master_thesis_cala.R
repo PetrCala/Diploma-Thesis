@@ -103,18 +103,18 @@ var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
 #' Note:
 #'  Do NOT change the variable names, or the name of the vector
 run_this <- c(
-  "variable_summary_stats" = T,
-  "effect_summary_stats" = T,
-  "box_plot" = T,
-  "funnel_plot" = T,
-  "t_stat_histogram" = T,
-  "linear_tests" = T,
-  "nonlinear_tests" = T,
+  "variable_summary_stats" = F,
+  "effect_summary_stats" = F,
+  "box_plot" = F,
+  "funnel_plot" = F,
+  "t_stat_histogram" = F,
+  "linear_tests" = F,
+  "nonlinear_tests" = F,
   "exo_tests" = T,
-  "p_hacking_tests" = T,
-  "bma" = T,
-  "fma" = T, # Should be ran together with BMA
-  "best_practice_estimate" = T # Should be ran together with BMA
+  "p_hacking_tests" = F,
+  "bma" = F,
+  "fma" = F, # Should be ran together with BMA
+  "best_practice_estimate" = F # Should be ran together with BMA
 )
 
 #' ADJUSTABLE PARAMETERS
@@ -125,6 +125,8 @@ run_this <- c(
 adjustable_parameters <- c(
   # Effect name
   "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
+  # Formal output
+  "formal_output_on" = TRUE, # If TRUE, return tables in a form presentable in text
   # Data subsetting conditions
   # Note - if you do not with to use any conditions, set the first condition to NA
   # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
@@ -187,6 +189,7 @@ adjustable_parameters <- c(
 ##################### ENVIRONMENT PREPARATION ########################
 # Static 
 development_on <- T # Turn off when distributing the code
+formal_output_on <- adjustable_parameters["formal_output_on"]
 options(scipen=999) # No scientific notation
 
 technical_parameters <- c(
@@ -321,7 +324,7 @@ data <- applyDataSubsetConditions(data, subset_conditions)
 ###### EFFECT SUMMARY STATISTICS ######
 if (run_this["effect_summary_stats"]){
   effect_sum_stats_conf_level <- as.numeric(adjustable_parameters["effect_summary_stats_conf_level"])
-  getEffectSummaryStats(data, var_list, effect_sum_stats_conf_level)
+  getEffectSummaryStats(data, var_list, effect_sum_stats_conf_level, formal_output_on)
 }
 
 ###### BOX PLOT ######
@@ -333,7 +336,13 @@ if (run_this["box_plot"]){
   
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
-    getBoxPlot(data, factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
+    # Handle factors with large number of boxes - automatically split them into multiple plots
+    if (factor_name %in% c("study_name", "study_id")){
+      getLargeBoxPlot(data, max_studies = 60,
+                      factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
+    } else {
+      getBoxPlot(data, factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
+    }
   }
 }
 
@@ -506,4 +515,3 @@ if (run_this["best_practice_estimate"]){
   bpe_econ_sig <- getEconomicSignificance(bpe_est, var_list, bma_data, bma_model,
                           display_large_pip_only = TRUE, verbose_output = TRUE)
 }
-

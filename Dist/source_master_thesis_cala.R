@@ -575,7 +575,7 @@ limitDataToOneStudy <- function(input_data, input_study_id){
 getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = T){
   # List of the statistics to compute
   variable_stat_names <- c("Var Name", "Var Class", "Mean", "Median",
-                            "Min", "Max", "SD", "Missing obs")
+                            "Min", "Max", "SD", "Obs", "Missing obs")
   # Variables to preprocess
   desired_vars <- input_var_list[input_var_list$variable_summary == TRUE,]$var_name # Vector
   # Initialize output data frame
@@ -602,6 +602,7 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
     var_sd <- round(sd(var_data, na.rm = TRUE), 3)
     var_min <- round(min(var_data, na.rm = TRUE), 3)
     var_max <- round(max(var_data, na.rm = TRUE), 3)
+    var_obs <- sum(!is.na(var_data) & var_data != 0)
     var_missing <- round((sum(is.na(var_data)) / length(var_data)) * 100, 1)
     var_missing_verbose <- paste0(as.character(var_missing),"%")
     # Aggregate and append to the main DF
@@ -613,6 +614,7 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
       var_min,
       var_max,
       var_sd,
+      var_obs,
       var_missing_verbose
     )
     df[row_idx, ] <- row_data
@@ -638,6 +640,11 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
 #'    the inverse squared sample size is used as weights. The confidence level for the weighted mean
 #'    confidence interval can be set using the conf.level parameter, which defaults to 0.95.
 #'    If any input data is missing or non-numeric, it is ignored, and the variable is not included in the output.
+#'    
+#' @param input_data [data.frame] Main data frame.
+#' @param input_var_list [data.frame] Data frame with variable information.
+#' @param conf.level [numeric] Confidence level for the confidence intervals. Defaults to 0.95 (95%).
+#' @param formal_output [logical] If TRUE, return the table in a form that can be used in LaTeX. Defaults to FALSE.    
 #' 
 #' The function returns a data frame with the following columns:
 #' -Var Name: The name of the variable.
@@ -653,7 +660,7 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
 #' -Obs: The number of observations for the variable.
 #' If a variable has missing or non-numeric data, it will not be included in the output.
 #' If no variables are included in the output, the function returns an empty data frame.
-getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95) {
+getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95, formal_output = FALSE) {
   # Parameter checking
   stopifnot(all(c(conf.level > 0, conf.level < 1)))
   
@@ -663,8 +670,8 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
   study_size_data <- with(input_data, as.vector(study_size))
   
   # Output columns
-  effect_stat_names <- c("Var Name", "Var Class", "Mean", "Median", "Weighted Mean",
-                     "WM CI lower", "WM CI upper", "Min", "Max", "SD", "Obs")
+  effect_stat_names <- c("Var Name", "Var Class", "Mean", "CI lower", "CI upper", "Weighted Mean",
+                     "WM CI lower", "WM CI upper", "Median", "Min", "Max", "SD", "Obs")
   
   # Variables to preprocess
   desired_vars <- input_var_list[input_var_list$effect_sum_stats == TRUE,]$var_name # Vector
@@ -681,6 +688,8 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
                    col9 = numeric(),
                    col10 = numeric(),
                    col11 = numeric(),
+                   col12 = numeric(),
+                   col13 = numeric(),
                    stringsAsFactors = F
                    )
   stopifnot(ncol(df) == length(effect_stat_names))
@@ -739,11 +748,13 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       input_study_size_data <- na.omit(input_study_size_data)
       # Summary stats computation
       var_mean <- round(mean(input_effect_data), 3)
-      var_median <- round(median(input_effect_data), 3)
-      var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
       var_sd <- round(sd(input_effect_data), 3)
-      var_ci_lower <- round(var_weighted_mean - var_sd*z, 3)
-      var_ci_upper <- round(var_weighted_mean + var_sd*z, 3)
+      var_ci_lower <- round(var_mean - var_sd*z, 3)
+      var_ci_upper <- round(var_mean + var_sd*z, 3)
+      var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
+      var_ci_lower_w <- round(var_weighted_mean - var_sd*z, 3)
+      var_ci_upper_w <- round(var_weighted_mean + var_sd*z, 3)
+      var_median <- round(median(input_effect_data), 3)
       var_min <- round(min(input_effect_data), 3)
       var_max <- round(max(input_effect_data), 3)
       var_obs <- length(input_effect_data)
@@ -752,34 +763,45 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
         col1 = input_var_name,
         col2 = input_class_name,
         col3 = var_mean,
-        col4 = var_median,
-        col5 = var_weighted_mean,
-        col6 = var_ci_lower,
-        col7 = var_ci_upper,
-        col8 = var_min,
-        col9 = var_max,
-        col10 = var_sd,
-        col11 = var_obs
+        col4 = var_ci_lower,
+        col5 = var_ci_upper,
+        col6 = var_weighted_mean,
+        col7 = var_ci_lower_w,
+        col8 = var_ci_upper_w,
+        col9 = var_median,
+        col10 = var_min,
+        col11 = var_max,
+        col12 = var_sd,
+        col13 = var_obs
       )
       return (new_row)
     }
-    
     # EQUAL data
     if (!is.na(equal_val)){
-      new_varname_equal <- paste0(var_name_verbose, " = ", round(as.numeric(cutoff,3)))
+      equal_cutoff <- ifelse(cutoff == 1, "", paste0(" = ", round(cutoff, 3))) # None if equal to 1
+      new_varname_equal <- paste0(var_name_verbose, equal_cutoff)
       new_row <- getNewDataRow(new_varname_equal, var_class, effect_data_equal, study_size_data_equal)
       df <- rbind(df, new_row)
     } else { # GTLT data
-      new_varname_gt <- paste0(var_name_verbose, " >= ", round(as.numeric(cutoff,3)))
-      new_varname_lt <- paste0(var_name_verbose, " < ", round(as.numeric(cutoff,3)))
+      new_varname_gt <- paste0(var_name_verbose, " >= ", round(as.numeric(cutoff), 3))
+      new_varname_lt <- paste0(var_name_verbose, " < ", round(as.numeric(cutoff),3))
       new_row_gt <- getNewDataRow(new_varname_gt, var_class, effect_data_gt, study_size_data_gt)
       new_row_lt <- getNewDataRow(new_varname_lt, var_class, effect_data_lt, study_size_data_lt)
       df <- rbind(df, new_row_gt)
       df <- rbind(df, new_row_lt)
     }
   }
+  # Add a row on top of the data frame with all observations
+  first_row <- getNewDataRow("All Data", "any", effect_data, study_size_data)
+  df <- rbind(first_row, df)
   # Put the final output together
   colnames(df) <- effect_stat_names
+  # Format into a more presentable form
+  if (formal_output){
+    cols_to_drop <- c("Var Class", "Median", "Min", "Max", "SD")
+    df <- df[,!names(df) %in% cols_to_drop]
+  }
+  # Print the data frame into the console and return
   cat("Summary statistics:\n")
   print(df)
   cat("\n")
@@ -850,6 +872,41 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name
   cat('\n')
 }
 
+#' Plot multiple box plots for datasets that have too large a number of studies
+#' 
+#' Input the data, specify how many studies should be displayed on a single box plot,
+#' and plot a box plot for the subsets of data. If the data has fewer studies than
+#' the maximum allowed amount, plot a single plot.
+#' 
+#' @param input_data [data.frame] Main data frame.
+#' @param max_studies [numeric] Maximum studies to display in a single plot.
+#' Defaults to 60.
+#' @inheritDotParams getBoxPlot Parameters that should be used in the getBoxPlot function
+#' call.
+getLargeBoxPlot <- function(input_data, max_studies = 60, ...){
+  # Check that the number of studies is traceable, validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(max_studies),
+    "study_id" %in% colnames(input_data)
+  )
+  # Split the data into subsets - works well with one split too
+  n_studies <- max(input_data$study_id)
+  datasets <- list()
+  remaining_studies <- n_studies
+  splits <- 0
+  while (remaining_studies > 0){
+    temp_df <- input_data[input_data$study_id > splits * max_studies &
+                          input_data$study_id <= (splits + 1) * max_studies,]
+    datasets[[splits + 1]] <- temp_df
+    remaining_studies <- remaining_studies - max_studies
+    splits <- splits + 1
+  }
+  # Print a box plot for each subset of data
+  for (dataset in datasets){
+    getBoxPlot(dataset, ...)
+  }
+}
 
 #' Identify outliers in the data, return the filter which can be used
 #'  to get the data without these outliers.
@@ -1179,10 +1236,10 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
   )
   
   # Extract coefficients
-  pub_bias_coef <- round(coeftest_object[2,"Estimate"], 5)
-  pub_bias_se <- round(coeftest_object[2,"Std. Error"], 5)
-  effect_coef <- round(coeftest_object[1,"Estimate"], 5)
-  effect_se <- round(coeftest_object[1,"Std. Error"], 5)
+  pub_bias_coef <- round(coeftest_object[2,"Estimate"], 3)
+  pub_bias_se <- round(coeftest_object[2,"Std. Error"], 3)
+  effect_coef <- round(coeftest_object[1,"Estimate"], 3)
+  effect_se <- round(coeftest_object[1,"Std. Error"], 3)
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){
     pub_bias_se <- paste0("(", pub_bias_se, ")")
@@ -1259,11 +1316,11 @@ getLinearTests <- function(data) {
 #' @return [vector] - Vector of len 4, with the coefficients
 extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbose_coefs=T){
   # Extract coefficients
-  effect_coef <- round(as.numeric(nonlinear_object[1,1]), 5)
-  effect_se <- round(as.numeric(nonlinear_object[1,2]), 5)
+  effect_coef <- round(as.numeric(nonlinear_object[1,1]), 3)
+  effect_se <- round(as.numeric(nonlinear_object[1,2]), 3)
   if (pub_bias_present){
-    pub_coef <- round(as.numeric(nonlinear_object[2,1]), 5)
-    pub_se <- round(as.numeric(nonlinear_object[2,2]), 5)
+    pub_coef <- round(as.numeric(nonlinear_object[2,1]), 3)
+    pub_se <- round(as.numeric(nonlinear_object[2,2]), 3)
   }
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){

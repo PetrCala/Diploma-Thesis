@@ -78,8 +78,6 @@ ability_uncontrolled,Ability - Uncontrolled,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TR
 ability_unmentioned,Ability - Unmentioned,dummy,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
 instr_parents_ed,Instrument - Parents Education,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
 instr_distance_to_school,Instrument - Distance to School,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-instr_spouse_ed,Instrument - Spouse Education,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-instr_marital_status,Instrument - Marital Status,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
 instr_other,Instument - Other,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
 age_control,Control - Age,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
 age_sq_control,Control - Age Squared,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
