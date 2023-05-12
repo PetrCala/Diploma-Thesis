@@ -1944,8 +1944,8 @@ runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
   cal_below <- nrow(subsetted_data[subsetted_data$t_w < threshold, ]) # N. obs below the threshold
   # Return the output
   res <- c(
-    round(cal_est, 5),
-    round(cal_se, 5),
+    round(cal_est, 3),
+    round(cal_se, 3),
     cal_above,
     cal_below)
   invisible(res)
@@ -2081,7 +2081,7 @@ getEliottResults <- function(input_data, data_subsets = c("All data"),
     Bin_test <- Binomial(P, p_min, p_max, "c")
     Discontinuity <- Discontinuity_test(P,d_point, h)
     LCM_sup <- LCM(P, p_min,p_max, lcm_norm, cdfs)
-    CS_1 <- CoxShi(P,id, p_min, p_max, CS_bins, 1, 0) #Test for 1-monotonicity
+    CS_1 <- CoxShi(P,id, p_min, p_max, CS_bins, 1, 0) #Test for 1-non-increasingness
     CS_2B <- CoxShi(P,id, p_min, p_max, CS_bins, 2, 1) #Test for 2-monotonicity and bounds
     FM <- Fisher(P, p_min, p_max)
     
@@ -2126,11 +2126,11 @@ getEliottResults <- function(input_data, data_subsets = c("All data"),
 #' @inheritDotParams Parameters for the extractExoCoefs function.
 #' 
 #' @import maive_master_thesis_cala.R
-getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studylevel = 0, verbose = T, ...){
+getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studylevel = 2, verbose = T, ...){
   # Read the source file
   source("maive_master_thesis_cala.R")
   # Validate that the necessary columns are present
-  required_cols <- c("effect_w", "se_w", "study_size", "study_id")
+  required_cols <- c("effect_w", "se_w", "reg_df", "study_id")
   stopifnot(
     all(required_cols %in% names(data)),
     method %in% c(1,2,3,4),

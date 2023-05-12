@@ -110,8 +110,8 @@ run_this <- c(
   "t_stat_histogram" = F,
   "linear_tests" = F,
   "nonlinear_tests" = F,
-  "exo_tests" = T,
-  "p_hacking_tests" = F,
+  "exo_tests" = F,
+  "p_hacking_tests" = T,
   "bma" = F,
   "fma" = F, # Should be ran together with BMA
   "best_practice_estimate" = F # Should be ran together with BMA
@@ -153,7 +153,7 @@ adjustable_parameters <- c(
   "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
   "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
   # Caliper test parameters
-  "caliper_thresholds" = c(0, 1.96, 2.58), # Caliper thresholds - keep as vector
+  "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
   "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
   # Eliott test parameters
   "eliott_data_subsets" = c("All data"), # Data subsets to run the tests on
@@ -162,6 +162,12 @@ adjustable_parameters <- c(
   "eliott_d_point" = 0.1,
   "eliott_cs_bins" = 15,
   "eliott_verbose" = T,
+  # MAIVE parameters - for explanation, see MAIVE instructions (Irsova et al., 2023)
+  "maive_method" = 3, # 3 = PET-PEESE
+  "maive_weight" = 0, # 0 = no weights
+  "maive_instrument" = 1, # 1 = Yes (instrument SEs)
+  "maive_studylevel" = 2, # 2 = cluster-robust SEs
+  "maive_verbose" = TRUE,
   # Bayesian Model Averaging parameters
   "automatic_bma" = T, # If TRUE, automatically generate a formula for BMA with all VIF < 10
   "bma_burn" = 1e4, # Burn-ins (def 1e5)
@@ -329,7 +335,7 @@ if (run_this["effect_summary_stats"]){
 
 ###### BOX PLOT ######
 if (run_this["box_plot"]){
-  # Adjustable parameters
+  # Parameters
   effect_name <- as.character(adjustable_parameters["effect_name"]) # Inside this scope for safety
   factor_names <- getBoxPlotFactors(adj_pars_source = adjustable_parameters, pattern = "box_plot_group_by_factor_")
   box_plot_verbose <- as.logical(adjustable_parameters["box_plot_verbose"])
@@ -348,7 +354,7 @@ if (run_this["box_plot"]){
 
 ###### FUNNEL PLOT ######
 if (run_this["funnel_plot"]){
-  # Adjustable parameters
+  # Parameters
   funnel_effect_proximity <- as.numeric(adjustable_parameters["funnel_plot_effect_proximity"])
   funnel_maximum_precision <- as.numeric(adjustable_parameters["funnel_plot_maximum_precision"])
   funnel_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
@@ -361,8 +367,10 @@ if (run_this["funnel_plot"]){
 
 ###### HISTOGRAM OF T-STATISTICS ######
 if (run_this["t_stat_histogram"]){
+  # Parameters
   lower_cutoff <- as.numeric(adjustable_parameters["t_hist_lower_cutoff"])
   upper_cutoff <- as.numeric(adjustable_parameters["t_hist_upper_cutoff"])
+  # Estimation
   getTstatHist(data, lower_cutoff, upper_cutoff)
 }
 
@@ -428,32 +436,44 @@ if (run_this["exo_tests"]){
 
 if (run_this["p_hacking_tests"]){
   ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
+  # Parameters
   caliper_thresholds <- getMultipleParams(adjustable_parameters, "caliper_thresholds", "numeric")
   caliper_widths <- getMultipleParams(adjustable_parameters, "caliper_widths", "numeric")
+  # Estimation
   caliper_results <- getCaliperResults(data,
           thresholds = caliper_thresholds, widths = caliper_widths, verbose = T)
    
   ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
+  # Parameters
   eliott_data_subsets <- getMultipleParams(adjustable_parameters, "eliott_data_subsets", "character")
   eliott_p_min <- as.numeric(adjustable_parameters["eliott_p_min"])
   eliott_p_max <- as.numeric(adjustable_parameters["eliott_p_max"])
   eliott_d_point <- as.numeric(adjustable_parameters["eliott_d_point"])
   eliott_cs_bins <- as.numeric(adjustable_parameters["eliott_cs_bins"])
   eliott_verbose <- as.logical(adjustable_parameters["eliott_verbose"])
+  # Estimation
   eliott_results <- getEliottResults(data, eliott_data_subsets,
       eliott_p_min, eliott_p_max, eliott_d_point, eliott_cs_bins, eliott_verbose)
    
   ###### MAIVE Estimator (Irsova et al., 2023) ######
+  # Parameters
+  maive_method <- as.numeric(adjustable_parameters["maive_method"])
+  maive_weight <- as.numeric(adjustable_parameters["maive_weight"])
+  maive_instrument <- as.numeric(adjustable_parameters["maive_instrument"])
+  maive_studylevel <- as.numeric(adjustable_parameters["maive_studylevel"])
+  maive_verbose <- as.numeric(adjustable_parameters["maive_verbose"])
+  # Estimation
   maive_results <- getMaiveResults(data,
-          method=3, weight=0, instrument=1, studylevel=0, verbose=T)
+          method=maive_method, weight=maive_weight, instrument=maive_instrument,
+          studylevel=maive_studylevel, verbose=maive_verbose)
 }
 
 ######################### MODEL AVERAGING #########################
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
 if (run_this["bma"]){
+  # Parameters
   automatic_bma <- as.logical(adjustable_parameters["automatic_bma"])
-  # Extract adjustable parameters
   bma_burn <- as.numeric(adjustable_parameters["bma_burn"])
   bma_iter <- as.numeric(adjustable_parameters["bma_iter"])
   bma_g <- as.character(adjustable_parameters["bma_g"])
@@ -461,6 +481,7 @@ if (run_this["bma"]){
   bma_nmodel <- as.numeric(adjustable_parameters["bma_nmodel"])
   bma_mcmc <- as.character(adjustable_parameters["bma_mcmc"])
   bma_print_results <- as.character(adjustable_parameters["bma_print_results"])
+  # Estimation
   if (automatic_bma){
     # Get the optimal BMA formula automatically
     bma_formula <- findOptimalBMAFormula(data, var_list, verbose = T)
@@ -492,7 +513,7 @@ if (run_this["fma"]){
   if (!exists("bma_data") || !exists("bma_model")){
     stop("You must create these two objects first - bma_data, bma_model. Refer to the 'bma' section.")
   }
-  # Actual estimation
+  # Estimation
   fma_coefs <- runFMA(bma_data, bma_model, verbose = T)
 }
 
@@ -503,6 +524,7 @@ if (run_this["best_practice_estimate"]){
   if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
     stop("You must create these two objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
   }
+  # Parameters
   bpe_study_ids <- getMultipleParams(adjustable_parameters, "bpe_studies", "numeric")
   bpe_use_ci <- as.logical(adjustable_parameters["bpe_use_ci"])
   bpe_econ_sig_large_pip_only <- as.logical(adjustable_parameters["bpe_econ_sig_large_pip_only"])
