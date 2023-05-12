@@ -32,4 +32,5 @@ if ! test -f "$f" || ! cmp -s "$source_file" "$f"; then
 fi
 done
 
-
+# Modify the development option of the .yaml file
+sed -i 's/development_on: yes/development_on: no/g' "user_parameters.yaml"

@@ -1,0 +1,70 @@
+development_on: no
+master_data_set_source: data_set_master_thesis_cala.csv
+var_list_source: var_list_master_thesis_cala.csv
+run_this:
+  variable_summary_stats: no
+  effect_summary_stats: no
+  box_plot: no
+  funnel_plot: no
+  t_stat_histogram: no
+  linear_tests: no
+  nonlinear_tests: no
+  exo_tests: no
+  p_hacking_tests: no
+  bma: no
+  fma: no
+  best_practice_estimate: no
+adjustable_parameters:
+  effect_name: years of schooling on wage
+  formal_output_on: yes
+  data_subset_condition_1: .na
+  data_subset_condition_2: ability_uncontrolled == 1
+  data_winsorization_level: 0.01
+  data_precision_type: DoF
+  allowed_missing_ratio: 0.7
+  effect_summary_stats_conf_level: 0.95
+  box_plot_group_by_factor_1: study_name
+  box_plot_group_by_factor_2: country
+  box_plot_verbose: yes
+  funnel_effect_proximity: 0.15
+  funnel_maximum_precision: 0.2
+  funnel_verbose: yes
+  t_hist_lower_cutoff: -120.0
+  t_hist_upper_cutoff: 120.0
+  caliper_thresholds:
+  - 1.645
+  - 1.96
+  - 2.58
+  caliper_widths:
+  - 0.05
+  - 0.1
+  - 0.2
+  eliott_data_subsets: All data
+  eliott_p_min: 0.0
+  eliott_p_max: 0.1
+  eliott_d_point: 0.1
+  eliott_CS_bins: 15.0
+  eliott_verbose: yes
+  maive_method: 3.0
+  maive_weight: 0.0
+  maive_instrument: 1.0
+  maive_studylevel: 2.0
+  maive_verbose: yes
+  automatic_bma: yes
+  bma_verbose: no
+  bma_burn: 10000.0
+  bma_iter: 30000.0
+  bma_g: HQ
+  bma_mprior: random
+  bma_nmodel: 20000.0
+  bma_mcmc: bd
+  bma_print_results: none
+  fma_verbose: no
+  ma_results_table: yes
+  bpe_studies:
+  - 0.0
+  - 2.0
+  - 112.0
+  - 7.0
+  bpe_use_ci: yes
+  bpe_econ_sig_large_pip_only: yes
