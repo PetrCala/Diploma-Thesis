@@ -1,5 +1,10 @@
+#!/bin/bash
+
 # Copy the README into the Dist folder
 cp README.md Dist/
+
+# Copy the main text TeX file into the Dist folder
+cp -fr "Thesis main/Diploma Thesis Cala Returns To Education.zip" "Dist/Diploma Thesis Cala Returns To Education.zip"
 
 # Read dist_info.txt, remove carriage return characters and store the result in SOURCE_FILES variable
 cd R
@@ -23,7 +28,7 @@ fi
 # Check if the file doesn't exist in the Dist folder or if it's different from the one in the R folder
 if ! test -f "$f" || ! cmp -s "$source_file" "$f"; then
   # Copy the file from the R folder to the Dist folder
-  cp "$source_file" .
+  cp -fr "$source_file" .
 fi
 done
 
