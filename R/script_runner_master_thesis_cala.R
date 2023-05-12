@@ -1,3 +1,16 @@
+#' |--------------------------|
+#' Script name: script_runner_master_thesis_cala.R
+#' 
+#' The script runner for running the analysis for my Master Thesis on the topic
+#' of 'Ability bias in returns to schooling: how large it is and why it matters?'
+#' 
+#' For detailed explanation, see the README file distributed with this script.
+#' 
+#' Author: Petr Čala
+#' Year created: 2023
+#' GitHub: github.com/PetrCala/
+#' |--------------------------|
+ 
 # Clean the environment
 rm(list = ls()) 
 
@@ -20,18 +33,18 @@ user_params <- list(
   
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Should be ran together with BMA
-    "best_practice_estimate" = F # Should be ran together with BMA
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
+    "bma" = T,
+    "fma" = T, # Should be ran together with BMA
+    "best_practice_estimate" = T # Should be ran together with BMA
   ),
   
   # USER PARAMETERS
