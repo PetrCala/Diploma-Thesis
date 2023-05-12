@@ -5,18 +5,20 @@
 #' Year of defense - 2024
 #' Supervisor - doc. PhDr. Zuzana Havránková Ph.D. 
 #' 
+#' ABOUT:
+#' 
 #' PREREQUISITES:
 #'  1. Make sure that your working directory contains the following files:
-#'      -<NAME_OF_YOUR_DATA_FRAME>.csv (modifiable below)
+#'      -<NAME_OF_YOUR_DATA_FRAME>.csv
 #'      -elliot_master_thesis_cala.R
 #'      -endo_kink_master_thesis_cala.R
 #'      -main_master_thesis_cala.R
 #'      -maive_master_thesis_cala.R
-#'      -pretty_output_master_thesis_cala.R
+#'      -script_runner_master_thesis_cala.R
 #'      -selection_model_master_thesis_cala.R
 #'      -source_master_thesis_cala.R
 #'      -stem_method_master_thesis_cala.R
-#'      -<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv (modifiable below)
+#'      -<NAME_OF_YOUR_VARIABLE_INFORMATION_FILE>.csv
 #'  2. Try to eliminate as many missing values in your data frame as you can.
 #'    The script will automatically use interpolation for missing data, so that model averaging
 #'    can run, but in case of many missing values, the results may be unstable.
@@ -86,127 +88,15 @@
 #'  4. Run the code ALL AT ONCE, and see the results in the console, and in the
 #'    'Plots' section.
 
-######################################################################
-#####################    CUSTOMIZABLE PART    #######################
-######################################################################
+##################### ENVIRONMENT PREPARATION ########################
 
 # Clean the environment - DO NOT CHANGE THIS
-#rm(list = ls()) 
-
-# Customizable data file names
-master_data_set_source <- "data_set_master_thesis_cala.csv" # Master data frame
-var_list_source <- "var_list_master_thesis_cala.csv" # Variable information file
-
-#' WHAT PARTS OF THE SCRIPT TO RUN
-#' T - RUN THIS PART
-#' F - DO NOT RUN THIS PART
-#' Note:
-#'  Do NOT change the variable names, or the name of the vector
-run_this <- c(
-  "variable_summary_stats" = F,
-  "effect_summary_stats" = F,
-  "box_plot" = F,
-  "funnel_plot" = F,
-  "t_stat_histogram" = F,
-  "linear_tests" = F,
-  "nonlinear_tests" = F,
-  "exo_tests" = T,
-  "p_hacking_tests" = T,
-  "bma" = T,
-  "fma" = T, # Should be ran together with BMA
-  "best_practice_estimate" = T # Should be ran together with BMA
-)
-
-#' ADJUSTABLE PARAMETERS
-#' Adjust the parameters by modifying the numbers, or boolean values
-#' Note:
-#'  Do NOT change the variable names (apart from when adding new Box plot factors),
-#'    the names of vectors, or value types (character, integer, vector...)
-adjustable_parameters <- c(
-  # Effect name
-  "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
-  # Formal output
-  "formal_output_on" = TRUE, # If TRUE, return tables in a form presentable in text
-  # Data subsetting conditions
-  # Note - if you do not with to use any conditions, set the first condition to NA
-  # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
-  "data_subset_condition_1" = NA,
-  "data_subset_condition_2" = "ability_uncontrolled == 1",
-  # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
-  # Data winsorization characteristics
-  "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
-  "data_precision_type" = "DoF", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
-  # Handle missing data
-  "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
-  # Effect summary statistics confidence level
-  "effect_summary_stats_conf_level" = 0.95, # Between 0 and 1 (excluding)
-  # Box plot parameters
-  "box_plot_group_by_factor_1" = "study_name", # Group by study name
-  "box_plot_group_by_factor_2" = "country", # Group by country
-  # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
-  "box_plot_verbose" = T, # Get information about the plots being printed
-  # Funnel plot parameters
-  "funnel_plot_effect_proximity" = 0.15, # Effect axis cutoff point (perc) on either side of mean
-  "funnel_plot_maximum_precision" = 0.2, # Precision axis maximum value cutoff point (perc)
-  "funnel_plot_verbose" = T, # If T, print cut outlier information
-  # T-statistic histogram parameters
-  "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
-  "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
-  # Caliper test parameters
-  "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
-  "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
-  # Eliott test parameters
-  "eliott_data_subsets" = c("All data"), # Data subsets to run the tests on
-  "eliott_p_min" = 0,
-  "eliott_p_max" = 0.1,
-  "eliott_d_point" = 0.1,
-  "eliott_cs_bins" = 15,
-  "eliott_verbose" = T,
-  # MAIVE parameters - for explanation, see MAIVE instructions (Irsova et al., 2023)
-  "maive_method" = 3, # 3 = PET-PEESE
-  "maive_weight" = 0, # 0 = no weights
-  "maive_instrument" = 1, # 1 = Yes (instrument SEs)
-  "maive_studylevel" = 2, # 2 = cluster-robust SEs
-  "maive_verbose" = TRUE,
-  # Bayesian Model Averaging parameters
-  "automatic_bma" = T, # If TRUE, automatically generate a formula for BMA with all VIF < 10
-  "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
-  "bma_burn" = 1e4, # Burn-ins (def 1e5)
-  "bma_iter" = 3e4, # Draws (def 3e5)
-  "bma_g" = "HQ", # g-Prior
-  "bma_mprior" = "random", # Model Prior
-  "bma_nmodel" = 20000, # Number of models (def 50000)
-  "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-  "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
-  # Frequentist Model Averaging parameters
-  "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
-  # Model averaging parameters
-  "ma_results_table" = TRUE, # If TRUE, print out results of model averaging into a pretty table
-  # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
-  "bpe_studies" = c( # Vector of study indexes for which to run the BPE. For author's BPE, use 0.
-    0, # Author
-    2, # Bartlolj et al. (2013) - Most years of schooling
-    112, # Staiger et al. (1997) - Most citations
-    7 # Webbink (2004) - Random, unpublished, uncited work
-  ),
-  "bpe_use_ci" = TRUE, # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
-  "bpe_econ_sig_large_pip_only" = TRUE # If TRUE, display econ. significance for variables with PIP >= 0.5
-)
-
-######################################################################
-#####################      TECHNICAL PART      #######################
-######################################################################
-
-##################### ENVIRONMENT PREPARATION ########################
-# Static 
-development_on <- T # Turn off when distributing the code
-formal_output_on <- adjustable_parameters["formal_output_on"]
+rm(list = ls()) 
 options(scipen=999) # No scientific notation
 
-technical_parameters <- c(
-  # Handle missing data
-  "allow_missing_vars" = F # UNSAFE!! Allow missing variables in the data - Do NOT turn on
-)
+# Static 
+source_file <- "source_master_thesis_cala.R" # Main source file
+user_param_file <- "user_parameters.yaml" # File with user parameters
 
 # Working directory - change only if the script is being ran as the master script (not imported)
 if (length(commandArgs()) == 0) {
@@ -216,20 +106,6 @@ if (length(commandArgs()) == 0) {
     print(paste0('Setting the working directory to: ', getwd()))
   }
 }
-
-# Source files - unmodifiable
-stem_source <- "stem_method_master_thesis_cala.R" # STEM method (Furukawa, 2019) - fixed package handling
-selection_model_source <- "selection_model_master_thesis_cala.R" # Selection model (Andrew & Kasy, 2019)
-endo_kink_source <- "endo_kink_master_thesis_cala.R" # Endogenous Kink model (Bom & Rachinger, 2019)
-maive_source <- "maive_master_thesis_cala.R" # MAIVE Estimator (Irsova et al., 2023)
-source_files <- c(
-  master_data_set_source,
-  var_list_source,
-  stem_source,
-  selection_model_source,
-  endo_kink_source,
-  maive_source
-)
 
 # Required packages
 packages <- c(
@@ -268,23 +144,48 @@ packages <- c(
   "testthat", # Unit testing for R
   "tidyverse", # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
   "varhandle", # MAIVE estimator
-  "xtable" # Creating tables in LaTeX or HTML
+  "xtable", # Creating tables in LaTeX or HTML
+  "yaml" # User parameters
 )
 
 ##### PREPARATION #####
-# Load the source script
-if (!file.exists("source_master_thesis_cala.R")){
-  print('Please make sure to put the source file \"source_master_thesis_cala\" in
-        your working directory.')
-} else{
-  source("source_master_thesis_cala.R")
-  print("Source file loaded.")
+
+# Verify the existence of the two main source files exist
+if (!file.exists(source_file)){
+  stop(paste("Please make sure to place the source file", source_file, "in the working directory first."))
+} else {
+  "Source file located."
 }
+if (!file.exists(user_param_file)){
+  stop(paste("Please make sure to place the user parameter file",user_param_file,"in the working directory first."))
+} else {
+  "User parameter file located."
+}
+
+# Load the source script
+source(source_file)
 
 # Load packages
 loadPackages(packages)
 
-if (development_on) {
+# Load user parameters and unlist for easier fetching
+user_params <- yaml::read_yaml(user_param_file) 
+run_this <- user_params$run_this # Which parts of the scipt to run
+adj_params <- user_params$adjustable_parameters # Various parameters
+
+# Add the name-customizable files to the source file vector
+source_files <- c(
+  user_params$master_data_set_source,
+  user_params$var_list_source,
+  user_params$user_param_file,
+  user_params$stem_source,
+  user_params$selection_model_source,
+  user_params$endo_kink_source,
+  user_params$maive_source
+)
+
+# Validate .xlsx -> .csv conversion in development
+if (user_params$development_on) {
   # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files if necessary)
   master_data_set_xlsx_path <- "../Data/data_set_master_thesis_cala.xlsm"
   sheet_names <- c("data_set", "var_list") # Sheet names to read
@@ -297,8 +198,8 @@ validateFiles(source_files)
 ######################### DATA PREPROCESSING #########################
 
 # Read all the source .csv files
-data <- readDataCustom(master_data_set_source)
-var_list <- readDataCustom(var_list_source)
+data <- readDataCustom(user_params$master_data_set_source)
+var_list <- readDataCustom(user_params$var_list_source)
 
 # Validate the input variable list
 validateInputVarList(var_list)
@@ -307,91 +208,92 @@ validateInputVarList(var_list)
 data <- preprocessData(data, var_list)
 
 # Get the raw but preprocessed data summary statistics (without winsorization, missing value handling)
-if (run_this["variable_summary_stats"]){
+if (run_this$variable_summary_stats){
   getVariableSummaryStats(data, var_list)
 }
 
 # Handle missing variables
-allow_missing_vars <- as.logical(technical_parameters["allow_missing_vars"]) # Try to always keep FALSE
-if (!allow_missing_vars){
-  allowed_missing_ratio <- getParam("allowed_missing_ratio", adjustable_parameters, "numeric")
-  data <- handleMissingData(data, var_list, allowed_missing_ratio = allowed_missing_ratio)
+if (!user_params$development_on){
+  data <- handleMissingData(data, var_list, allowed_missing_ratio = adj_params$allowed_missing_ratio)
 }
 
 # Winsorize the data
-data_win_level <- getParam("data_winsorization_level", adjustable_parameters, "numeric")
-data_precision_type <- getParam("data_precision_type", adjustable_parameters, "character")
-data <- winsorizeData(data, win_level = data_win_level, precision_type = data_precision_type)
+data <- winsorizeData(data,
+                      win_level = adj_params$data_winsorization_level,
+                      precision_type = adj_params$data_precision_type)
 
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
-validateData(data, var_list, ignore_missing = allow_missing_vars)
+validateData(data, var_list, ignore_missing = user_params$development_on)
 
 # Subset data using the conditions specified in the customizable section
-subset_conditions <- getMultipleParams(adjustable_parameters, "data_subset_condition_", "character") # Extract all the data subset conditions
+subset_conditions <- getMultipleParams(adj_params, "data_subset_condition_") # Extract all the data subset conditions
 data <- applyDataSubsetConditions(data, subset_conditions)
 
 ######################### DATA EXPLORATION #########################
 
 ###### EFFECT SUMMARY STATISTICS ######
-if (run_this["effect_summary_stats"]){
-  effect_sum_stats_conf_level <- getParam("effect_summary_stats_conf_level", adjustable_parameters, "numeric")
-  getEffectSummaryStats(data, var_list, effect_sum_stats_conf_level, formal_output_on)
+if (run_this$effect_summary_stats){
+  getEffectSummaryStats(data, var_list,
+                        conf.level = adj_params$effect_summary_stats_conf_level,
+                        formal_output = adj_params$formal_output_on)
 }
 
 ###### BOX PLOT ######
-if (run_this["box_plot"]){
+if (run_this$box_plot){
   # Parameters
-  effect_name <- getParam("effect_name", adjustable_parameters, "character") # Inside this scope for safety
-  factor_names <- getBoxPlotFactors(adj_pars_source = adjustable_parameters, pattern = "box_plot_group_by_factor_")
-  box_plot_verbose <- getParam("box_plot_verbose", adjustable_parameters, "logical")
+  factor_names <- getMultipleParams(adj_params, "box_plot_group_by_factor_")
   
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
     # Handle factors with large number of boxes - automatically split them into multiple plots
     if (factor_name %in% c("study_name", "study_id")){
       getLargeBoxPlot(data, max_studies = 60,
-                      factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
+                      factor_by = factor_name,
+                      verbose = adj_params$box_plot_verbose,
+                      effect_name = adj_params$effect_name)
     } else {
-      getBoxPlot(data, factor_by = factor_name, verbose = box_plot_verbose, effect_name = effect_name)
+      getBoxPlot(data, factor_by = factor_name,
+                      verbose = adj_params$box_plot_verbose,
+                      effect_name = adj_params$effect_name)
     }
   }
 }
 
 ###### FUNNEL PLOT ######
-if (run_this["funnel_plot"]){
-  # Parameters
-  funnel_effect_proximity <- getParam("funnel_plot_effect_proximity", adjustable_parameters, "numeric")
-  funnel_maximum_precision <- getParam("funnel_plot_maximum_precision", adjustable_parameters, "numeric")
-  funnel_verbose <- getParam("funnel_plot_verbose", adjustable_parameters, "logical")
-  
-  # Plot the funnel plot
-  getFunnelPlot(data, funnel_effect_proximity, funnel_maximum_precision, use_study_medians = F, funnel_verbose)
-  getFunnelPlot(data, funnel_effect_proximity, funnel_maximum_precision, use_study_medians = T, funnel_verbose)
-  
+if (run_this$funnel_plot){
+  # Funnel with all data
+  getFunnelPlot(data, adj_params$funnel_effect_proximity,
+                adj_params$funnel_maximum_precision,
+                use_study_medians = F,
+                adj_params$funnel_verbose)
+  # Funnel with medians only
+  getFunnelPlot(data, adj_params$funnel_effect_proximity,
+                adj_params$funnel_maximum_precision,
+                use_study_medians = T,
+                adj_params$funnel_verbose)
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
-if (run_this["t_stat_histogram"]){
-  # Parameters
-  lower_cutoff <- getParam("t_hist_lower_cutoff", adjustable_parameters, "numeric")
-  upper_cutoff <- getParam("t_hist_upper_cutoff", adjustable_parameters, "numeric")
-  # Estimation
-  getTstatHist(data, lower_cutoff, upper_cutoff)
+if (run_this$t_stat_histogram){
+  getTstatHist(data, 
+               lower_cutoff = adj_params$t_hist_lower_cutoff,
+               upper_cutoff = adj_params$t_hist_upper_cutoff)
 }
 
 ######################### LINEAR TESTS ######################### 
 
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
 
-if (run_this["linear_tests"]){
+if (run_this$linear_tests){
   getLinearTests(data)
 }
 
 ######################### NON-LINEAR TESTS ######################### 
 
-if (run_this["nonlinear_tests"]){
+if (run_this$nonlinear_tests){
+  # Parameters
   global_non_lin_res <- T # Set to false if tests should be ran separately
-  
+  # Estimation
   if (!global_non_lin_res) {
     ###### PUBLICATION BIAS - WAAP (Ioannidis et al., 2017) ######
     waap_results<- getWaapResults(data, pub_bias_present = F, verbose_coefs = T)
@@ -407,7 +309,7 @@ if (run_this["nonlinear_tests"]){
     
     ###### PUBLICATION BIAS - Selection model (Andrews & Kasy, 2019) ######
     selection_results <- getSelectionResults(data, 
-                                             cutoffs = c(1.960), symmetric = F, modelmu = "normal", # Adjustable
+                                             cutoffs = c(1.960), symmetric = F, modelmu = "normal",
                                              pub_bias_present = T, verbose_coefs = T)
     
     ###### PUBLICATION BIAS - Endogenous kink (Bom & Rachinger, 2020) ######
@@ -421,9 +323,10 @@ if (run_this["nonlinear_tests"]){
 ### Apply p-uniform* method using sample means
 
 ######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
-if (run_this["exo_tests"]){
+if (run_this$exo_tests){
+  # Parameters
   global_exo_tests <- T # Set to false if tests should be ran separately
-  
+  # Estimation
   if (!global_exo_tests) {
     ###### PUBLICATION BIAS - FAT-PET with IV ######
     iv_results <- getIVResults(data,
@@ -439,121 +342,92 @@ if (run_this["exo_tests"]){
 
 ######################### P-HACKING TESTS #########################
 
-if (run_this["p_hacking_tests"]){
+if (run_this$p_hacking_tests){
   ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
-  # Parameters
-  caliper_thresholds <- getMultipleParams(adjustable_parameters, "caliper_thresholds", "numeric")
-  caliper_widths <- getMultipleParams(adjustable_parameters, "caliper_widths", "numeric")
-  # Estimation
   caliper_results <- getCaliperResults(data,
-                                       thresholds = caliper_thresholds, widths = caliper_widths, verbose = T)
+                                       thresholds = adj_params$caliper_thresholds,
+                                       widths = adj_params$caliper_widths,
+                                       verbose = T)
   
   ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
-  # Parameters
-  eliott_data_subsets <- getMultipleParams(adjustable_parameters, "eliott_data_subsets", "character")
-  eliott_p_min <- getParam("eliott_p_min", adjustable_parameters, "numeric")
-  eliott_p_max <- getParam("eliott_p_max", adjustable_parameters, "numeric")
-  eliott_d_point <- getParam("eliott_d_point", adjustable_parameters, "numeric")
-  eliott_cs_bins <- getParam("eliott_cs_bins", adjustable_parameters, "numeric")
-  eliott_verbose <- getParam("eliott_verbose", adjustable_parameters, "logical")
-  # Estimation
-  eliott_results <- getEliottResults(data, eliott_data_subsets,
-                                     eliott_p_min, eliott_p_max, eliott_d_point, eliott_cs_bins, eliott_verbose)
+  eliott_results <- getEliottResults(data,
+                                     data_subsets = adj_params$eliott_data_subsets,
+                                     p_min = adj_params$eliott_p_min,
+                                     p_max = adj_params$eliott_p_max,
+                                     d_point = adj_params$eliott_d_point,
+                                     CS_bins = adj_params$eliott_CS_bins,
+                                     verbose = adj_params$eliott_verbose)
   
   ###### MAIVE Estimator (Irsova et al., 2023) ######
-  # Parameters
-  maive_method <- getParam("maive_method", adjustable_parameters, "numeric")
-  maive_weight <- getParam("maive_weight", adjustable_parameters, "numeric")
-  maive_instrument <- getParam("maive_instrument", adjustable_parameters, "numeric")
-  maive_studylevel <- getParam("maive_studylevel", adjustable_parameters, "numeric")
-  maive_verbose <- getParam("maive_verbose", adjustable_parameters, "logical")
-  # Estimation
   maive_results <- getMaiveResults(data,
-                                   method=maive_method, weight=maive_weight, instrument=maive_instrument,
-                                   studylevel=maive_studylevel, verbose=maive_verbose)
+                                   method=adj_params$maive_method,
+                                   weight=adj_params$maive_weight,
+                                   instrument=adj_params$maive_instrument,
+                                   studylevel=adj_params$maive_studylevel,
+                                   verbose=adj_params$maive_verbose)
 }
 
 ######################### MODEL AVERAGING #########################
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
-if (run_this["bma"]){
-  # Parameters
-  automatic_bma <- getParam("automatic_bma", adjustable_parameters, "logical")
-  bma_verbose <- getParam("bma_verbose", adjustable_parameters, "logical")
-  bma_burn <- getParam("bma_burn", adjustable_parameters, "numeric")
-  bma_iter <- getParam("bma_iter", adjustable_parameters, "numeric")
-  bma_g <- getParam("bma_g", adjustable_parameters, "character")
-  bma_mprior <- getParam("bma_mprior", adjustable_parameters, "character")
-  bma_nmodel <- getParam("bma_nmodel", adjustable_parameters, "numeric")
-  bma_mcmc <- getParam("bma_mcmc", adjustable_parameters, "character")
-  bma_print_results <- getParam("bma_print_results", adjustable_parameters, "character")
-  # Estimation
-  if (automatic_bma){
+if (run_this$bma){
+  if (adj_params$automatic_bma){
     # Get the optimal BMA formula automatically
-    bma_formula <- findOptimalBMAFormula(data, var_list, verbose = bma_verbose)
+    bma_formula <- findOptimalBMAFormula(data, var_list, verbose = adj_params$bma_verbose)
   } else {
     # From the variable information instead
     bma_formula <- getBMAFormula(var_list, input_data)
   }
   # Run the Variance Inflation Test
-  vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = bma_verbose)
+  vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = adj_params$bma_verbose)
   # BMA estimation
   bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
   bma_data <- getBMAData(data, var_list, bma_vars)
   bma_model <- runBMA(
     bma_data,
-    burn=bma_burn,
-    iter=bma_iter,
-    g=bma_g, # UIP, BRIC, HQ
-    mprior=bma_mprior, # uniform, random
-    nmodel=bma_nmodel,
-    mcmc=bma_mcmc
+    burn=adj_params$bma_burn,
+    iter=adj_params$bma_iter,
+    g=adj_params$bma_g, # UIP, BRIC, HQ
+    mprior=adj_params$bma_mprior, # uniform, random
+    nmodel=adj_params$bma_nmodel,
+    mcmc=adj_params$bma_mcmc
   )
   # Print out the results
-  bma_coefs <- extractBMAResults(bma_model, bma_data, print_results = bma_print_results)
+  bma_coefs <- extractBMAResults(bma_model, bma_data, print_results = adj_params$bma_print_results)
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
 
-if (run_this["fma"]){
+if (run_this$fma){
   if (!exists("bma_data") || !exists("bma_model")){
     stop("You must create these two objects first - bma_data, bma_model. Refer to the 'bma' section.")
   }
-  # Parameters
-  fma_verbose <- getParam("fma_verbose", adjustable_parameters, "logical")
   # Estimation
-  fma_coefs <- runFMA(bma_data, bma_model, verbose = fma_verbose)
+  fma_coefs <- runFMA(bma_data, bma_model, verbose = adj_params$fma_verbose)
 }
 
 
-# Print out the results of model averaging into a nice table
-get_ma_results_table <- getParam("ma_results_table", adjustable_parameters, "logical")
-if (get_ma_results_table){
-  # Validate whether the both the model averaging methods exist
-  if (!exists("bma_coefs") || !exists("fma_coefs")){
-    stop("You must run the model averaging methods first to be able to print out the results.")
-  }
+# Print out the results of model averaging into a nice table - only if BMA and FMA output exists
+if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs")))){
   ma_res_table <- getMATable(bma_coefs, fma_coefs, var_list, verbose = T)
 }
 
 ######################### BEST-PRACTICE ESTIMATE #########################
 
-if (run_this["best_practice_estimate"]){
+if (run_this$best_practice_estimate){
   if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
     stop("You must create these two objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
   }
   # Parameters
-  bpe_study_ids <- getMultipleParams(adjustable_parameters, "bpe_studies", "numeric")
-  bpe_use_ci <- getParam("bpe_use_ci", adjustable_parameters, "logical")
-  bpe_econ_sig_large_pip_only <- getParam("bpe_econ_sig_large_pip_only", adjustable_parameters, "logical")
+  bpe_study_ids <- getMultipleParams(adj_params, "bpe_studies")
   # BPE estimation
   bpe_res <- generateBPEResultTable(bpe_study_ids,
                                     data, var_list, bma_model, bma_formula, bma_data,
-                                    use_ci = bpe_use_ci, verbose_output = TRUE)
+                                    use_ci = adj_params$bpe_use_ci,
+                                    verbose_output = TRUE)
   # Economic significance table
   bpe_est <- bpe_res[1,1] # BPE estimate of the first row - usually Author's BPE
   bpe_econ_sig <- getEconomicSignificance(bpe_est, var_list, bma_data, bma_model,
-                                          display_large_pip_only = TRUE, verbose_output = TRUE)
+                                          display_large_pip_only = adj_params$bpe_econ_sig_large_pip_only,
+                                          verbose_output = TRUE)
 }
-
-

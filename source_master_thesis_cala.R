@@ -54,99 +54,46 @@ validateFiles <- function(files){
 
 #' Extract multiple parameters from a vector dictionary
 #' 
-#' Input the adjustable parameters dictionary, the name of the parameter to extract
-#' the values for, and the type these values should be. Extract all the values of that
-#' parameters and return the vector of the values
+#' Input the adjustable parameters list and the name of the parameter to extract
+#' the values for. Extract all the values of that parameters and return the vector of the values
 #' 
 #' @details The reason for having this function is that if the user inputs multiple
-#' values into a vector dictionary in R, the language assigns each value its unique
+#' values into the list in R, the language assigns each value its unique
 #' key, as it can not store a nested element. RRRRRRRR
 #' 
-#' @param adj_params [vector] A vector dictionary of adjustable parameters.
+#' @param adj_params [list] The list with adjustable parameters.
 #' @param desired_param [character] The name of the parameter for which to extract
 #' the values for
-#' @param param_type [character] Type of the character. Can only be one of the two:
-#' numeric, character
 #' @return Vector of values.
-getMultipleParams <- function(adj_params, desired_param, param_type){
+getMultipleParams <- function(adj_params, desired_param){
   # Validate input
   stopifnot(
-    is.vector(adj_params),
-    is.character(desired_param),
-    is.character(param_type),
-    param_type %in% c("numeric", "character")
+    is.list(adj_params),
+    is.character(desired_param)
   )
-  res <- c()
-  # Assume only one value
-  one_val <- adj_params[desired_param]
-  if (!is.na(one_val)){ # Only one value
-    res <- append(res, one_val)
+  res <- list()
+  # Parameter in parameter list
+  if (desired_param %in% names(adj_params)){
+    val <- adj_params[[desired_param]]
+    res <- append(res, val)
   } else {
-    # More values
+    # More values or no value
     keep_going <- T
     i <- 1
     while (keep_going){
       new_key <- paste0(desired_param,as.character(i))
-      new_param <- adj_params[new_key]
-      if (!is.na(new_param)){
-        res <- append(res, new_param)
+      if (new_key %in% names(adj_params)) {
+        val <- adj_params[[new_key]]
+        res <- append(res, val)
         i <- i + 1
       } else {
         keep_going <- F
       }
     }
   }
-  # No values for this key - a single NA - a wonky case
-  if (length(res) == 1){
-    if (is.na(res)){
-      return(NA)
-    }
-  }
-  # Correct types
-  if (param_type == "character"){
-    res <- as.character(res)
-  } else if (param_type == "numeric"){
-    res <- as.numeric(res)
-  } else {
-    stop("This variable type is unaccepted/unhandled for vectors of multiple values.")
-  }
   return(res)
 }
 
-#' Extracts parameters from a predefined vector
-#'
-#' This function extracts parameters from the `parameters_source` vector.
-#' It can handle both single value and multiple values (arrays) and different types including numeric, logical and character.
-#'
-#' @param param_name [character] The name of the parameter to be extracted from the `parameters_source` vector.
-#' @param parameters_source [vector] Source vector with the parameters
-#' @param param_type [character] The type of the parameter to be extracted. Possible values are "numeric", "logical", and "character". Default is "numeric".
-#' @param multiple [logical] Indicates whether the parameter is a single value or multiple values (an array). Default is FALSE.
-#' 
-#' @return The extracted parameter from the `parameters_source` vector in the specified type.
-#' @examples
-#' maive_method <- getParam("maive_method", "adjustable_parameters")
-#' maive_weight <- getParam("maive_weight", "adjustable_parameters", "numeric")
-#' maive_instrument <- getParam("maive_instrument", "adjustable_parameters", "numeric")
-#' maive_studylevel <- getParam("maive_studylevel", "adjustable_parameters", "numeric")
-#' maive_verbose <- getParam("maive_verbose", "adjustable_parameters", "logical")
-#' eliott_data_subsets <- getParam("eliott_data_subsets", "adjustable_parameters", "character", TRUE)
-#'
-getParam <- function(param_name, adjustable_parameters_source, param_type = "numeric", multiple = FALSE) {
-  if(multiple) {
-    return(getMultipleParams(adjustable_parameters_source, param_name, param_type))
-  } else {
-    if(param_type == "numeric") {
-      return(as.numeric(adjustable_parameters_source[param_name]))
-    } else if(param_type == "logical") {
-      return(as.logical(adjustable_parameters_source[param_name]))
-    } else if(param_type == "character") {
-      return(as.character(adjustable_parameters_source[param_name]))
-    } else {
-      stop("Invalid parameter type specified.")
-    }
-  }
-}
 
 #' Apply data subsetting conditions to the input data frame
 #'
@@ -161,15 +108,17 @@ applyDataSubsetConditions <- function(data, conditions) {
   # Validate input
   stopifnot(
     is.data.frame(data),
-    is.vector(conditions)
+    is.list(conditions)
   )
+  # Do not subset if any conditions are NA
+  if (any(is.na(conditions))){
+    return(data)
+  }
   # Subset the data given the conditions
   if (length(conditions) > 0) {
     for (condition in conditions) {
-      if (!is.na(condition)){
-        # Evaluate each condition and apply it to the data frame
-        data <- data[eval(parse(text = paste0("data$", condition))),]
-      }
+      # Evaluate each condition and apply it to the data frame
+      data <- data[eval(parse(text = paste0("data$", condition))),]
     }
   }
   return(data)
@@ -846,26 +795,6 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
     cat("\n")
   }
   invisible(df)
-}
-
-
-#' A quick search function to extract all specified factors for the box plot
-#' 
-#' @param adj_pars_source [vector] Source vector with adjustable parameters.
-#' @param pattern [str] Pattern to search for inside the paramteres vector.
-#' @return factor_names [vector] A vector with specified factor names.
-getBoxPlotFactors <- function(adj_pars_source, pattern){
-  factor_names <- c()
-  i <- 1
-  while (i < 20) {
-    factor_name <- as.character(adj_pars_source[paste0(pattern,i)])
-    if (is.na(factor_name)){ # No more factors specified
-      break
-    }
-    factor_names <- append(factor_names, factor_name)
-    i <- i + 1
-  }
-  invisible(factor_names)
 }
 
 #' Input the main data frame, specify a factor to group by, and create a box plot.
