@@ -113,6 +113,41 @@ getMultipleParams <- function(adj_params, desired_param, param_type){
   return(res)
 }
 
+#' Extracts parameters from a predefined vector
+#'
+#' This function extracts parameters from the `parameters_source` vector.
+#' It can handle both single value and multiple values (arrays) and different types including numeric, logical and character.
+#'
+#' @param param_name [character] The name of the parameter to be extracted from the `parameters_source` vector.
+#' @param parameters_source [vector] Source vector with the parameters
+#' @param param_type [character] The type of the parameter to be extracted. Possible values are "numeric", "logical", and "character". Default is "numeric".
+#' @param multiple [logical] Indicates whether the parameter is a single value or multiple values (an array). Default is FALSE.
+#' 
+#' @return The extracted parameter from the `parameters_source` vector in the specified type.
+#' @examples
+#' maive_method <- getParam("maive_method", "adjustable_parameters")
+#' maive_weight <- getParam("maive_weight", "adjustable_parameters", "numeric")
+#' maive_instrument <- getParam("maive_instrument", "adjustable_parameters", "numeric")
+#' maive_studylevel <- getParam("maive_studylevel", "adjustable_parameters", "numeric")
+#' maive_verbose <- getParam("maive_verbose", "adjustable_parameters", "logical")
+#' eliott_data_subsets <- getParam("eliott_data_subsets", "adjustable_parameters", "character", TRUE)
+#'
+getParam <- function(param_name, adjustable_parameters_source, param_type = "numeric", multiple = FALSE) {
+  if(multiple) {
+    return(getMultipleParams(adjustable_parameters_source, param_name, param_type))
+  } else {
+    if(param_type == "numeric") {
+      return(as.numeric(adjustable_parameters_source[param_name]))
+    } else if(param_type == "logical") {
+      return(as.logical(adjustable_parameters_source[param_name]))
+    } else if(param_type == "character") {
+      return(as.character(adjustable_parameters_source[param_name]))
+    } else {
+      stop("Invalid parameter type specified.")
+    }
+  }
+}
+
 #' Apply data subsetting conditions to the input data frame
 #'
 #' This function applies all the specified subset conditions to the input data frame. Users can
@@ -2465,7 +2500,7 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
     class(bma_model) == "bma",
     is.data.frame(bma_data),
     is.character(print_results),
-    print_results %in% c("none", "fast", "verbose", "all")
+    print_results %in% c("none", "fast", "verbose", "all", "table")
   )
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
@@ -2640,6 +2675,43 @@ runFMA <- function(bma_data, bma_model, verbose = T){
   invisible(fma_res)
 }
 
+#' Get model averaging results
+getMATable <- function(bma_coefs, fma_coefs, input_var_list, verbose = T){
+  # Validate the input
+  stopifnot(
+    !all(is.na(bma_coefs)), # No missing results allowed
+    !all(is.na(fma_coefs)),
+    all(rownames(bma_coefs)[-nrow(bma_coefs)] == rownames(fma_coefs)[-nrow(fma_coefs)]) # All names same but intercept
+  )
+  # Initiate the data frame
+  bma_df <- data.frame(bma_coefs) # BMA coefficients to DF
+  bma_df <- bma_df[,c("Post.Mean","Post.SD","PIP")]
+  fma_df <- data.frame(fma_coefs)
+  res_df <- cbind(bma_df, fma_df)
+  # Round the results
+  res_df <- round(res_df, 3)
+  # Change column names
+  colnames(res_df) <- c("BMA P.Mean", "BMA SD", "BMA PIP", "FMA Coef", "FMA SE", "FMA p-val")
+  # Change row names
+  match_positions <- match(rownames(res_df), input_var_list$var_name) # Positions of row names in var info DF
+  verbose_rownames <- input_var_list$var_name_verbose[match_positions] # Verbose name of variables
+  if (sum(is.na(verbose_rownames)) > 1){
+    stop("Unspecified verbose variable names in the model averaging result table.")
+  } else if (sum(is.na(verbose_rownames)) == 1){
+    # Intercept unspecified
+    verbose_rownames[is.na(verbose_rownames)] <- "Intercept"
+  }
+  rownames(res_df) <- verbose_rownames
+  # Move intercept to the top
+  res_df <- rbind(res_df[nrow(res_df),], res_df[-nrow(res_df),]) # Last row to first
+  # Return the result
+  if (verbose){
+    print("Results of Model Averaging:")
+    print(res_df)
+    cat("\n\n")
+  }
+  invisible(res_df)
+}
 
 ######################### BEST-PRACTICE ESTIMATE #########################
 
@@ -2970,4 +3042,5 @@ main_theme <- function(x_axis_tick_text = "black"){
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
         plot.background = element_rect(fill = "#DCEEF3"))
 }
+
 

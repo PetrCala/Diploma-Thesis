@@ -110,11 +110,11 @@ run_this <- c(
   "t_stat_histogram" = F,
   "linear_tests" = F,
   "nonlinear_tests" = F,
-  "exo_tests" = F,
+  "exo_tests" = T,
   "p_hacking_tests" = T,
-  "bma" = F,
-  "fma" = F, # Should be ran together with BMA
-  "best_practice_estimate" = F # Should be ran together with BMA
+  "bma" = T,
+  "fma" = T, # Should be ran together with BMA
+  "best_practice_estimate" = T # Should be ran together with BMA
 )
 
 #' ADJUSTABLE PARAMETERS
@@ -170,13 +170,18 @@ adjustable_parameters <- c(
   "maive_verbose" = TRUE,
   # Bayesian Model Averaging parameters
   "automatic_bma" = T, # If TRUE, automatically generate a formula for BMA with all VIF < 10
+  "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
   "bma_burn" = 1e4, # Burn-ins (def 1e5)
   "bma_iter" = 3e4, # Draws (def 3e5)
   "bma_g" = "HQ", # g-Prior
   "bma_mprior" = "random", # Model Prior
   "bma_nmodel" = 20000, # Number of models (def 50000)
   "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-  "bma_print_results" = "fast", # Print results - one of c("none", "fast", "verbose", "all")
+  "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
+  # Frequentist Model Averaging parameters
+  "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
+  # Model averaging parameters
+  "ma_results_table" = TRUE, # If TRUE, print out results of model averaging into a pretty table
   # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
   "bpe_studies" = c( # Vector of study indexes for which to run the BPE. For author's BPE, use 0.
     0, # Author
@@ -309,13 +314,13 @@ if (run_this["variable_summary_stats"]){
 # Handle missing variables
 allow_missing_vars <- as.logical(technical_parameters["allow_missing_vars"]) # Try to always keep FALSE
 if (!allow_missing_vars){
-  allowed_missing_ratio <- as.numeric(adjustable_parameters["allowed_missing_ratio"])
+  allowed_missing_ratio <- getParam("allowed_missing_ratio", adjustable_parameters, "numeric")
   data <- handleMissingData(data, var_list, allowed_missing_ratio = allowed_missing_ratio)
 }
 
 # Winsorize the data
-data_win_level <- as.numeric(adjustable_parameters["data_winsorization_level"])
-data_precision_type <- as.character(adjustable_parameters["data_precision_type"])
+data_win_level <- getParam("data_winsorization_level", adjustable_parameters, "numeric")
+data_precision_type <- getParam("data_precision_type", adjustable_parameters, "character")
 data <- winsorizeData(data, win_level = data_win_level, precision_type = data_precision_type)
 
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
@@ -329,16 +334,16 @@ data <- applyDataSubsetConditions(data, subset_conditions)
 
 ###### EFFECT SUMMARY STATISTICS ######
 if (run_this["effect_summary_stats"]){
-  effect_sum_stats_conf_level <- as.numeric(adjustable_parameters["effect_summary_stats_conf_level"])
+  effect_sum_stats_conf_level <- getParam("effect_summary_stats_conf_level", adjustable_parameters, "numeric")
   getEffectSummaryStats(data, var_list, effect_sum_stats_conf_level, formal_output_on)
 }
 
 ###### BOX PLOT ######
 if (run_this["box_plot"]){
   # Parameters
-  effect_name <- as.character(adjustable_parameters["effect_name"]) # Inside this scope for safety
+  effect_name <- getParam("effect_name", adjustable_parameters, "character") # Inside this scope for safety
   factor_names <- getBoxPlotFactors(adj_pars_source = adjustable_parameters, pattern = "box_plot_group_by_factor_")
-  box_plot_verbose <- as.logical(adjustable_parameters["box_plot_verbose"])
+  box_plot_verbose <- getParam("box_plot_verbose", adjustable_parameters, "logical")
   
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
@@ -355,9 +360,9 @@ if (run_this["box_plot"]){
 ###### FUNNEL PLOT ######
 if (run_this["funnel_plot"]){
   # Parameters
-  funnel_effect_proximity <- as.numeric(adjustable_parameters["funnel_plot_effect_proximity"])
-  funnel_maximum_precision <- as.numeric(adjustable_parameters["funnel_plot_maximum_precision"])
-  funnel_verbose <- as.logical(adjustable_parameters["funnel_plot_verbose"])
+  funnel_effect_proximity <- getParam("funnel_plot_effect_proximity", adjustable_parameters, "numeric")
+  funnel_maximum_precision <- getParam("funnel_plot_maximum_precision", adjustable_parameters, "numeric")
+  funnel_verbose <- getParam("funnel_plot_verbose", adjustable_parameters, "logical")
   
   # Plot the funnel plot
   getFunnelPlot(data, funnel_effect_proximity, funnel_maximum_precision, use_study_medians = F, funnel_verbose)
@@ -368,8 +373,8 @@ if (run_this["funnel_plot"]){
 ###### HISTOGRAM OF T-STATISTICS ######
 if (run_this["t_stat_histogram"]){
   # Parameters
-  lower_cutoff <- as.numeric(adjustable_parameters["t_hist_lower_cutoff"])
-  upper_cutoff <- as.numeric(adjustable_parameters["t_hist_upper_cutoff"])
+  lower_cutoff <- getParam("t_hist_lower_cutoff", adjustable_parameters, "numeric")
+  upper_cutoff <- getParam("t_hist_upper_cutoff", adjustable_parameters, "numeric")
   # Estimation
   getTstatHist(data, lower_cutoff, upper_cutoff)
 }
@@ -402,8 +407,8 @@ if (run_this["nonlinear_tests"]){
     
     ###### PUBLICATION BIAS - Selection model (Andrews & Kasy, 2019) ######
     selection_results <- getSelectionResults(data, 
-          cutoffs = c(1.960), symmetric = F, modelmu = "normal", # Adjustable
-          pub_bias_present = T, verbose_coefs = T)
+                                             cutoffs = c(1.960), symmetric = F, modelmu = "normal", # Adjustable
+                                             pub_bias_present = T, verbose_coefs = T)
     
     ###### PUBLICATION BIAS - Endogenous kink (Bom & Rachinger, 2020) ######
     endo_kink_results <- getEndoKinkResults(data, pub_bias_present = T, verbose_coefs = T)
@@ -422,10 +427,10 @@ if (run_this["exo_tests"]){
   if (!global_exo_tests) {
     ###### PUBLICATION BIAS - FAT-PET with IV ######
     iv_results <- getIVResults(data,
-            effect_present = T, pub_bias_present = T, verbose_coefs = T)
+                               effect_present = T, pub_bias_present = T, verbose_coefs = T)
     
     p_uni_results <- getPUniResults(data, method = "ML",
-            effect_present=T, pub_bias_present=T, verbose_coefs=T)
+                                    effect_present=T, pub_bias_present=T, verbose_coefs=T)
     
   } else{
     getExoTests(data)
@@ -441,31 +446,31 @@ if (run_this["p_hacking_tests"]){
   caliper_widths <- getMultipleParams(adjustable_parameters, "caliper_widths", "numeric")
   # Estimation
   caliper_results <- getCaliperResults(data,
-          thresholds = caliper_thresholds, widths = caliper_widths, verbose = T)
-   
+                                       thresholds = caliper_thresholds, widths = caliper_widths, verbose = T)
+  
   ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
   # Parameters
   eliott_data_subsets <- getMultipleParams(adjustable_parameters, "eliott_data_subsets", "character")
-  eliott_p_min <- as.numeric(adjustable_parameters["eliott_p_min"])
-  eliott_p_max <- as.numeric(adjustable_parameters["eliott_p_max"])
-  eliott_d_point <- as.numeric(adjustable_parameters["eliott_d_point"])
-  eliott_cs_bins <- as.numeric(adjustable_parameters["eliott_cs_bins"])
-  eliott_verbose <- as.logical(adjustable_parameters["eliott_verbose"])
+  eliott_p_min <- getParam("eliott_p_min", adjustable_parameters, "numeric")
+  eliott_p_max <- getParam("eliott_p_max", adjustable_parameters, "numeric")
+  eliott_d_point <- getParam("eliott_d_point", adjustable_parameters, "numeric")
+  eliott_cs_bins <- getParam("eliott_cs_bins", adjustable_parameters, "numeric")
+  eliott_verbose <- getParam("eliott_verbose", adjustable_parameters, "logical")
   # Estimation
   eliott_results <- getEliottResults(data, eliott_data_subsets,
-      eliott_p_min, eliott_p_max, eliott_d_point, eliott_cs_bins, eliott_verbose)
-   
+                                     eliott_p_min, eliott_p_max, eliott_d_point, eliott_cs_bins, eliott_verbose)
+  
   ###### MAIVE Estimator (Irsova et al., 2023) ######
   # Parameters
-  maive_method <- as.numeric(adjustable_parameters["maive_method"])
-  maive_weight <- as.numeric(adjustable_parameters["maive_weight"])
-  maive_instrument <- as.numeric(adjustable_parameters["maive_instrument"])
-  maive_studylevel <- as.numeric(adjustable_parameters["maive_studylevel"])
-  maive_verbose <- as.numeric(adjustable_parameters["maive_verbose"])
+  maive_method <- getParam("maive_method", adjustable_parameters, "numeric")
+  maive_weight <- getParam("maive_weight", adjustable_parameters, "numeric")
+  maive_instrument <- getParam("maive_instrument", adjustable_parameters, "numeric")
+  maive_studylevel <- getParam("maive_studylevel", adjustable_parameters, "numeric")
+  maive_verbose <- getParam("maive_verbose", adjustable_parameters, "logical")
   # Estimation
   maive_results <- getMaiveResults(data,
-          method=maive_method, weight=maive_weight, instrument=maive_instrument,
-          studylevel=maive_studylevel, verbose=maive_verbose)
+                                   method=maive_method, weight=maive_weight, instrument=maive_instrument,
+                                   studylevel=maive_studylevel, verbose=maive_verbose)
 }
 
 ######################### MODEL AVERAGING #########################
@@ -473,50 +478,63 @@ if (run_this["p_hacking_tests"]){
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
 if (run_this["bma"]){
   # Parameters
-  automatic_bma <- as.logical(adjustable_parameters["automatic_bma"])
-  bma_burn <- as.numeric(adjustable_parameters["bma_burn"])
-  bma_iter <- as.numeric(adjustable_parameters["bma_iter"])
-  bma_g <- as.character(adjustable_parameters["bma_g"])
-  bma_mprior <- as.character(adjustable_parameters["bma_mprior"])
-  bma_nmodel <- as.numeric(adjustable_parameters["bma_nmodel"])
-  bma_mcmc <- as.character(adjustable_parameters["bma_mcmc"])
-  bma_print_results <- as.character(adjustable_parameters["bma_print_results"])
+  automatic_bma <- getParam("automatic_bma", adjustable_parameters, "logical")
+  bma_verbose <- getParam("bma_verbose", adjustable_parameters, "logical")
+  bma_burn <- getParam("bma_burn", adjustable_parameters, "numeric")
+  bma_iter <- getParam("bma_iter", adjustable_parameters, "numeric")
+  bma_g <- getParam("bma_g", adjustable_parameters, "character")
+  bma_mprior <- getParam("bma_mprior", adjustable_parameters, "character")
+  bma_nmodel <- getParam("bma_nmodel", adjustable_parameters, "numeric")
+  bma_mcmc <- getParam("bma_mcmc", adjustable_parameters, "character")
+  bma_print_results <- getParam("bma_print_results", adjustable_parameters, "character")
   # Estimation
   if (automatic_bma){
     # Get the optimal BMA formula automatically
-    bma_formula <- findOptimalBMAFormula(data, var_list, verbose = T)
+    bma_formula <- findOptimalBMAFormula(data, var_list, verbose = bma_verbose)
   } else {
     # From the variable information instead
     bma_formula <- getBMAFormula(var_list, input_data)
   }
   # Run the Variance Inflation Test
-  vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = T)
+  vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = bma_verbose)
   # BMA estimation
   bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
   bma_data <- getBMAData(data, var_list, bma_vars)
   bma_model <- runBMA(
-       bma_data,
-       burn=bma_burn,
-       iter=bma_iter,
-       g=bma_g, # UIP, BRIC, HQ
-       mprior=bma_mprior, # uniform, random
-       nmodel=bma_nmodel,
-       mcmc=bma_mcmc
+    bma_data,
+    burn=bma_burn,
+    iter=bma_iter,
+    g=bma_g, # UIP, BRIC, HQ
+    mprior=bma_mprior, # uniform, random
+    nmodel=bma_nmodel,
+    mcmc=bma_mcmc
   )
   # Print out the results
   bma_coefs <- extractBMAResults(bma_model, bma_data, print_results = bma_print_results)
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
-  
+
 if (run_this["fma"]){
   if (!exists("bma_data") || !exists("bma_model")){
     stop("You must create these two objects first - bma_data, bma_model. Refer to the 'bma' section.")
   }
+  # Parameters
+  fma_verbose <- getParam("fma_verbose", adjustable_parameters, "logical")
   # Estimation
-  fma_coefs <- runFMA(bma_data, bma_model, verbose = T)
+  fma_coefs <- runFMA(bma_data, bma_model, verbose = fma_verbose)
 }
 
+
+# Print out the results of model averaging into a nice table
+get_ma_results_table <- getParam("ma_results_table", adjustable_parameters, "logical")
+if (get_ma_results_table){
+  # Validate whether the both the model averaging methods exist
+  if (!exists("bma_coefs") || !exists("fma_coefs")){
+    stop("You must run the model averaging methods first to be able to print out the results.")
+  }
+  ma_res_table <- getMATable(bma_coefs, fma_coefs, var_list, verbose = T)
+}
 
 ######################### BEST-PRACTICE ESTIMATE #########################
 
@@ -526,14 +544,16 @@ if (run_this["best_practice_estimate"]){
   }
   # Parameters
   bpe_study_ids <- getMultipleParams(adjustable_parameters, "bpe_studies", "numeric")
-  bpe_use_ci <- as.logical(adjustable_parameters["bpe_use_ci"])
-  bpe_econ_sig_large_pip_only <- as.logical(adjustable_parameters["bpe_econ_sig_large_pip_only"])
+  bpe_use_ci <- getParam("bpe_use_ci", adjustable_parameters, "logical")
+  bpe_econ_sig_large_pip_only <- getParam("bpe_econ_sig_large_pip_only", adjustable_parameters, "logical")
   # BPE estimation
   bpe_res <- generateBPEResultTable(bpe_study_ids,
-                    data, var_list, bma_model, bma_formula, bma_data,
-                    use_ci = bpe_use_ci, verbose_output = TRUE)
+                                    data, var_list, bma_model, bma_formula, bma_data,
+                                    use_ci = bpe_use_ci, verbose_output = TRUE)
   # Economic significance table
   bpe_est <- bpe_res[1,1] # BPE estimate of the first row - usually Author's BPE
   bpe_econ_sig <- getEconomicSignificance(bpe_est, var_list, bma_data, bma_model,
-                          display_large_pip_only = TRUE, verbose_output = TRUE)
+                                          display_large_pip_only = TRUE, verbose_output = TRUE)
 }
+
+
