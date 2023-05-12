@@ -1,10 +1,10 @@
 development_on: yes
 master_data_set_source: data_set_master_thesis_cala.csv
 var_list_source: var_list_master_thesis_cala.csv
-'': stem_method_master_thesis_cala.R
-'': selection_model_master_thesis_cala.R
-'': endo_kink_master_thesis_cala.R
-'': maive_master_thesis_cala.R
+stem_source: stem_method_master_thesis_cala.R
+selection_model_source: selection_model_master_thesis_cala.R
+endo_kink_source: endo_kink_master_thesis_cala.R
+maive_source: maive_master_thesis_cala.R
 run_this:
   variable_summary_stats: yes
   effect_summary_stats: yes

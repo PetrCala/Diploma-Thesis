@@ -1,19 +1,23 @@
 development_on: no
 master_data_set_source: data_set_master_thesis_cala.csv
 var_list_source: var_list_master_thesis_cala.csv
+stem_source: stem_method_master_thesis_cala.R
+selection_model_source: selection_model_master_thesis_cala.R
+endo_kink_source: endo_kink_master_thesis_cala.R
+maive_source: maive_master_thesis_cala.R
 run_this:
-  variable_summary_stats: no
-  effect_summary_stats: no
-  box_plot: no
-  funnel_plot: no
-  t_stat_histogram: no
-  linear_tests: no
-  nonlinear_tests: no
-  exo_tests: no
-  p_hacking_tests: no
-  bma: no
-  fma: no
-  best_practice_estimate: no
+  variable_summary_stats: yes
+  effect_summary_stats: yes
+  box_plot: yes
+  funnel_plot: yes
+  t_stat_histogram: yes
+  linear_tests: yes
+  nonlinear_tests: yes
+  exo_tests: yes
+  p_hacking_tests: yes
+  bma: yes
+  fma: yes
+  best_practice_estimate: yes
 adjustable_parameters:
   effect_name: years of schooling on wage
   formal_output_on: yes
