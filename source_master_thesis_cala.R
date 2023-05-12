@@ -1,3 +1,16 @@
+#' |--------------------------|
+#' Script name: source_master_thesis_cala.R
+#' 
+#' The source script for running the analysis for my Master Thesis on the topic
+#' of 'Ability bias in returns to schooling: how large it is and why it matters?'
+#' 
+#' For detailed explanation, see the README file distributed with this script.
+#' 
+#' Author: Petr Čala
+#' Year created: 2023
+#' GitHub: github.com/PetrCala/
+#' |--------------------------|
+ 
 ##################### ENVIRONMENT PREPARATION ########################
 
 #' Function to read multiple sheets from an Excel file and write them as CSV files
