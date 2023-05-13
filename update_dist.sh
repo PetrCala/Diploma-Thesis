@@ -23,7 +23,7 @@ for f in $SOURCE_FILES; do
 # Get the source file path considering both .R and .r extensions
 source_file="../R/$f"
 if test -f "${source_file%.*}.r"; then
-  source_file="${source_file%.*}.r"
+  source_file="${source_file%.*}.R"
 fi
 # Check if the file doesn't exist in the Dist folder or if it's different from the one in the R folder
 if ! test -f "$f" || ! cmp -s "$source_file" "$f"; then
