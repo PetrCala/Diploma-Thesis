@@ -2218,22 +2218,17 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
   # Run the estimation
   MAIVE <- maive(dat=data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
   # Extract (and print) the output
+  object<-c("MAIVE coefficient","MAIVE standard error","F-test of first step in IV",
+            "Hausman-type test (use with caution)","Critical Value of Chi2(1)")
+  maive_coefs_all<-c(MAIVE$beta,MAIVE$SE,MAIVE$`F-test`,MAIVE$Hausman,MAIVE$Chi2)
+  MAIVEresults<-data.frame(object,maive_coefs_all)
+  colnames(MAIVEresults) <- c("Object", "Coefficient")
   if (verbose){
-    object<-c("MAIVE coefficient","MAIVE standard error","F-test of first step in IV",
-              "Hausman-type test (use with caution)","Critical Value of Chi2(1)")
-    maive_coefs_all<-c(MAIVE$beta,MAIVE$SE,MAIVE$`F-test`,MAIVE$Hausman,MAIVE$Chi2)
-    MAIVEresults<-data.frame(object,maive_coefs_all)
-    colnames(MAIVEresults) <- c("Object", "Coefficient")
     print("Results using the MAIVE estimator:")
     print(MAIVEresults)
     cat("\n\n")
   }
-  # Extract the main two coefficients
-  maive_coefs <- c(
-    as.numeric(MAIVE$beta), # MAIVE Coefficient
-    as.numeric(MAIVE$SE) # MAIVE Standard Error
-    ) 
-  return(maive_coefs) # Return as a simple vector
+  invisible(MAIVEresults) # Return as a data frame
 }
 
 
@@ -3079,7 +3074,29 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
   return(res_df)
 }
 
+######################### EXPORT #########################
 
+exportTable <- function(results_table, user_params, method_name){
+  # Validate input
+  stopifnot(
+    is.data.frame(results_table),
+    is.list(user_params),
+    is.character(method_name),
+    method_name %in% names(user_params$export_methods) # Only recognized exports
+  )
+  # Define the export paths
+  folder_path <- user_params$export_path # Export folder
+  if (!file.exists(folder_path)){
+    dir.create(folder_path) # Create if not present in the working directory
+  }
+  results_path <- paste0(folder_path, method_name, ".csv") # export_folder/export_file.csv
+  # Create the export folder if it does not exist yet
+  
+  # Export the two data frames
+  verbose_info <- user_params$export_methods[[method_name]]
+  print(paste("Writing the", tolower(verbose_info), "results into", results_path))
+  write.csv(results_table, results_path)
+}
 
 ######################### GRAPHICS #########################
 
@@ -3090,5 +3107,3 @@ main_theme <- function(x_axis_tick_text = "black"){
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
         plot.background = element_rect(fill = "#DCEEF3"))
 }
-
-
