@@ -28,7 +28,7 @@ schooling_levels,Education: Levels,"=1 if the authors report schooling in levels
 wage_log_hourly,Wage: Log Hourly,=1 if the dependent variable in the regression is log hourly wage.,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 wage_log_daily,Wage: Log Daily,=1 if the dependent variable in the regression is log daily or weekly wage.,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 wage_log_monthly,Wage: Log Monthly,=1 if the dependent variable in the regression is log monthly wage.,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
-wage_mean_annual_earnings,Wage: Mean Annual Earnings,=1 if the dependent variable in the regression is log of mean annual earnings (reference category).,dummy,18,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+wage_mean_annual_earnings,Wage: Annual Earnings,=1 if the dependent variable in the regression is log of mean annual earnings (reference category).,dummy,18,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
 data_type_micro,Micro Data,=1 if the study uses micro data.,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 data_type_survey,Survey Data,=1 if the study uses data from a survey.,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 data_type_national_register,National Register Data,=1 if the study uses data from a national register (reference category).,dummy,19,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
@@ -39,8 +39,8 @@ no_ed,No Education,The percentage of subjects that attained no education (refere
 prim_ed,Primary Education,The percentage of subjects that attained only primary education.,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,mean
 sec_ed,Secondary Education,The percentage of subjects that attained only secondary education.,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,mean
 higher_ed,Higher Education,The percentage of subjects that attained any form of higher education.,perc,22,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
-wage_earners,Employees: Wage Earners,"The ratio of wage earners to self-employed subjects in the study ( = 1 if wage earner, = 0 if self-employed).",perc,24,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
-self_employed,Employees: Self-Employed,"The ratio of self-employed to wage earners subjects in the study ( = 1 if self-employed, = 0 if wage earner) (reference category).",perc,24,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
+wage_earners,Wage Earners,"The ratio of wage earners to self-employed subjects in the study ( = 1 if wage earner, = 0 if self-employed).",perc,24,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
+self_employed,Self-Employed,"The ratio of self-employed to wage earners subjects in the study ( = 1 if self-employed, = 0 if wage earner) (reference category).",perc,24,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
 gender_male,Gender: Male,"The ratio of male to female subjects in the study ( = 1 if male, = 0 if female).",perc,25,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
 gender_female,Gender: Female,"The ratio of female to male subjects in the study ( = 1 if female, = 0 if male) (reference category).",perc,25,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
 private_sector,Sector: Private,"The ratio of private to public sector workers ( = 1 if private sector worker, = 0 if public).",perc,26,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
@@ -50,13 +50,13 @@ ethnicity_other,Ethnicity: Other,"The ratio of non-Caucasian to Caucasian subjec
 sector_rural,Sector: Rural,"The ratio of rural to urban workers ( = 1 if rural worker, = 0 if urban).",perc,28,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
 sector_urban,Sector: Urban,"The ratio of urban to rural workers ( = 1 if urban worker, = 0 if rural) (reference category).",perc,28,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
 country,Country,The country in which the study was conducted.,category,29,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
-region_advanced_economies,Region: Advanced Economies,=1 if the study was conducted in a country with advanced economy. (reference group),dummy,30,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
-region_east_asia_and_pacific,Region: East Asia and Pacific,=1 if the study was conducted in the East Asia and Pacific region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
-region_europe_and_central_asia,Region: Europe and Central Asia,=1 if the study was conducted in the Europe and Central Asia region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
-region_latin_america_and_caribbean,Region: Latin America and Caribbean,=1 if the study was conducted in the Latin America and Caribbean region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
-region_middle_east_and_north_africa,Region: Middle East and North Africa,=1 if the study was conducted in the Middle East and North Africa region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
-region_south_asia,Region: South Africa,=1 if the study was conducted in the South African region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
-region_sub_saharan_africa,Region: Sub Saharan Africa,=1 if the study was conducted in the region of Sub Saharan Africa.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_advanced_economies,Reg: Advanced Econ.,=1 if the study was conducted in a country with advanced economy. (reference group),dummy,30,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+region_east_asia_and_pacific,Reg: E. Asia & Pacific,=1 if the study was conducted in the East Asia and Pacific region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_europe_and_central_asia,Reg: Europe and C. Asia,=1 if the study was conducted in the Europe and Central Asia region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_latin_america_and_caribbean,Reg: Lat. Am. and Car.,=1 if the study was conducted in the Latin America and Caribbean region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_middle_east_and_north_africa,Reg: M. East and N. Af.,=1 if the study was conducted in the Middle East and North Africa region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_south_asia,Reg: South Africa,=1 if the study was conducted in the South African region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_sub_saharan_africa,Reg: Sub Sah. Africa,=1 if the study was conducted in the region of Sub Saharan Africa.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 income_high,Income: High,=1 if the study was conducted in a high income country (reference category),dummy,31,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
 income_middle,Income: Middle,=1 if the study was conducted in a middle income country,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 income_low,Income: Low,=1 if the study was conducted in a low income country,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
@@ -87,9 +87,9 @@ health_control,Control: Health,=1 if the authors control for health in the regre
 gender_control,Control: Gender,=1 if the authors control for gender in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 marriage_control,Control: Marriage,=1 if the authors control for marriage in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 occupation_control,Control: Occupation,=1 if the authors control for occupation of the subjects in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
-firm_char_control,Control: Firm Characteristics,=1 if the authors control for firm characteristics in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+firm_char_control,Control: Firm Char.,=1 if the authors control for firm characteristics in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 area_control,Control: Area,"=1 if the authors control for area type in the regression (e.g., urban, rural).",int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
-macro_var_control,Control: Macro Variables,=1 if the authors control for macroeconomic variables in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+macro_var_control,Control: Macro Var.,=1 if the authors control for macroeconomic variables in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 impact_factor,Impact Factor,The logarithm of the Journal Citations Report impact factor of the study (as of January 2023; = 0 in case of no publication).,float,40,stop,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,TRUE,max
 citations,Citations,The logarithm of the mean number of Google Scholar citations received per year since the appearance of the study in Google Scholar (as of January 2023).,int,41,stop,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,TRUE,max
 published,Study: Published,=1 if the study was published in a journal.,dummy,42,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean

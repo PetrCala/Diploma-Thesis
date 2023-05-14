@@ -42,10 +42,10 @@ user_params <- list(
     "nonlinear_tests" = F,
     "exo_tests" = F,
     "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
-    "best_practice_estimate" = F # Executable only after running BMA
+    "best_practice_estimate" = T # Executable only after running BMA
   ),
   
   # USER PARAMETERS

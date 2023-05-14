@@ -15,10 +15,10 @@ run_this:
   nonlinear_tests: no
   exo_tests: no
   p_hacking_tests: no
-  bma: no
-  fma: no
+  bma: yes
+  fma: yes
   ma_variables_description_table: yes
-  best_practice_estimate: no
+  best_practice_estimate: yes
 adjustable_parameters:
   effect_name: years of schooling on wage
   formal_output_on: yes
