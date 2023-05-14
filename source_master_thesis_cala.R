@@ -13,6 +13,16 @@
  
 ##################### ENVIRONMENT PREPARATION ########################
 
+#' Create a folder in the working directory if it does not exist yet
+#' 
+#' @param folder_name [character] Name of the folder. Specify in the format
+#' "./<name_of_the_folder>/
+validateFolderExistence <- function(folder_name){
+  if (!file.exists(folder_name)){
+    dir.create(folder_name)
+  }
+}
+
 #' Function to read multiple sheets from an Excel file and write them as CSV files
 #' USE ONLY IN DEVELOPMENT
 #' @param xlsx_path Path to the Excel file
@@ -2133,12 +2143,15 @@ getEliottResults <- function(input_data, data_subsets = c("All data"),
   # Load the source script
   source("elliot_master_thesis_cala.R")
   # Load the file with CDFs (if it does not exist, create one)
-  elliot_source_file <- "elliot_data_master_thesis_cala.csv"
-  if (file.exists(elliot_source_file)){
-    cdfs <- read.csv(elliot_source_file, col.names = "cdfs") # Read if exists
-  } else {
-    cdfs <- getCDFs(create_csv = T) # Generate the file from scratch (takes time)
+  validateFolderExistence("./_cache/") # Validate cache folder existence
+  elliot_source_file <- "./_cache/elliot_data_master_thesis_cala.csv"
+  # On the first run, create a cached file of CDFs (large in memory)
+  if (!file.exists(elliot_source_file)){
+    print("Creating a temporary file in the '_cache' folder for the Eliott et al. (2022) method...")
+    cdfs <- getCDFs() # Generate the file from scratch (takes time)
+    write.table(cdfs, elliot_source_file, col.names = "cdfs", row.names = F)
   }
+  cdfs <- read.csv(elliot_source_file, col.names = "cdfs") # Read the cached file
   cdfs <- as.numeric(cdfs[,1]) # To a numeric vector
   # Run the estimation for all data subsets
   for (data_col in data_colnames){
@@ -3086,9 +3099,7 @@ exportTable <- function(results_table, user_params, method_name){
   )
   # Define the export paths
   folder_path <- user_params$export_path # Export folder
-  if (!file.exists(folder_path)){
-    dir.create(folder_path) # Create if not present in the working directory
-  }
+  validateFolderExistence(folder_path) # Create the export folder if not present in the working directory
   results_path <- paste0(folder_path, method_name, ".csv") # export_folder/export_file.csv
   # Create the export folder if it does not exist yet
   
