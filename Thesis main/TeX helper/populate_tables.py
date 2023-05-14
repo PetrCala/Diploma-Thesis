@@ -2,6 +2,17 @@
 from tabulate import tabulate
 
 
+def boldIfPIPHigh(val):
+    '''Convert high PIP values to bold before printing out the TeX object.
+    '''
+    if isinstance(val, (float, int)) and val >= 0.5:
+        return '\\textbf{' + str(f'{val:.3f}') + '}'
+    return val
+
+def wrapExponenets(val):
+    '''Wrap exponents in names with $$.
+    '''
+    return val.replace("^2","$^2$")
 
 def populateBMATable(df:pd.DataFrame, expected_cols = 7):
     if expected_cols != df.shape[1]:
@@ -9,6 +20,8 @@ def populateBMATable(df:pd.DataFrame, expected_cols = 7):
 
     # rename columns for display
     df.columns = ['Response variable:', 'Post. mean', 'Post. SD', 'PIP', 'Coef.', 'SE', 'p-value']
+    df['PIP'] = df['PIP'].apply(boldIfPIPHigh) # Large PIP to bold
+    df['Response variable:'] = df['Response variable:'].apply(wrapExponenets) # Exponents to mathematic notation
 
     # convert DataFrame to LaTeX tabular format
     latex = df.to_latex(index=False, escape=False)
