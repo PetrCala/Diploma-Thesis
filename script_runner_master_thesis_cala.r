@@ -21,7 +21,7 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 # Define the initial parameters
 user_params <- list(
   # Development information
-  development_on = TRUE, # Keep FALSE at all times
+  development_on = FALSE, # Keep FALSE at all times
   
   # Customizable data file names
   master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
@@ -33,14 +33,14 @@ user_params <- list(
   
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
     "box_plot" = F,
     "funnel_plot" = F,
     "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
     "p_hacking_tests" = T,
     "bma" = F,
     "fma" = F, # Executable only after running BMA
@@ -86,13 +86,13 @@ user_params <- list(
     # Caliper test parameters
     "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
     "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
-    # Eliott test parameters
-    "eliott_data_subsets" = c("All data"), # Data subsets to run the tests on
-    "eliott_p_min" = 0,
-    "eliott_p_max" = 0.1,
-    "eliott_d_point" = 0.1,
-    "eliott_CS_bins" = 15,
-    "eliott_verbose" = TRUE,
+    # Elliott test parameters
+    "elliott_data_subsets" = c("All data"), # Data subsets to run the tests on
+    "elliott_p_min" = 0,
+    "elliott_p_max" = 0.1,
+    "elliott_d_point" = 0.1,
+    "elliott_CS_bins" = 15,
+    "elliott_verbose" = TRUE,
     # MAIVE parameters - for explanation, see MAIVE instructions (Irsova et al., 2023)
     "maive_method" = 3, # 3 = PET-PEESE
     "maive_weight" = 0, # 0 = no weights
@@ -136,7 +136,7 @@ user_params <- list(
     "nonlinear_tests" = "Nonlinear tests",
     "exo_tests" = "Tests relaxing the exogeneity assumption",
     "p_hacking_tests_caliper" = "Caliper tests",
-    "p_hacking_tests_eliott" = "Eliott tests",
+    "p_hacking_tests_elliott" = "Elliott tests",
     "p_hacking_tests_maive" = "MAIVE",
     "ma" = "Model averaging",
     "ma_variables_description_table" = "Model averaging description table",
