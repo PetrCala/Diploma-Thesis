@@ -6,18 +6,18 @@ selection_model_source: selection_model_master_thesis_cala.R
 endo_kink_source: endo_kink_master_thesis_cala.R
 maive_source: maive_master_thesis_cala.R
 run_this:
-  variable_summary_stats: no
+  variable_summary_stats: yes
   effect_summary_stats: no
   box_plot: no
   funnel_plot: no
   t_stat_histogram: no
   linear_tests: no
-  nonlinear_tests: yes
+  nonlinear_tests: no
   exo_tests: no
   p_hacking_tests: no
-  bma: no
-  fma: no
-  best_practice_estimate: no
+  bma: yes
+  fma: yes
+  best_practice_estimate: yes
 adjustable_parameters:
   effect_name: years of schooling on wage
   formal_output_on: yes

@@ -136,9 +136,7 @@ if (run_this$variable_summary_stats){
 }
 
 # Handle missing variables
-if (!user_params$development_on){
-  data <- handleMissingData(data, var_list, allowed_missing_ratio = adj_params$allowed_missing_ratio)
-}
+data <- handleMissingData(data, var_list, allowed_missing_ratio = adj_params$allowed_missing_ratio)
 
 # Winsorize the data
 data <- winsorizeData(data,
@@ -146,7 +144,7 @@ data <- winsorizeData(data,
                       precision_type = adj_params$data_precision_type)
 
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
-validateData(data, var_list, ignore_missing = user_params$development_on)
+validateData(data, var_list)
 
 # Subset data using the conditions specified in the customizable section
 subset_conditions <- getMultipleParams(adj_params, "data_subset_condition_") # Extract all the data subset conditions
