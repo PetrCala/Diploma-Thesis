@@ -10,7 +10,7 @@
 
 specify_decimal <- function(x, k) trimws(format(round(x, k), nsmall=k))
 
-getCDFs <- function(create_csv = F){
+getCDFs <- function(){
   #Simulate cdfs for LCM tests
   M = 10000
   N = 10000
@@ -41,16 +41,11 @@ getCDFs <- function(create_csv = F){
       yy = a + b*xx
       
       # Fill in the y vector with the computed yy values
-      y[xl:(xu + 1)] = yy
+      y[xl:xu] = yy
     }
     BBsup[m,1] = max(abs(y - B))
   }
   cdfs <- BBsup[,1] # To a numeric vector
-  if (create_csv){
-    data_file_path <- "elliot_data_master_thesis_cala.csv"
-    write.table(cdfs, data_file_path, col.names = "cdfs", row.names = F)
-    cdfs <- read.csv(data_file_path, col.names = "cdfs") # Make sure the object is being read the same way
-  }
   return(cdfs)
 }
 

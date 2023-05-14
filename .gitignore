@@ -7,6 +7,10 @@ __pycache__/
 **/*.Rhistory
 **/*.Rdata
 
+# R output files and cache
+R/_cache/
+R/_results/
+
 # Shell temp files
 **/*.sh~
 **/*.sh.un~
