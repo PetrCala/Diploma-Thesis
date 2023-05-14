@@ -132,7 +132,10 @@ data <- preprocessData(data, var_list)
 
 # Get the raw but preprocessed data summary statistics (without winsorization, missing value handling)
 if (run_this$variable_summary_stats){
-  getVariableSummaryStats(data, var_list)
+  variable_sum_stats <- getVariableSummaryStats(data, var_list)
+  if (user_params$export_results){
+    exportTable(variable_sum_stats, user_params, "variable_summary_stats")
+  }
 }
 
 # Handle missing variables
@@ -154,9 +157,12 @@ data <- applyDataSubsetConditions(data, subset_conditions)
 
 ###### EFFECT SUMMARY STATISTICS ######
 if (run_this$effect_summary_stats){
-  getEffectSummaryStats(data, var_list,
+  effect_sum_stats <- getEffectSummaryStats(data, var_list,
                         conf.level = adj_params$effect_summary_stats_conf_level,
                         formal_output = adj_params$formal_output_on)
+  if (user_params$export_results){
+    exportTable(effect_sum_stats, user_params, "effect_summary_stats")
+  }
 }
 
 ###### BOX PLOT ######
@@ -206,7 +212,10 @@ if (run_this$t_stat_histogram){
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
 
 if (run_this$linear_tests){
-  getLinearTests(data)
+  linear_tests_results <- getLinearTests(data)
+  if (user_params$export_results){
+    exportTable(linear_tests_results, user_params, "linear_tests")
+  }
 }
 
 ######################### NON-LINEAR TESTS ######################### 
@@ -237,7 +246,10 @@ if (run_this$nonlinear_tests){
     endo_kink_results <- getEndoKinkResults(data, pub_bias_present = T, verbose_coefs = T)
   } else {
     # Get all results at once without assigning the output to any variables - unparametrizable
-    getNonlinearTests(data)
+    nonlinear_tests_results <- getNonlinearTests(data)
+    if (user_params$export_results){
+      exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
+    }
   }
 }
 
@@ -257,7 +269,10 @@ if (run_this$exo_tests){
                                     effect_present=T, pub_bias_present=T, verbose_coefs=T)
     
   } else{
-    getExoTests(data)
+    exo_tests_results <- getExoTests(data)
+    if (user_params$export_results){
+      exportTable(exo_tests_results, user_params, "exo_tests")
+    }
   }
 }
 
@@ -286,6 +301,11 @@ if (run_this$p_hacking_tests){
                                    instrument=adj_params$maive_instrument,
                                    studylevel=adj_params$maive_studylevel,
                                    verbose=adj_params$maive_verbose)
+   if (user_params$export_results){
+      exportTable(caliper_results, user_params, "p_hacking_tests_caliper")
+      exportTable(eliott_results, user_params, "p_hacking_tests_eliott")
+      exportTable(maive_results, user_params, "p_hacking_tests_maive")
+    }
 }
 
 ######################### MODEL AVERAGING #########################
@@ -329,6 +349,14 @@ if (run_this$fma){
 
 ###### MODEL AVERAGING RESULTS PRESENTATION ######
 
+# Print out the results of model averaging into a nice table - only if BMA and FMA output exists
+if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs")))){
+  ma_res_table <- getMATable(bma_coefs, fma_coefs, var_list, verbose = T)
+  if (user_params$export_results){
+     exportTable(ma_res_table, user_params, "ma")
+   }
+}
+
 # Model averaging variable description table
 if (run_this$ma_variables_description_table){
   # Get the table with new BMA data (including all reference groups and other excluded BMA variables)
@@ -338,20 +366,14 @@ if (run_this$ma_variables_description_table){
                                 include_reference_groups = T)
   ma_var_desc_table <- getMAVariablesDescriptionTable(desc_table_data, var_list, # Runs with winsorized data
         verbose = adj_params$ma_variables_description_table_verbose) # Use View(...) for best viewing experience
-  # Copy the table to a clipboard
-  if (adj_params$ma_variables_description_table_clip){
-    writeClipboard(capture.output(print(ma_var_desc_table, row.names=F))) 
-  }
-}
-
-# Print out the results of model averaging into a nice table - only if BMA and FMA output exists
-if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs")))){
-  ma_res_table <- getMATable(bma_coefs, fma_coefs, var_list, verbose = T)
+  if (user_params$export_results){
+     exportTable(ma_var_desc_table, user_params, "ma_variables_description_table")
+   }
 }
 
 ######################### BEST-PRACTICE ESTIMATE #########################
 
-if (run_this$best_practice_estimate){
+if (run_this$bpe){
   if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
     stop("You must create these two objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
   }
@@ -367,4 +389,9 @@ if (run_this$best_practice_estimate){
   bpe_econ_sig <- getEconomicSignificance(bpe_est, var_list, bma_data, bma_model,
                                           display_large_pip_only = adj_params$bpe_econ_sig_large_pip_only,
                                           verbose_output = TRUE)
+  # Export
+  if (user_params$export_results){
+     exportTable(bpe_res, user_params, "bpe_res")
+     exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
+  }
 }

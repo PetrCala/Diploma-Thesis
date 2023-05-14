@@ -33,19 +33,19 @@ user_params <- list(
   
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
     "bma" = T,
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
-    "best_practice_estimate" = T # Executable only after running BMA
+    "bpe" = T # Executable only after running BMA
   ),
   
   # USER PARAMETERS
@@ -112,7 +112,7 @@ user_params <- list(
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters
-    "ma_variables_description_table_verbose" = TRUE, # If TRUE, print out the BMA variable desc table into console
+    "ma_variables_description_table_verbose" = FALSE, # If TRUE, print out the BMA variable desc table into console
     "ma_variables_description_table_clip" = FALSE, # If TRUE, copy the table to a clipboard
     "ma_results_table" = TRUE, # If TRUE, print out results of model averaging into a pretty table
     # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
@@ -124,6 +124,24 @@ user_params <- list(
     ),
     "bpe_use_ci" = TRUE, # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
     "bpe_econ_sig_large_pip_only" = TRUE # If TRUE, display econ. significance for variables with PIP >= 0.5
+  ),
+  
+  # EXPORT OPTIONS
+  "export_results" = TRUE, # Export all results into this table - no extra time
+  "export_path" = './_results/', # Main export path
+  "export_methods" = list( # Verbose names of all allowed export methods
+    "variable_summary_stats" = "Variable summary stats",
+    "effect_summary_stats" = "Effect summary stats",
+    "linear_tests" = "Linear tests",
+    "nonlinear_tests" = "Nonlinear tests",
+    "exo_tests" = "Tests relaxing the exogeneity assumption",
+    "p_hacking_tests_caliper" = "Caliper tests",
+    "p_hacking_tests_eliott" = "Eliott tests",
+    "p_hacking_tests_maive" = "MAIVE",
+    "ma" = "Model averaging",
+    "ma_variables_description_table" = "Model averaging description table",
+    "bpe_res" = "Best practice estimate",
+    "bpe_econ_sig" = "Economic significance"
   )
 )
 
@@ -139,5 +157,11 @@ user_param_file <- 'user_parameters.yaml'
 # Save the user parameters into the working directory
 yaml::write_yaml(user_params, user_param_file)
 
-# Run the main code
+# Time the script run
+#start_time <- Sys.time()
+#source("main_master_thesis_cala.R")
+#end_time <- Sys.time()
+#elapsed_time <- end_time - start_time
+#print(elapsed_time)
+
 source("main_master_thesis_cala.R")

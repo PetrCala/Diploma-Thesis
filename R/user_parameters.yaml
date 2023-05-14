@@ -6,19 +6,19 @@ selection_model_source: selection_model_master_thesis_cala.R
 endo_kink_source: endo_kink_master_thesis_cala.R
 maive_source: maive_master_thesis_cala.R
 run_this:
-  variable_summary_stats: no
-  effect_summary_stats: no
-  box_plot: no
-  funnel_plot: no
-  t_stat_histogram: no
-  linear_tests: no
-  nonlinear_tests: no
-  exo_tests: no
-  p_hacking_tests: no
+  variable_summary_stats: yes
+  effect_summary_stats: yes
+  box_plot: yes
+  funnel_plot: yes
+  t_stat_histogram: yes
+  linear_tests: yes
+  nonlinear_tests: yes
+  exo_tests: yes
+  p_hacking_tests: yes
   bma: yes
   fma: yes
   ma_variables_description_table: yes
-  best_practice_estimate: yes
+  bpe: yes
 adjustable_parameters:
   effect_name: years of schooling on wage
   formal_output_on: yes
@@ -65,7 +65,7 @@ adjustable_parameters:
   bma_mcmc: bd
   bma_print_results: none
   fma_verbose: no
-  ma_variables_description_table_verbose: yes
+  ma_variables_description_table_verbose: no
   ma_variables_description_table_clip: no
   ma_results_table: yes
   bpe_studies:
@@ -75,3 +75,18 @@ adjustable_parameters:
   - 7.0
   bpe_use_ci: yes
   bpe_econ_sig_large_pip_only: yes
+export_results: no
+export_path: ./_results/
+export_methods:
+  variable_summary_stats: Variable summary stats
+  effect_summary_stats: Effect summary stats
+  linear_tests: Linear tests
+  nonlinear_tests: Nonlinear tests
+  exo_tests: Tests relaxing the exogeneity assumption
+  p_hacking_tests_caliper: Caliper tests
+  p_hacking_tests_eliott: Eliott tests
+  p_hacking_tests_maive: MAIVE
+  ma: Model averaging
+  ma_variables_description_table: Model averaging description table
+  bpe_res: Best practice estimate
+  bpe_econ_sig: Economic significance
