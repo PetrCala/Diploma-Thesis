@@ -1,102 +1,102 @@
-var_name,var_name_verbose,var_name_explanation,data_type,group_category,na_handling,variable_summary,effect_sum_stats,equal,gtlt,bma_potential_var,bma,to_log_for_bma,bpe
-obs_n,Observation Number,The observation number.,int,1,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-study_id,Study ID,The ID associated with the study.,int,2,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-study_name,Study Name,The name of the study.,category,3,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-effect,Effect,The effect of an additional year of schooling on logarithmic wage.,float,4,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-se,Effect Standard Error,The standard error of the main effect.,float,5,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-t_stat,T-Statistic,The t-statistic of the main effect.,float,6,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,stop
-95_lower,95% CI Lower Bound of the Effect,The lower bound of the 95% confidence interval of the main effect.,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-95_upper,95% CI Upper Bound of the Effect,The upper bound of the 95% confidence interval of the main effect.,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-pcc,Partial Correlation Coefficient,The partial correlation coeffcient corresponding to the effect of additional year of schooling on logarithmic wage.,float,8,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-se_pcc,Standard Error of the PCC,The standard error of the partial correlation coefficient.,float,9,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-se_pcc_precision,Precision of the PCC,The precision of the partial correlation coefficient.,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-est_short_run,Short Run,=1 if the data span a period shorter than a year.,dummy,11,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-est_long_run,Long Run,=1 if the data span a period longer than a year (reference category).,dummy,11,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-est_agg_city,Estimate: City,=1 if the estimates within the study can be aggregated on a city level.,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-est_agg_subregion,Estimate: Sub-region,=1 if the estimates within the study can be aggregated on a subregional level.,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-est_agg_region,Estimate: Region,=1 if the estimates within the study can be aggregated on a regional level.,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-est_agg_country,Estimate: Country,=1 if the estimates within the study can be aggregated on a country level.,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-est_agg_continent,Estimate: Continent,=1 if the estimates within the study can not be aggregated on a country level or smaller.,dummy,12,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-n_obs,Observations,The number of observations associated with the estimate.,int,13,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,stop
-regressands,Number of Regressands,The number of regressands in the regression.,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-reg_df,Degrees of Freedom,The number of degrees of freedom in the regression.,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-study_size,Study Size,The logarithm of the number of estimates collected from the study.,int,14,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
-years_of_schooling,Yrs. of Schooling,The average number of years of schooling attained by the subjects.,float,15,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,mean
-years_of_experience,Yrs. of Experience,The average number of years of experience attained by the subjects.,float,16,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,mean
-schooling_years,Education: Years of Schooling,=1 if authors report schooling in years.,dummy,17,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-schooling_levels,Education: Levels of Schooling,"=1 if the authors report schooling in levels (e.g., attained college degree) (reference category).",dummy,17,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-wage_log_hourly,Wage: Log Hourly,=1 if the dependent variable in the regression is log hourly wage.,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-wage_log_daily,Wage: Log Daily,=1 if the dependent variable in the regression is log daily or weekly wage.,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-wage_log_monthly,Wage: Log Monthly,=1 if the dependent variable in the regression is log monthly wage.,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-wage_mean_annual_earnings,Wage: Mean Annual Earnings,=1 if the dependent variable in the regression is log of mean annual earnings (reference category).,dummy,18,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-data_type_micro,Micro Data,=1 if the study uses micro data.,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-data_type_survey,Survey Data,=1 if the study uses data from a survey.,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-data_type_national_register,National Register Data,=1 if the study uses data from a national register (reference category).,dummy,19,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-data_cross_section,Cross-sectional Data,=1 if the study uses cross-sectional data.,dummy,20,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-data_panel,Panel Data,=1 if the study uses panel data (reference category).,dummy,20,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-data_avgyear,Data Year,The logarithm of the average year of the study's time span,float,21,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
-no_ed,No Education,The percentage of subjects that attained no education (reference category).,perc,22,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-prim_ed,Primary Education,The percentage of subjects that attained only primary education.,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,mean
-sec_ed,Secondary Education,The percentage of subjects that attained only secondary education.,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,mean
-higher_ed,Higher Education,The percentage of subjects that attained any form of higher education.,perc,22,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,mean
-wage_earners,Employees: Wage Earners,"The ratio of wage earners to self-employed subjects in the study ( = 1 if wage earner, = 0 if self-employed).",perc,24,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,mean
-self_employed,Employees: Self-Employed,"The ratio of self-employed to wage earners subjects in the study ( = 1 if self-employed, = 0 if wage earner) (reference category).",perc,24,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-gender_male,Gender: Male,"The ratio of male to female subjects in the study ( = 1 if male, = 0 if female).",perc,25,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,mean
-gender_female,Gender: Female,"The ratio of female to male subjects in the study ( = 1 if female, = 0 if male) (reference category).",perc,25,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-private_sector,Sector: Private,"The ratio of private to public sector workers ( = 1 if private sector worker, = 0 if public).",perc,26,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,mean
-public_sector,Sector: Public,"The ratio of public to private sector workers ( = 1 if public sector worker, = 0 if private) (reference category).",perc,26,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-ethnicity_caucasian,Ethnicity: Caucasian,"The ratio of Caucasian to non-Caucasian subjects in the study ( = 1 if Caucasian, = 0 if not).",perc,27,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,mean
-ethnicity_other,Ethnicity: Other,"The ratio of non-Caucasian to Caucasian subjects in the study ( = 1 if non-Caucasian, = 0 if Caucasian) (reference category).",perc,27,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-sector_rural,Sector: Rural,"The ratio of rural to urban workers ( = 1 if rural worker, = 0 if urban).",perc,28,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,mean
-sector_urban,Sector: Urban,"The ratio of urban to rural workers ( = 1 if urban worker, = 0 if rural) (reference category).",perc,28,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-country,Country,The country in which the study was conducted.,category,29,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-region_advanced_economies,Region: Advanced Economies,=1 if the study was conducted in a country with advanced economy. (reference group),dummy,30,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-region_east_asia_and_pacific,Region: East Asia and Pacific,=1 if the study was conducted in the East Asia and Pacific region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-region_europe_and_central_asia,Region: Europe and Central Asia,=1 if the study was conducted in the Europe and Central Asia region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-region_latin_america_and_caribbean,Region: Latin America and Caribbean,=1 if the study was conducted in the Latin America and Caribbean region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-region_middle_east_and_north_africa,Region: Middle East and North Africa,=1 if the study was conducted in the Middle East and North Africa region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-region_south_asia,Region: South Africa,=1 if the study was conducted in the South African region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-region_sub_saharan_africa,Region: Sub Saharan Africa,=1 if the study was conducted in the region of Sub Saharan Africa.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-income_high,Income: High,=1 if the study was conducted in a high income country (reference category),dummy,31,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-income_middle,Income: Middle,=1 if the study was conducted in a middle income country,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-income_low,Income: Low,=1 if the study was conducted in a low income country,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-med_exp,Median Expenditure,The logarithm of the median expenditure in the country in a given year.,float,32,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
-min_wage,Minimum Wage,The logarithm of the minimum wage in the country in a given year.,float,33,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
-freedom_index,Academic Freedom Index,The academic freedom index reported for the country in a given year.,float,34,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,mean
-mean_age,Mean Age,The logarithm of the average age of the subjects.,float,35,median,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,mean
-method_ols,Method: OLS,=1 if the authors use Ordinary least squares.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-method_cohort,Method: Cohort,=1 if the authors use Cohort-type estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-method_fe,Method: FE,=1 if the authors use Fixed-effects estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-method_2sls,Method: 2SLS,=1 if the authors use Two-Stage least squares estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-method_heckman,Method: Heckman,"=1 if the authors use Two-step estimation (Heckman and Polachek, 1974).",dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-method_probit,Method: Probit,=1 if the authors use Probit estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-method_IV,Method: IV,=1 if the authors use Instrumental variables estimation (reference category).,dummy,36,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-ability_direct,Ability: Direct,=1 if the authors include a direct measure of ability in their study.,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-ability_proxy,Ability: Proxied,=1 if the authors use a proxy for ability in their study.,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-ability_uncontrolled,Ability: Uncontrolled,"=1 if the authors acknowledge, but do not control for ability in any way in their study.",dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-ability_unmentioned,Ability: Unmentioned,=1 if the authors do not mention ability anywhere in their study (reference category).,dummy,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-instr_parents_ed,Instrument: Parents Education,=1 if the authors use parents education as an instrument in the regression.,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-instr_distance_to_school,Instrument: Distance to School,=1 if the authors use distance to school as an instrument in the regression.,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-instr_other,Instument: Other,=1 if the authors use another instrument in the regression.,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-age_control,Control: Age,=1 if the authors control for age in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-age_sq_control,Control: Age^2,=1 if the authors control for age in quadratic form in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-exp_control,Control: Experience,=1 if the authors control for experience in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-exp_sq_control,Control: Experience^2,=1 if the authors control for experience in quadratic form in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-ethnicity_control,Control: Ethnicity,=1 if the authors control for ethnicity in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-health_control,Control: Health,=1 if the authors control for health in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-gender_control,Control: Gender,=1 if the authors control for gender in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-marriage_control,Control: Marriage,=1 if the authors control for marriage in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-occupation_control,Control: Occupation,=1 if the authors control for occupation of the subjects in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-firm_char_control,Control: Firm Characteristics,=1 if the authors control for firm characteristics in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-area_control,Control: Area,"=1 if the authors control for area type in the regression (e.g., urban, rural).",int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-macro_var_control,Control: Macro Variables,=1 if the authors control for macroeconomic variables in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-impact_factor,Impact Factor,The logarithm of the Journal Citations Report impact factor of the study (as of January 2023; = 0 in case of no publication).,float,40,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,max
-citations,Citations,The logarithm of the mean number of Google Scholar citations received per year since the appearance of the study in Google Scholar (as of January 2023).,int,41,stop,TRUE,TRUE,NA,median,TRUE,TRUE,TRUE,max
-published,Study: Published,=1 if the study was published in a journal.,dummy,42,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,mean
-unpublished,Study: Unpublished,=1 if the study was not published in a journal (reference category).,dummy,42,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,stop
-pub_year,Publication Year,The logarithm of the number of years between the publication (or issuing) of this study and the publication year of the earlierst published study in the sample.,int,43,stop,TRUE,TRUE,NA,median,FALSE,FALSE,TRUE,stop
-effect_w,Transformed Effect: Winsorized,"The effect of an additional year of schooling on logarithmic wage, winsorized.",float,44,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,stop
-se_w,Standard Error: Winsorized,"The standard error of the main effect, winsorized.",float,45,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,0
-se_precision_w,Precision: Winsorized,"The precision of the main effect, winsorized.",float,46,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
-t_w,T-Statistic: Winsorized,"The t-statistic of the main effect, winsorized.",float,47,allow,FALSE,TRUE,NA,median,FALSE,FALSE,FALSE,stop
-significant_w,T-Statistic Is Significant: Winsorized,=1 if the t-statistic associated with the main effect is significant at 95% confidence level.,float,48,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,stop
+var_name,var_name_verbose,var_name_description,data_type,group_category,na_handling,variable_summary,effect_sum_stats,equal,gtlt,bma_potential_var,bma,bma_reference_var,to_log_for_bma,bpe
+obs_n,Observation Number,The observation number.,int,1,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+study_id,Study ID,The ID associated with the study.,int,2,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+study_name,Study Name,The name of the study.,category,3,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+effect,Effect,The effect of an additional year of schooling on logarithmic wage.,float,4,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+se,Effect Standard Error,The standard error of the main effect.,float,5,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+t_stat,T-Statistic,The t-statistic of the main effect.,float,6,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,FALSE,stop
+95_lower,95% CI Lower Bound of the Effect,The lower bound of the 95% confidence interval of the main effect.,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+95_upper,95% CI Upper Bound of the Effect,The upper bound of the 95% confidence interval of the main effect.,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+pcc,Partial Correlation Coefficient,The partial correlation coeffcient corresponding to the effect of additional year of schooling on logarithmic wage.,float,8,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+se_pcc,Standard Error of the PCC,The standard error of the partial correlation coefficient.,float,9,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+se_pcc_precision,Precision of the PCC,The precision of the partial correlation coefficient.,float,9,stop,TRUE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+est_short_run,Short Run,=1 if the data span a period shorter than a year.,dummy,11,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+est_long_run,Long Run,=1 if the data span a period longer than a year (reference category).,dummy,11,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+est_agg_city,Estimate: City,=1 if the estimates within the study can be aggregated on a city level.,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+est_agg_subregion,Estimate: Sub-region,=1 if the estimates within the study can be aggregated on a subregional level.,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+est_agg_region,Estimate: Region,=1 if the estimates within the study can be aggregated on a regional level.,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+est_agg_country,Estimate: Country,=1 if the estimates within the study can be aggregated on a country level.,dummy,12,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+est_agg_continent,Estimate: Continent,=1 if the estimates within the study can not be aggregated on a country level or smaller (reference category).,dummy,12,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+n_obs,Observations,The number of observations associated with the estimate.,int,13,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,FALSE,stop
+regressands,Number of Regressands,The number of regressands in the regression.,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+reg_df,Degrees of Freedom,The number of degrees of freedom in the regression.,int,13,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+study_size,Study Size,The logarithm of the number of estimates collected from the study.,int,14,stop,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,TRUE,mean
+years_of_schooling,Yrs. of Schooling,The average number of years of schooling attained by the subjects.,float,15,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,FALSE,mean
+years_of_experience,Yrs. of Experience,The average number of years of experience attained by the subjects.,float,16,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,FALSE,mean
+schooling_years,Education: Years,=1 if authors report schooling in years.,dummy,17,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+schooling_levels,Education: Levels,"=1 if the authors report schooling in levels (e.g., attained college degree) (reference category).",dummy,17,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+wage_log_hourly,Wage: Log Hourly,=1 if the dependent variable in the regression is log hourly wage.,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+wage_log_daily,Wage: Log Daily,=1 if the dependent variable in the regression is log daily or weekly wage.,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+wage_log_monthly,Wage: Log Monthly,=1 if the dependent variable in the regression is log monthly wage.,dummy,18,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+wage_mean_annual_earnings,Wage: Mean Annual Earnings,=1 if the dependent variable in the regression is log of mean annual earnings (reference category).,dummy,18,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+data_type_micro,Micro Data,=1 if the study uses micro data.,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+data_type_survey,Survey Data,=1 if the study uses data from a survey.,dummy,19,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+data_type_national_register,National Register Data,=1 if the study uses data from a national register (reference category).,dummy,19,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+data_cross_section,Cross-sectional Data,=1 if the study uses cross-sectional data.,dummy,20,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+data_panel,Panel Data,=1 if the study uses panel data (reference category).,dummy,20,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+data_avgyear,Data Year,The logarithm of the average year of the study's time span,float,21,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,TRUE,mean
+no_ed,No Education,The percentage of subjects that attained no education (reference category).,perc,22,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
+prim_ed,Primary Education,The percentage of subjects that attained only primary education.,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,mean
+sec_ed,Secondary Education,The percentage of subjects that attained only secondary education.,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,mean
+higher_ed,Higher Education,The percentage of subjects that attained any form of higher education.,perc,22,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
+wage_earners,Employees: Wage Earners,"The ratio of wage earners to self-employed subjects in the study ( = 1 if wage earner, = 0 if self-employed).",perc,24,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
+self_employed,Employees: Self-Employed,"The ratio of self-employed to wage earners subjects in the study ( = 1 if self-employed, = 0 if wage earner) (reference category).",perc,24,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
+gender_male,Gender: Male,"The ratio of male to female subjects in the study ( = 1 if male, = 0 if female).",perc,25,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
+gender_female,Gender: Female,"The ratio of female to male subjects in the study ( = 1 if female, = 0 if male) (reference category).",perc,25,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
+private_sector,Sector: Private,"The ratio of private to public sector workers ( = 1 if private sector worker, = 0 if public).",perc,26,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
+public_sector,Sector: Public,"The ratio of public to private sector workers ( = 1 if public sector worker, = 0 if private) (reference category).",perc,26,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
+ethnicity_caucasian,Ethnicity: Caucasian,"The ratio of Caucasian to non-Caucasian subjects in the study ( = 1 if Caucasian, = 0 if not).",perc,27,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
+ethnicity_other,Ethnicity: Other,"The ratio of non-Caucasian to Caucasian subjects in the study ( = 1 if non-Caucasian, = 0 if Caucasian) (reference category).",perc,27,mean,FALSE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
+sector_rural,Sector: Rural,"The ratio of rural to urban workers ( = 1 if rural worker, = 0 if urban).",perc,28,mean,TRUE,TRUE,NA,0.5,TRUE,TRUE,FALSE,FALSE,mean
+sector_urban,Sector: Urban,"The ratio of urban to rural workers ( = 1 if urban worker, = 0 if rural) (reference category).",perc,28,mean,TRUE,FALSE,NA,NA,FALSE,FALSE,TRUE,FALSE,stop
+country,Country,The country in which the study was conducted.,category,29,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+region_advanced_economies,Region: Advanced Economies,=1 if the study was conducted in a country with advanced economy. (reference group),dummy,30,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+region_east_asia_and_pacific,Region: East Asia and Pacific,=1 if the study was conducted in the East Asia and Pacific region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_europe_and_central_asia,Region: Europe and Central Asia,=1 if the study was conducted in the Europe and Central Asia region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_latin_america_and_caribbean,Region: Latin America and Caribbean,=1 if the study was conducted in the Latin America and Caribbean region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_middle_east_and_north_africa,Region: Middle East and North Africa,=1 if the study was conducted in the Middle East and North Africa region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_south_asia,Region: South Africa,=1 if the study was conducted in the South African region.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+region_sub_saharan_africa,Region: Sub Saharan Africa,=1 if the study was conducted in the region of Sub Saharan Africa.,dummy,30,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+income_high,Income: High,=1 if the study was conducted in a high income country (reference category),dummy,31,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+income_middle,Income: Middle,=1 if the study was conducted in a middle income country,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+income_low,Income: Low,=1 if the study was conducted in a low income country,dummy,31,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+med_exp,Median Expenditure,The logarithm of the median expenditure in the country in a given year.,float,32,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,TRUE,mean
+min_wage,Minimum Wage,The logarithm of the minimum wage in the country in a given year.,float,33,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,TRUE,mean
+freedom_index,Academic Freedom Index,The academic freedom index reported for the country in a given year.,float,34,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,FALSE,mean
+mean_age,Mean Age,The logarithm of the average age of the subjects.,float,35,median,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,TRUE,mean
+method_ols,Method: OLS,=1 if the authors use Ordinary least squares.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+method_cohort,Method: Cohort,=1 if the authors use Cohort-type estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+method_fe,Method: FE,=1 if the authors use Fixed-effects estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+method_2sls,Method: 2SLS,=1 if the authors use Two-Stage least squares estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+method_heckman,Method: Heckman,"=1 if the authors use Two-step estimation (Heckman and Polachek, 1974).",dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+method_probit,Method: Probit,=1 if the authors use Probit estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+method_IV,Method: IV,=1 if the authors use Instrumental variables estimation (reference category).,dummy,36,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+ability_direct,Ability: Direct,=1 if the authors include a direct measure of ability in their study.,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+ability_proxy,Ability: Proxied,=1 if the authors use a proxy for ability in their study.,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+ability_uncontrolled,Ability: Uncontrolled,"=1 if the authors acknowledge, but do not control for ability in any way in their study.",dummy,37,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+ability_unmentioned,Ability: Unmentioned,=1 if the authors do not mention ability anywhere in their study (reference category).,dummy,37,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+instr_parents_ed,Instrument: Parents Education,=1 if the authors use parents education as an instrument in the regression.,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,FALSE,stop
+instr_distance_to_school,Instrument: Distance to School,=1 if the authors use distance to school as an instrument in the regression.,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,FALSE,stop
+instr_other,Instument: Other,=1 if the authors use another instrument in the regression.,int,38,stop,TRUE,TRUE,1,NA,FALSE,FALSE,FALSE,FALSE,stop
+age_control,Control: Age,=1 if the authors control for age in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+age_sq_control,Control: Age^2,=1 if the authors control for age in quadratic form in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+exp_control,Control: Experience,=1 if the authors control for experience in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+exp_sq_control,Control: Experience^2,=1 if the authors control for experience in quadratic form in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+ethnicity_control,Control: Ethnicity,=1 if the authors control for ethnicity in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+health_control,Control: Health,=1 if the authors control for health in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+gender_control,Control: Gender,=1 if the authors control for gender in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+marriage_control,Control: Marriage,=1 if the authors control for marriage in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+occupation_control,Control: Occupation,=1 if the authors control for occupation of the subjects in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+firm_char_control,Control: Firm Characteristics,=1 if the authors control for firm characteristics in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+area_control,Control: Area,"=1 if the authors control for area type in the regression (e.g., urban, rural).",int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+macro_var_control,Control: Macro Variables,=1 if the authors control for macroeconomic variables in the regression.,int,39,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+impact_factor,Impact Factor,The logarithm of the Journal Citations Report impact factor of the study (as of January 2023; = 0 in case of no publication).,float,40,stop,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,TRUE,max
+citations,Citations,The logarithm of the mean number of Google Scholar citations received per year since the appearance of the study in Google Scholar (as of January 2023).,int,41,stop,TRUE,TRUE,NA,median,TRUE,TRUE,FALSE,TRUE,max
+published,Study: Published,=1 if the study was published in a journal.,dummy,42,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
+unpublished,Study: Unpublished,=1 if the study was not published in a journal (reference category).,dummy,42,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
+pub_year,Publication Year,The logarithm of the number of years between the publication (or issuing) of this study and the publication year of the earlierst published study in the sample.,int,43,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,TRUE,stop
+effect_w,Main Effect: Winsorized,"The effect of an additional year of schooling on logarithmic wage, winsorized.",float,44,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,stop
+se_w,Standard Error: Winsorized,"The standard error of the main effect, winsorized.",float,45,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,0
+se_precision_w,Precision: Winsorized,"The precision of the main effect, winsorized.",float,46,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
+t_w,T-Statistic: Winsorized,"The t-statistic of the main effect, winsorized.",float,47,allow,FALSE,TRUE,NA,median,FALSE,FALSE,FALSE,FALSE,stop
+significant_w,T-Statistic Is Significant: Winsorized,=1 if the t-statistic associated with the main effect is significant at 95% confidence level.,float,48,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop

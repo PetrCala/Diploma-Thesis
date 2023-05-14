@@ -33,7 +33,7 @@ user_params <- list(
   
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
+    "variable_summary_stats" = F,
     "effect_summary_stats" = F,
     "box_plot" = F,
     "funnel_plot" = F,
@@ -42,9 +42,10 @@ user_params <- list(
     "nonlinear_tests" = F,
     "exo_tests" = F,
     "p_hacking_tests" = F,
-    "bma" = T,
-    "fma" = T, # Should be ran together with BMA
-    "best_practice_estimate" = T # Should be ran together with BMA
+    "bma" = F,
+    "fma" = F, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "best_practice_estimate" = F # Executable only after running BMA
   ),
   
   # USER PARAMETERS
@@ -111,6 +112,8 @@ user_params <- list(
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters
+    "ma_variables_description_table_verbose" = TRUE, # If TRUE, print out the BMA variable desc table into console
+    "ma_variables_description_table_clip" = FALSE, # If TRUE, copy the table to a clipboard
     "ma_results_table" = TRUE, # If TRUE, print out results of model averaging into a pretty table
     # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
     "bpe_studies" = c( # Vector of study indexes for which to run the BPE. For author's BPE, use 0.
