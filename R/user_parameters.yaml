@@ -11,10 +11,10 @@ run_this:
   box_plot: no
   funnel_plot: no
   t_stat_histogram: no
-  linear_tests: yes
-  nonlinear_tests: yes
+  linear_tests: no
+  nonlinear_tests: no
   exo_tests: yes
-  p_hacking_tests: yes
+  p_hacking_tests: no
   bma: no
   fma: no
   ma_variables_description_table: no

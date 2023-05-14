@@ -3,18 +3,18 @@
 import populate_tables_source as populate
 
 SOURCE_PATH = r'C:/Users/hso20/OneDrive/Plocha/IES/Diploma-Thesis/R/_results/'
-"variable_summary_stats" = "Variable summary stats"
-"effect_summary_stats" = "Effect summary stats"
-"linear_tests" = "Linear tests"
-"nonlinear_tests" = "Nonlinear tests"
-"exo_tests" = "Tests relaxing the exogeneity assumption"
-"p_hacking_tests_caliper" = "Caliper tests"
-"p_hacking_tests_eliott" = "Eliott tests"
-"p_hacking_tests_maive" = "MAIVE"
-"ma" = "Model averaging"
-"ma_variables_description_table" = "Model averaging description table"
-"bpe_res" = "Best practice estimate"
-"bpe_econ_sig" = "Economic significance"
+VAR_SUM_STATS_PATH = "variable_summary_stats"
+EFFECT_SUM_STATS_PATH = "effect_summary_stats"
+LINEAR_TESTS_PATH = "linear_tests"
+NONLINEAR_TESTS_PATH = "nonlinear_tests"
+EXO_TESTS_PATH = "exo_tests"
+CALIPER_PATH = "p_hacking_tests_caliper"
+ELLIOTT_PATH = "p_hacking_tests_elliott"
+MAIVE_PATH = "p_hacking_tests_maive"
+MA_PATH = "ma"
+MA_DESC_PATH = "ma_variables_description_table"
+BPE_RES_PATH = "bpe_res"
+BPE_ECON_SIG_PATH = "bpe_econ_sig"
 
 
 if __name__ == "__main__":

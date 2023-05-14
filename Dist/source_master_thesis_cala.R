@@ -1689,16 +1689,16 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
   )
   # Extract coefficients
   effect_coef <- ifelse(effect_present,
-                        round(as.numeric(exo_object[1,1]), 5),
+                        round(as.numeric(exo_object[1,1]), 3),
                         "")
   effect_se <- ifelse(effect_present,
-                        round(as.numeric(exo_object[1,2]), 5),
+                        round(as.numeric(exo_object[1,2]), 3),
                         "")
   pub_coef <- ifelse(pub_bias_present,
-                        round(as.numeric(exo_object[2,1]), 5),
+                        round(as.numeric(exo_object[2,1]), 3),
                         "")
   pub_se <- ifelse(pub_bias_present,
-                        round(as.numeric(exo_object[2,2]), 5),
+                        round(as.numeric(exo_object[2,2]), 3),
                         "")
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){
@@ -3103,20 +3103,25 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
 #' R object and possibly overwritten.
 #' @param force_overwrite [logical] A flag that forces the function to overwrite the file
 #' regardless of the comparison result. Default is FALSE.
+#' @param verbose [logical] If TRUE, print out the information about the status of the function.
 #' 
 #' @return [logical] Returns TRUE if the contents of the object and the file were identical
 #' and no write operation was needed. Returns FALSE if the file was created or overwritten.
 #' 
-writeIfNotIdentical <- function(object_name, file_name, force_overwrite = FALSE){
+writeIfNotIdentical <- function(object_name, file_name, force_overwrite = FALSE, verbose = FALSE){
   # Force overwrite
   if (force_overwrite){
-      print(paste("Overwriting the file",file_name))
+      if (verbose){
+        print(paste("Overwriting the file",file_name))
+      }
       write.csv(object_name, file_name)
   }
   # Check if file exists
   if (!file.exists(file_name)) {
     write.csv(object_name, file_name)
-    print("The file did not exist and was created.")
+    if (verbose){
+      print("The file did not exist and was created.")
+    }
     return(FALSE)
   }
   # Read the existing CSV file
@@ -3127,7 +3132,9 @@ writeIfNotIdentical <- function(object_name, file_name, force_overwrite = FALSE)
   # Check for identical contents
   if (!all(content == object_name)) {
     write.csv(object_name, file_name)
-    print("The file was overwritten because it was different.")
+    if (verbose){
+      print("The file was overwritten because it was different.")
+    }
     return(FALSE)
   }
   return(TRUE)

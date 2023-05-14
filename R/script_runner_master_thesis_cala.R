@@ -38,10 +38,10 @@ user_params <- list(
     "box_plot" = F,
     "funnel_plot" = F,
     "t_stat_histogram" = F,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
     "exo_tests" = T,
-    "p_hacking_tests" = T,
+    "p_hacking_tests" = F,
     "bma" = F,
     "fma" = F, # Executable only after running BMA
     "ma_variables_description_table" = F, # Executable only after running BMA
@@ -127,8 +127,8 @@ user_params <- list(
   ),
   
   # EXPORT OPTIONS
-  "export_results" = TRUE, # Export all results into this table - no extra time
-  "export_path" = './_results/', # Main export path
+  "export_results" = TRUE, # Export all results if they differ from the existing ones - no extra time
+  "export_path" = './_results/', # Main export path for storing the results
   "export_methods" = list( # Verbose names of all allowed export methods
     "variable_summary_stats" = "Variable summary stats",
     "effect_summary_stats" = "Effect summary stats",
