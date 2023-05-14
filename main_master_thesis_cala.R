@@ -327,6 +327,22 @@ if (run_this$fma){
   fma_coefs <- runFMA(bma_data, bma_model, verbose = adj_params$fma_verbose)
 }
 
+###### MODEL AVERAGING RESULTS PRESENTATION ######
+
+# Model averaging variable description table
+if (run_this$ma_variables_description_table){
+  # Get the table with new BMA data (including all reference groups and other excluded BMA variables)
+  desc_table_data <- getBMAData(data, var_list,
+                                var_list,
+                                from_vector = F,
+                                include_reference_groups = T)
+  ma_var_desc_table <- getMAVariablesDescriptionTable(desc_table_data, var_list, # Runs with winsorized data
+        verbose = adj_params$ma_variables_description_table_verbose) # Use View(...) for best viewing experience
+  # Copy the table to a clipboard
+  if (adj_params$ma_variables_description_table_clip){
+    writeClipboard(capture.output(print(ma_var_desc_table, row.names=F))) 
+  }
+}
 
 # Print out the results of model averaging into a nice table - only if BMA and FMA output exists
 if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs")))){

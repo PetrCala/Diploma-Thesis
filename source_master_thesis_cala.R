@@ -445,8 +445,14 @@ winsorizeData <- function(input_data, win_level, precision_type = "DoF"){
 #' @param input_var_list [data.frame] The data frame that specifies the data type of each variable
 #' @param ignore_missing [bool] If TRUE, allow missing values in the data frame. Deafults to FALSE.
 validateData <- function(input_data, input_var_list, ignore_missing = F){
+  ### Static
   # Columns that the data frame must contain
   expected_columns <- c("study_name", "study_id", "effect", "se", "t_stat", "n_obs", "study_size", "reg_df")
+  # Reference variable restrictions
+  ref_prone_types <- c("dummy", "perc") # Data types that always must have a single reference variable
+  ref_forbidden_categories <- c("bma_potential_var", "bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
+  ### End of static
+  
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
@@ -475,7 +481,7 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
     splitted_data_frames[[as.character(group_num)]] <- input_data[,group_col_names, drop = FALSE] # To list
   }
   # Validate all groups
-  for (i in length(splitted_data_frames)){
+  for (i in 1:length(splitted_data_frames)){
     df_to_test <- splitted_data_frames[[i]] # Explicit for indexing clarity
     # Skip empty groups in development - should not be used
     if(ignore_missing & all(is.na(df_to_test))){
@@ -485,6 +491,30 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
         stop("Invalid dummy group configuration: One and only one dummy variable must be 1 in each group for each row")
     }
   }
+  ### Validate all reference groups
+  # Get ids of groups that must have one reference variable
+  ref_prone_groups <- as.vector(unlist(input_var_list[input_var_list$data_type %in% ref_prone_types, "group_category"]))
+  ref_prone_groups <- unique(ref_prone_groups)
+  # Get reference variable presence info for these groups and verify that all have exactly one such variable
+  for (group_id in ref_prone_groups){
+    ## Validate that exactly one variable is marked as reference
+    ref_info <- input_var_list$bma_reference_var[input_var_list$group_category == group_id]
+    if (sum(ref_info) != 1){
+      unreferenced_vars <- input_var_list$var_name[input_var_list$group_category == group_id] # Unreferenced var names
+      message("This group of variables is missing a reference variable:")
+      message(paste(unreferenced_vars,"\n"))
+      stop("You must define one and only one reference variable for each BMA group.")
+    }
+    ## Validate that that variable is not marked for any other BMA/BPE categories
+    reference_var <- input_var_list$var_name[input_var_list$group_category == group_id &
+                                             input_var_list$bma_reference_var == TRUE]
+    # Get the parameters the reference variable has set for other BMA/BPE categories
+    forbidden_values <- input_var_list[input_var_list$var_name == reference_var, ref_forbidden_categories]
+    if (any(forbidden_values == TRUE)){
+      stop(paste("The variable is a reference variable",reference_var,"and should have all values of BMA/BPE information set to FALSE."))
+    }
+  }
+  
   # Validate that all perc variables sum up to 1
   # TO-DO
   
@@ -625,6 +655,72 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
     cat("\n")
   }
   invisible(df)
+}
+
+#' getMAVariablesDescriptionTable
+#' 
+#' This function computes and returns a descriptive statistics table for a list of
+#' specified variables in a given data set. It outputs a data frame that includes the verbose name,
+#' description, mean, and standard deviation of each variable. If the verbose argument is set to TRUE, 
+#' t will print the table.
+#' 
+#' @param bma_data [data.frame] The BMA data frame. All column names should
+#' be present in the 'var_name' column of the 'input_var_list' data frame.
+#' @param input_var_list [data.frame] A data frame that lists the variables to describe.
+#' @param verbose [logical] A boolean flag that controls whether to print the output data frame.
+#' Default is TRUE.
+#' 
+#' @return [data.frame] A data frame that contains the following columns: 'Variable', 
+#' Description', 'Mean', 'SD'. 'Variable' corresponds to 'var_name_verbose' from the 'input_var_list', 
+#' Description' corresponds to 'var_name_description' from the 'input_var_list',
+#' 'Mean' and 'SD' are the mean and standard deviation of the variable in 'bma_data'.
+#' 
+#' @examples
+#' \dontrun{
+#'   getMAVariablesDescriptionTable(bma_data, input_var_list, verbose = TRUE)
+#' }
+#'
+#' @export
+getMAVariablesDescriptionTable <- function(bma_data, input_var_list, verbose = T){
+  # Input validation
+  stopifnot(
+    is.data.frame(bma_data),
+    is.data.frame(input_var_list),
+    all(colnames(bma_data) %in% input_var_list$var_name)
+  )
+  # Initialize the empty data frame
+  desc_df <- data.frame(
+    "variable" = character(0),
+    "description" = character(0),
+    "mean" = numeric(0),
+    "sd" = numeric(0)
+  )
+  # Loop through all the available variables
+  for (input_var in colnames(bma_data)){
+    # Characters
+    var_verbose <- input_var_list$var_name_verbose[input_var_list$var_name == input_var]
+    var_desc <- input_var_list$var_name_description[input_var_list$var_name == input_var]
+    var_mean <- mean(as.numeric(unlist(bma_data[,input_var])))
+    var_sd <- sd(as.numeric(unlist(bma_data[,input_var])))
+    # Temporary row
+    temp_df <- data.frame(
+      "variable" = as.character(var_verbose),
+      "description" = as.character(var_desc),
+      "mean" = round(as.numeric(var_mean),3),
+      "sd" = round(as.numeric(var_sd),3)
+    )
+    # Join together
+    desc_df <- rbind(desc_df, temp_df)
+  }
+  # Rename columns
+  colnames(desc_df) <- c("Variable", "Description", "Mean", "SD")
+  # Return the output
+  if (verbose){
+    print("Model averaging variables description table:")
+    print(desc_df)
+    cat("\n\n")
+  }
+  invisible(desc_df)
 }
 
 
@@ -2334,10 +2430,14 @@ runVifTest <- function(input_var, input_data, print_all_coefs = F){
 #'  or a vector of variables. In the latter case, the "from_vector" variable must be set to T.
 #' @param from_vector [logical] If True, the "variable_info" must be specified as a vector, otherwise
 #'  as a data frame. Defaults to FALSE.
+#' @param include_reference_groups [logical] If TRUE, add the reference groups to the data. Be very
+#' careful, as this may create a dummy trap. Used when creating the descriptive table of all potential
+#' BMA variables. Usable only when from_vector == FALSE. Defaults to FALSE.
 #' @note When transforming/subsetting the data, there is a need to convert the data into a
 #' data.frame object, otherwise the plot functions will not recognize the data types correctly
 #' later on. The "bms" function works well even with a tibble, but the plots do not. RRRRRRR
-getBMAData <- function(input_data, input_var_list, variable_info, from_vector = T){
+getBMAData <- function(input_data, input_var_list, variable_info, from_vector = T,
+                       include_reference_groups = F){
   # Input validation
   stopifnot(
     is.data.frame(input_data),
@@ -2357,6 +2457,10 @@ getBMAData <- function(input_data, input_var_list, variable_info, from_vector = 
   }
   if (is.data.frame(variable_info)){ # Input data frame
     desired_vars_bool <- variable_info$bma
+    if (include_reference_groups){
+      ref_bool <- variable_info$bma_reference_var
+      desired_vars_bool <- desired_vars_bool | ref_bool # Add reference variables
+    }
     desired_vars <- variable_info$var_name[desired_vars_bool]
   } else { # Input vector
    desired_vars <- variable_info
@@ -2447,7 +2551,9 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
   # Print out coefficient and model statistics
-  print("Results of the Bayesian Model Averaging:")
+  if (!print_results == "none"){
+    print("Results of the Bayesian Model Averaging:")
+  }
   if (print_results %in% c("verbose","all")){
     print(bma_model) # Coefficients, summary information
     print(bma_model$topmod[1]) # Topmod
