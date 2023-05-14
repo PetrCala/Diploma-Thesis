@@ -42,10 +42,10 @@ packages <- c(
   "data.table", # Fast data manipulation and aggregation
   "ddpcr", # Analysis of Droplet Digital PCR (ddPCR) data
   "dplyr", # Data manipulation and data wrangling
-  "fdrtool", # Eliott et al. (2022)
+  "fdrtool", # Elliott et al. (2022)
   "foreign", # Reading and writing data stored by other statistical software
-  "gdata", # Eliott et al. (2022)
-  "grDevices", # Eliott et al. (2022)
+  "gdata", # Elliott et al. (2022)
+  "grDevices", # Elliott et al. (2022)
   "ggplot2", # Creating graphics and data visualizations
   "haven", # Importing and exporting data from SAS, SPSS, and Stata
   "lmtest", # Hypothesis testing and diagnostics for linear regression models
@@ -53,16 +53,16 @@ packages <- c(
   "metafor", # Conducting meta-analyses
   "multcomp", # Simultaneous inference for general linear hypotheses
   "multiwayvcov", # Computing clustered covariance matrix estimators
-  "NlcOptim", # Eliott et al. (2022) - CoxShi
+  "NlcOptim", # Elliott et al. (2022) - CoxShi
   "plm", # Random Effects, Between Effects
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
-  "pracma", # MAIVE Estimator, Eliott et al. (2022)
-  "rddensity", # Eliott et al. (2022)
+  "pracma", # MAIVE Estimator, Elliott et al. (2022)
+  "rddensity", # Elliott et al. (2022)
   "readr", # Reading data into R from various file formats
   "readxl", # Reading Excel files
   "sandwich", # Computing robust covariance matrix estimators, MAIVE estimator
   "shiny", # Andrew & Kasy (2019) Selection model
-  "spatstat", # Eliott et al. (2022)
+  "spatstat", # Elliott et al. (2022)
   "stats", # Statistical analysis and modeling
   "testthat", # Unit testing for R
   "tidyverse", # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
@@ -289,14 +289,14 @@ if (run_this$p_hacking_tests){
                                        widths = adj_params$caliper_widths,
                                        verbose = T)
   
-  ###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
-  eliott_results <- getEliottResults(data,
-                                     data_subsets = adj_params$eliott_data_subsets,
-                                     p_min = adj_params$eliott_p_min,
-                                     p_max = adj_params$eliott_p_max,
-                                     d_point = adj_params$eliott_d_point,
-                                     CS_bins = adj_params$eliott_CS_bins,
-                                     verbose = adj_params$eliott_verbose)
+  ###### PUBLICATION BIAS - p-hacking test (Elliott et al., 2022) ######
+  elliott_results <- getElliottResults(data,
+                                     data_subsets = adj_params$elliott_data_subsets,
+                                     p_min = adj_params$elliott_p_min,
+                                     p_max = adj_params$elliott_p_max,
+                                     d_point = adj_params$elliott_d_point,
+                                     CS_bins = adj_params$elliott_CS_bins,
+                                     verbose = adj_params$elliott_verbose)
   
   ###### MAIVE Estimator (Irsova et al., 2023) ######
   maive_results <- getMaiveResults(data,
@@ -307,7 +307,7 @@ if (run_this$p_hacking_tests){
                                    verbose=adj_params$maive_verbose)
    if (user_params$export_results){
       exportTable(caliper_results, user_params, "p_hacking_tests_caliper")
-      exportTable(eliott_results, user_params, "p_hacking_tests_eliott")
+      exportTable(elliott_results, user_params, "p_hacking_tests_elliott")
       exportTable(maive_results, user_params, "p_hacking_tests_maive")
     }
 }

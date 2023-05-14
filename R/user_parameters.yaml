@@ -1,4 +1,4 @@
-development_on: yes
+development_on: no
 master_data_set_source: data_set_master_thesis_cala.csv
 var_list_source: var_list_master_thesis_cala.csv
 stem_source: stem_method_master_thesis_cala.R
@@ -6,14 +6,14 @@ selection_model_source: selection_model_master_thesis_cala.R
 endo_kink_source: endo_kink_master_thesis_cala.R
 maive_source: maive_master_thesis_cala.R
 run_this:
-  variable_summary_stats: no
-  effect_summary_stats: no
+  variable_summary_stats: yes
+  effect_summary_stats: yes
   box_plot: no
   funnel_plot: no
   t_stat_histogram: no
-  linear_tests: no
-  nonlinear_tests: no
-  exo_tests: no
+  linear_tests: yes
+  nonlinear_tests: yes
+  exo_tests: yes
   p_hacking_tests: yes
   bma: no
   fma: no
@@ -44,12 +44,12 @@ adjustable_parameters:
   - 0.05
   - 0.1
   - 0.2
-  eliott_data_subsets: All data
-  eliott_p_min: 0.0
-  eliott_p_max: 0.1
-  eliott_d_point: 0.1
-  eliott_CS_bins: 15.0
-  eliott_verbose: yes
+  elliott_data_subsets: All data
+  elliott_p_min: 0.0
+  elliott_p_max: 0.1
+  elliott_d_point: 0.1
+  elliott_CS_bins: 15.0
+  elliott_verbose: yes
   maive_method: 3.0
   maive_weight: 0.0
   maive_instrument: 1.0
@@ -84,7 +84,7 @@ export_methods:
   nonlinear_tests: Nonlinear tests
   exo_tests: Tests relaxing the exogeneity assumption
   p_hacking_tests_caliper: Caliper tests
-  p_hacking_tests_eliott: Eliott tests
+  p_hacking_tests_elliott: Elliott tests
   p_hacking_tests_maive: MAIVE
   ma: Model averaging
   ma_variables_description_table: Model averaging description table

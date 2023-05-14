@@ -1,5 +1,5 @@
 data_set_master_thesis_cala.csv
-elliot_master_thesis_cala.R
+elliott_master_thesis_cala.R
 endo_kink_master_thesis_cala.R
 main_master_thesis_cala.R
 maive_master_thesis_cala.R

@@ -2089,9 +2089,9 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
   invisible(result_df)
 }
 
-###### PUBLICATION BIAS - p-hacking test (Eliott et al., 2022) ######
+###### PUBLICATION BIAS - p-hacking test (Elliott et al., 2022) ######
 
-#' getEliottResults - Calculate Elliot's five tests and other statistics for a given dataset
+#' getElliottResults - Calculate Elliott's five tests and other statistics for a given dataset
 #'  - Source: https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA18583
 #'
 #' @param input_data A data frame containing at least the "t_w" and "reg_df" columns.
@@ -2102,8 +2102,8 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
 #' @param CS_bins The number of bins for the Cox-Shi test. Default is 10.
 #' @param verbose A logical indicating whether to print the results to console. Default is TRUE.
 #'
-#' @return A data frame with the results of the Elliot tests and other statistics.
-getEliottResults <- function(input_data, data_subsets = c("All data"), 
+#' @return A data frame with the results of the Elliott tests and other statistics.
+getElliottResults <- function(input_data, data_subsets = c("All data"), 
       p_min = 0, p_max = 1, d_point = 0.15, CS_bins = 10, verbose = T){
   # Validate input
   stopifnot(
@@ -2137,21 +2137,21 @@ getEliottResults <- function(input_data, data_subsets = c("All data"),
   # Colnames
   data_colnames <- data_subsets
   # DF
-  elliot_df <- data.frame(matrix(NA, nrow = length(data_rownames), ncol = length(data_colnames)))
-  rownames(elliot_df) <- data_rownames
-  colnames(elliot_df) <- data_colnames
+  elliott_df <- data.frame(matrix(NA, nrow = length(data_rownames), ncol = length(data_colnames)))
+  rownames(elliott_df) <- data_rownames
+  colnames(elliott_df) <- data_colnames
   # Load the source script
-  source("elliot_master_thesis_cala.R")
+  source("elliott_master_thesis_cala.R")
   # Load the file with CDFs (if it does not exist, create one)
   validateFolderExistence("./_cache/") # Validate cache folder existence
-  elliot_source_file <- "./_cache/elliot_data_master_thesis_cala.csv"
+  elliott_source_file <- "./_cache/elliott_data_master_thesis_cala.csv"
   # On the first run, create a cached file of CDFs (large in memory)
-  if (!file.exists(elliot_source_file)){
-    print("Creating a temporary file in the '_cache' folder for the Eliott et al. (2022) method...")
+  if (!file.exists(elliott_source_file)){
+    print("Creating a temporary file in the './_cache' folder for the Elliott et al. (2022) method...")
     cdfs <- getCDFs() # Generate the file from scratch (takes time)
-    write.table(cdfs, elliot_source_file, col.names = "cdfs", row.names = F)
+    write.table(cdfs, elliott_source_file, col.names = "cdfs", row.names = F)
   }
-  cdfs <- read.csv(elliot_source_file, col.names = "cdfs") # Read the cached file
+  cdfs <- read.csv(elliott_source_file, col.names = "cdfs") # Read the cached file
   cdfs <- as.numeric(cdfs[,1]) # To a numeric vector
   # Run the estimation for all data subsets
   for (data_col in data_colnames){
@@ -2172,30 +2172,30 @@ getEliottResults <- function(input_data, data_subsets = c("All data"),
     FM <- Fisher(P, p_min, p_max)
     
     # Save the results
-    elliot_res <- c(Bin_test, Discontinuity, LCM_sup, CS_1, CS_2B, FM)
-    elliot_res <- sapply(elliot_res, function(x){round(x,3)})
+    elliott_res <- c(Bin_test, Discontinuity, LCM_sup, CS_1, CS_2B, FM)
+    elliott_res <- sapply(elliott_res, function(x){round(x,3)})
     
     # Thresholds
     n_obs_between <- length(P[P>=p_min&P<=p_max])
     n_obs_below <- length(P[P<=d_point&P>=0])
   
-    # Fill in the data frame with values from elliot_res
-    elliot_df["Binomial:", data_col] <- elliot_res[1]
-    elliot_df["Discontinuity:", data_col] <- elliot_res[2]
-    elliot_df["LCM:", data_col] <- elliot_res[3]
-    elliot_df["CS1:", data_col] <- elliot_res[4]
-    elliot_df["CS2B:", data_col] <- elliot_res[5]
-    elliot_df["s Test:", data_col] <- elliot_res[6]
-    elliot_df[threshold1_verbose, data_col] <- n_obs_between # In between min, max
-    elliot_df[threshold2_verbose, data_col] <- n_obs_below # Below disc cutoff
+    # Fill in the data frame with values from elliott_res
+    elliott_df["Binomial:", data_col] <- elliott_res[1]
+    elliott_df["Discontinuity:", data_col] <- elliott_res[2]
+    elliott_df["LCM:", data_col] <- elliott_res[3]
+    elliott_df["CS1:", data_col] <- elliott_res[4]
+    elliott_df["CS2B:", data_col] <- elliott_res[5]
+    elliott_df["s Test:", data_col] <- elliott_res[6]
+    elliott_df[threshold1_verbose, data_col] <- n_obs_between # In between min, max
+    elliott_df[threshold2_verbose, data_col] <- n_obs_below # Below disc cutoff
   }
   
   if (verbose){
-    print(paste0("Results of the Elliot tests:"))
-    print(elliot_df)
+    print(paste0("Results of the Elliott tests:"))
+    print(elliott_df)
     cat("\n\n")
   }
-  return(elliot_df)
+  return(elliott_df)
 }
 
 ###### MAIVE Estimator (Irsova et al., 2023) ######
@@ -3087,8 +3087,76 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
   return(res_df)
 }
 
-######################### EXPORT #########################
+######################### EXPORT AND CACHES #########################
 
+#' writeIfNotIdentical
+#' 
+#' This function compares the contents of an R object in the environment with an existing file.
+#' If the contents are different, or if the file does not exist, it overwrites or creates
+#' the file with the content of the object. If 'force_overwrite' is TRUE, the function will
+#' overwrite the file regardless of the comparison result. The function also prints a message
+#' to inform the user about the action taken.
+#' 
+#' @param object_name [data.frame] The name of the R object in the environment to be
+#' compared with the file content and possibly written to the file.
+#' @param file_name [character] The name (and path) of the file to be compared with the
+#' R object and possibly overwritten.
+#' @param force_overwrite [logical] A flag that forces the function to overwrite the file
+#' regardless of the comparison result. Default is FALSE.
+#' 
+#' @return [logical] Returns TRUE if the contents of the object and the file were identical
+#' and no write operation was needed. Returns FALSE if the file was created or overwritten.
+#' 
+writeIfNotIdentical <- function(object_name, file_name, force_overwrite = FALSE){
+  # Force overwrite
+  if (force_overwrite){
+      print(paste("Overwriting the file",file_name))
+      write.csv(object_name, file_name)
+  }
+  # Check if file exists
+  if (!file.exists(file_name)) {
+    write.csv(object_name, file_name)
+    print("The file did not exist and was created.")
+    return(FALSE)
+  }
+  # Read the existing CSV file
+  content <- read.csv(file_name, stringsAsFactors = FALSE)
+  # Handle the rownames column
+  content <- content[, -(colnames(content) == "X")] # Discard row names
+  
+  # Check for identical contents
+  if (!all(content == object_name)) {
+    write.csv(object_name, file_name)
+    print("The file was overwritten because it was different.")
+    return(FALSE)
+  }
+  return(TRUE)
+}
+
+
+#' exportTable
+#' 
+#' This function exports a given results table as a CSV file into a specified directory.
+#' The directory is determined based on the 'export_path' item in the 'user_params' list,
+#' and the filename is constructed from the 'method_name' argument. If the directory does not exist,
+#' the function will create it. The function also prints a message to inform the user about the location of the exported file.
+#' The file will not export if the same file already exists under the specified path.
+#' 
+#' @param results_table [data.frame] The data frame to be exported as a CSV file.
+#' @param user_params [list] A list of user parameters. It should contain an 'export_path' item,
+#' which specifies the directory to export the file, and an 'export_methods' item, which is a
+#' named list where the names correspond to valid 'method_name' values and the values are used for verbose output.
+#' @param method_name [character] A character string that specifies the export method. 
+#' It should be present in the names of 'user_params$export_methods' and is used to construct the filename
+#' of the exported CSV file.
+#' 
+#' @return No explicit return value. The function writes a CSV file to the file system.
+#' 
+#' @examples
+#' \dontrun{
+#'   exportTable(results_table, user_params, method_name)
+#' }
+#' @export
 exportTable <- function(results_table, user_params, method_name){
   # Validate input
   stopifnot(
@@ -3101,12 +3169,13 @@ exportTable <- function(results_table, user_params, method_name){
   folder_path <- user_params$export_path # Export folder
   validateFolderExistence(folder_path) # Create the export folder if not present in the working directory
   results_path <- paste0(folder_path, method_name, ".csv") # export_folder/export_file.csv
-  # Create the export folder if it does not exist yet
   
-  # Export the two data frames
-  verbose_info <- user_params$export_methods[[method_name]]
-  print(paste("Writing the", tolower(verbose_info), "results into", results_path))
-  write.csv(results_table, results_path)
+  # Export the table if it does not exist
+  verbose_info <- user_params$export_methods[[method_name]] # Verbose name for the message
+  identical_file_exists <- writeIfNotIdentical(results_table, results_path)
+  if (!identical_file_exists){
+    print(paste("Writing the", tolower(verbose_info), "results into", results_path))
+  }
 }
 
 ######################### GRAPHICS #########################
