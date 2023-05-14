@@ -21,7 +21,7 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 # Define the initial parameters
 user_params <- list(
   # Development information
-  development_on = FALSE, # Keep FALSE at all times
+  development_on = TRUE, # Keep FALSE at all times
   
   # Customizable data file names
   master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
@@ -33,18 +33,18 @@ user_params <- list(
   
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
+    "variable_summary_stats" = T,
     "effect_summary_stats" = F,
     "box_plot" = F,
     "funnel_plot" = F,
     "t_stat_histogram" = F,
     "linear_tests" = F,
-    "nonlinear_tests" = T,
+    "nonlinear_tests" = F,
     "exo_tests" = F,
     "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Should be ran together with BMA
-    "best_practice_estimate" = F # Should be ran together with BMA
+    "bma" = T,
+    "fma" = T, # Should be ran together with BMA
+    "best_practice_estimate" = T # Should be ran together with BMA
   ),
   
   # USER PARAMETERS
