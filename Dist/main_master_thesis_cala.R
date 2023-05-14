@@ -96,6 +96,10 @@ user_params <- yaml::read_yaml(user_param_file)
 run_this <- user_params$run_this # Which parts of the scipt to run
 adj_params <- user_params$adjustable_parameters # Various parameters
 
+# Create temporary folders if they do not exist yet
+validateFolderExistence("./_cache/")
+validateFolderExistence("./_results/")
+
 # Add the name-customizable files to the source file vector
 source_files <- c(
   user_params$master_data_set_source,

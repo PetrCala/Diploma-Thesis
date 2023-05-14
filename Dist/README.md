@@ -30,6 +30,10 @@ The folder contains these files:
 * `README.md` -> This README file.
 * `README.pdf` -> The README file in a presentable format.
 
+The script run will also create these temporary folders:
+* `_cache/` -> Folder with cached results or preprocessed files. Serves as an external memory storage to improve script run time.
+* `_results/` -> Folder with various results, mainly in the form of `.csv` files.
+
 ## Prerequisites:
  1. Make sure that your working directory contains all the files from the `Dist/` folder.
  2. The scripts are set in a way that recognizes the file names just as they are distributed. However, if you wish to customize the file names, you may do so. In that case, make sure to change the file names either directly in the `user_parameters.yaml` using a text editor, or using the `script_runner_master_thesis_cala.R`, in which case you must run said script afterwards. This will automatically modify the `user_parameters.yaml` file, which is then loaded into the main script. **Do not to modify the names of the user parameter file and the script runner**.
@@ -79,6 +83,8 @@ The folder contains these files:
      If set to float, the subsetting breakpoint will be that value instead.
    * **bma** - Boolean. If `TRUE`, this variable will be used in the Bayesian model averaging. Do NOT set all
      values of one variable group to `TRUE`. This would create a dummy trap.
+   * **bma_reference_var** - Boolean. If `TRUE`, this variable is the reference variable for the **dummy**/**perc** group. Exactly one variable must be a reference variable
+     for each **dummy**/**perc** group.
    * **to_log_for_bma** - Boolean. If `TRUE`, this variable will be converted to logarithm during the 
      Bayesian model averaging.
    * **bpe** - If set to any value, this value will be used when evaluating the best practice estimate.
