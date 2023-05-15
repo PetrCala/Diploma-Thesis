@@ -35,17 +35,17 @@ user_params <- list(
   run_this = list(
     "variable_summary_stats" = T,
     "effect_summary_stats" = T,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
     "exo_tests" = T,
-    "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
-    "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F # Executable only after running BMA
+    "p_hacking_tests" = T,
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "bpe" = T # Executable only after running BMA
   ),
   
   # USER PARAMETERS

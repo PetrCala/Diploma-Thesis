@@ -3101,6 +3101,7 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
 #' compared with the file content and possibly written to the file.
 #' @param file_name [character] The name (and path) of the file to be compared with the
 #' R object and possibly overwritten.
+#' @param use_rownames [logical] If TRUE, write rownames.
 #' @param force_overwrite [logical] A flag that forces the function to overwrite the file
 #' regardless of the comparison result. Default is FALSE.
 #' @param verbose [logical] If TRUE, print out the information about the status of the function.
@@ -3108,17 +3109,17 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
 #' @return [logical] Returns TRUE if the contents of the object and the file were identical
 #' and no write operation was needed. Returns FALSE if the file was created or overwritten.
 #' 
-writeIfNotIdentical <- function(object_name, file_name, force_overwrite = FALSE, verbose = FALSE){
+writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_overwrite = FALSE, verbose = FALSE){
   # Force overwrite
   if (force_overwrite){
       if (verbose){
         print(paste("Overwriting the file",file_name))
       }
-      write.csv(object_name, file_name)
+      write.csv(object_name, file_name, row.names = use_rownames)
   }
   # Check if file exists
   if (!file.exists(file_name)) {
-    write.csv(object_name, file_name)
+    write.csv(object_name, file_name, row.names = use_rownames)
     if (verbose){
       print("The file did not exist and was created.")
     }
@@ -3127,11 +3128,13 @@ writeIfNotIdentical <- function(object_name, file_name, force_overwrite = FALSE,
   # Read the existing CSV file
   content <- read.csv(file_name, stringsAsFactors = FALSE)
   # Handle the rownames column
-  content <- content[, -(colnames(content) == "X")] # Discard row names
+  if ("X" %in% colnames(content)){
+    content <- content[, -(colnames(content) == "X")] # Discard row names
+  }
   
   # Check for identical contents
   if (!all(content == object_name)) {
-    write.csv(object_name, file_name)
+    write.csv(object_name, file_name, row.names = use_rownames)
     if (verbose){
       print("The file was overwritten because it was different.")
     }
@@ -3177,9 +3180,13 @@ exportTable <- function(results_table, user_params, method_name){
   validateFolderExistence(folder_path) # Create the export folder if not present in the working directory
   results_path <- paste0(folder_path, method_name, ".csv") # export_folder/export_file.csv
   
+  # Check whether the row names are sequential numbers (1,2,3,...) - do not use rows if they are
+  row_names <- rownames(results_table)
+  n <- nrow(results_table)
+  use_rownames <- !all(1:n == row_names) # Rows are sequential integers
   # Export the table if it does not exist
   verbose_info <- user_params$export_methods[[method_name]] # Verbose name for the message
-  identical_file_exists <- writeIfNotIdentical(results_table, results_path)
+  identical_file_exists <- writeIfNotIdentical(results_table, results_path, use_rownames)
   if (!identical_file_exists){
     print(paste("Writing the", tolower(verbose_info), "results into", results_path))
   }
