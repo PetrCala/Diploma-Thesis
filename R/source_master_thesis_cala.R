@@ -3063,8 +3063,8 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
     effect_max_change <- coef_value * (max_ - min_)
     perc_max_change <- effect_max_change / bpe_est
     # Get percentages in verbose
-    perc_sd_change_verbose <- paste0(as.character(round(perc_sd_change * 100, 3)),"%")
-    perc_max_change_verbose <- paste0(as.character(round(perc_max_change * 100, 3)),"%")
+    perc_sd_change_verbose <- paste0(as.character(round(perc_sd_change * 100, 2)),"%")
+    perc_max_change_verbose <- paste0(as.character(round(perc_max_change * 100, 2)),"%")
     # Create a temporary data frame with the results
     temp_df <- data.frame("effect_sd_change" = round(effect_sd_change, 3),
                           "%_of_best_sd_change" = perc_sd_change_verbose,
@@ -3112,7 +3112,7 @@ writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_over
     if (file.exists(file)){
       file.remove(file)
     }
-    write.csv(x, file, row.names = row.names)
+    write.csv(x, file, row.names = row.names, fileEncoding = "UTF-8")
   }
   # Force overwrite
   if (force_overwrite){

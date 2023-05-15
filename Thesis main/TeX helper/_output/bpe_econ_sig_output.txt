@@ -1,0 +1,43 @@
+\begin{singlespace}
+\begin{scriptsize}
+\begin{longtable}{@{\hskip\tabcolsep}
+l
+*{4}{c}
+@{}}
+\caption{Significance of key variables}  \label{tab:key}\\
+\toprule
+ & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
+ & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
+\midrule
+       Standard Error &  0.733 &  10.66\% &  4.029 &  58.62\% \\
+       Estimate: City & -0.419 &  -6.09\% & -1.295 & -18.84\% \\
+ Estimate: Sub-region & -0.597 &  -8.69\% & -1.997 & -29.06\% \\
+     Estimate: Region & -0.996 & -14.49\% & -2.155 & -31.35\% \\
+    Estimate: Country & -0.366 &  -5.33\% & -0.749 &  -10.9\% \\
+     Education: Years &  0.434 &   6.31\% &  0.900 &  13.09\% \\
+     Wage: Log Hourly & -0.707 & -10.29\% & -1.416 & -20.61\% \\
+      Wage: Log Daily & -0.774 & -11.26\% & -2.644 & -38.47\% \\
+    Wage: Log Monthly & -0.487 &  -7.08\% & -1.192 & -17.35\% \\
+          Survey Data & -0.513 &  -7.46\% & -1.027 & -14.95\% \\
+  Secondary Education & -0.746 & -10.85\% & -3.781 & -55.01\% \\
+     Higher Education &  0.382 &   5.55\% &  1.542 &  22.44\% \\
+         Wage Earners &  0.421 &   6.12\% &  4.978 &  72.42\% \\
+         Gender: Male & -0.490 &  -7.14\% & -1.402 & -20.39\% \\
+      Sector: Private &  0.650 &   9.46\% &  4.022 &  58.52\% \\
+ Ethnicity: Caucasian & -0.853 & -12.41\% & -2.033 & -29.59\% \\
+          Method: OLS & -1.192 & -17.34\% & -2.522 &  -36.7\% \\
+           Method: FE & -0.634 &  -9.23\% & -4.012 & -58.37\% \\
+         Method: 2SLS & -0.471 &  -6.85\% & -1.603 & -23.33\% \\
+      Method: Heckman & -0.530 &  -7.71\% & -2.204 & -32.07\% \\
+       Method: Probit & -0.446 &  -6.49\% & -3.026 & -44.03\% \\
+      Ability: Direct & -0.380 &  -5.53\% & -1.113 & -16.19\% \\
+Ability: Uncontrolled &  0.384 &   5.58\% &  0.776 &  11.29\% \\
+         Control: Age & -0.600 &  -8.73\% & -1.263 & -18.37\% \\
+     Control: Age$^2$ &  1.277 &  18.58\% &  2.859 &   41.6\% \\
+        Control: Area &  0.678 &   9.86\% &  1.374 &  19.99\% \\
+     Study: Published & -0.636 &  -9.25\% & -1.496 & -21.77\% \\
+\bottomrule
+\multicolumn{5}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} This table presents ceteris paribus effect of several key variables on the partial correlation coefficient. Only those variables with \emph{PIP} over 0.5 in the \emph{BMA} model are included. \emph{One SD change} implies how the effect changes when we increase a specific variable by one standard deviation. \emph{Maximum change} represents the change in the effect when the variable is increased from its minimum to its maximum. The reference best-practice value is 6.845. SD = Standard Deviation, BP = Best-Practice. For a detailed explanation of the variables, see table \ref{tab:var}.}
+\end{longtable}
+\end{scriptsize}
+\end{singlespace}

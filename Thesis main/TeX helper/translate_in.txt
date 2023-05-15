@@ -1,2 +1,5 @@
-\bottomrule
-\multicolumn{3}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} The table reports estimates of the best-practice estimate according to three different studies and the author's subjective best-practice. 95\% confidence interval bounds are constructed as an approximate using OLS with study level clustered standard errors.}
+\caption{Significance of key variables}  \label{tab:key}\\
+\toprule
+ & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
+ & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
+\midrule
