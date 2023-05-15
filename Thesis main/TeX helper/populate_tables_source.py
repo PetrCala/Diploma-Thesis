@@ -1,6 +1,7 @@
 ﻿import pandas as pd
 from tabulate import tabulate
 
+pd.set_option('display.max_colwidth', 200) # Long descriptions
 
 def boldIfPIPHigh(val):
     '''Convert high PIP values to bold before printing out the TeX object.
@@ -14,7 +15,31 @@ def wrapExponenets(val):
     '''
     return val.replace("^2","$^2$")
 
-def populateBMATable(df:pd.DataFrame, expected_cols = 7):
+def populateVarStatsTable(df:pd.DataFrame, verbose = False):
+    pass
+
+def populateEffectStatsTable(df:pd.DataFrame, verbose = False):
+    pass
+
+def populateLinearTestsTable(df:pd.DataFrame, verbose = False):
+    pass
+
+def populateNonlinearTestsTable(df:pd.DataFrame, verbose = False):
+    pass
+
+def populateExoTestsTable(df:pd.DataFrame, verbose = False):
+    pass
+
+def populateCaliperTable(df:pd.DataFrame, verbose = False):
+    pass
+
+def populateElliottTable(df:pd.DataFrame, verbose = False):
+    pass
+
+def populateMaiveTable(df:pd.DataFrame, verbose = False):
+    pass
+
+def populateBMATable(df:pd.DataFrame, expected_cols = 7, verbose = False):
     if expected_cols != df.shape[1]:
         raise ValueError(f'The input data frame for the BMA table must have {expected_cols} columns.')
 
@@ -32,21 +57,56 @@ def populateBMATable(df:pd.DataFrame, expected_cols = 7):
     latex = latex.replace('lllllll', '{@\\hskip\\tabcolsep\\extracolsep\\fill}\nl*{6}{c}')
 
     # insert LaTeX table headers, footers and caption
-    latex = latex.replace('\\toprule', '\\caption{Model averaging results}  \\label{tab:BMA}\\\\\n\\toprule\n  \\multicolumn{1}{l}{Response variable:} &   \\multicolumn{3}{c}{Bayesian model averaging} & \\multicolumn{3}{c}{Frequentist model averaging} \\\\\n  \\cmidrule(lr){2-4} \\cmidrule(lr){5-7}\n  \\multicolumn{1}{l}{Returns to Year of Schooling} & Post. mean & Post. SD & PIP & Coef. & SE & p-value \\\\\n\\midrule')
+    latex = latex.replace('\\toprule', '\\caption{Model averaging results}  \\label{tab:BMA}\\\\\n\\toprule\n  \\multicolumn{1}{l}{Response variable:} &   \\multicolumn{3}{c}{Bayesian model averaging} & \\multicolumn{3}{c}{Frequentist model averaging} \\\\\n  \\cmidrule(lr){2-4} \\cmidrule(lr){5-7}\n  \\multicolumn{1}{l}{Returns to Year of Schooling} & Post. mean & Post. SD & PIP & Coef. & SE & p-value \\\\\n\\midrule\n\\endfirsthead\n\\caption[]{Model averaging results (continued)}\\\\\n\\toprule\n  \\multicolumn{1}{l}{Response variable:} &   \\multicolumn{3}{c}{Bayesian model averaging} & \\multicolumn{3}{c}{Frequentist model averaging} \\\\\n  \\cmidrule(lr){2-4} \\cmidrule(lr){5-7}\n  \\multicolumn{1}{l}{Returns to Year of Schooling} & Post. mean & Post. SD & PIP & Coef. & SE & p-value \\\\\n\\midrule\n\\endhead\n\\bottomrule\n\\multicolumn{7}{r}{{\\scriptsize Continued on next page}} \\\\\n\\endfoot\n\\endlastfoote')
+
     latex = latex.replace('\\bottomrule', '\\bottomrule\n\\multicolumn{7}{>{\\scriptsize}p{0.95\\linewidth}}{\\emph{Note:} This table presents the results of the Bayesian and Frequentist model averaging. Post. mean = Posterior Mean, Post. SD = Posterior Standard Deviation, PIP = Posterior Inclusion Probability, Coef. = Coefficient, SE = Standard Error, OLS = Ordinary Least Squares, FE = Fixed Effects, 2SLS = 2 Stage Least Squares. The variables with PIP > 0.5 are highlighted. For a detailed explanation of the variables, see table \\ref{tab:var}.}')
 
     # print the LaTeX string
-    print(latex)
+    if verbose:
+        print(latex)
 
     # return the string too
     return(latex)
+
+def populateMaDescTable(df:pd.DataFrame, expected_cols = 4,verbose = False):
+    if expected_cols != df.shape[1]:
+        raise ValueError(f'The input data frame for the BMA table must have {expected_cols} columns.')
+
+    # rename columns for display
+    df.columns = ['Variable', 'Description', 'Mean', 'SD']
+
+    # convert DataFrame to LaTeX tabular format
+    latex = df.to_latex(index=False, escape=False)
+    print(latex)
+
+    # insert LaTeX table formatting
+    latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')
+    latex = latex.replace('\\end{tabular}', '\\end{longtable}\n\\end{scriptsize}\n\\end{singlespace}')
+    latex = latex.replace('llrr', '@{\\hskip\\tabcolsep\\extracolsep\\fill}\nl\n%p{0.25\\hsize}\np{0.55\\hsize}\ncc\n@{}')
+    # insert LaTeX table headers, footers and caption
+    latex = latex.replace('\\bottomrule', '\\bottomrule\n   \n \\multicolumn{4}{>{\\scriptsize}p{0.95\\linewidth}}{\\emph{Note:} This table presents the summary statistics and descriptions for each of the various study characteristics. SD = standard deviation, FE = Fixed Effects, 2SLS = 2 Stage Least Squares.}')
+
+    latex = latex.replace('\\toprule', '\\caption{Definition and summary statistics of regression variables}  \\label{tab:var}\\\\\n\\toprule\n  \\multicolumn{1}{l}{Variable} &   \\multicolumn{1}{l}{Description} &         \\multicolumn{1}{c}{Mean} &           \\multicolumn{1}{c}{SD} \\\\\n\\midrule\n\\endfirsthead\n\\caption[]{Definition and summary statistics of regression variables (continued)}\\\\\n\\toprule\n  \\multicolumn{1}{l}{Variable} &   \\multicolumn{1}{l}{Description} &         \\multicolumn{1}{c}{Mean} &           \\multicolumn{1}{c}{SD} \\\\\n\\midrule\n\\endhead\n\\bottomrule\n\\multicolumn{4}{r}{{\\scriptsize Continued on next page}} \\\\\n\\endfoot\n\\endlastfoot')
+
+
+    # print the LaTeX string
+    if verbose:
+        print(latex)
+
+    # return the string too
+    return(latex)
+
+def populateBpeResTable(df:pd.DataFrame, verbose = False):
+    pass
+
+def populateBpeEconSigTable(df:pd.DataFrame, verbose = False):
+    pass
+
 
 def write_latex_to_file(latex_content):
     with open('populated_table.txt', 'w') as file:
         file.write(latex_content)
 
 if __name__ == "__main__":
-    df = pd.read_csv("ma_table.csv")
-    bma_table = populateBMATable(df)
-    write_latex_to_file(bma_table)
+    pass
 

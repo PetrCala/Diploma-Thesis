@@ -1,1 +1,5 @@
-write.csv(ma_res_table, "../Thesis main/TeX helper/ma_table.csv")
+- Specify the source/ folder for the data files. This defaults to the R/_results/ folder from the main code part.
+	The tables are automatically loaded from there, so there is no need to move them anywhere if you do not wish to do so.
+- In "populate_tables_source.py", define the methods according to the TeX table forms you wish to use.
+- Run the "main.py" script. This will create .txt files in the _output/ folder for each method you have defined.
+- Simply take the contents of the .txt files and copy them into a TeX editor. Have fun.

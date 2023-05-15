@@ -8,17 +8,17 @@ maive_source: maive_master_thesis_cala.R
 run_this:
   variable_summary_stats: yes
   effect_summary_stats: yes
-  box_plot: no
-  funnel_plot: no
-  t_stat_histogram: no
-  linear_tests: no
-  nonlinear_tests: no
+  box_plot: yes
+  funnel_plot: yes
+  t_stat_histogram: yes
+  linear_tests: yes
+  nonlinear_tests: yes
   exo_tests: yes
-  p_hacking_tests: no
-  bma: no
-  fma: no
-  ma_variables_description_table: no
-  bpe: no
+  p_hacking_tests: yes
+  bma: yes
+  fma: yes
+  ma_variables_description_table: yes
+  bpe: yes
 adjustable_parameters:
   effect_name: years of schooling on wage
   formal_output_on: yes
