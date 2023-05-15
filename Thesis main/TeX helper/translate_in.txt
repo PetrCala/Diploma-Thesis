@@ -1,14 +1,2 @@
-\caption{Definition and summary statistics of regression variables}  \label{tab:var}\\
-\toprule
-  \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
-\midrule
-\endfirsthead
-\caption[]{Definition and summary statistics of regression variables (continued)}\\
-\toprule
-  \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
-\midrule
-\endhead
 \bottomrule
-\multicolumn{4}{r}{{\scriptsize Continued on next page}} \\
-\endfoot
-\endlastfoot
+\multicolumn{3}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} The table reports estimates of the best-practice estimate according to three different studies and the author's subjective best-practice. 95\% confidence interval bounds are constructed as an approximate using OLS with study level clustered standard errors.}

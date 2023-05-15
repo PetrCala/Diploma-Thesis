@@ -20,8 +20,6 @@ cc
 \multicolumn{4}{r}{{\scriptsize Continued on next page}} \\
 \endfoot
 \endlastfoot
-                  Variable &                                                                                                                                              Description &   Mean &    SD \\
-\midrule
                  Short Run &                                                                                                        =1 if the data span a period shorter than a year. &  0.552 & 0.497 \\
                   Long Run &                                                                                    =1 if the data span a period longer than a year (reference category). &  0.448 & 0.497 \\
             Estimate: City &                                                                                  =1 if the estimates within the study can be aggregated on a city level. &  0.119 & 0.323 \\
@@ -84,9 +82,9 @@ cc
      Ability: Uncontrolled &                                                                 =1 if the authors acknowledge, but do not control for ability in any way in their study. &  0.425 & 0.494 \\
       Ability: Unmentioned &                                                                   =1 if the authors do not mention ability anywhere in their study (reference category). &  0.223 & 0.417 \\
               Control: Age &                                                                                                     =1 if the authors control for age in the regression. &  0.344 & 0.475 \\
-            Control: Age^2 &                                                                                   =1 if the authors control for age in quadratic form in the regression. &  0.275 & 0.447 \\
+          Control: Age$^2$ &                                                                                   =1 if the authors control for age in quadratic form in the regression. &  0.275 & 0.447 \\
        Control: Experience &                                                                                              =1 if the authors control for experience in the regression. &  0.607 & 0.489 \\
-     Control: Experience^2 &                                                                            =1 if the authors control for experience in quadratic form in the regression. &  0.512 & 0.500 \\
+   Control: Experience$^2$ &                                                                            =1 if the authors control for experience in quadratic form in the regression. &  0.512 & 0.500 \\
         Control: Ethnicity &                                                                                               =1 if the authors control for ethnicity in the regression. &  0.251 & 0.434 \\
            Control: Health &                                                                                                  =1 if the authors control for health in the regression. &  0.135 & 0.342 \\
            Control: Gender &                                                                                                  =1 if the authors control for gender in the regression. &  0.367 & 0.482 \\

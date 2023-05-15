@@ -41,7 +41,7 @@ def populateMaiveTable(df:pd.DataFrame, verbose = False):
 
 def populateBMATable(df:pd.DataFrame, expected_cols = 7, verbose = False):
     if expected_cols != df.shape[1]:
-        raise ValueError(f'The input data frame for the BMA table must have {expected_cols} columns.')
+        raise ValueError(f'The input data frame for the table must have {expected_cols} columns.')
 
     # rename columns for display
     df.columns = ['Response variable:', 'Post. mean', 'Post. SD', 'PIP', 'Coef.', 'SE', 'p-value']
@@ -49,7 +49,7 @@ def populateBMATable(df:pd.DataFrame, expected_cols = 7, verbose = False):
     df['Response variable:'] = df['Response variable:'].apply(wrapExponenets) # Exponents to mathematic notation
 
     # convert DataFrame to LaTeX tabular format
-    latex = df.to_latex(index=False, escape=False)
+    latex = df.to_latex(index=False, escape=False, header = False)
 
     # insert LaTeX table formatting
     latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')
@@ -70,14 +70,15 @@ def populateBMATable(df:pd.DataFrame, expected_cols = 7, verbose = False):
 
 def populateMaDescTable(df:pd.DataFrame, expected_cols = 4,verbose = False):
     if expected_cols != df.shape[1]:
-        raise ValueError(f'The input data frame for the BMA table must have {expected_cols} columns.')
+        raise ValueError(f'The input data frame for the table must have {expected_cols} columns.')
 
     # rename columns for display
     df.columns = ['Variable', 'Description', 'Mean', 'SD']
+    # Exponents to mathematic notation
+    df['Variable'] = df['Variable'].apply(wrapExponenets)
 
     # convert DataFrame to LaTeX tabular format
-    latex = df.to_latex(index=False, escape=False)
-    print(latex)
+    latex = df.to_latex(index=False, escape=False, header = False)
 
     # insert LaTeX table formatting
     latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')
@@ -96,7 +97,38 @@ def populateMaDescTable(df:pd.DataFrame, expected_cols = 4,verbose = False):
     # return the string too
     return(latex)
 
-def populateBpeResTable(df:pd.DataFrame, verbose = False):
+def populateBpeResTable(df:pd.DataFrame, expected_cols = 4, verbose = False):
+    if expected_cols != df.shape[1]:
+        raise ValueError(f'The input data frame for the table must have {expected_cols} columns.')
+
+    # Recalculate the CI bounds into an interval
+    df['ci'] = '(' + df['ci_95_lower'].astype(str) + '; ' + df['ci_95_higher'].astype(str) + ')'
+    # Drop the "ci_95_lower" and "ci_95_higher" columns
+    df = df.drop(['ci_95_lower', 'ci_95_higher'], axis=1)
+
+    # rename columns for display
+    df.columns = ['Study', 'Estimate', '95\% Confidence Interval']
+    df['Study'] = df['Study'].str.replace('&', r'\&') # Author2 \& Author1
+
+    # convert DataFrame to LaTeX tabular format
+    latex = df.to_latex(index=False, escape=False, header=False)
+
+    # insert LaTeX table formatting
+    latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')
+    latex = latex.replace('\\end{tabular}', '\\end{longtable}\n\\end{scriptsize}\n\\end{singlespace}')
+    latex = latex.replace('lrl', '@{\\hskip\\tabcolsep}\nl\n*{2}{c}\n@{}')
+    # insert LaTeX table headers, footers and caption
+    latex = latex.replace('\\bottomrule', '\\bottomrule\n\\multicolumn{3}{>{\\scriptsize}p{0.6\\linewidth}}{\\emph{Note:} The table reports estimates of the best-practice estimate according to three different studies and the author\'s subjective best-practice. 95\\% confidence interval bounds are constructed as an approximate using OLS with study level clustered standard errors.}')
+
+    latex = latex.replace('\\toprule', '\\caption{Implied best-practice}  \\label{tab:BPE}\\\\\n\\toprule\n    Study & Estimate & 95\\% Confidence Interval \\\\\n\\endfirsthead\n\\midrule')
+
+
+    # print the LaTeX string
+    if verbose:
+        print(latex)
+
+    # return the string too
+    return(latex)
     pass
 
 def populateBpeEconSigTable(df:pd.DataFrame, verbose = False):

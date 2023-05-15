@@ -3094,9 +3094,8 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
 #' This function compares the contents of an R object in the environment with an existing file.
 #' If the contents are different, or if the file does not exist, it overwrites or creates
 #' the file with the content of the object. If 'force_overwrite' is TRUE, the function will
-#' overwrite the file regardless of the comparison result. The function also prints a message
-#' to inform the user about the action taken.
-#' 
+#' overwrite the file regardless of the comparison result.
+#'
 #' @param object_name [data.frame] The name of the R object in the environment to be
 #' compared with the file content and possibly written to the file.
 #' @param file_name [character] The name (and path) of the file to be compared with the
@@ -3104,25 +3103,25 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
 #' @param use_rownames [logical] If TRUE, write rownames.
 #' @param force_overwrite [logical] A flag that forces the function to overwrite the file
 #' regardless of the comparison result. Default is FALSE.
-#' @param verbose [logical] If TRUE, print out the information about the status of the function.
-#' 
 #' @return [logical] Returns TRUE if the contents of the object and the file were identical
 #' and no write operation was needed. Returns FALSE if the file was created or overwritten.
 #' 
-writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_overwrite = FALSE, verbose = FALSE){
+writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_overwrite = FALSE){
+  # A temp function for code efficiency
+  overwrite <- function(x = object_name, file = file_name, row.names = use_rownames){
+    if (file.exists(file)){
+      file.remove(file)
+    }
+    write.csv(x, file, row.names = row.names)
+  }
   # Force overwrite
   if (force_overwrite){
-      if (verbose){
-        print(paste("Overwriting the file",file_name))
-      }
-      write.csv(object_name, file_name, row.names = use_rownames)
+      overwrite()
+      return(FALSE)
   }
   # Check if file exists
   if (!file.exists(file_name)) {
-    write.csv(object_name, file_name, row.names = use_rownames)
-    if (verbose){
-      print("The file did not exist and was created.")
-    }
+    overwrite()
     return(FALSE)
   }
   # Read the existing CSV file
@@ -3131,13 +3130,14 @@ writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_over
   if ("X" %in% colnames(content)){
     content <- content[, -(colnames(content) == "X")] # Discard row names
   }
-  
+  # Check for mismatching shapes
+  if (nrow(content) != nrow(object_name) | ncol(content)!=ncol(object_name)){
+    overwrite()
+    return(FALSE)
+  }
   # Check for identical contents
   if (!all(content == object_name)) {
-    write.csv(object_name, file_name, row.names = use_rownames)
-    if (verbose){
-      print("The file was overwritten because it was different.")
-    }
+    overwrite()
     return(FALSE)
   }
   return(TRUE)
