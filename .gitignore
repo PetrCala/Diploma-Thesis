@@ -6,6 +6,7 @@ __pycache__/
 # R temp files
 **/*.Rhistory
 **/*.Rdata
+R/tests_master_thesis_cala.R
 
 # R output files and cache
 R/_cache/

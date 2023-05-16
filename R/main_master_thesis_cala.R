@@ -127,6 +127,8 @@ validateFiles(source_files)
 
 ######################### DATA PREPROCESSING #########################
 
+null_function <- function(res){NULL} # remove later
+
 # Read all the source .csv files
 data <- readDataCustom(user_params$master_data_set_source)
 var_list <- readDataCustom(user_params$var_list_source)
@@ -137,30 +139,34 @@ validateInputVarList(var_list)
 # Preprocess data - validate dimensions, column names, etc.
 data <- runCachedFunction(
   preprocessData, user_params,
+  verbose_function = preprocessDataVerbose,
   data, var_list
 )
 
 # Get the raw but preprocessed data summary statistics (without winsorization, missing value handling)
 if (run_this$variable_summary_stats){
-  variable_sum_stats <- runCachedFunction(
+  variable_sum_stats_out <- runCachedFunction(
     getVariableSummaryStats, user_params,
+    verbose_function = getVariableSummaryStatsVerbose,
     data, var_list
   )
+  variable_sum_stats <- variable_sum_stats_out[[1]] # list(res, missing_data)
   if (user_params$export_results){
     exportTable(variable_sum_stats, user_params, "variable_summary_stats")
   }
 }
 
-
 # Handle missing variables
 data <- runCachedFunction(
   handleMissingData, user_params,
+  verbose_function = handleMissingDataVerbose,
   data, var_list, allowed_missing_ratio = adj_params$allowed_missing_ratio
 )
 
 # Winsorize the data
 data <- runCachedFunction(
   winsorizeData, user_params,
+  verbose_function = null_function,
   data,
   win_level = adj_params$data_winsorization_level,
   precision_type = adj_params$data_precision_type
@@ -169,6 +175,7 @@ data <- runCachedFunction(
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
 runCachedFunction(
   validateData, user_params,
+  verbose_function = null_function,
   data, var_list
 )
 
@@ -176,6 +183,7 @@ runCachedFunction(
 subset_conditions <- getMultipleParams(adj_params, "data_subset_condition_") # Extract all the data subset conditions
 data <- runCachedFunction(
   applyDataSubsetConditions, user_params, 
+  verbose_function = null_function,
   data, subset_conditions
 )
 
@@ -185,6 +193,7 @@ data <- runCachedFunction(
 if (run_this$effect_summary_stats){
   effect_sum_stats <- runCachedFunction(
     getEffectSummaryStats, user_params,
+    verbose_function = null_function,
     data, var_list,
     conf.level = adj_params$effect_summary_stats_conf_level,
     formal_output = adj_params$formal_output_on
@@ -243,6 +252,7 @@ if (run_this$t_stat_histogram){
 if (run_this$linear_tests){
   linear_tests_results <- runCachedFunction(
     getLinearTests, user_params,
+    verbose_function = null_function,
     data
   )
   if (user_params$export_results){
@@ -280,6 +290,7 @@ if (run_this$nonlinear_tests){
     # Get all results at once without assigning the output to any variables - unparametrizable
     nonlinear_tests_results <- runCachedFunction(
       getNonlinearTests, user_params, 
+      verbose_function = null_function,
       data
     )
     if (user_params$export_results){
@@ -306,6 +317,7 @@ if (run_this$exo_tests){
   } else{
     exo_tests_results <- runCachedFunction(
       getExoTests, user_params,
+      verbose_function = null_function,
       data
     )
     if (user_params$export_results){
@@ -320,6 +332,7 @@ if (run_this$p_hacking_tests){
   ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
   caliper_results <- runCachedFunction(
     getCaliperResults, user_params,
+    verbose_function = null_function,
     data,
     thresholds = adj_params$caliper_thresholds,
     widths = adj_params$caliper_widths,
@@ -329,6 +342,7 @@ if (run_this$p_hacking_tests){
   ###### PUBLICATION BIAS - p-hacking test (Elliott et al., 2022) ######
   elliott_results <- runCachedFunction(
     getElliottResults, user_params,
+    verbose_function = null_function,
     data,
     data_subsets = adj_params$elliott_data_subsets,
     p_min = adj_params$elliott_p_min,
@@ -341,6 +355,7 @@ if (run_this$p_hacking_tests){
   ###### MAIVE Estimator (Irsova et al., 2023) ######
   maive_results <- runCachedFunction(
     getMaiveResults, user_params,
+    verbose_function = null_function,
     data,
     method=adj_params$maive_method,
     weight=adj_params$maive_weight,
@@ -363,6 +378,7 @@ if (run_this$bma){
     # Get the optimal BMA formula automatically
     bma_formula <- runCachedFunction(
       findOptimalBMAFormula, user_params,
+      verbose_function = null_function,
       data, var_list,
       verbose = adj_params$bma_verbose
     )
@@ -370,6 +386,7 @@ if (run_this$bma){
     # From the variable information instead
     bma_formula <- runCachedFunction(
       getBMAFormula, user_params,
+      verbose_function = null_function,
       var_list, input_data
     )
   }
@@ -380,10 +397,12 @@ if (run_this$bma){
   bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
   bma_data <- runCachedFunction(
     getBMAData, user_params,
+    verbose_function = null_function,
     data, var_list, bma_vars
   )
   bma_model <- runCachedFunction(
     runBMA, user_params,
+    verbose_function = null_function,
     bma_data,
     burn=adj_params$bma_burn,
     iter=adj_params$bma_iter,
@@ -395,6 +414,7 @@ if (run_this$bma){
   # Print out the results
   bma_coefs <- runCachedFunction(
     extractBMAResults, user_params,
+    verbose_function = null_function,
     bma_model, bma_data,
     print_results = adj_params$bma_print_results
   )
@@ -409,6 +429,7 @@ if (run_this$fma){
   # Estimation
   fma_coefs <- runCachedFunction(
     runFMA, user_params,
+    verbose_function = null_function,
     bma_data, bma_model,
     verbose = adj_params$fma_verbose
   )
@@ -420,6 +441,7 @@ if (run_this$fma){
 if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs")))){
   ma_res_table <- runCachedFunction(
     getMATable, user_params,
+    verbose_function = null_function,
     bma_coefs, fma_coefs, var_list,
     verbose = T
   )
@@ -433,6 +455,7 @@ if (run_this$ma_variables_description_table){
   # Get the table with new BMA data (including all reference groups and other excluded BMA variables)
   desc_table_data <- runCachedFunction(
     getBMAData, user_params,
+    verbose_function = null_function,
     data, var_list,
     var_list,
     from_vector = F,
@@ -440,6 +463,7 @@ if (run_this$ma_variables_description_table){
   )
   ma_var_desc_table <- runCachedFunction( # Runs with winsorized data
     getMAVariablesDescriptionTable, user_params,
+    verbose_function = null_function,
     desc_table_data, var_list,
     verbose = adj_params$ma_variables_description_table_verbose # Use View(...) for best viewing experience
   )
@@ -459,6 +483,7 @@ if (run_this$bpe){
   # BPE estimation
   bpe_res <- runCachedFunction(
     generateBPEResultTable, user_params,
+    verbose_function = null_function,
     bpe_study_ids,
     data, var_list, bma_model, bma_formula, bma_data,
     use_ci = adj_params$bpe_use_ci,
@@ -468,6 +493,7 @@ if (run_this$bpe){
   bpe_est <- bpe_res[1,1] # BPE estimate of the first row - usually Author's BPE
   bpe_econ_sig <- runCachedFunction(
     getEconomicSignificance, user_params,
+    verbose_function = null_function,
     bpe_est, var_list, bma_data, bma_model,
     display_large_pip_only = adj_params$bpe_econ_sig_large_pip_only,
     verbose_output = TRUE

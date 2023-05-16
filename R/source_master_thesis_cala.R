@@ -13,6 +13,25 @@
  
 ##################### ENVIRONMENT PREPARATION ########################
 
+#' Capture the output of an expression:
+#' - The function captures and returns all output (e.g., messages, errors, and print statements) 
+#'   that is produced when evaluating the provided expression.
+#' - Used after calling cached functions for printing verbose output that would otherwise
+#'    get silenced.
+#' 
+#' @param expr [expression] The expression to evaluate
+#' @return [character] A character vector containing the lines of output produced by the expression
+captureOutput <- function(expr) {
+  con <- textConnection("captured", "w", local = TRUE)
+  sink(con)
+  on.exit({
+    sink()
+    close(con)
+  })
+  force(expr)
+  captured
+}
+
 #' Create a folder in the working directory if it does not exist yet
 #' 
 #' @param folder_name [character] Name of the folder. Specify in the format
@@ -147,31 +166,8 @@ applyDataSubsetConditions <- function(data, conditions) {
   return(data)
 }
 
-###### CACHE HANDLING ######
 
-#' Cache a function using the memoise package if so desired
-cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/') {
-  if (is_cache_on) {
-    # Get the disk cache
-    disk_cache <- cachem::cache_disk(dir = cache_path, max_size = 1e9, max_age = 3600)
-    return(memoise(f, cache = disk_cache))
-  } else {
-    return(f)
-  }
-}
 
-runCachedFunction <- function(f, user_params, ...){
-  # Validate input
-  stopifnot(
-    is.function(f),
-    is.list(user_params),
-    !all(c("is_cache_on", "cache_path") %in% names(user_params))
-  )
-  # Define the function to call based on cache information
-  f <- cacheIfNeeded(f, user_params$use_cache, user_params$cache_path)
-  # Call the function with parameters
-  return(f(...)) 
-}
 
 ####################### PACKAGE HANDLING ########################
 
@@ -331,8 +327,13 @@ preprocessData <- function(input_data, input_var_list){
       input_data[[col_name]] <- as.character(input_data[[col_name]])
     }
   }
-  print("All data preprocessed successfully.")
+  print("Data preprocessing complete.")
   return(input_data)
+}
+
+#' Verbose output for the preprocessData function
+preprocessDataVerbose <- function(...){
+  print("Data preprocessing complete.")
 }
 
 #' Handle Missing Data in a Data Frame
@@ -412,6 +413,12 @@ handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio 
   print("Missing data handled successfully.")
   return(input_data)
 }
+
+#' Verbose output for the handleMissingData function
+handleMissingDataVerbose <- function(...){
+  print("Missing data handled successfully.")
+}
+
 
 #' Winsorize input data
 #'
@@ -681,6 +688,22 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
     df[row_idx, ] <- row_data
   }
   # Print and return output data frame
+  out <- list(df, missing_data_vars) # Len 2 -> df, missing data
+  getVariableSummaryStatsVerbose(out)
+  return(out)
+}
+
+#' Verbose output for the getVariableSummaryStatsVerbose function
+getVariableSummaryStatsVerbose <- function(out_list){
+  # Validate input
+  stopifnot(
+    is.list(out_list),
+    length(out_list) == 2
+  )
+  # Delist
+  df <- out_list[[1]]
+  missing_data_vars <- out_list[[2]]
+  # Verbose output
   cat("Variable summary statistics:\n")
   print(df)
   cat("\n")
@@ -688,7 +711,6 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
     print(paste0("Missing data for: ", length(missing_data_vars), " variables."))
     cat("\n")
   }
-  invisible(df)
 }
 
 #' getMAVariablesDescriptionTable
@@ -3113,6 +3135,42 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
   }
   return(res_df)
 }
+
+######################### CACHE HANDLING #########################
+
+#' Cache a function using the memoise package if so desired
+cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/') {
+  if (is_cache_on) {
+    # Get the disk cache
+    disk_cache <- cachem::cache_disk(dir = cache_path, max_size = 1e9, max_age = 3600)
+    return(memoise(f, cache = disk_cache))
+  } else {
+    return(f)
+  }
+}
+
+#' verbose_function will be a function with a single input, the result of the
+#' cached function
+runCachedFunction <- function(f, user_params, verbose_function, ...){
+  # Validate input
+  stopifnot(
+    is.function(f),
+    is.list(user_params),
+    is.function(verbose_function),
+    !all(c("is_cache_on", "cache_path") %in% names(user_params))
+  )
+  # Define the function to call based on cache information
+  f <- cacheIfNeeded(f, user_params$use_cache, user_params$cache_path)
+  # Call the function with parameters
+  res <- f(...)
+  # Print out the output in case the function was cached (the output gets silenced otherwise)
+  if (user_params$use_cache){
+    verbose_function(res)
+  }
+  # Return the result
+  return(res) 
+}
+
 
 ######################### EXPORT AND CACHES #########################
 
