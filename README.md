@@ -88,7 +88,7 @@ The script run will also create these temporary folders:
      for each **dummy**/**perc** group.
    * **to_log_for_bma** - Boolean. If `TRUE`, this variable will be converted to logarithm during the 
      Bayesian model averaging.
-   * **bpe** - If set to any value, this value will be used when evaluating the best practice estimate.
+   * **bpe** - If set to any value, this value will be used when evaluating the best practice estimate. Can also be one of the following: `mean`, `median`, `max`, `min`. If you do not wish to use this variable in the best practice estimate, set its value to `stop`, **not** `FALSE`.
 
 ## How to Run
 To run the code, follow these steps:
