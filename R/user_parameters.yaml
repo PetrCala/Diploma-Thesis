@@ -1,9 +1,9 @@
 run_this:
   variable_summary_stats: yes
-  effect_summary_stats: yes
-  box_plot: yes
-  funnel_plot: yes
-  t_stat_histogram: yes
+  effect_summary_stats: no
+  box_plot: no
+  funnel_plot: no
+  t_stat_histogram: no
   linear_tests: yes
   nonlinear_tests: yes
   exo_tests: yes

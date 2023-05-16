@@ -376,12 +376,13 @@ if (run_this$p_hacking_tests){
 if (run_this$bma){
   if (adj_params$automatic_bma){
     # Get the optimal BMA formula automatically
-    bma_formula <- runCachedFunction(
+    bma_formula_list <- runCachedFunction(
       findOptimalBMAFormula, user_params,
       verbose_function = findOptimalBMAFormulaVerbose,
       data, var_list,
       verbose = adj_params$bma_verbose
     )
+    bma_formula <- bma_formula_list[[1]] # Also verbose information
   } else {
     # From the variable information instead
     bma_formula <- runCachedFunction(

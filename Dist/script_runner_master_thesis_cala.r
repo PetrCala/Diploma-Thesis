@@ -23,10 +23,10 @@ user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
     "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
-    "box_plot" = T,
-    "funnel_plot" = T,
-    "t_stat_histogram" = T,
+    "effect_summary_stats" = F,
+    "box_plot" = F,
+    "funnel_plot" = F,
+    "t_stat_histogram" = F,
     "linear_tests" = T,
     "nonlinear_tests" = T,
     "exo_tests" = T,

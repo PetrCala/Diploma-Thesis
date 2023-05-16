@@ -788,22 +788,15 @@ getMAVariablesDescriptionTable <- function(bma_data, input_var_list, verbose = T
   colnames(desc_df) <- c("Variable", "Description", "Mean", "SD")
   # Return the output
   if (verbose){
-    getMAVariablesDescriptionTable(list(desc_df, verbose), NA)
+    getMAVariablesDescriptionTable(res, verbose = verbose)
   }
   return(desc_df)
 }
 
 #' Verbose output for the getMAVariablesDescriptionTable function
-getMAVariablesDescriptionTableVerbose <- function(out_list,...){
-  if (is(out_list, "list")){ # is.list() does not work here
-    res <- out_list[[1]]
-    verbose_on <- out_list[[2]]
-  } else {
-  # Unlist if called from inside the run cache function
-    stopifnot(is.data.frame(out_list))
-    res <- out_list # Data frame
-    verbose_on <- user_params$adjustable_parameters$ma_variables_description_table_verbose # User params
-  }
+getMAVariablesDescriptionTableVerbose <- function(res,...){
+  args <- list(...)
+  verbose_on <- args$verbose
   # Print verbose output
   if (verbose_on){
     print("Model averaging variables description table:")
@@ -2189,24 +2182,16 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
   }
   # Verbose output
   if (verbose){
-    getCaliperResultsVerbose(list(result_df, verbose), NA) # User params to None
+    getCaliperResultsVerbose(result_df, verbose = verbose)
   }
   # Return the data frame
   return(result_df)
 }
 
 #' Verbose output for the getCaliperResults function
-getCaliperResultsVerbose <- function(out_list, user_params){
-  # Unlist if called from within main function
-  if (is(out_list, "list")){ # is.list() does not work here
-    res <- out_list[[1]]
-    verbose_on <- out_list[[2]]
-  } else {
-  # Unlist if called from inside the run cache function
-    stopifnot(is.data.frame(out_list))
-    res <- out_list # Data frame
-    verbose_on <- user_params$adjustable_parameters$caliper_verbose # User params
-  }
+getCaliperResultsVerbose <- function(res, ...){
+  args <- list(...)
+  verbose_on <- args$verbose
   # Verbose output
   if (verbose_on){
     print("Results of the Caliper tests:")
@@ -2318,23 +2303,16 @@ getElliottResults <- function(input_data, data_subsets = c("All data"),
   
   # Verbose output
   if (verbose){
-    getElliottResultsVerbose(list(elliott_df, verbose), NA)
+    getElliottResultsVerbose(elliott_df, verbose = verbose)
   }
   # Return the data frame
   return(elliott_df)
 }
 
 #' Verbose output for the getElliottResults function
-getElliottResultsVerbose <- function(out_list, user_params){
-  if (is(out_list, "list")){ # is.list() does not work here
-    res <- out_list[[1]]
-    verbose_on <- out_list[[2]]
-  } else {
-  # Unlist if called from inside the run cache function
-    stopifnot(is.data.frame(out_list))
-    res <- out_list # Data frame
-    verbose_on <- user_params$adjustable_parameters$elliott_verbose # User params
-  }
+getElliottResultsVerbose <- function(res, ...){
+  args <- list(...)
+  verbose_on <- args$verbose
   # Print out the output
   if (verbose_on){
     print(paste0("Results of the Elliott tests:"))
@@ -2384,23 +2362,16 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
   colnames(MAIVEresults) <- c("Object", "Coefficient")
   # Verbose output
   if (verbose){
-    getMaiveResultsVerbose(list(MAIVEresults, verbose), NA)
+    getMaiveResultsVerbose(MAIVEresults, verbose = verbose)
   }
   # Return the data frame
   return(MAIVEresults)
 }
 
 #' Verbose output for the getMaiveResults function
-getMaiveResultsVerbose <- function(out_list, user_params){
-  if (is(out_list, "list")){ # is.list() does not work here
-    res <- out_list[[1]]
-    verbose_on <- out_list[[2]]
-  } else {
-  # Unlist if called from inside the run cache function
-    stopifnot(is.data.frame(out_list))
-    res <- out_list # Data frame
-    verbose_on <- user_params$adjustable_parameters$maive_verbose # User params
-  }
+getMaiveResultsVerbose <- function(res, ...){
+  args <- list(...)
+  verbose_on <- args$verbose
   # Print out the output
   if (verbose_on){
     print(paste0("Results of the MAIVE estimator:"))
@@ -2426,7 +2397,8 @@ getMaiveResultsVerbose <- function(out_list, user_params){
 #' @param verbose A logical value indicating whether the function should print the progress and the suggested BMA formula.
 #'
 #' @return If return_variable_vector_instead is TRUE, the function returns a character vector of the remaining variables.
-#' Otherwise, it returns a formula object of the suggested BMA formula.
+#' Otherwise, it returns a formula object of the suggested BMA formula. These are returned as a list along with
+#' three other performance indicators (used in verbose output and cacheing).
 findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remove = 30,
                                     return_variable_vector_instead = F, verbose = T) {
   # Validate the input
@@ -2485,39 +2457,39 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
   if (max_groups_to_remove == 0) {
     stop("Maximum number of groups to remove reached. Optimal BMA formula not found.")
   }
+  # Get main object to return - explicit because ifelse() does not work for some RRRRRReason
+  if(return_variable_vector_instead){
+    res_object <- potencial_vars
+  } else {
+    res_object <- bma_formula
+  }
+  # All information to return (for cacheing)
+  out_list <- list(res_object, removed_groups, removed_groups_verbose, bma_formula)
   # Verbose output
   if (verbose) {
     findOptimalBMAFormulaVerbose(
-      list(removed_groups, removed_groups_verbose, bma_formula),
-      verbose_info = verbose
+      out_list, # Object plus four verbose indicators
+      verbose = verbose
     )
   }
   # Return the outcome
-  if (return_variable_vector_instead){
-    return(potencial_vars)
-  }
-  return(bma_formula)
+  return(out_list)
 }
 
 #' Verbose output for the findOptimalBMAFormula function
-findOptimalBMAFormulaVerbose <- function(out_list, verbose_info){
+findOptimalBMAFormulaVerbose <- function(out_list, ...){
+  args <- list(...)
+  verbose_on <- args$verbose
   # Validate input
   stopifnot(
-    length(out_list) == 3 # Via the main function
+    is(out_list, "list"),
+    length(out_list) == 4 # Via the main function
   )
   # Extract function output
-  removed_groups <- out_list[[1]]
-  removed_groups_verbose <- out_list[[2]]
-  bma_formula <- out_list[[3]]
-  # Extract verbose information
-  if (is.list(verbose_info)){
-    if (!"adjustable_parameters" %in% names(verbose_info)){
-      stop("You must pass the user_params list here.")
-    }
-    verbose_info <- verbose_info$adjustable_parameters$bma_verbose # user_params
-  } # else a simple boolean, already extracted
-  # Print out the verbose output
-  if (verbose_info){
+  removed_groups <- out_list[[2]]
+  removed_groups_verbose <- out_list[[3]]
+  bma_formula <- out_list[[4]]
+  if (verbose_on){
     print(paste("Removed", removed_groups, "groups with VIF > 10."))
     print("The removed groups contained these variables:")
     print(removed_groups_verbose)
@@ -2929,22 +2901,15 @@ runFMA <- function(bma_data, bma_model, verbose = T){
   # Extract results
   fma_res <- MMA.fls[-1,]
   if (verbose){
-    runFMAVerbose(list(fma_res, verbose), NA)
+    runFMAVerbose(fma_res, verbose = verbose)
   }
   return(fma_res)
 }
 
 #' Verbose output for the runFMA function
-runFMAVerbose <- function(out_list,...){
-  if (is(out_list, "list")){ # is.list() does not work here
-    res <- out_list[[1]]
-    verbose_on <- out_list[[2]]
-  } else {
-  # Unlist if called from inside the run cache function
-    stopifnot(is.data.frame(out_list))
-    res <- out_list # Data frame
-    verbose_on <- user_params$adjustable_parameters$fma_verbose # User params
-  }
+runFMAVerbose <- function(res,...){
+  args <- list(...)
+  verbose_on <- args$verbose
   # Print verbose output
   if (verbose_on){
     print("Results of the Frequentist Model Averaging:")
@@ -3221,23 +3186,16 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
   }
   # Return the output
   if (verbose_output) {
-    generateBPEResultTableVerbose(list(res_df, verbose_output), NA)
+    generateBPEResultTableVerbose(res_df, verbose_output = verbose_output)
   }
   return(res_df)
 }
 
 
 #' Verbose output for the generateBPEResultTable function
-generateBPEResultTableVerbose <- function(out_list,...){
-  if (is(out_list, "list")){ # is.list() does not work here
-    res <- out_list[[1]]
-    verbose_on <- out_list[[2]]
-  } else {
-  # Unlist if called from inside the run cache function
-    stopifnot(is.data.frame(out_list))
-    res <- out_list # Data frame
-    verbose_on <- user_params$adjustable_parameters$bpe_result_table_verbose # User params
-  }
+generateBPEResultTableVerbose <- function(res,...){
+  args <- list(...)
+  verbose_on <- args$verbose_output
   # Print verbose output
   if (verbose_on){
     print("Best practice estimate results:")
@@ -3323,29 +3281,19 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
     res_df <- rbind(res_df, temp_df)
   }
   # Return the output
-  pip_info <- ifelse(display_large_pip_only, " with PIP at least 0.5","")
   if (verbose_output) {
-    getEconomicSignificanceVerbose(list(res_df, verbose_output, pip_info), NA)
+    getEconomicSignificanceVerbose(res_df, verbose_output = verbose_output)
   }
   return(res_df)
 }
 
 #' Verbose output for the getEconomicSignificance function
-getEconomicSignificanceVerbose <- function(out_list,...){
-  if (is(out_list, "list")){ # is.list() does not work here
-    res <- out_list[[1]]
-    verbose_on <- out_list[[2]]
-    pip_info <- out_list[[3]]
-  } else {
-  # Unlist if called from inside the run cache function
-    stopifnot(is.data.frame(out_list))
-    res <- out_list # Data frame
-    verbose_on <- user_params$adjustable_parameters$bpe_result_table_verbose # User params
-    pip_info <- user_params$adjustable_parameters$bpe_econ_sig_large_pip_only
-  }
+getEconomicSignificanceVerbose <- function(res,...){
+  args <- list(...)
+  verbose_on <- args$verbose_output
   # Print verbose output
   if (verbose_on){
-    print(paste0("Economic significance of variables", pip_info,":"))
+    print(paste0("Economic significance of variables:"))
     print(res)
     cat("\n\n")
   }
@@ -3382,7 +3330,7 @@ runCachedFunction <- function(f, user_params, verbose_function, ...){
   )
   # If the function runs cached, call verbose output explicitly
   if (length(verbose_output) == 0){ # Always "character" class
-    verbose_function(res, user_params) # user_params for verbose output
+    verbose_function(res, ...) # Call with original function parameters
   } else {
     cat(verbose_output, sep="\n") # Print actual output
   }
