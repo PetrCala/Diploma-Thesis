@@ -95,8 +95,8 @@ citations,Citations,The logarithm of the mean number of Google Scholar citations
 published,Study: Published,=1 if the study was published in a journal.,dummy,42,stop,TRUE,TRUE,1,NA,TRUE,TRUE,FALSE,FALSE,mean
 unpublished,Study: Unpublished,=1 if the study was not published in a journal (reference category).,dummy,42,stop,TRUE,TRUE,1,NA,FALSE,FALSE,TRUE,FALSE,stop
 pub_year,Publication Year,The logarithm of the number of years between the publication (or issuing) of this study and the publication year of the earlierst published study in the sample.,int,43,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,TRUE,stop
-effect_w,Main Effect: Winsorized,"The effect of an additional year of schooling on logarithmic wage, winsorized.",float,44,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,stop
-se_w,Standard Error: Winsorized,"The standard error of the main effect, winsorized.",float,45,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,0
+effect_w,Main Effect,"The effect of an additional year of schooling on logarithmic wage, winsorized.",float,44,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,stop
+se_w,Standard Error,"The standard error of the main effect, winsorized.",float,45,allow,FALSE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,0
 se_precision_w,Precision: Winsorized,"The precision of the main effect, winsorized.",float,46,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
 t_w,T-Statistic: Winsorized,"The t-statistic of the main effect, winsorized.",float,47,allow,FALSE,TRUE,NA,median,FALSE,FALSE,FALSE,FALSE,stop
 significant_w,T-Statistic Is Significant: Winsorized,=1 if the t-statistic associated with the main effect is significant at 95% confidence level.,float,48,allow,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
