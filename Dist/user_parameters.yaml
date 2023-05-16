@@ -1,10 +1,3 @@
-development_on: no
-master_data_set_source: data_set_master_thesis_cala.csv
-var_list_source: var_list_master_thesis_cala.csv
-stem_source: stem_method_master_thesis_cala.R
-selection_model_source: selection_model_master_thesis_cala.R
-endo_kink_source: endo_kink_master_thesis_cala.R
-maive_source: maive_master_thesis_cala.R
 run_this:
   variable_summary_stats: yes
   effect_summary_stats: yes
@@ -44,6 +37,7 @@ adjustable_parameters:
   - 0.05
   - 0.1
   - 0.2
+  caliper_verbose: yes
   elliott_data_subsets: All data
   elliott_p_min: 0.0
   elliott_p_max: 0.1
@@ -65,16 +59,25 @@ adjustable_parameters:
   bma_mcmc: bd
   bma_print_results: none
   fma_verbose: no
+  ma_results_table: yes
   ma_variables_description_table_verbose: no
   ma_variables_description_table_clip: no
-  ma_results_table: yes
   bpe_studies:
   - 0.0
   - 2.0
   - 112.0
   - 7.0
   bpe_use_ci: yes
+  bpe_study_info: yes
+  bpe_result_table_verbose: yes
   bpe_econ_sig_large_pip_only: yes
+  bpe_econ_sig_verbose: yes
+master_data_set_source: data_set_master_thesis_cala.csv
+var_list_source: var_list_master_thesis_cala.csv
+stem_source: stem_method_master_thesis_cala.R
+selection_model_source: selection_model_master_thesis_cala.R
+endo_kink_source: endo_kink_master_thesis_cala.R
+maive_source: maive_master_thesis_cala.R
 export_results: yes
 export_path: ./_results/
 export_methods:
@@ -90,3 +93,7 @@ export_methods:
   ma_variables_description_table: Model averaging description table
   bpe_res: Best practice estimate
   bpe_econ_sig: Economic significance
+use_cache: yes
+cache_path: ./_cache/
+cache_age: 3600.0
+development_on: no

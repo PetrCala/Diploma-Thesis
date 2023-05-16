@@ -24,9 +24,9 @@ user_params <- list(
   run_this = list(
     "variable_summary_stats" = T,
     "effect_summary_stats" = T,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
     "linear_tests" = T,
     "nonlinear_tests" = T,
     "exo_tests" = T,
@@ -75,6 +75,7 @@ user_params <- list(
     # Caliper test parameters
     "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
     "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
+    "caliper_verbose" = TRUE,
     # Elliott test parameters
     "elliott_data_subsets" = c("All data"), # Data subsets to run the tests on
     "elliott_p_min" = 0,
@@ -101,9 +102,9 @@ user_params <- list(
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters
+    "ma_results_table" = TRUE, # If TRUE, print out results of model averaging into a pretty table
     "ma_variables_description_table_verbose" = FALSE, # If TRUE, print out the BMA variable desc table into console
     "ma_variables_description_table_clip" = FALSE, # If TRUE, copy the table to a clipboard
-    "ma_results_table" = TRUE, # If TRUE, print out results of model averaging into a pretty table
     # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
     "bpe_studies" = c( # Vector of study indexes for which to run the BPE. For author's BPE, use 0.
       0, # Author
@@ -112,7 +113,10 @@ user_params <- list(
       7 # Webbink (2004) - Random, unpublished, uncited work
     ),
     "bpe_use_ci" = TRUE, # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
-    "bpe_econ_sig_large_pip_only" = TRUE # If TRUE, display econ. significance for variables with PIP >= 0.5
+    "bpe_study_info" = TRUE, # If TRUE, print out information about individual studies being estimated
+    "bpe_result_table_verbose" = TRUE, # If TRUE, print out the table into the console
+    "bpe_econ_sig_large_pip_only" = TRUE, # If TRUE, display econ. significance for variables with PIP >= 0.5
+    "bpe_econ_sig_verbose" = TRUE # If TRUE, print out the economic significance table into the console
   ),
   
   # Customizable data file names
@@ -145,6 +149,7 @@ user_params <- list(
   # I recommend you use caches only after you are certain the functions run correctly
   use_cache = TRUE, # Store intermediate output in a cache in the /_cache/ folder.
   cache_path = './_cache/', # Path to the folder where cache should be stored.
+  cache_age = 3600, # In seconds - an hour
   
   # Development information
   development_on = FALSE # Keep FALSE at all times

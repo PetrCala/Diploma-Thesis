@@ -166,6 +166,9 @@ applyDataSubsetConditions <- function(data, conditions) {
   return(data)
 }
 
+#' Verbose output for the applyDataSubsetConsitions function
+applyDataSubsetConditionsVerbose <- function(...){
+}
 
 
 
@@ -327,7 +330,8 @@ preprocessData <- function(input_data, input_var_list){
       input_data[[col_name]] <- as.character(input_data[[col_name]])
     }
   }
-  print("Data preprocessing complete.")
+  # Print out the output information and return the processed data frame
+  preprocessDataVerbose()
   return(input_data)
 }
 
@@ -409,8 +413,8 @@ handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio 
       stop(paste("Invalid handling method for column", column_name, ": ", handling_method))
     }
   }
-  
-  print("Missing data handled successfully.")
+  # Print out the output information and return the processed data frame
+  handleMissingDataVerbose()
   return(input_data)
 }
 
@@ -473,6 +477,11 @@ winsorizeData <- function(input_data, win_level, precision_type = "DoF"){
   invisible(input_data)
 }
 
+
+#' Verbose output for the winsorizeData function
+winsorizeDataVerbose <- function(...){
+  print("Data winsorized successfully.")
+}
 
 #' A very restrictive function for validating the correct data types
 #' 
@@ -588,9 +597,16 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
       }
     }
   }
-  print("All values across all columns of the main data frame are of the correct type.")
+  # Print out the verbose information
+  validateDataVerbose()
+  return()
 }
 
+
+#' Verbose output for the validateData function
+validateDataVerbose <- function(...){
+  print("All values across all columns of the main data frame are of the correct type.")
+}
 
 #' An auxiliary method to limit the data frame to one study only. Use only for testing
 #' 
@@ -687,17 +703,17 @@ getVariableSummaryStats <- function(input_data, input_var_list, names_verbose = 
     )
     df[row_idx, ] <- row_data
   }
-  # Print and return output data frame
-  out <- list(df, missing_data_vars) # Len 2 -> df, missing data
-  getVariableSummaryStatsVerbose(out)
-  return(out)
+  # Print and return output data frame - for cacheing missing variable information
+  out_list <- list(df, missing_data_vars)
+  getVariableSummaryStatsVerbose(out_list)
+  return(out_list)
 }
 
-#' Verbose output for the getVariableSummaryStatsVerbose function
-getVariableSummaryStatsVerbose <- function(out_list){
+#' Verbose output for the getVariableSummaryStats function
+getVariableSummaryStatsVerbose <- function(out_list,...){
   # Validate input
   stopifnot(
-    is.list(out_list),
+    is(out_list, "list"),
     length(out_list) == 2
   )
   # Delist
@@ -772,13 +788,29 @@ getMAVariablesDescriptionTable <- function(bma_data, input_var_list, verbose = T
   colnames(desc_df) <- c("Variable", "Description", "Mean", "SD")
   # Return the output
   if (verbose){
-    print("Model averaging variables description table:")
-    print(desc_df)
-    cat("\n\n")
+    getMAVariablesDescriptionTable(list(desc_df, verbose), NA)
   }
-  invisible(desc_df)
+  return(desc_df)
 }
 
+#' Verbose output for the getMAVariablesDescriptionTable function
+getMAVariablesDescriptionTableVerbose <- function(out_list,...){
+  if (is(out_list, "list")){ # is.list() does not work here
+    res <- out_list[[1]]
+    verbose_on <- out_list[[2]]
+  } else {
+  # Unlist if called from inside the run cache function
+    stopifnot(is.data.frame(out_list))
+    res <- out_list # Data frame
+    verbose_on <- user_params$adjustable_parameters$ma_variables_description_table_verbose # User params
+  }
+  # Print verbose output
+  if (verbose_on){
+    print("Model averaging variables description table:")
+    print(res)
+    cat("\n\n")
+  }
+}
 
 #' The function getEffectSummaryStats() calculates the summary statistics for variables in a given data frame input_data
 #'    using the percentage of correct classification (Effect) effect_w and sample size study_size columns,
@@ -795,7 +827,7 @@ getMAVariablesDescriptionTable <- function(bma_data, input_var_list, verbose = T
 #' @param conf.level [numeric] Confidence level for the confidence intervals. Defaults to 0.95 (95%).
 #' @param formal_output [logical] If TRUE, return the table in a form that can be used in LaTeX. Defaults to FALSE.    
 #' 
-#' The function returns a data frame with the following columns:
+#' The function returns a list containing a data frame containing the following columns:
 #' -Var Name: The name of the variable.
 #' -Var Class: The data type of the variable.
 #' -Mean: The arithmetic mean of the effect for the variable.
@@ -950,7 +982,24 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
     cols_to_drop <- c("Var Class", "Median", "Min", "Max", "SD")
     df <- df[,!names(df) %in% cols_to_drop]
   }
-  # Print the data frame into the console and return
+  # Print out verbose output and return a list with data and missing vars info
+  out_list <- list(df, missing_data_vars)
+  getEffectSummaryStatsVerbose(out_list)
+  # Return data frame only
+  return(out_list)
+}
+
+#' Verbose output for the getEffectSummaryStatsVerbose function
+getEffectSummaryStatsVerbose <- function(out_list, ...){
+  # Validate input
+  stopifnot(
+    is(out_list, "list"),
+    length(out_list) == 2
+  )
+  # Delist
+  df <- out_list[[1]]
+  missing_data_vars <- out_list[[2]]
+  # Verbose output
   cat("Summary statistics:\n")
   print(df)
   cat("\n")
@@ -959,8 +1008,9 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
     print(missing_data_vars)
     cat("\n")
   }
-  invisible(df)
 }
+
+
 
 #' Input the main data frame, specify a factor to group by, and create a box plot.
 #' This plot is automatically printed out into the Plots window.
@@ -1420,14 +1470,17 @@ getLinearTests <- function(data) {
   )
   rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)")
   colnames(results) <- c("OLS", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
-  # Print the results into the console
-  print("Results of the linear tests, clustered by study:")
-  print(results)
-  cat("\n\n")
-  # Return silently
-  invisible(results) 
+  # Print the results into the console and return
+  getLinearTestsVerbose(results)
+  return(results) 
 }
 
+#' Verbose output for the getLinearTests function
+getLinearTestsVerbose <- function(res, ...){
+  print("Results of the linear tests, clustered by study:")
+  print(res)
+  cat("\n\n")
+}
 
 ######################### NON-LINEAR TESTS ######################### 
 
@@ -1699,12 +1752,16 @@ getNonlinearTests <- function(input_data) {
   
   rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
   colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch", "Selection", "Endogenous Kink")
-  # Print the results into the console
+  # Print the results into the console and return
+  getNonlinearTestsVerbose(results)
+  return(results) 
+}
+
+#' Verbose output for the getNonlinearTests function
+getNonlinearTestsVerbose <- function(res, ...){
   print("Results of the non-linear tests, clustered by study:")
-  print(results)
+  print(res)
   cat("\n\n")
-  # Return silently
-  invisible(results) 
 }
 
 ######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
@@ -2019,12 +2076,16 @@ getExoTests <- function(input_data) {
   # Label names
   rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
   colnames(results) <- c("IV", "p-Uniform")
-  # Print the results into the console
+  # Print the results into the console and return
+  getExoTestsVerbose(results)
+  return(results) 
+}
+
+#' Verbose output for the getExoTests function
+getExoTestsVerbose <- function(res, ...){
   print("Results of the tests relaxing exogeneity, clustered by study:")
-  print(results)
+  print(res)
   cat("\n\n")
-  # Return silently
-  invisible(results) 
 }
 
 ######################### P-HACKING TESTS #########################
@@ -2126,13 +2187,32 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
       result_df[j*3, i] <- paste0(caliper_res[3], "/", caliper_res[4]) # n1/n2
     }
   }
+  # Verbose output
   if (verbose){
-    print("Results of the Caliper tests:")
-    print(result_df)
-    cat("\n\n")
+    getCaliperResultsVerbose(list(result_df, verbose), NA) # User params to None
   }
   # Return the data frame
-  invisible(result_df)
+  return(result_df)
+}
+
+#' Verbose output for the getCaliperResults function
+getCaliperResultsVerbose <- function(out_list, user_params){
+  # Unlist if called from within main function
+  if (is(out_list, "list")){ # is.list() does not work here
+    res <- out_list[[1]]
+    verbose_on <- out_list[[2]]
+  } else {
+  # Unlist if called from inside the run cache function
+    stopifnot(is.data.frame(out_list))
+    res <- out_list # Data frame
+    verbose_on <- user_params$adjustable_parameters$caliper_verbose # User params
+  }
+  # Verbose output
+  if (verbose_on){
+    print("Results of the Caliper tests:")
+    print(res)
+    cat("\n\n")
+  }
 }
 
 ###### PUBLICATION BIAS - p-hacking test (Elliott et al., 2022) ######
@@ -2189,8 +2269,8 @@ getElliottResults <- function(input_data, data_subsets = c("All data"),
   # Load the source script
   source("elliott_master_thesis_cala.R")
   # Load the file with CDFs (if it does not exist, create one)
-  validateFolderExistence("./_cache/") # Validate cache folder existence
-  elliott_source_file <- "./_cache/elliott_data_master_thesis_cala.csv"
+  validateFolderExistence("./_results/") # Validate cache folder existence
+  elliott_source_file <- "./_results/elliott_data_temp.csv"
   # On the first run, create a cached file of CDFs (large in memory)
   if (!file.exists(elliott_source_file)){
     print("Creating a temporary file in the './_cache' folder for the Elliott et al. (2022) method...")
@@ -2236,13 +2316,33 @@ getElliottResults <- function(input_data, data_subsets = c("All data"),
     elliott_df[threshold2_verbose, data_col] <- n_obs_below # Below disc cutoff
   }
   
+  # Verbose output
   if (verbose){
-    print(paste0("Results of the Elliott tests:"))
-    print(elliott_df)
-    cat("\n\n")
+    getElliottResultsVerbose(list(elliott_df, verbose), NA)
   }
+  # Return the data frame
   return(elliott_df)
 }
+
+#' Verbose output for the getElliottResults function
+getElliottResultsVerbose <- function(out_list, user_params){
+  if (is(out_list, "list")){ # is.list() does not work here
+    res <- out_list[[1]]
+    verbose_on <- out_list[[2]]
+  } else {
+  # Unlist if called from inside the run cache function
+    stopifnot(is.data.frame(out_list))
+    res <- out_list # Data frame
+    verbose_on <- user_params$adjustable_parameters$elliott_verbose # User params
+  }
+  # Print out the output
+  if (verbose_on){
+    print(paste0("Results of the Elliott tests:"))
+    print(res)
+    cat("\n\n")
+  }
+}
+
 
 ###### MAIVE Estimator (Irsova et al., 2023) ######
 
@@ -2282,14 +2382,32 @@ getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studyl
   maive_coefs_all<-c(MAIVE$beta,MAIVE$SE,MAIVE$`F-test`,MAIVE$Hausman,MAIVE$Chi2)
   MAIVEresults<-data.frame(object,maive_coefs_all)
   colnames(MAIVEresults) <- c("Object", "Coefficient")
+  # Verbose output
   if (verbose){
-    print("Results using the MAIVE estimator:")
-    print(MAIVEresults)
-    cat("\n\n")
+    getMaiveResultsVerbose(list(MAIVEresults, verbose), NA)
   }
-  invisible(MAIVEresults) # Return as a data frame
+  # Return the data frame
+  return(MAIVEresults)
 }
 
+#' Verbose output for the getMaiveResults function
+getMaiveResultsVerbose <- function(out_list, user_params){
+  if (is(out_list, "list")){ # is.list() does not work here
+    res <- out_list[[1]]
+    verbose_on <- out_list[[2]]
+  } else {
+  # Unlist if called from inside the run cache function
+    stopifnot(is.data.frame(out_list))
+    res <- out_list # Data frame
+    verbose_on <- user_params$adjustable_parameters$maive_verbose # User params
+  }
+  # Print out the output
+  if (verbose_on){
+    print(paste0("Results of the MAIVE estimator:"))
+    print(res)
+    cat("\n\n")
+  }
+}
 
 ######################### MODEL AVERAGING #########################
 
@@ -2365,20 +2483,47 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
   }
   # Print out the information about the procedure outcome
   if (max_groups_to_remove == 0) {
-    message("Maximum number of groups to remove reached. Returning variables found so far.")
+    stop("Maximum number of groups to remove reached. Optimal BMA formula not found.")
   }
+  # Verbose output
   if (verbose) {
-    print(paste("Removed", removed_groups, "groups with VIF > 10."))
-    print("The removed groups contained these variables:")
-    print(removed_groups_verbose)
-    print("The suggested BMA formula is:")
-    print(bma_formula)
+    findOptimalBMAFormulaVerbose(
+      list(removed_groups, removed_groups_verbose, bma_formula),
+      verbose_info = verbose
+    )
   }
   # Return the outcome
   if (return_variable_vector_instead){
     return(potencial_vars)
   }
   return(bma_formula)
+}
+
+#' Verbose output for the findOptimalBMAFormula function
+findOptimalBMAFormulaVerbose <- function(out_list, verbose_info){
+  # Validate input
+  stopifnot(
+    length(out_list) == 3 # Via the main function
+  )
+  # Extract function output
+  removed_groups <- out_list[[1]]
+  removed_groups_verbose <- out_list[[2]]
+  bma_formula <- out_list[[3]]
+  # Extract verbose information
+  if (is.list(verbose_info)){
+    if (!"adjustable_parameters" %in% names(verbose_info)){
+      stop("You must pass the user_params list here.")
+    }
+    verbose_info <- verbose_info$adjustable_parameters$bma_verbose # user_params
+  } # else a simple boolean, already extracted
+  # Print out the verbose output
+  if (verbose_info){
+    print(paste("Removed", removed_groups, "groups with VIF > 10."))
+    print("The removed groups contained these variables:")
+    print(removed_groups_verbose)
+    print("The suggested BMA formula is:")
+    print(bma_formula)
+  }
 }
 
 #' Creates a formula for Bayesian model averaging
@@ -2558,12 +2703,18 @@ runBMA <- function(bma_data, ...){
     colnames(bma_data[,1]) == "effect_w"
   )
   # Actual estimation with inhereted parameters
-  print("Running the Bayesian Model Averaging...")
+  runBMAVerbose()
   quiet(
     bma_model <- bms(bma_data, ...)
   )
   return(bma_model)
 }
+
+#' Verbose output for the runBMA function
+runBMAVerbose <- function(...){
+  print("Running the Bayesian Model Averaging...")
+}
+
 
 #' Extract results from a Bayesian Model Averaging (BMA) regression
 #' 
@@ -2637,6 +2788,11 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
     cat("\n\n")
   }
   return(bma_coefs)
+}
+
+#' Verbose output for the extractBMAResults function
+extractBMAResultsVerbose <- function(...){
+  # Todo
 }
 
 #' A helper function (not used in the main analysis) that allows the user to generate
@@ -2773,15 +2929,32 @@ runFMA <- function(bma_data, bma_model, verbose = T){
   # Extract results
   fma_res <- MMA.fls[-1,]
   if (verbose){
+    runFMAVerbose(list(fma_res, verbose), NA)
+  }
+  return(fma_res)
+}
+
+#' Verbose output for the runFMA function
+runFMAVerbose <- function(out_list,...){
+  if (is(out_list, "list")){ # is.list() does not work here
+    res <- out_list[[1]]
+    verbose_on <- out_list[[2]]
+  } else {
+  # Unlist if called from inside the run cache function
+    stopifnot(is.data.frame(out_list))
+    res <- out_list # Data frame
+    verbose_on <- user_params$adjustable_parameters$fma_verbose # User params
+  }
+  # Print verbose output
+  if (verbose_on){
     print("Results of the Frequentist Model Averaging:")
-    print(fma_res)
+    print(res)
     cat("\n\n")
   }
-  invisible(fma_res)
 }
 
 #' Get model averaging results
-getMATable <- function(bma_coefs, fma_coefs, input_var_list, verbose = T){
+getMATable <- function(bma_coefs, fma_coefs, input_var_list){
   # Validate the input
   stopifnot(
     !all(is.na(bma_coefs)), # No missing results allowed
@@ -2810,14 +2983,16 @@ getMATable <- function(bma_coefs, fma_coefs, input_var_list, verbose = T){
   # Move intercept to the top
   res_df <- rbind(res_df[nrow(res_df),], res_df[-nrow(res_df),]) # Last row to first
   # Return the result
-  if (verbose){
-    print("Results of Model Averaging:")
-    print(res_df)
-    cat("\n\n")
-  }
-  invisible(res_df)
+  getMATableVerbose(res_df)
+  return(res_df)
 }
 
+#' Verbose output for the getMATable function
+getMATableVerbose <- function(res,...){
+  print("Results of Model Averaging:")
+  print(res)
+  cat("\n\n")
+}
 ######################### BEST-PRACTICE ESTIMATE #########################
 
 
@@ -2941,7 +3116,7 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
 #' @param verbose_output [logical] If TRUE, print out the output information into the console.
 #' Defaults to TRUE.
 getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
-                   study_id = 0, include_intercept = TRUE, verbose_output = TRUE){
+                   study_id = 0, include_intercept = TRUE, study_info_verbose = TRUE, verbose_output = TRUE){
   # Check input
   stopifnot(
     is.data.frame(input_data),
@@ -2952,11 +3127,13 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
     is.logical(verbose_output)
   )
   # Run information
-  if (study_id == 0){
-    print("Running the author's best practice estimate...")
-  } else {
-    study_name <- input_data$study_name[input_data$study_id == study_id][1]
-    print(paste("Running the best practice estimate for",study_name))
+  if (study_info_verbose){
+    if (study_id == 0){
+      print("Running the author's best practice estimate...")
+    } else {
+      study_name <- input_data$study_name[input_data$study_id == study_id][1]
+      print(paste("Running the best practice estimate for",study_name))
+    }
   }
   # Input preprocessing
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) # Extract the coefficients
@@ -2981,14 +3158,13 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
   res <- c(bpe_est, bpe_se) # Result vector - c(BPE Estimate, BPE Standard Error)
   res <- round(res, 3) # Round up
   # Return the output
-  if (verbose_output){
+  if (verbose_output){ # Not callable automatically - use BPEResultTable instead
     print(paste("BPE Estimate:", res[1]))
     print(paste("BPE Standard Error:", res[2]))
     cat("\n\n")
   }
   return(res)
 }
-
 
 #' Generate a table with best multiple best practice estimate results
 #' 
@@ -3008,7 +3184,7 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
 #' use standard errors instead. Defaults to TRUE.
 #' @param verbose_output [logical] If TRUE, print out the result table into the console.
 generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_model, bma_formula, bma_data,
-                                   use_ci = TRUE, verbose_output = TRUE){
+                                   use_ci = TRUE, study_info_verbose = TRUE, verbose_output = TRUE){
   # Initialize the data frame
   if (use_ci) {
     res_df <- data.frame("estimate" = numeric(0), "ci_95_lower" = numeric(0), "ci_95_higher" = numeric(0))
@@ -3022,7 +3198,9 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
                          as.character(input_data$study_name[input_data$study_id == study_id][1]))
     # BPE estimation
     bpe_result <- getBPE(input_data, input_var_list, bma_model, bma_formula, bma_data, study_id,
-                         include_intercept = TRUE, verbose_output = FALSE)
+                         include_intercept = TRUE,
+                         study_info_verbose = study_info_verbose, # Information about study names
+                         verbose_output = FALSE) # Individual study outcomes into console - keep FALSE
     # Extract the results
     est <- bpe_result[1] # BPE Estimate
     se <- bpe_result[2] # BPE Standard error
@@ -3043,11 +3221,29 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
   }
   # Return the output
   if (verbose_output) {
-    print("Best practice estimate results:")
-    print(res_df)
-    cat("\n\n")
+    generateBPEResultTableVerbose(list(res_df, verbose_output), NA)
   }
   return(res_df)
+}
+
+
+#' Verbose output for the generateBPEResultTable function
+generateBPEResultTableVerbose <- function(out_list,...){
+  if (is(out_list, "list")){ # is.list() does not work here
+    res <- out_list[[1]]
+    verbose_on <- out_list[[2]]
+  } else {
+  # Unlist if called from inside the run cache function
+    stopifnot(is.data.frame(out_list))
+    res <- out_list # Data frame
+    verbose_on <- user_params$adjustable_parameters$bpe_result_table_verbose # User params
+  }
+  # Print verbose output
+  if (verbose_on){
+    print("Best practice estimate results:")
+    print(res)
+    cat("\n\n")
+  }
 }
 
 #' getEconomicSignificance
@@ -3127,22 +3323,40 @@ getEconomicSignificance <- function(bpe_est, input_var_list, bma_data, bma_model
     res_df <- rbind(res_df, temp_df)
   }
   # Return the output
+  pip_info <- ifelse(display_large_pip_only, " with PIP at least 0.5","")
   if (verbose_output) {
-    pip_info <- ifelse(display_large_pip_only, " with PIP at least 0.5","")
-    print(paste0("Economic significance of variables", pip_info,":"))
-    print(res_df)
-    cat("\n\n")
+    getEconomicSignificanceVerbose(list(res_df, verbose_output, pip_info), NA)
   }
   return(res_df)
 }
 
+#' Verbose output for the getEconomicSignificance function
+getEconomicSignificanceVerbose <- function(out_list,...){
+  if (is(out_list, "list")){ # is.list() does not work here
+    res <- out_list[[1]]
+    verbose_on <- out_list[[2]]
+    pip_info <- out_list[[3]]
+  } else {
+  # Unlist if called from inside the run cache function
+    stopifnot(is.data.frame(out_list))
+    res <- out_list # Data frame
+    verbose_on <- user_params$adjustable_parameters$bpe_result_table_verbose # User params
+    pip_info <- user_params$adjustable_parameters$bpe_econ_sig_large_pip_only
+  }
+  # Print verbose output
+  if (verbose_on){
+    print(paste0("Economic significance of variables", pip_info,":"))
+    print(res)
+    cat("\n\n")
+  }
+}
 ######################### CACHE HANDLING #########################
 
 #' Cache a function using the memoise package if so desired
-cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/') {
+cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/', cache_age = 3600) {
   if (is_cache_on) {
     # Get the disk cache
-    disk_cache <- cachem::cache_disk(dir = cache_path, max_size = 1e9, max_age = 3600)
+    disk_cache <- cachem::cache_disk(dir = cache_path, max_size = 1e9, max_age = cache_age)
     return(memoise(f, cache = disk_cache))
   } else {
     return(f)
@@ -3160,17 +3374,24 @@ runCachedFunction <- function(f, user_params, verbose_function, ...){
     !all(c("is_cache_on", "cache_path") %in% names(user_params))
   )
   # Define the function to call based on cache information
-  f <- cacheIfNeeded(f, user_params$use_cache, user_params$cache_path)
-  # Call the function with parameters
-  res <- f(...)
-  # Print out the output in case the function was cached (the output gets silenced otherwise)
-  if (user_params$use_cache){
-    verbose_function(res)
+  f <- cacheIfNeeded(f, user_params$use_cache, user_params$cache_path, user_params$cache_age)
+  # Capture verbose output to print in case it gets silenced
+  verbose_output <- captureOutput(
+    # Call the function with parameters
+    res <- f(...)
+  )
+  # If the function runs cached, call verbose output explicitly
+  if (length(verbose_output) == 0){ # Always "character" class
+    verbose_function(res, user_params) # user_params for verbose output
+  } else {
+    cat(verbose_output, sep="\n") # Print actual output
   }
   # Return the result
   return(res) 
 }
 
+#' A null function for no verbose output
+nullVerboseFunction <- function(res,... ){NULL}
 
 ######################### EXPORT AND CACHES #########################
 
