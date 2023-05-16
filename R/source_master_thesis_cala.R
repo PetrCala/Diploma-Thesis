@@ -147,7 +147,31 @@ applyDataSubsetConditions <- function(data, conditions) {
   return(data)
 }
 
+###### CACHE HANDLING ######
 
+#' Cache a function using the memoise package if so desired
+cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/') {
+  if (is_cache_on) {
+    # Get the disk cache
+    disk_cache <- cachem::cache_disk(dir = cache_path, max_size = 1e9, max_age = 3600)
+    return(memoise(f, cache = disk_cache))
+  } else {
+    return(f)
+  }
+}
+
+runCachedFunction <- function(f, user_params, ...){
+  # Validate input
+  stopifnot(
+    is.function(f),
+    is.list(user_params),
+    !all(c("is_cache_on", "cache_path") %in% names(user_params))
+  )
+  # Define the function to call based on cache information
+  f <- cacheIfNeeded(f, user_params$use_cache, user_params$cache_path)
+  # Call the function with parameters
+  return(f(...)) 
+}
 
 ####################### PACKAGE HANDLING ########################
 
@@ -2386,9 +2410,10 @@ getBMAFormula <- function(input_var, input_data, get_var_vector_instead = F){
 #' @param input_data [data.frame] Data to run the test on.
 #' @param print_all_coefs [bool] A logical value indicating whether to print all the VIF coefficients into
 #'  the console
+#' @param verbose [bool] If TRUE, print out the information about the output. Defaults to TRUE.
 #'
 #' @return [vector] A numeric vector with the VIF coefficients.
-runVifTest <- function(input_var, input_data, print_all_coefs = F){
+runVifTest <- function(input_var, input_data, print_all_coefs = F, verbose = T){
   # Validate input
   stopifnot(
     any(
@@ -2410,16 +2435,18 @@ runVifTest <- function(input_var, input_data, print_all_coefs = F){
   BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
   # Unhandled exception - fails in case of too few observations vs. too many variables
   vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients
-  if (print_all_coefs){
-    print("These are all the Variance Inflation Coefficients for this formula:")
-    print(vif_coefs)
-  }
-  if (any(vif_coefs > 10)){
-    coefs_above_10_vif <- names(vif_coefs)[vif_coefs > 10]
-    print("These variables have a Variance Inflation Coefficient larger than 10:")
-    print(coefs_above_10_vif)
-  } else {
-    print("All BMA variables have a Variance Inflation Factor lower than 10. All good to go.")
+  if (verbose){
+    if (print_all_coefs){
+      print("These are all the Variance Inflation Coefficients for this formula:")
+      print(vif_coefs)
+    }
+    if (any(vif_coefs > 10)){
+      coefs_above_10_vif <- names(vif_coefs)[vif_coefs > 10]
+      print("These variables have a Variance Inflation Coefficient larger than 10:")
+      print(coefs_above_10_vif)
+    } else {
+      print("All BMA variables have a Variance Inflation Factor lower than 10. All good to go.")
+    }
   }
   return(vif_coefs)
   }
@@ -3129,12 +3156,16 @@ writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_over
   # Handle the rownames column
   if ("X" %in% colnames(content)){
     content <- content[, -(colnames(content) == "X")] # Discard row names
+    content <- as.data.frame(content) # Avoid type change
   }
   # Check for mismatching shapes
   if (nrow(content) != nrow(object_name) | ncol(content)!=ncol(object_name)){
     overwrite()
     return(FALSE)
   }
+  # Replace NAs with 0 to allow for direct object comparison
+  content[is.na(content)] <- 0
+  object_name[is.na(object_name)] <- 0
   # Check for identical contents
   if (!all(content == object_name)) {
     overwrite()

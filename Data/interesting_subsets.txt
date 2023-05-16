@@ -1,0 +1,5 @@
+A list of interesting subsets of data to run the analysis on:
+- Published vs. non-published studies
+- Different subsets of ability
+- Different regions/countries
+- Different types of journals?

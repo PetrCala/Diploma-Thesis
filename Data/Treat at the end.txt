@@ -1,6 +1,0 @@
--mean_age - replace X with either the average of the weighted years of other studies, or the average age of the working population of that country's
-	working class demographic at around the given year
--Treat hidden columns
--ability_cognitiveXnon_cognitive - are 1 only if ability_direct is 1, and in no other case - measures only type of directly captured ability
--In a developing country, a larger percentage of the population is self-employed (farmers), so when filling wage_earnersXself_employed, split
-	them into these two, and reason about it in the thesis too

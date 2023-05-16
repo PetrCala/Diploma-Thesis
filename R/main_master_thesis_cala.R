@@ -16,6 +16,7 @@
 # Clean the environment - DO NOT CHANGE THIS
 rm(list = ls()) 
 options(scipen=999) # No scientific notation
+set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
 
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
@@ -38,6 +39,7 @@ packages <- c(
   "DescTools", # Descriptive statistics and data analysis
   "LowRankQP", # Solving convex quadratic optimization problems
   "bayesm", # bayesian modeling and inference
+  "cachem", # Cache system - creating and deleting cache files
   "corrplot", # Graphical display of correlation matrices
   "data.table", # Fast data manipulation and aggregation
   "ddpcr", # Analysis of Droplet Digital PCR (ddPCR) data
@@ -49,6 +51,7 @@ packages <- c(
   "ggplot2", # Creating graphics and data visualizations
   "haven", # Importing and exporting data from SAS, SPSS, and Stata
   "lmtest", # Hypothesis testing and diagnostics for linear regression models
+  "memoise", # Cache system - speeding up deterministic function calls
   "meta", # Meta-analysis package
   "metafor", # Conducting meta-analyses
   "multcomp", # Simultaneous inference for general linear hypotheses
@@ -97,8 +100,8 @@ run_this <- user_params$run_this # Which parts of the scipt to run
 adj_params <- user_params$adjustable_parameters # Various parameters
 
 # Create temporary folders if they do not exist yet
-validateFolderExistence("./_cache/")
-validateFolderExistence("./_results/")
+validateFolderExistence(user_params$cache_path)
+validateFolderExistence(user_params$export_path)
 
 # Add the name-customizable files to the source file vector
 source_files <- c(
@@ -132,38 +135,60 @@ var_list <- readDataCustom(user_params$var_list_source)
 validateInputVarList(var_list)
 
 # Preprocess data - validate dimensions, column names, etc.
-data <- preprocessData(data, var_list)
+data <- runCachedFunction(
+  preprocessData, user_params,
+  data, var_list
+)
 
 # Get the raw but preprocessed data summary statistics (without winsorization, missing value handling)
 if (run_this$variable_summary_stats){
-  variable_sum_stats <- getVariableSummaryStats(data, var_list)
+  variable_sum_stats <- runCachedFunction(
+    getVariableSummaryStats, user_params,
+    data, var_list
+  )
   if (user_params$export_results){
     exportTable(variable_sum_stats, user_params, "variable_summary_stats")
   }
 }
 
+
 # Handle missing variables
-data <- handleMissingData(data, var_list, allowed_missing_ratio = adj_params$allowed_missing_ratio)
+data <- runCachedFunction(
+  handleMissingData, user_params,
+  data, var_list, allowed_missing_ratio = adj_params$allowed_missing_ratio
+)
 
 # Winsorize the data
-data <- winsorizeData(data,
-                      win_level = adj_params$data_winsorization_level,
-                      precision_type = adj_params$data_precision_type)
+data <- runCachedFunction(
+  winsorizeData, user_params,
+  data,
+  win_level = adj_params$data_winsorization_level,
+  precision_type = adj_params$data_precision_type
+)
 
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
-validateData(data, var_list)
+runCachedFunction(
+  validateData, user_params,
+  data, var_list
+)
 
 # Subset data using the conditions specified in the customizable section
 subset_conditions <- getMultipleParams(adj_params, "data_subset_condition_") # Extract all the data subset conditions
-data <- applyDataSubsetConditions(data, subset_conditions)
+data <- runCachedFunction(
+  applyDataSubsetConditions, user_params, 
+  data, subset_conditions
+)
 
 ######################### DATA EXPLORATION #########################
 
 ###### EFFECT SUMMARY STATISTICS ######
 if (run_this$effect_summary_stats){
-  effect_sum_stats <- getEffectSummaryStats(data, var_list,
-                        conf.level = adj_params$effect_summary_stats_conf_level,
-                        formal_output = adj_params$formal_output_on)
+  effect_sum_stats <- runCachedFunction(
+    getEffectSummaryStats, user_params,
+    data, var_list,
+    conf.level = adj_params$effect_summary_stats_conf_level,
+    formal_output = adj_params$formal_output_on
+  )
   if (user_params$export_results){
     exportTable(effect_sum_stats, user_params, "effect_summary_stats")
   }
@@ -216,7 +241,10 @@ if (run_this$t_stat_histogram){
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
 
 if (run_this$linear_tests){
-  linear_tests_results <- getLinearTests(data)
+  linear_tests_results <- runCachedFunction(
+    getLinearTests, user_params,
+    data
+  )
   if (user_params$export_results){
     exportTable(linear_tests_results, user_params, "linear_tests")
   }
@@ -250,7 +278,10 @@ if (run_this$nonlinear_tests){
     endo_kink_results <- getEndoKinkResults(data, pub_bias_present = T, verbose_coefs = T)
   } else {
     # Get all results at once without assigning the output to any variables - unparametrizable
-    nonlinear_tests_results <- getNonlinearTests(data)
+    nonlinear_tests_results <- runCachedFunction(
+      getNonlinearTests, user_params, 
+      data
+    )
     if (user_params$export_results){
       exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
     }
@@ -273,7 +304,10 @@ if (run_this$exo_tests){
                                     effect_present=T, pub_bias_present=T, verbose_coefs=T)
     
   } else{
-    exo_tests_results <- getExoTests(data)
+    exo_tests_results <- runCachedFunction(
+      getExoTests, user_params,
+      data
+    )
     if (user_params$export_results){
       exportTable(exo_tests_results, user_params, "exo_tests")
     }
@@ -284,32 +318,41 @@ if (run_this$exo_tests){
 
 if (run_this$p_hacking_tests){
   ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
-  caliper_results <- getCaliperResults(data,
-                                       thresholds = adj_params$caliper_thresholds,
-                                       widths = adj_params$caliper_widths,
-                                       verbose = T)
+  caliper_results <- runCachedFunction(
+    getCaliperResults, user_params,
+    data,
+    thresholds = adj_params$caliper_thresholds,
+    widths = adj_params$caliper_widths,
+    verbose = T
+  )
   
   ###### PUBLICATION BIAS - p-hacking test (Elliott et al., 2022) ######
-  elliott_results <- getElliottResults(data,
-                                     data_subsets = adj_params$elliott_data_subsets,
-                                     p_min = adj_params$elliott_p_min,
-                                     p_max = adj_params$elliott_p_max,
-                                     d_point = adj_params$elliott_d_point,
-                                     CS_bins = adj_params$elliott_CS_bins,
-                                     verbose = adj_params$elliott_verbose)
+  elliott_results <- runCachedFunction(
+    getElliottResults, user_params,
+    data,
+    data_subsets = adj_params$elliott_data_subsets,
+    p_min = adj_params$elliott_p_min,
+    p_max = adj_params$elliott_p_max,
+    d_point = adj_params$elliott_d_point,
+    CS_bins = adj_params$elliott_CS_bins,
+    verbose = adj_params$elliott_verbose
+  )
   
   ###### MAIVE Estimator (Irsova et al., 2023) ######
-  maive_results <- getMaiveResults(data,
-                                   method=adj_params$maive_method,
-                                   weight=adj_params$maive_weight,
-                                   instrument=adj_params$maive_instrument,
-                                   studylevel=adj_params$maive_studylevel,
-                                   verbose=adj_params$maive_verbose)
-   if (user_params$export_results){
-      exportTable(caliper_results, user_params, "p_hacking_tests_caliper")
-      exportTable(elliott_results, user_params, "p_hacking_tests_elliott")
-      exportTable(maive_results, user_params, "p_hacking_tests_maive")
-    }
+  maive_results <- runCachedFunction(
+    getMaiveResults, user_params,
+    data,
+    method=adj_params$maive_method,
+    weight=adj_params$maive_weight,
+    instrument=adj_params$maive_instrument,
+    studylevel=adj_params$maive_studylevel,
+    verbose=adj_params$maive_verbose
+  )
+  if (user_params$export_results){
+     exportTable(caliper_results, user_params, "p_hacking_tests_caliper")
+     exportTable(elliott_results, user_params, "p_hacking_tests_elliott")
+     exportTable(maive_results, user_params, "p_hacking_tests_maive")
+  }
 }
 
 ######################### MODEL AVERAGING #########################
@@ -318,17 +361,29 @@ if (run_this$p_hacking_tests){
 if (run_this$bma){
   if (adj_params$automatic_bma){
     # Get the optimal BMA formula automatically
-    bma_formula <- findOptimalBMAFormula(data, var_list, verbose = adj_params$bma_verbose)
+    bma_formula <- runCachedFunction(
+      findOptimalBMAFormula, user_params,
+      data, var_list,
+      verbose = adj_params$bma_verbose
+    )
   } else {
     # From the variable information instead
-    bma_formula <- getBMAFormula(var_list, input_data)
+    bma_formula <- runCachedFunction(
+      getBMAFormula, user_params,
+      var_list, input_data
+    )
   }
   # Run the Variance Inflation Test
-  vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = adj_params$bma_verbose)
+  vif_coefs <- runVifTest(bma_formula, data,
+                          print_all_coefs = adj_params$bma_verbose, verbose = F)
   # BMA estimation
   bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
-  bma_data <- getBMAData(data, var_list, bma_vars)
-  bma_model <- runBMA(
+  bma_data <- runCachedFunction(
+    getBMAData, user_params,
+    data, var_list, bma_vars
+  )
+  bma_model <- runCachedFunction(
+    runBMA, user_params,
     bma_data,
     burn=adj_params$bma_burn,
     iter=adj_params$bma_iter,
@@ -338,7 +393,11 @@ if (run_this$bma){
     mcmc=adj_params$bma_mcmc
   )
   # Print out the results
-  bma_coefs <- extractBMAResults(bma_model, bma_data, print_results = adj_params$bma_print_results)
+  bma_coefs <- runCachedFunction(
+    extractBMAResults, user_params,
+    bma_model, bma_data,
+    print_results = adj_params$bma_print_results
+  )
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
@@ -348,14 +407,22 @@ if (run_this$fma){
     stop("You must create these two objects first - bma_data, bma_model. Refer to the 'bma' section.")
   }
   # Estimation
-  fma_coefs <- runFMA(bma_data, bma_model, verbose = adj_params$fma_verbose)
+  fma_coefs <- runCachedFunction(
+    runFMA, user_params,
+    bma_data, bma_model,
+    verbose = adj_params$fma_verbose
+  )
 }
 
 ###### MODEL AVERAGING RESULTS PRESENTATION ######
 
 # Print out the results of model averaging into a nice table - only if BMA and FMA output exists
 if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs")))){
-  ma_res_table <- getMATable(bma_coefs, fma_coefs, var_list, verbose = T)
+  ma_res_table <- runCachedFunction(
+    getMATable, user_params,
+    bma_coefs, fma_coefs, var_list,
+    verbose = T
+  )
   if (user_params$export_results){
      exportTable(ma_res_table, user_params, "ma")
    }
@@ -364,12 +431,18 @@ if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs"))
 # Model averaging variable description table
 if (run_this$ma_variables_description_table){
   # Get the table with new BMA data (including all reference groups and other excluded BMA variables)
-  desc_table_data <- getBMAData(data, var_list,
-                                var_list,
-                                from_vector = F,
-                                include_reference_groups = T)
-  ma_var_desc_table <- getMAVariablesDescriptionTable(desc_table_data, var_list, # Runs with winsorized data
-        verbose = adj_params$ma_variables_description_table_verbose) # Use View(...) for best viewing experience
+  desc_table_data <- runCachedFunction(
+    getBMAData, user_params,
+    data, var_list,
+    var_list,
+    from_vector = F,
+    include_reference_groups = T
+  )
+  ma_var_desc_table <- runCachedFunction( # Runs with winsorized data
+    getMAVariablesDescriptionTable, user_params,
+    desc_table_data, var_list,
+    verbose = adj_params$ma_variables_description_table_verbose # Use View(...) for best viewing experience
+  )
   if (user_params$export_results){
      exportTable(ma_var_desc_table, user_params, "ma_variables_description_table")
    }
@@ -379,23 +452,30 @@ if (run_this$ma_variables_description_table){
 
 if (run_this$bpe){
   if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
-    stop("You must create these two objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
+    stop("You must create these three objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
   }
   # Parameters
   bpe_study_ids <- getMultipleParams(adj_params, "bpe_studies")
   # BPE estimation
-  bpe_res <- generateBPEResultTable(bpe_study_ids,
-                                    data, var_list, bma_model, bma_formula, bma_data,
-                                    use_ci = adj_params$bpe_use_ci,
-                                    verbose_output = TRUE)
+  bpe_res <- runCachedFunction(
+    generateBPEResultTable, user_params,
+    bpe_study_ids,
+    data, var_list, bma_model, bma_formula, bma_data,
+    use_ci = adj_params$bpe_use_ci,
+    verbose_output = TRUE
+  )
   # Economic significance table
   bpe_est <- bpe_res[1,1] # BPE estimate of the first row - usually Author's BPE
-  bpe_econ_sig <- getEconomicSignificance(bpe_est, var_list, bma_data, bma_model,
-                                          display_large_pip_only = adj_params$bpe_econ_sig_large_pip_only,
-                                          verbose_output = TRUE)
+  bpe_econ_sig <- runCachedFunction(
+    getEconomicSignificance, user_params,
+    bpe_est, var_list, bma_data, bma_model,
+    display_large_pip_only = adj_params$bpe_econ_sig_large_pip_only,
+    verbose_output = TRUE
+  )
   # Export
   if (user_params$export_results){
      exportTable(bpe_res, user_params, "bpe_res")
      exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
   }
 }
+ 

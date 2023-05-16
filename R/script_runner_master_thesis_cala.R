@@ -20,28 +20,17 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 
 # Define the initial parameters
 user_params <- list(
-  # Development information
-  development_on = FALSE, # Keep FALSE at all times
-  
-  # Customizable data file names
-  master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
-  var_list_source = "var_list_master_thesis_cala.csv", # Variable information file
-  stem_source = "stem_method_master_thesis_cala.R", # STEM method (Furukawa, 2019) - fixed package handling
-  selection_model_source = "selection_model_master_thesis_cala.R", # Selection model (Andrew & Kasy, 2019)
-  endo_kink_source = "endo_kink_master_thesis_cala.R", # Endogenous Kink model (Bom & Rachinger, 2019)
-  maive_source = "maive_master_thesis_cala.R", # MAIVE Estimator (Irsova et al., 2023)
-  
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
     "box_plot" = F,
     "funnel_plot" = F,
     "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
     "bma" = T,
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
@@ -118,128 +107,21 @@ user_params <- list(
     # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
     "bpe_studies" = c( # Vector of study indexes for which to run the BPE. For author's BPE, use 0.
       0, # Author
-      #2, # Bartlolj et al. (2013) - Most years of schooling
-      #112, # Staiger et al. (1997) - Most citations
-      #7 # Webbink (2004) - Random, unpublished, uncited work
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24,
-      25,
-      26,
-      27,
-      28,
-      29,
-      30,
-      31,
-      32,
-      33,
-      34,
-      35,
-      36,
-      37,
-      38,
-      39,
-      40,
-      41,
-      42,
-      43,
-      44,
-      45,
-      46,
-      47,
-      48,
-      49,
-      50,
-      51,
-      52,
-      53,
-      54,
-      55,
-      56,
-      57,
-      58,
-      59,
-      60,
-      61,
-      62,
-      63,
-      64,
-      65,
-      66,
-      67,
-      68,
-      69,
-      70,
-      71,
-      72,
-      73,
-      74,
-      75,
-      76,
-      77,
-      78,
-      79,
-      80,
-      81,
-      82,
-      83,
-      84,
-      85,
-      86,
-      87,
-      88,
-      89,
-      90,
-      91,
-      92,
-      93,
-      94,
-      95,
-      96,
-      97,
-      98,
-      99,
-      100,
-      101,
-      102,
-      103,
-      104,
-      105,
-      106,
-      107,
-      108,
-      109,
-      110,
-      111,
-      112,
-      113,
-      114,
-      115
+      2, # Bartlolj et al. (2013) - Most years of schooling
+      112, # Staiger et al. (1997) - Most citations
+      7 # Webbink (2004) - Random, unpublished, uncited work
     ),
     "bpe_use_ci" = TRUE, # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
     "bpe_econ_sig_large_pip_only" = TRUE # If TRUE, display econ. significance for variables with PIP >= 0.5
   ),
+  
+  # Customizable data file names
+  master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
+  var_list_source = "var_list_master_thesis_cala.csv", # Variable information file
+  stem_source = "stem_method_master_thesis_cala.R", # STEM method (Furukawa, 2019) - fixed package handling
+  selection_model_source = "selection_model_master_thesis_cala.R", # Selection model (Andrew & Kasy, 2019)
+  endo_kink_source = "endo_kink_master_thesis_cala.R", # Endogenous Kink model (Bom & Rachinger, 2019)
+  maive_source = "maive_master_thesis_cala.R", # MAIVE Estimator (Irsova et al., 2023)
   
   # EXPORT OPTIONS
   "export_results" = TRUE, # Export all results if they differ from the existing ones - no extra time
@@ -257,7 +139,15 @@ user_params <- list(
     "ma_variables_description_table" = "Model averaging description table",
     "bpe_res" = "Best practice estimate",
     "bpe_econ_sig" = "Economic significance"
-  )
+  ),
+  
+  # Cache information
+  # I recommend you use caches only after you are certain the functions run correctly
+  use_cache = TRUE, # Store intermediate output in a cache in the /_cache/ folder.
+  cache_path = './_cache/', # Path to the folder where cache should be stored.
+  
+  # Development information
+  development_on = FALSE # Keep FALSE at all times
 )
 
 # Working directory
