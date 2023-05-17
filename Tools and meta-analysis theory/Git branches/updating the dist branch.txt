@@ -1,0 +1,66 @@
+Now, whenever you make changes to the Dist folder in your master branch and you want those changes in the Dist branch,
+you can use git subtree:
+
+1. Checkout to the master branch and pull the latest changes:
+
+git checkout master
+git pull origin master
+
+2. Split the Dist folder into a new temporary branch:
+
+git subtree split --prefix=Dist --branch temporary_branch
+
+3. Checkout to the Dist branch and merge the changes:
+
+git checkout Dist
+git merge temporary_branch --allow-unrelated-histories
+
+4. Resolve any merge conflicts and commit the changes, then push to GitHub:
+
+git add .
+git commit -m "Update Dist branch with latest changes"
+git push origin Dist
+
+5. Delete the temporary branch:
+
+git branch -D temporary_branch
+
+This will keep your Dist branch with only the contents of the Dist folder from the master branch, and you can keep updating 
+it with changes from the master branch.
+
+Remember, this operation rewrites the history, which can be problematic for others if they already have a copy of the Dist branch.
+If others are working on the Dist branch, it's better to merge the changes in a way that doesn't rewrite history.
+
+Unfortunately, Git doesn't provide a way to hide specific branches from public view. The visibility of branches is tied to the
+visibility of the repository. If the repository is public, all branches are public. But with this approach, you can at least
+keep the Dist branch clean with only the content you want.
+
+
+
+
+
+
+
+
+Creating a new branch:
+
+If you want to keep both master and Dist branches and only merge the changes from the Dist folder on the master branch into the root of the Dist branch, you might find git subtree useful. git subtree allows you to nest one repository inside another as a sub-directory and it is available in Git since version 1.7.11.
+
+Here's how you can do it:
+
+1. Clone the repository to your local machine:
+
+git clone https://github.com/yourusername/yourrepository.git
+cd yourrepository
+
+2. Create a new branch from master:
+
+git checkout -b Dist
+
+3. Make the Dist directory the root directory of the new branch:
+
+git filter-branch --prune-empty --subdirectory-filter Dist
+
+4. Push the new branch to GitHub:
+
+git push origin Dist
