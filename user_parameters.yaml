@@ -26,6 +26,7 @@ adjustable_parameters:
   effect_summary_stats_conf_level: 0.95
   box_plot_group_by_factor_1: study_name
   box_plot_group_by_factor_2: country
+  box_plot_max_studies: 60.0
   box_plot_verbose: yes
   funnel_effect_proximity: 0.15
   funnel_maximum_precision: 0.2

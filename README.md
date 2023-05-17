@@ -59,7 +59,7 @@ The folder is structured as follows:
 The script run will also create these temporary folders:
 * `_cache/` -> Temporary cache files will be stored here.
 
-Furthermore, the existence of all folders listed above is required by the main script, and will be automatically enforced. If you wish to change the name of any of these folders, you may do so either from within the `script_runner_master_thesis_cala.R`, or by modifying the `user_parameters.yaml` file.
+Furthermore, the existence of all folders will be verified. Note that some do not appear in the repository, as there is nothing to distribute within these folders. All results (along with the folders) will be created and updated automatically.
 
 ## Prerequisites:
  1. Make sure that your working directory contains all the files from the `Dist/` folder.
@@ -82,7 +82,7 @@ Furthermore, the existence of all folders listed above is required by the main s
      study id's, and `<CELL>` is the cell in that column on the same row you want to calculate the
      study size on. Example: `=COUNTIF(B:B,B2)`. This calculates the study size of the study located
      in cell B2, assuming that the column `B` contains the study information.
-   * **reg_df** - Degrees of freedom associated with this estimate.
+   * **reg_df** (optional) - A column denoting the number of degrees of freedom associated with the regression. Can be omitted, in which case, n_obs is used for calculation.
  5. In the file `var_list_master_thesis_cala.csv` (or your renamed version), input the list of variables you are using in your data frame,
    along with these parameters:
    * **var_name** - Name of the variable exactly as it appears in the data frame columns. Must not include

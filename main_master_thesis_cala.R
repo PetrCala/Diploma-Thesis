@@ -221,7 +221,7 @@ if (run_this$box_plot){
   for (factor_name in factor_names){
     # Handle factors with large number of boxes - automatically split them into multiple plots
     if (factor_name %in% c("study_name", "study_id")){
-      getLargeBoxPlot(data, max_studies = 60,
+      getLargeBoxPlot(data, max_studies = adj_params$box_plot_max_studies,
                       factor_by = factor_name,
                       verbose = adj_params$box_plot_verbose,
                       effect_name = adj_params$effect_name)

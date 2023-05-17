@@ -1139,7 +1139,6 @@ getLargeBoxPlot <- function(input_data, max_studies = 60, ...){
   # Check that the number of studies is traceable, validate input
   stopifnot(
     is.data.frame(input_data),
-    is.numeric(max_studies),
     "study_id" %in% colnames(input_data)
   )
   # Split the data into subsets - works well with one split too
