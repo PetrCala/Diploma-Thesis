@@ -6,6 +6,7 @@ cp README.md Dist/
 # Copy the main text TeX file into the Dist folder
 cp -fr "Thesis main/Diploma Thesis Cala Returns To Education.zip" "Dist/Diploma Thesis Cala Returns To Education.zip"
 
+
 # Read dist_info.txt, remove carriage return characters and store the result in SOURCE_FILES variable
 cd R
 SOURCE_FILES=$(cat dist_info.txt | tr -d '\r')
@@ -31,6 +32,9 @@ if ! test -f "$f" || ! cmp -s "$source_file" "$f"; then
   cp -fr "$source_file" .
 fi
 done
+
+# Copy the external package folder
+cp -r "../R/_pckg/" .
 
 # Modify the development option of the .yaml file
 sed -i 's/development_on: yes/development_on: no/g' "user_parameters.yaml"

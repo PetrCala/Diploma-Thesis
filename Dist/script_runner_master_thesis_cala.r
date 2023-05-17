@@ -145,11 +145,14 @@ user_params <- list(
     "bpe_econ_sig" = "Economic significance"
   ),
   
-  # Cache information
+  # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
   use_cache = TRUE, # Store intermediate output in a cache in the /_cache/ folder.
   cache_path = './_cache/', # Path to the folder where cache should be stored.
   cache_age = 3600, # In seconds - an hour
+  
+  # PACKAGE HANDLING
+  ext_package_path = './_pckg/',
   
   # Development information
   development_on = FALSE # Keep FALSE at all times

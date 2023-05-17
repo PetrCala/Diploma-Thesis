@@ -58,8 +58,9 @@ The script run will also create these temporary folders:
  5. In the file `var_list_master_thesis_cala.csv` (or your renamed version), input the list of variables you are using in your data frame,
    along with these parameters:
    * **var_name** - Name of the variable exactly as it appears in the data frame columns. Must not include
-     spaces and various special characters. Underscores are allowed.
-   * **var_name_verbose** - A descriptive form of the variable name. Needs not to limit to any subset of characters.
+     spaces and various special characters. Underscores are allowed. Example: *n_obs*.
+   * **var_name_verbose** - A verbose name for the variable. Needs not to limit to any subset of characters. Example: *Number of Observations*.
+   * **var_name_description** - A lengthy description of the variable. Example: *Number of observations used in the study.*
    * **data_type** - Type of the data this variable holds. Can be only one type. Can be one of:
      - *int* - Integer. Any integer.
      - *category* - Categorical variable. Any string.
@@ -72,7 +73,7 @@ The script run will also create these temporary folders:
      - *stop* - Do not allow missing values. Throw an error in case there is a missing value.
      - *mean* - Interpolate with the mean of the existing data.
      - *median* - Interpolate with the median of the existing data.
-     - *allow* - Allow missing values. Use **only** for variables which whose values will be filled in automatically during preprocessing, meaning for which you can guarantee no missing values.
+     - *allow* - Allow missing values. Use **only** for variables which whose values will be filled in automatically during preprocessing, meaning for which you can guarantee no missing values. In other words, do **not use** this.
    * **variable_summary** - Boolean. If `TRUE`, this variable will appear in the summary statistics table.
    * **effect_sum_stats** - Boolean. If `TRUE`, this variable will appear in the effect summary statistics table.
    * **equal** - Float. If set to any value, the effect summary statistics table will print out the statistics
@@ -87,7 +88,7 @@ The script run will also create these temporary folders:
      for each **dummy**/**perc** group.
    * **to_log_for_bma** - Boolean. If `TRUE`, this variable will be converted to logarithm during the 
      Bayesian model averaging.
-   * **bpe** - If set to any value, this value will be used when evaluating the best practice estimate.
+   * **bpe** - If set to any value, this value will be used when evaluating the best practice estimate. Can also be one of the following: `mean`, `median`, `max`, `min`. If you do not wish to use this variable in the best practice estimate, set its value to `stop`, **not** `FALSE`.
 
 ## How to Run
 To run the code, follow these steps:
