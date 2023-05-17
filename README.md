@@ -6,15 +6,13 @@
 
 ## About
 
-### The reason for having a GitHub repository
+### How To Use
 
-The reason for keeping this repository is to allow for easier version tracking, and portable work. The repository is *not meant for direct cloning*. I may clean up the structure in the future to allow for this, but the main idea is to distribute the `Dist/` folder that contains the important `.R`, `.csv` and `.yaml` files (listed below). You can download the folder itself using steps described below. The rest of the repository is intended purely for my own research.
+Clone this repository onto your computer using `git clone https://github.com/PetrCala/Diploma-Thesis.git`, or download it directly using the `<> Code` button above.' Refer to the `Prerequisites` and `How To Run` sections for more detail.
 
-### Project structure
+### Project Structure
 
-All necessary files for result reproduction can be found within the `Dist/` folder. To easily clone this folder onto your computer, simply download the folder using third party tools such as [download-directory](https://download-directory.github.io/) and inputting [this link](https://github.com/PetrCala/Diploma-Thesis/tree/master/Dist), or by manually downloading each individual file. I advise for the former approach.
-
-The distribution folder is structured as follows:
+The folder is structured as follows:
 
 ```
 .
