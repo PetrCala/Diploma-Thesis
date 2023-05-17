@@ -15,6 +15,7 @@ The reason for keeping this repository is to allow for easier version tracking, 
 All necessary files for result reproduction can be found within the `Dist/` folder. To easily clone this folder onto your computer, simply download the folder using third party tools such as [download-directory](https://download-directory.github.io/) and inputting [this link](https://github.com/PetrCala/Diploma-Thesis/tree/master/Dist), or by manually downloading each individual file. I advise for the former approach.
 
 The folder contains these files:
+* `_pckg/` -> Folder with external packages that are not available online anymore, such as `LowRankQP`.
 * `Diploma Thesis Cala Returns To Education.zip` -> Main text of the thesis in *LaTeX* form.
 * `data_set_master_thesis_cala.csv` -> Main data frame. Contains data of 115 studies with over 40 variables. All numeric results are derived from this file.
 * `var_list_master_thesis_cala.csv` -> Data frame with information about individual variables. The scripts rely on this data frame to identify variable types, their usage in various parts of the analysis, etc.

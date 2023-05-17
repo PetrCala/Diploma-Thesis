@@ -1,0 +1,369 @@
+...1,...2,...3,...4,...5,...6,number of estimates contributed,citations,citation yearly,log_citation,type of journal,impact factor,outlet,journal publication,...15
+included,reason,year,author (year),title,bibtex,n_estimates,citations,citation_yearly,log_citation,type,impact factor,outlet,journal publication,avg estimate
+1,NA,2009,"Ammermueller & Pischke, 2009",Peer effects in European primary schools: Evidence from the progress in international reading literacy study,"@article{ammermueller2009peer,
+  title={Peer effects in European primary schools: Evidence from the progress in international reading literacy study},
+  author={Ammermueller, Andreas and Pischke, J{\""o}rn-Steffen},
+  journal={Journal of Labor Economics},
+  volume={27},
+  number={3},
+  pages={315--348},
+  year={2009},
+  publisher={The University of Chicago Press}
+}",13,562,40.142857142857146,1.6142944477449741,article,2.2559999999999998,Journal of Labor Economics,NA,0.12603803313830109
+1,NA,1996,"III & Caldas, 1996",Majority African American schools and social injustice: The influence of de facto segregation on academic achievement,"@article{bankston1996majority,
+  title={Majority African American schools and social injustice: The influence of de facto segregation on academic achievement},
+  author={Bankston III, Carl and Caldas, Stephen J},
+  journal={Social Forces},
+  volume={75},
+  number={2},
+  pages={535--555},
+  year={1996},
+  publisher={The University of North Carolina Press}
+}",3,403,14.925925925925926,1.2021046914205993,article,NA,Social Forces,1,9.2499999999999999E-2
+1,NA,1998,"III & Caldas, 1998","Family Structure, Schoolmates, and Racial Inequalities in School Achievement","@article{bankston1998family,
+  title={Family structure, schoolmates, and racial inequalities in school achievement},
+  author={Bankston III, Carl L and Caldas, Stephen J},
+  journal={Journal of Marriage and the Family},
+  pages={715--723},
+  year={1998},
+  publisher={JSTOR}
+}",2,253,10.119999999999999,1.0461047872460387,article,NA,Journal of Marriage and Family,1,0.11066666666666668
+1,NA,2015,"Berkowitz et al., 2015","Compensating, Mediating, and Moderating Effects of School Climate on Academic Achievement Gaps in Israel","@article{berkowitz2015compensating,
+  title={Compensating, mediating, and moderating effects of school climate on academic achievement gaps in Israel},
+  author={Berkowitz, Ruth and Glickman, Hagit and Benbenishty, Rami and Ben-Artzi, Elisheva and Raz, Tal and Lipshtat, Nurit and Astor, Ron Avi},
+  journal={Teachers College Record},
+  volume={117},
+  number={7},
+  pages={1--34},
+  year={2015},
+  publisher={SAGE Publications Sage CA: Los Angeles, CA}
+}",4,63,7.875,0.9481683617271317,article,NA,Teachers College Record,1,0.16567199999999999
+1,NA,2021,"Berkowitz, 2021","School climate and the socioeconomic literacy achievement gap: Multilevel analysis of compensation, mediation, and moderation models","@article{berkowitz2021school,
+  title={School climate and the socioeconomic literacy achievement gap: Multilevel analysis of compensation, mediation, and moderation models},
+  author={Berkowitz, Ruth},
+  journal={Children and Youth Services Review},
+  volume={130},
+  pages={106238},
+  year={2021},
+  publisher={Elsevier}
+}",4,13,6.5,0.87506126339170009,article,5.0000000000000001E-3,"Children and Youth Services Review,",1,0.24834600000000001
+1,NA,2022,"Berkowitz, 2022",School Matters: The Contribution of Positive School Climate to Equal Educational Opportunities among Ethnocultural Minority Students,"@article{berkowitz2022school,
+  title={School matters: The contribution of positive school climate to equal educational opportunities among ethnocultural minority students},
+  author={Berkowitz, Ruth},
+  journal={Youth \& Society},
+  volume={54},
+  number={3},
+  pages={372--396},
+  year={2022},
+  publisher={SAGE Publications Sage CA: Los Angeles, CA}
+}",2,25,25,1.414973347970818,article,NA, Youth & Society,1,0.18103999999999998
+0,no SE,1997,Caldas and Bankston (1997),Effect of School Population Socioeconomic Status on Individual Academic Achievement,NA,0,NA,0,0,NA,NA,The Journal of Educational Research,NA,NA
+1,NA,1998,"Caldas & Bankston, 1998",The inequality of separation: racial composition of schools and academic achievement,"@article{caldas1998inequality,
+  title={The inequality of separation: Racial composition of schools and academic achievement},
+  author={Caldas, Stephen J and Bankston III, Carl},
+  journal={Educational Administration Quarterly},
+  volume={34},
+  number={4},
+  pages={533--557},
+  year={1998},
+  publisher={Sage Publications Sage CA: Thousand Oaks, CA}
+}",2,203,8.1199999999999992,0.95999483832841614,article,NA,Educational administration,1,0.19545649932749998
+1,NA,2003,"De Fraine et al., 2003",The effect of schools and classes on language achievement,"@article{de2003effect,
+  title={The effect of schools and classes on language achievement},
+  author={De Fraine, Bieke and Van Damme, Jan and Van Landeghem, Georges and Opdenakker, Marie-Christine and Onghena, Patrick},
+  journal={British educational research journal},
+  volume={29},
+  number={6},
+  pages={841--859},
+  year={2003},
+  publisher={Taylor \& Francis}
+}",1,131,6.55,0.87794695162918823,article,NA,British Educational Research Journal,1,0.29899999999999999
+0,no info on SES,2004,"Harke andTymms, P. (2004)",The effects of student composition on school outcomes,NA,NA,NA,0,0,NA,NA,NA,NA,NA
+1,NA,1996,"Sui-Chu & Willms, 1996",Effects of Parental Involvement on  Eighth-Grade Achievement,"@article{sui1996effects,
+  title={Effects of parental involvement on eighth-grade achievement},
+  author={Sui-Chu, Esther Ho and Willms, J Douglas},
+  journal={Sociology of education},
+  pages={126--141},
+  year={1996},
+  publisher={JSTOR}
+}",4,2180,80.740740740740748,1.9124385690026677,article,NA,Sociology of education,1,0.251
+0,free lunch variablem confusing,2003,Hutchison (2003),The Effect of Group-level Inﬂuences on Pupils’ Progress in Reading,NA,0,NA,0,0,NA,NA,NA,NA,NA
+1,NA,2020,"Izaguirre & Di Capua, 2020",Exploring peer effects in education in Latin America and the Caribbean,"@article{izaguirre2020exploring,
+  title={Exploring peer effects in education in Latin America and the Caribbean},
+  author={Izaguirre, Alejandro and Di Capua, Laura},
+  journal={Research in Economics},
+  volume={74},
+  number={1},
+  pages={73--86},
+  year={2020},
+  publisher={Elsevier}
+}",18,12,4,0.69897000433601886,article,0.17199999999999999,Research in Economics,1,-7.5101921314929099E-2
+1,NA,2007,"Kang, 2007",Classroom peer effects and academic achievement: Quasi-randomization evidence from South Korea,"@article{kang2007classroom,
+  title={Classroom peer effects and academic achievement: Quasi-randomization evidence from South Korea},
+  author={Kang, Changhui},
+  journal={Journal of Urban Economics},
+  volume={61},
+  number={3},
+  pages={458--495},
+  year={2007},
+  publisher={Elsevier}
+}",4,261,16.3125,1.2383597864085238,article,0.64200000000000002,Journal of Urban Economics,1,-1.1164141414141415E-2
+1,NA,2017,"Kartianom & Ndayizeye, 2017","What ‘s Wrong with the Asian and African Students’ Mathematics Learning Achievement? The Multilevel PISA 2015 Data Analysis for Indonesia, Japan,  and Algeria","@article{kartianom2017s,
+  title={What‘s wrong with the Asian and African Students’ mathematics learning achievement? The multilevel PISA 2015 data analysis for Indonesia, Japan, and Algeria},
+  author={Kartianom, Kartianom and Ndayizeye, Oscar},
+  journal={Jurnal Riset Pendidikan Matematika},
+  volume={4},
+  number={2},
+  pages={200--210},
+  year={2017}
+}",3,28,4.666666666666667,0.75332766665861151,article,NA,Journal of Research in Mathematics Education,1,0.70166666666666666
+1,NA,1989,"Lee & Bryk, 1989",A Multilevel Model of the Social Distribution of High School Achievement,"@article{lee1989multilevel,
+  title={A multilevel model of the social distribution of high school achievement},
+  author={Lee, Valerie E and Bryk, Anthony S},
+  journal={Sociology of education},
+  pages={172--192},
+  year={1989},
+  publisher={JSTOR}
+}",2,1176,34.588235294117645,1.5513064532741949,article,NA,Sociology of education,0,0.37016442451420023
+0,no SE,2014,"Liu et al., 2014",School processes mediate school compositional effects: model specification and estimation,NA,NA,82,9.1111111111111107,1.0047988828817687,article,NA,British Educational Eesearch Journal,NA,NA
+1,NA,2022,"López et al., 2022",The contributions of school and classroom climate to mathematics test scores: a three-level analysis,"@article{lopez2023contributions,
+  title={The contributions of school and classroom climate to mathematics test scores: a three-level analysis},
+  author={L{\'o}pez, Ver{\'o}nica and Salgado, Mauricio and Berkowitz, Ruth},
+  journal={School Effectiveness and School Improvement},
+  volume={34},
+  number={1},
+  pages={43--64},
+  year={2023},
+  publisher={Taylor \& Francis}
+}",2,2,2,0.47712125471966244,article,NA,School Effectiveness and School Improvement,NA,0.77560000000000007
+1,NA,2000,"Ma & Klinger, 2000",Hierarchical Linear Modeling of Student and School Effects on Academic Achievement,"@article{ma2000hierarchical,
+  title={Hierarchical linear modelling of student and school effects on academic achievement},
+  author={Ma, Xin and Klinger, Don A},
+  journal={Canadian Journal of Education/Revue canadienne de l'education},
+  pages={41--55},
+  year={2000},
+  publisher={JSTOR}
+}",8,500,21.739130434782609,1.3567738528496813,article,0.433,Canadian Journal of Education/Revue canadienne de l'education,1,7.1428571428571425E-2
+1,NA,2017,"Maxwell et al., 2017",The Impact of School Climate and School Identiﬁcation on Academic Achievement: Multilevel Modeling with Student and Teacher Data,"@article{maxwell2017impact,
+  title={The impact of school climate and school identification on academic achievement: Multilevel modeling with student and teacher data},
+  author={Maxwell, Sophie and Reynolds, Katherine J and Lee, Eunro and Subasic, Emina and Bromhead, David},
+  journal={Frontiers in psychology},
+  volume={8},
+  pages={2069},
+  year={2017},
+  publisher={Frontiers Media SA}
+}",3,339,56.5,1.7596678446896306,article,NA,Frontiers in psychology,1,0.12432142934385687
+1,NA,2003,"McEwan, 2003",Peer effects on student achievement: evidence from Chile,"@article{mcewan2003peer,
+  title={Peer effects on student achievement: Evidence from Chile},
+  author={McEwan, Patrick J},
+  journal={Economics of education review},
+  volume={22},
+  number={2},
+  pages={131--141},
+  year={2003},
+  publisher={Elsevier}
+}",24,396,19.8,1.3180633349627615,article,0.21299999999999999,"Economics of education review,",1,0.13955874999999998
+1,NA,2004,"McEwan, 2004",The Indigenous Test Score Gap in Bolivia and Chile,"@article{mcewan2004indigenous,
+  title={The indigenous test score gap in Bolivia and Chile},
+  author={McEwan, Patrick J},
+  journal={Economic development and cultural change},
+  volume={53},
+  number={1},
+  pages={157--190},
+  year={2004},
+  publisher={The University of Chicago Press}
+}",8,126,6.6315789473684212,0.88261440128214597,article,NA,Economic development and cultural change,1,0.22991750000000005
+1,NA,2001,OECD (2001),Knowledge and skills for life: First results from the OECD programme for International Student Assessment (PISA),"@book{oecd2001knowledge,
+  title={Knowledge and skills for life: First results from the OECD programme for International Student Assessment (PISA)},
+  author={{OECD}},
+  year={2001},
+  publisher={{OECD Publishing}},
+  address={{Paris, France}},
+  url={https://doi.org/10.1787/9789264181551-en},
+  doi={10.1787/9789264181551-en}
+}",6,522,23.727272727272727,1.3931762188759738,book,NA,NA,0,0.59983333333333333
+1,NA,2003,OECD (2003),Literacy skills for the world tomorrow: Further results from PISA 2000,"@book{oecd2002literacy,
+  title={Literacy skills for the world tomorrow: Further results from PISA 2000},
+  author={{OECD}},
+  year={2002},
+  publisher={{OECD Publishing}},
+  address={{Paris, France}},
+  url={https://doi.org/10.1787/9789264193073-en},
+  doi={10.1787/9789264193073-en}
+}",40,278,13.9,1.173186268412274,book,NA,NA,0,0.42200000000000004
+1,NA,2004,OECD (2004),Learning for tomorrow’s world ﬁrst results from PISA 2003,"@book{oecd2004learning,
+  title={Learning for tomorrow’s world ﬁrst results from PISA 2003},
+  author={{OECD}},
+  year={2004},
+  publisher={{OECD Publishing}},
+  address={{Paris, France}},
+  url={https://doi.org/10.1787/9789264006412-en},
+  doi={10.1787/9789264006412-en}
+}",38,NA,0,0,book,NA,NA,0,0.46124358974358959
+1,NA,2005,OECD (2005),School factors related to quality and equity: Results from PISA 2000,"@book{oecd2004school,
+  title={School factors related to quality and equity: Results from PISA 2000},
+  author={{OECD}},
+  year={2004},
+  publisher={{OECD Publishing}},
+  address={{Paris, France}},
+  url={https://doi.org/10.1787/9789264103586-en},
+  doi={10.1787/9789264103586-en}
+}",39,136,7.5555555555555554,0.93224821573315697,book,NA,NA,0,0.20828421052631579
+1,NA,2007,OECD (2007),PISA 2006: Science Competencies for Tomorrow's World,"@book{oecd2007pisa,
+  title={PISA 2006: Science competencies for tomorrow's world},
+  author={{OECD}},
+  year={2007},
+  publisher={{OECD Publishing}},
+  address={{Paris, France}},
+  url={https://doi.org/10.1787/9789264040011-en},
+  doi={10.1787/9789264040011-en}
+}",54,NA,0,0,book,NA,NA,0,0.3388453376254954
+1,NA,2010,OECD (2010),"PISA 2009 Results: What Students Know and Can Do: Student Performance in Reading, Mathematics and Science (Volume I)","@book{oecd2010pisa,
+  title={PISA 2009 results: What students know and can do: Student performance in reading, mathematics and science (volume I)},
+  author={{OECD}},
+  year={2010},
+  publisher={{OECD Publishing}},
+  address={{Paris, France}},
+  url={https://doi.org/10.1787/9789264091450-en},
+  doi={10.1787/9789264091450-en}
+}",62,NA,0,0,book,NA,NA,0,0.54342133699485684
+1,NA,2014,OECD (2014),"PISA 2012 Results: What Students Know and Can Do (Volume I, Revised edition, February 2014): - © OECD 2014","@book{pisa2012results,
+  title={PISA 2012 Results: What Students Know and Can Do (Volume I, Revised edition, February 2014)},
+  author={{OECD}},
+  year={2014},
+  publisher={{OECD Publishing}},
+  note={© OECD 2014},
+  url={https://doi.org/10.1787/9789264201118-en}
+}",63,NA,0,0,book,NA,School Effectiveness and School Improvement,1,0.49201301272268916
+1,NA,2002,"Opdenakker et al., 2002",The Effect of Schools and Classes on Mathematics Achievement,"@article{opdenakker2002effect,
+  title={The effect of schools and classes on mathematics achievement},
+  author={Opdenakker, Marie-Christine and Van Damme, Jan and De Fraine, De Fraine and Van Landeghem, Georges and Onghena, Patrick},
+  journal={School effectiveness and school improvement},
+  volume={13},
+  number={4},
+  pages={399--427},
+  year={2002},
+  publisher={Taylor \& Francis}
+}",2,187,8.9047619047619051,0.99584404022884232,article,NA,School Effectiveness and School Improvement,1,0.111
+1,NA,1991,"Paterson, 1991",Socio‐economic status and educational attainment: A multi‐dimensional and multi‐level study,"@article{paterson1991socio,
+  title={Socio-economic status and educational attainment: a multi-dimensional and multi-level study},
+  author={Paterson, Lindsay},
+  journal={Evaluation \& Research in Education},
+  volume={5},
+  number={3},
+  pages={97--121},
+  year={1991},
+  publisher={Taylor \& Francis}
+}",1,95,2.96875,0.59865374263605087,article,NA,Evaluation & Research in Education,1,0.27
+0,"misses relevant data, does not explain its varibales sd",2006,"Peetsma et al., 2006",Class composition inﬂuences on pupils’ cognitive development,"@article{peetsma2006class,
+  title={Class composition influences on pupils' cognitive development},
+  author={Peetsma, Thea and van der Veen, Ineke and Koopman, Pjotr and van Schooten, Erik},
+  journal={School effectiveness and school improvement},
+  volume={17},
+  number={3},
+  pages={275--302},
+  year={2006},
+  publisher={Taylor \& Francis}
+}",0,101,5.9411764705882355,0.84143308592785149,article,NA,School Effectiveness and School Improvement,1,NA
+1,NA,2001,"Rivkin, 2001","Tiebout sorting, aggregation and the estimation of peer group effects","@article{rivkin2001tiebout,
+  title={Tiebout sorting, aggregation and the estimation of peer group effects},
+  author={Rivkin, Steven G},
+  journal={Economics of Education Review},
+  volume={20},
+  number={3},
+  pages={201--209},
+  year={2001},
+  publisher={Elsevier}
+}",2,108,4.9090909090909092,0.77152067148463055,article,0.21299999999999999,Economics of Education Review,1,3.7735849056603779E-2
+0,no SE,1992,Rumberger and Willms (1992),The impact of racial and ethnic segregation on the achievement gap in California high schools,NA,0,NA,0,0,NA,NA,NA,NA,NA
+1,NA,2003,"Rangvid, 2003",Educational peer effects: quantile regression evidence from Denmark with PISA 2000 data,"@article{rangvid2003educational,
+  title={Educational peer effects: quantile regression evidence from Denmark with PISA 2000 data},
+  author={Rangvid, Beatrice Schindler},
+  journal={European Society for Population Economics},
+  year={2003},
+  publisher={Citeseer}
+}",1,37,1.85,0.45484486000851021,article,0.439,European Society for Population Economics,1,0.20358395721925135
+1,NA,2007,"Rangvid, 2007",School composition effects in Denmark: quantile regression evidence from PISA 2000,"@article{rangvid2008school,
+  title={School composition effects in Denmark: quantile regression evidence from PISA 2000},
+  author={Rangvid, Beatrice Schindler},
+  journal={The Economics of Education and Training},
+  pages={179--208},
+  year={2008},
+  publisher={Springer}
+}",3,113,7.0625,0.90646972764332423,article,0.13900000000000001,Empirical Economics,1,0.15036666666666665
+1,NA,2006,"Schneeweis & Winter-Ebmer, 2006",Peer effects in Austrian schools,"@article{schneeweis2007peer,
+  title={Peer effects in Austrian schools},
+  author={Schneeweis, Nicole and Winter-Ebmer, Rudolf},
+  journal={Empirical economics},
+  volume={32},
+  pages={387--409},
+  year={2007},
+  publisher={Springer}
+}",4,181,10.647058823529411,1.0662162688832573,article,0.13900000000000001,Empirical economics,1,0.1602954561113408
+0,free lunch,NA,Strand (1997),NA,NA,0,NA,0,0,NA,NA,NA,NA,NA
+0,free lunch,NA,Strand (1998),NA,NA,0,NA,0,0,NA,NA,NA,NA,NA
+1,NA,2012,"Sun et al., 2012",A Multilevel Modelling Approach to Investigating Factors Impacting Science Achievement for Secondary School Students: PISA Hong Kong Sample,"@article{sun2012multilevel,
+  title={A multilevel modelling approach to investigating factors impacting science achievement for secondary school students: PISA Hong Kong sample},
+  author={Sun, Letao and Bradley, Kelly D and Akers, Kathryn},
+  journal={International Journal of Science Education},
+  volume={34},
+  number={14},
+  pages={2107--2125},
+  year={2012},
+  publisher={Taylor \& Francis}
+})",1,169,15.363636363636363,1.2138798199450811,article,NA,International Journal of Science Education,1,0.2036
+1,NA,2016,"Thien, 2016",Malaysian Students’ Performance in Mathematics Literacy in PISA from Gender and Socioeconomic Status Perspectives,"@article{thien2016malaysian,
+  title={Malaysian students’ performance in mathematics literacy in PISA from gender and socioeconomic status perspectives},
+  author={Thien, Lei Mee},
+  journal={The Asia-Pacific Education Researcher},
+  volume={25},
+  number={4},
+  pages={657--666},
+  year={2016},
+  publisher={Springer}
+}",2,58,8.2857142857142865,0.96781531662859877,article,NA,The Asia-Pacific Education Researcher,1,0.48114999999999997
+1,NA,2000,"Webster & Fisher, 2000",Accounting for Variation in Science and Mathematics Achievement: A Multilevel Analysis of Australian Data Third International Mathematics and Science Study (Timss),"@article{webster2000accounting,
+  title={Accounting for variation in science and mathematics achievement: A multilevel analysis of Australian data Third International Mathematics and Science Study (TIMSS)},
+  author={Webster, Beverley J and Fisher, Darrell L},
+  journal={School Effectiveness and School Improvement},
+  volume={11},
+  number={3},
+  pages={339--360},
+  year={2000},
+  publisher={Taylor \& Francis}
+",4,172,7.4782608695652177,0.92830677534492523,article,NA,School Effectiveness and School Improvement,1,0.23474999999999999
+1,NA,1986,"Willms, 1986",Social Class Segregation and Its Relationship to Pupils' Examination Results in Scotland,"@article{willms1986social,
+  title={Social class segregation and its relationship to pupils' examination results in Scotland},
+  author={Willms, J Douglas},
+  journal={American sociological review},
+  pages={224--241},
+  year={1986},
+  publisher={JSTOR}
+}",3,411,11.108108108108109,1.083076289931149,article,NA,American sociological review,1,0.27333333333333337
+1,NA,1992,"Young & Fraser, 1992",School Effectiveness and Science Achievement: Are there any Sex Differences?,"@article{young1992school,
+  title={School Effectiveness and Science Achievement: Are There Any Sex Differences?.},
+  author={Young, Deidra J and Fraser, Barry J},
+  year={1992},
+  publisher={ERIC}",1,34,1.096774193548387,0.32155166280858288,article,NA,NA,0,0.12137614678899082
+1,NA,1993,"Young & Fraser, 1993",Socioeconomic and gender effects on science achievement: An Australian perspective.,"@article{young1993socioeconomic,
+  title={Socioeconomic and gender effects on science achievement: An Australian perspective},
+  author={Young, Deidra J and Fraser, Barry J},
+  journal={School Effectiveness and School Improvement},
+  volume={4},
+  number={4},
+  pages={265--289},
+  year={1993},
+  publisher={Taylor \& Francis}
+}",1,55,1.8333333333333333,0.45229767099463025,article,NA,School Effectiveness and School Improvement ,1,5.4394495412844031E-2
+1,NA,2000,"Zimmer & Toma, 2000",Peer effects in private and public schools across countries,"@article{zimmer2000peer,
+  title={Peer effects in private and public schools across countries},
+  author={Zimmer, Ron W and Toma, Eugenia F},
+  journal={Journal of Policy Analysis and Management: The Journal of the Association for Public Policy Analysis and Management},
+  volume={19},
+  number={1},
+  pages={75--92},
+  year={2000},
+  publisher={Wiley Online Library}
+}",3,575,25,1.414973347970818,article,0.13300000000000001,Journal of Policy Analysis and Management,1,4.3775100401606426E-2
+NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA
+38,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA

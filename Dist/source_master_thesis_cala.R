@@ -48,21 +48,34 @@ validateFolderExistence <- function(folder_name, require_existence = FALSE){
 }
 
 #' Function to read multiple sheets from an Excel file and write them as CSV files
-#' USE ONLY IN DEVELOPMENT
+#' Used in development mode for .csv file creation from a source .xlsx file.
 #' @param xlsx_path Path to the Excel file
 #' @param sheet_names A vector of sheet names to read
+#' @param csv_suffix Suffix of the created .csv files. Defaults to "master_thesis_cala".
+#' @param new_csv_path Data folder path. Defaults to './data/'.
 #' @return A list of data frames
-readExcelAndWriteCsv <- function(xlsx_path, sheet_names) {
+readExcelAndWriteCsv <- function(xlsx_path, sheet_names, csv_suffix = "master_thesis_cala",
+                                 data_folder_path = './_data/') {
+  # Validate input
+  stopifnot(
+    is.character(xlsx_path),
+    is.character(csv_suffix)
+  )
+  # Validate source file existence explicitly
+  if (!file.exists(xlsx_path)){
+    stop(paste("The file", xlsx_path, "does not exist."))
+  }
   # Read each sheet and write it as a CSV file in the working directory
   quiet(
     dfs <- lapply(sheet_names, function(sheet_name) {
-      csv_path <- paste0(sheet_name, "_master_thesis_cala.csv")
+      csv_path <- paste0(sheet_name, "_", csv_suffix, ".csv")
+      new_data_path <- paste0(data_folder_path, csv_path) # Store in data folder
       # Read the source file
       df_xlsx <- read_excel(xlsx_path, sheet = sheet_name)
       # Remove .
       df_xlsx[df_xlsx == '.'] <- NA
       # Overwrite the CSV file
-      write_csv(df_xlsx, csv_path)
+      write_csv(df_xlsx, new_data_path)
       return(df_xlsx)
     })
   )
@@ -1588,6 +1601,7 @@ getTop10Results <- function(data, ...){
 #' vector containing the estimated coefficients.
 #'
 #' @param data A data frame containing the necessary columns for the STEM-based method
+#' @param script_path Full path to the source script.
 #' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
 #' for formatting the output.
 #'
@@ -1595,8 +1609,8 @@ getTop10Results <- function(data, ...){
 #' in the usual format.
 #' 
 #' @import stem_method_master_thesis_cala.R
-getStemResults <- function(data, ...){
-  source("stem_method_master_thesis_cala.R") #github.com/Chishio318/stem-based_method
+getStemResults <- function(data, script_path, ...){
+  source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
     10^(-4), # Tolerance - set level of sufficiently small stem to determine convergence
@@ -1668,6 +1682,7 @@ getHierResults <- function(data, ...){
 #' standard errors, and returns them as a vector..
 #'
 #' @param input_data A data frame containing the necessary columns for the selection model
+#' @param script_path Full path to the source script.
 #' @param cutoffs A numeric vector of cutoff values for computing the selection model
 #' coefficients. The default is \code{c(1.960)}, corresponding to a 95% confidence interval.
 #' @param symmetric A logical value indicating whether to use the symmetric or asymmetric
@@ -1682,10 +1697,10 @@ getHierResults <- function(data, ...){
 #' as their standard errors, in the usual format.
 #' 
 #' @import selection_model_master_thesis_cala.R
-getSelectionResults <- function(data, cutoffs = c(1.960),
+getSelectionResults <- function(data, script_path, cutoffs = c(1.960),
                                 symmetric = F, modelmu="normal", ...){
   # Read the source script
-  source("selection_model_master_thesis_cala.R") 
+  source(script_path) 
   # Validate input
   stopifnot(all(cutoffs %in% c(1.645, 1.960, 2.576))) # Cutoffs
   stopifnot(modelmu %in% c("normal", "t")) # Model
@@ -1720,6 +1735,7 @@ getSelectionResults <- function(data, cutoffs = c(1.960),
 
 #'  @param data [data.frame] The main data frame on which to run the estimation on.
 #'    Must contain the columns - "effect_w", and "se_w"
+#'  @param script_path [character] Path to the source script
 #'  @inheritDotParams Parameters for the extractNonlinearCoefs function.
 #'  
 #'  @return endo_kink_coefs [vector] The four desired coefficients, which are:
@@ -1732,9 +1748,9 @@ getSelectionResults <- function(data, cutoffs = c(1.960),
 #'
 #'  Note - The runEndoKink method returns the coefficients in order mean_effect-pub_bias,
 #'    this way is just for easier printing into the console, so be mindful of that.
-getEndoKinkResults <- function(data, ...){
+getEndoKinkResults <- function(data, script_path, ...){
   # Read the source file
-  source("endo_kink_master_thesis_cala.R")
+  source(script_path)
   # Validate that the necessary columns are present
   required_cols <- c("effect_w", "se_w")
   stopifnot(all(required_cols %in% names(data))) 
@@ -1760,21 +1776,28 @@ getEndoKinkResults <- function(data, ...){
 #' frame silently.
 #'
 #' @param data The main data frame, onto which all the non-linear methods are then called.
+#' @param script_paths List of paths to all source scripts.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
-getNonlinearTests <- function(input_data) {
+getNonlinearTests <- function(input_data, script_paths) {
   # Validate the input
   required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
   stopifnot(
     is.data.frame(input_data),
-    all(required_cols %in% names(input_data))
+    all(required_cols %in% names(input_data)),
+    is(script_paths, "list"),
+    all(c("stem", "selection", "endo") %in% names(script_paths))
   )
+  # Get script_paths
+  stem_script_path <- script_paths$stem
+  selection_script_path <- script_paths$selection
+  endo_script_path <- script_paths$endo
   # Get coefficients
   waap_res <- getWaapResults(input_data, pub_bias_present = F, verbose_coefs = T)
   top10_res <- getTop10Results(input_data, pub_bias_present = F, verbose_coefs = T)
-  stem_res <- getStemResults(input_data, pub_bias_present = F, verbose_coefs = T)
+  stem_res <- getStemResults(input_data, stem_script_path, pub_bias_present = F, verbose_coefs = T)
   hier_res <- getHierResults(input_data, pub_bias_present = T, verbose_coefs = T)
-  sel_res <- getSelectionResults(input_data, pub_bias_present = T, verbose_coefs = T)
-  endo_kink_res <- getEndoKinkResults(input_data, pub_bias_present = T, verbose_coefs = T)
+  sel_res <- getSelectionResults(input_data, selection_script_path, pub_bias_present = T, verbose_coefs = T)
+  endo_kink_res <- getEndoKinkResults(input_data, endo_script_path, pub_bias_present = T, verbose_coefs = T)
   
   # Combine the results into a data frame
   results <- data.frame(
@@ -2248,6 +2271,8 @@ getCaliperResultsVerbose <- function(res, ...){
 #'  - Source: https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA18583
 #'
 #' @param input_data A data frame containing at least the "t_w" and "reg_df" columns.
+#' @param script_path Full path to the source script.
+#' @param temp_data_path Store temporary output here.
 #' @param data_subsets A character vector with the names of the subsets of data to test. By default, only "All data" is tested.
 #' @param p_min The minimum p-value threshold for the tests. Default is 0.
 #' @param p_max The maximum p-value threshold for the tests. Default is 1.
@@ -2256,11 +2281,13 @@ getCaliperResultsVerbose <- function(res, ...){
 #' @param verbose A logical indicating whether to print the results to console. Default is TRUE.
 #'
 #' @return A data frame with the results of the Elliott tests and other statistics.
-getElliottResults <- function(input_data, data_subsets = c("All data"), 
+getElliottResults <- function(input_data, script_path, temp_data_path, data_subsets = c("All data"), 
       p_min = 0, p_max = 1, d_point = 0.15, CS_bins = 10, verbose = T){
   # Validate input
   stopifnot(
     is.data.frame(input_data),
+    is.character(script_path),
+    is.character(temp_data_path),
     is.vector(data_subsets),
     is.numeric(p_min),
     is.numeric(p_max),
@@ -2294,13 +2321,13 @@ getElliottResults <- function(input_data, data_subsets = c("All data"),
   rownames(elliott_df) <- data_rownames
   colnames(elliott_df) <- data_colnames
   # Load the source script
-  source("elliott_master_thesis_cala.R")
+  source(script_path)
   # Load the file with CDFs (if it does not exist, create one)
-  validateFolderExistence("./_results/") # Validate cache folder existence
-  elliott_source_file <- "./_results/elliott_data_temp.csv"
+  validateFolderExistence(temp_data_path) # Validate cache folder existence
+  elliott_source_file <- paste0(temp_data_path, "elliott_data_temp.csv")
   # On the first run, create a cached file of CDFs (large in memory)
   if (!file.exists(elliott_source_file)){
-    print("Creating a temporary file in the './_cache' folder for the Elliott et al. (2022) method...")
+    print(paste0("Creating a temporary file in the",temp_data_path,"folder for the Elliott et al. (2022) method..."))
     cdfs <- getCDFs() # Generate the file from scratch (takes time)
     write.table(cdfs, elliott_source_file, col.names = "cdfs", row.names = F)
   }
@@ -2370,6 +2397,7 @@ getElliottResultsVerbose <- function(res, ...){
 #'  - Source: http://meta-analysis.cz/maive/
 #'
 #' @param method [int] Method. Options - PET:1, PEESE:2, PET-PEESE:3, EK:4 (default 3)
+#' @param script_path [character] Full to the source script.
 #' @param weight [int] Weighting. Options - no weight: 0 ; weights: 1, adjusted weights: 2 (default 0)
 #' @param instrument [int] Instrumenting. Options - 0;1(default 1)
 #' @param studylevel[int] Correlation at study level. Options -  none: 0 (default), fixed effects: 1, cluster: 2
@@ -2378,13 +2406,14 @@ getElliottResultsVerbose <- function(res, ...){
 #' @inheritDotParams Parameters for the extractExoCoefs function.
 #' 
 #' @import maive_master_thesis_cala.R
-getMaiveResults <- function(data, method = 3, weight = 0, instrument = 1, studylevel = 2, verbose = T, ...){
+getMaiveResults <- function(data, script_path, method = 3, weight = 0, instrument = 1, studylevel = 2, verbose = T, ...){
   # Read the source file
-  source("maive_master_thesis_cala.R")
+  source(script_path)
   # Validate that the necessary columns are present
   required_cols <- c("effect_w", "se_w", "reg_df", "study_id")
   stopifnot(
     all(required_cols %in% names(data)),
+    is.character(script_path),
     method %in% c(1,2,3,4),
     weight %in% c(0,1,2),
     instrument %in% c(0,1),
@@ -3420,7 +3449,7 @@ runCachedFunction <- function(f, user_params, verbose_function, ...){
     !all(c("is_cache_on", "cache_path") %in% names(user_params))
   )
   # Define the function to call based on cache information
-  f <- cacheIfNeeded(f, user_params$use_cache, user_params$cache_path, user_params$cache_age)
+  f <- cacheIfNeeded(f, user_params$use_cache, user_params$folder_paths$cache_folder, user_params$cache_age)
   # Capture verbose output to print in case it gets silenced
   verbose_output <- captureOutput(
     # Call the function with parameters
@@ -3509,7 +3538,7 @@ writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_over
 #' The file will not export if the same file already exists under the specified path.
 #' 
 #' @param results_table [data.frame] The data frame to be exported as a CSV file.
-#' @param user_params [list] A list of user parameters. It should contain an 'export_path' item,
+#' @param user_params [list] A list of user parameters. It should contain an 'export_folder' item,
 #' which specifies the directory to export the file, and an 'export_methods' item, which is a
 #' named list where the names correspond to valid 'method_name' values and the values are used for verbose output.
 #' @param method_name [character] A character string that specifies the export method. 
@@ -3532,9 +3561,9 @@ exportTable <- function(results_table, user_params, method_name){
     method_name %in% names(user_params$export_methods) # Only recognized exports
   )
   # Define the export paths
-  folder_path <- user_params$export_path # Export folder
-  validateFolderExistence(folder_path) # Create the export folder if not present in the working directory
-  results_path <- paste0(folder_path, method_name, ".csv") # export_folder/export_file.csv
+  export_folder <- user_params$folder_paths$export_folder # Export folder
+  validateFolderExistence(export_folder) # Create the export folder if not present in the working directory
+  results_path <- paste0(export_folder, method_name, ".csv") # export_folder/export_file.csv
   
   # Check whether the row names are sequential numbers (1,2,3,...) - do not use rows if they are
   row_names <- rownames(results_table)

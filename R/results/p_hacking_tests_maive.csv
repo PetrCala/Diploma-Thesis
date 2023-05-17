@@ -1,0 +1,6 @@
+"Object","Coefficient"
+"MAIVE coefficient",2.875
+"MAIVE standard error",3.55
+"F-test of first step in IV",5.018
+"Hausman-type test (use with caution)",0.796
+"Critical Value of Chi2(1)",3.841

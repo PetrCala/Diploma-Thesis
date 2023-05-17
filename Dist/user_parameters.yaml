@@ -1,6 +1,6 @@
 run_this:
   variable_summary_stats: yes
-  effect_summary_stats: no
+  effect_summary_stats: yes
   box_plot: no
   funnel_plot: no
   t_stat_histogram: no
@@ -72,14 +72,23 @@ adjustable_parameters:
   bpe_result_table_verbose: yes
   bpe_econ_sig_large_pip_only: yes
   bpe_econ_sig_verbose: yes
-master_data_set_source: data_set_master_thesis_cala.csv
-var_list_source: var_list_master_thesis_cala.csv
-stem_source: stem_method_master_thesis_cala.R
-selection_model_source: selection_model_master_thesis_cala.R
-endo_kink_source: endo_kink_master_thesis_cala.R
-maive_source: maive_master_thesis_cala.R
+folder_paths:
+  cache_folder: ./_cache/
+  data_folder: ./data/
+  export_folder: ./results/
+  ext_package_folder: ./pckg/
+  graphics_folder: ./graphics/
+  scripts_folder: ./scripts/
+data_files:
+  master_data_set_source: data_set_master_thesis_cala.csv
+  var_list_source: var_list_master_thesis_cala.csv
+script_files:
+  endo_kink_source: endo_kink_master_thesis_cala.R
+  elliott_source: elliott_master_thesis_cala.R
+  maive_source: maive_master_thesis_cala.R
+  selection_model_source: selection_model_master_thesis_cala.R
+  stem_source: stem_method_master_thesis_cala.R
 export_results: yes
-export_path: ./_results/
 export_methods:
   variable_summary_stats: Variable summary stats
   effect_summary_stats: Effect summary stats
@@ -94,7 +103,12 @@ export_methods:
   bpe_res: Best practice estimate
   bpe_econ_sig: Economic significance
 use_cache: yes
-cache_path: ./_cache/
 cache_age: 3600.0
-ext_package_path: ./_pckg/
 development_on: no
+development_params:
+  csv_suffix: master_thesis_cala
+  xlsx_data_folder: ../Data/
+  xlsx_data_name: data_set_master_thesis_cala.xlsm
+  xlsx_sheet_names:
+  - data_set
+  - var_list

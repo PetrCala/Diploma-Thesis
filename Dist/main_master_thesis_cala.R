@@ -98,42 +98,48 @@ loadPackages(packages)
 user_params <- yaml::read_yaml(user_param_file) 
 run_this <- user_params$run_this # Which parts of the scipt to run
 adj_params <- user_params$adjustable_parameters # Various parameters
+data_files <- user_params$data_files # Data files (only files names)
+script_files <- user_params$script_files # Script files (only file names)
+folder_paths <- user_params$folder_paths # Paths to various folders
 
-# Create temporary folders if they do not exist yet
-validateFolderExistence(user_params$cache_path)
-validateFolderExistence(user_params$export_path)
-validateFolderExistence(user_params$ext_package_path, require_existence = T) # No overwriting
+# Validate folder existence
+validateFolderExistence(folder_paths$cache_folder)
+validateFolderExistence(folder_paths$data_folder, require_existence = T) # No overwriting
+validateFolderExistence(folder_paths$graphics_folder, require_existence = T) # No overwriting - change later
+validateFolderExistence(folder_paths$export_folder)
+validateFolderExistence(folder_paths$ext_package_folder, require_existence = T) # No overwriting
 
 # Load external packages
-loadExternalPackages(user_params$ext_package_path)
+loadExternalPackages(folder_paths$ext_package_folder)
 
-# Add the name-customizable files to the source file vector
-source_files <- c(
-  user_params$master_data_set_source,
-  user_params$var_list_source,
-  user_params$user_param_file,
-  user_params$stem_source,
-  user_params$selection_model_source,
-  user_params$endo_kink_source,
-  user_params$maive_source
+# Define paths of all source files and save them in a vector for validation
+data_files_full_paths <- paste0(folder_paths$data_folder, as.vector(unlist(data_files))) # Vector of "./data/file_name"
+script_files_full_paths <- paste0(folder_paths$scripts_folder, as.vector(unlist(script_files))) # Vector of "./scripts/file_name"
+all_source_files <- c(
+  data_files_full_paths,
+  script_files_full_paths
 )
 
-# Validate .xlsx -> .csv conversion in development
+# In development, create the .csv data files from a source .xlsx/.xlsm file
 if (user_params$development_on) {
-  # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files if necessary)
-  master_data_set_xlsx_path <- "../Data/data_set_master_thesis_cala.xlsm"
-  sheet_names <- c("data_set", "var_list") # Sheet names to read
-  readExcelAndWriteCsv(master_data_set_xlsx_path, sheet_names)
+  dev_params <- user_params$development_params
+  xlsx_folder <- dev_params$xlsx_data_folder # Folder
+  xlsx_file <- dev_params$xlsx_data_name # File
+  xlsx_path <- paste0(xlsx_folder, xlsx_file) # Full path
+  sheet_names <- dev_params$xlsx_sheet_names
+  csv_suffix <- dev_params$csv_suffix
+  # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files)
+  readExcelAndWriteCsv(xlsx_path, sheet_names, csv_suffix, data_folder_path = folder_paths$data_folder)
 }
 
 # Validate all the necessary files
-validateFiles(source_files)
+validateFiles(all_source_files)
 
 ######################### DATA PREPROCESSING #########################
 
 # Read all the source .csv files
-data <- readDataCustom(user_params$master_data_set_source)
-var_list <- readDataCustom(user_params$var_list_source)
+data <- readDataCustom(paste0(folder_paths$data_folder, data_files$master_data_set_source))
+var_list <- readDataCustom(paste0(folder_paths$data_folder, data_files$var_list_source))
 
 # Validate the input variable list
 validateInputVarList(var_list)
@@ -266,6 +272,13 @@ if (run_this$linear_tests){
 ######################### NON-LINEAR TESTS ######################### 
 
 if (run_this$nonlinear_tests){
+  # Extract source script paths
+  stem_script_path <-        paste0(folder_paths$scripts_folder, script_files$stem_source)
+  selection_script_path <-   paste0(folder_paths$scripts_folder, script_files$selection_model_source)
+  endo_script_path <-        paste0(folder_paths$scripts_folder, script_files$endo_kink_source)
+  nonlinear_script_paths <-  list(stem=stem_script_path,
+                                 selection=selection_script_path,
+                                 endo=endo_script_path)
   # Parameters
   global_non_lin_res <- T # Set to false if tests should be ran separately
   # Estimation
@@ -277,24 +290,29 @@ if (run_this$nonlinear_tests){
     top10_results <- getTop10Results(data, pub_bias_present = F, verbose_coefs= T)
     
     ###### PUBLICATION BIAS - Stem-based method in R (Furukawa, 2019) #####
-    stem_results <- getStemResults(data, pub_bias_present = F, verbose_coefs= T)
+    stem_results <- getStemResults(data,
+                                   script_path = stem_script_path,
+                                   pub_bias_present = F, verbose_coefs= T)
     
     ###### PUBLICATION BIAS - FAT-PET hierarchical in R ######
     hier_results <- getHierResults(data, pub_bias_present = T, verbose_coefs= T)
     
     ###### PUBLICATION BIAS - Selection model (Andrews & Kasy, 2019) ######
     selection_results <- getSelectionResults(data, 
+                                             script_path = selection_script_path,
                                              cutoffs = c(1.960), symmetric = F, modelmu = "normal",
                                              pub_bias_present = T, verbose_coefs = T)
     
     ###### PUBLICATION BIAS - Endogenous kink (Bom & Rachinger, 2020) ######
-    endo_kink_results <- getEndoKinkResults(data, pub_bias_present = T, verbose_coefs = T)
+    endo_kink_results <- getEndoKinkResults(data,
+                                            script_path = endo_script_path,
+                                            pub_bias_present = T, verbose_coefs = T)
   } else {
     # Get all results at once without assigning the output to any variables - unparametrizable
     nonlinear_tests_results <- runCachedFunction(
       getNonlinearTests, user_params, 
       verbose_function = getNonlinearTestsVerbose,
-      data
+      data, script_paths = nonlinear_script_paths
     )
     if (user_params$export_results){
       exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
@@ -348,6 +366,8 @@ if (run_this$p_hacking_tests){
     getElliottResults, user_params,
     verbose_function = getElliottResultsVerbose,
     data,
+    script_path = paste0(folder_paths$scripts_folder, script_files$elliott_source),
+    temp_data_path = folder_paths$data_folder, # Store temp files here
     data_subsets = adj_params$elliott_data_subsets,
     p_min = adj_params$elliott_p_min,
     p_max = adj_params$elliott_p_max,
@@ -361,6 +381,7 @@ if (run_this$p_hacking_tests){
     getMaiveResults, user_params,
     verbose_function = getMaiveResultsVerbose,
     data,
+    script_path = paste0(folder_paths$scripts_folder, script_files$maive_source),
     method=adj_params$maive_method,
     weight=adj_params$maive_weight,
     instrument=adj_params$maive_instrument,
