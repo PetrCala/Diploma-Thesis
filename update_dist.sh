@@ -1,13 +1,15 @@
 #!/bin/bash
 
-# Copy the README into the Dist folder
-cp README.md Dist/
 
 # Copy the main text TeX file into the Dist folder
 #cp -fr "Thesis main/Diploma Thesis Cala Returns To Education.zip" "Dist/Diploma Thesis Cala Returns To Education.zip"
 
 # Read dist_info.txt, remove carriage return characters and store the result in SOURCE_FILES variable
 cd R
+
+# Copy the R README into the Dist folder
+cp README.md ../Dist/
+
 SOURCE_FILES=$(cat dist_info.txt | tr -d '\r')
 for f in $SOURCE_FILES; do
 # Check if the file exists in the R folder, considering both .R and .r extensions
