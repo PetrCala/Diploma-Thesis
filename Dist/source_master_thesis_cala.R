@@ -284,7 +284,7 @@ loadExternalPackages <- function(pckg_folder){
     print(paste("Loading an external package ", pckg, "...", sep = ""))
     tryCatch(
       {
-        quietPackages(
+        quiet(
           devtools::load_all(pckg)
         )
       },
@@ -309,7 +309,9 @@ validateInputVarList <- function(input_var_list){
     data_slice <- input_var_list$data_type[input_var_list$group_category == i]
     arbitrary_type <- data_slice[1] # Should be equal for all
     validity_test <- all(data_slice == arbitrary_type)
-    stopifnot(validity_test)
+    if (!validity_test){
+      stop(paste("Incorrect data type for group", i))
+    }
   }
   
   # Validate that specifications are present for all variables where sum stats are required
@@ -318,7 +320,10 @@ validateInputVarList <- function(input_var_list){
     temp_row <- data_to_summarize[i,]
     # Only one of the two specifications is used
     validity_test <- xor(!is.na(temp_row$equal),!is.na(temp_row$gtlt))
-    stopifnot(validity_test)
+    if (!validity_test){
+      problematic_var <- temp_row$var_name
+      stop(paste("Missing effect summary specifications for", problematic_var))
+    }
   }
     
   # Check data values
@@ -327,7 +332,11 @@ validateInputVarList <- function(input_var_list){
   for (i in 1:nrow(dummy_data_to_check)){
     temp_row <- dummy_data_to_check[i,]
     validity_test <- temp_row$equal %in% dummy_data_allowed_values
-    stopifnot(all(validity_test))
+    if (!validity_test){
+      problematic_var <- temp_row$var_name
+      message("Dummy variables must have the effect summary stats checked against 1/0 only.")
+      stop(paste("Problematic variable:",problematic_var))
+    }
   }
   
   perc_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'perc',]
@@ -337,8 +346,16 @@ validateInputVarList <- function(input_var_list){
       temp_row$gtlt < 1,
       temp_row$gtlt > 0
     )
-    stopifnot(all(validity_test))
+    if (all(is.na(validity_test))){ # NAs
+      next
+    }
+    if (!all(validity_test)){
+      problematic_var <- temp_row$var_name
+      message("Percentage variables must have the effect summary stats GLTL value between 0 and 1.")
+      stop(paste("Problematic variable:",problematic_var))
+    } 
   }
+  print("Variable information data validated.")
 }
 
 #' Preprocess the raw excel data:
@@ -364,8 +381,12 @@ preprocessData <- function(input_data, input_var_list){
   varnames <- colnames(input_data)
   expected_varnames <- input_var_list$var_name
   if(!all(varnames == expected_varnames)){ # A strong, restrictive assumption
-    print("These variables from the source data names do not match the expected names:")
-    print(varnames[!(varnames == expected_varnames)])
+    missing_from_var_list <- varnames[!varnames %in% expected_varnames]
+    missing_from_data <- expected_varnames[!expected_varnames %in% varnames]
+    message("These variables are not a part of the variable list var_name column.")
+    message(paste(missing_from_var_list, "\n"))
+    message("These variables are not a part of the main data frame columns.")
+    message(paste(missing_from_data, "\n"))
     stop("Mismatching variable names")
   }
   
@@ -520,16 +541,20 @@ winsorizeData <- function(input_data, win_level, precision_type = "DoF"){
   if (precision_type == "1/SE"){
     input_data$se_precision_w <- 1/input_data$se_w
   } else if (precision_type == "DoF"){
-    input_data$se_precision_w <- sqrt(input_data$reg_df)
+    if ("reg_df" %in% colnames(input_data)){ # Explicit because RRR
+      input_data$se_precision_w <- sqrt(input_data$reg_df) # DoF if available
+    } else {
+      input_data$se_precision_w <- sqrt(input_data$n_obs) # N. obs instead
+    }
   } else {
     stop("Invalid type of precision")
   }
   input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
   input_data$significant_w <- c(rep(0,nrow(input_data)))
   input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
-  # Return quietly
+  # Return 
   print("Data winsorized successfully.")
-  invisible(input_data)
+  return(input_data)
 }
 
 
@@ -552,7 +577,7 @@ winsorizeDataVerbose <- function(...){
 validateData <- function(input_data, input_var_list, ignore_missing = F){
   ### Static
   # Columns that the data frame must contain
-  expected_columns <- c("study_name", "study_id", "effect", "se", "t_stat", "n_obs", "study_size", "reg_df")
+  expected_columns <- c("study_name", "study_id", "effect", "se", "t_stat", "n_obs", "study_size")
   # Reference variable restrictions
   ref_prone_types <- c("dummy", "perc") # Data types that always must have a single reference variable
   ref_forbidden_categories <- c("bma_potential_var", "bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
@@ -616,7 +641,7 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
     # Get the parameters the reference variable has set for other BMA/BPE categories
     forbidden_values <- input_var_list[input_var_list$var_name == reference_var, ref_forbidden_categories]
     if (any(forbidden_values == TRUE)){
-      stop(paste("The variable is a reference variable",reference_var,"and should have all values of BMA/BPE information set to FALSE."))
+      stop(paste("The variable", reference_var, "is a reference variable and should have all values of BMA/BPE information set to FALSE."))
     }
   }
   
@@ -654,7 +679,7 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   }
   # Print out the verbose information
   validateDataVerbose()
-  return()
+  return(data)
 }
 
 
@@ -1364,18 +1389,39 @@ generateHistTicks <- function(input_vec) {
     ticks <- c(ticks, upper_bound)
   }
   
-  ticks <- c(ticks, t_stat_low, t_stat_high)
-  current_tick <- ceiling(lower_bound / 50) * 50 # Closest number divisible by 50 higher than lower bound
+  ticks <- c(ticks, t_stat_low, t_stat_high) # Base vector
+  
+  #' For two numeric values, find the highest possible number (step) from a predefined list
+  #' that splits the range between these two values into at least 3 roughly equal segments.
+  #' Example: For numbers 0 and 60, such step could be 25 -> 0, 25, 50, 60
+  findStepLength <- function(a,b){
+    # Calculate the range
+    range_ <- b - a - ((b-a)/25) # Range minus a small fraction
+    
+    ticks <- c(50, 25, 10, 5, 2, 1, 0.5, 0.25, 0.1, 0.01, 0.001)
+    for (tick in ticks){
+      ticks_inside_range <- ceiling(range_ / tick) - 1
+      if (ticks_inside_range >= 2){ # At least 2 ticks in the range
+        return(tick)
+      }
+    }
+  }
+  step_length <- findStepLength(lower_bound, upper_bound)
+  
+  # Start with the closest number divisible by the step higher than lower bound
+  current_tick <- ceiling(lower_bound / step_length) * step_length
   
   while (current_tick < upper_bound) {
+    # If not too close to bounds/t-stats, add the tick to tick list
     if (abs(current_tick - lower_bound) >= 2 && 
         abs(current_tick - upper_bound) >= 2 &&
         abs(current_tick - t_stat_low) >= 2 &&
-        abs(current_tick - t_stat_high) >= 2
+        abs(current_tick - t_stat_high) >= 2 &&
+        abs(current_tick - mean_value) >= 2
         ) {
       ticks <- c(ticks, round(current_tick, 2))
     }
-    current_tick <- current_tick + 50
+    current_tick <- current_tick + step_length
   }
   
   # Add the mean value and sort the vector
@@ -1431,7 +1477,7 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
   # Construct the histogram
   quiet(
     t_hist_plot <- ggplot(data = hist_data, aes(x = t_w, y = after_stat(density))) +
-      geom_histogram(color = "black", fill = "#1261ff", bins = "80") +
+      geom_histogram(color = "black", fill = "#1261ff", bins = 80) +
       geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
       geom_vline(aes(xintercept = lower_tstat), color = "red", linewidth = 0.5) +
       geom_vline(aes(xintercept = upper_tstat), color = "red", linewidth = 0.5) +
@@ -2270,7 +2316,7 @@ getCaliperResultsVerbose <- function(res, ...){
 #' getElliottResults - Calculate Elliott's five tests and other statistics for a given dataset
 #'  - Source: https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA18583
 #'
-#' @param input_data A data frame containing at least the "t_w" and "reg_df" columns.
+#' @param input_data A data frame containing at least the "t_w" column.
 #' @param script_path Full path to the source script.
 #' @param temp_data_path Store temporary output here.
 #' @param data_subsets A character vector with the names of the subsets of data to test. By default, only "All data" is tested.
@@ -2294,7 +2340,7 @@ getElliottResults <- function(input_data, script_path, temp_data_path, data_subs
     is.numeric(d_point),
     is.numeric(CS_bins),
     is.logical(verbose),
-    all(c("t_w", "reg_df") %in% colnames(input_data))
+    all("t_w" %in% colnames(input_data))
   )
   # Static values, not necessary to adjust (probably)
   id <- 1 # No dependence
@@ -2340,7 +2386,7 @@ getElliottResults <- function(input_data, script_path, temp_data_path, data_subs
     
     # Convert t-statistics to p-values
     t_w <- data$t_w
-    df <- data$reg_df
+    df <- ifelse("reg_df" %in% colnames(data), data$reg_df, data$n_obs) # Nobs if DoF not available
     P <- 2 * pt(abs(t_w), df = df, lower.tail=FALSE) # p-values
      
     # Tests (each test returns the corresponding p-value)
@@ -2410,7 +2456,7 @@ getMaiveResults <- function(data, script_path, method = 3, weight = 0, instrumen
   # Read the source file
   source(script_path)
   # Validate that the necessary columns are present
-  required_cols <- c("effect_w", "se_w", "reg_df", "study_id")
+  required_cols <- c("effect_w", "se_w", "study_id")
   stopifnot(
     all(required_cols %in% names(data)),
     is.character(script_path),
@@ -2479,6 +2525,7 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
     is.numeric(max_groups_to_remove),
     is.logical(return_variable_vector_instead),
     is.logical(verbose),
+    length(colnames(input_data)) == length(input_var_list$bma_potential_var), # Matching dimensions
     all(c("bma_potential_var", "var_name", "group_category") %in% colnames(input_var_list))
   )
   # Remove any variables for which all values in data are the same

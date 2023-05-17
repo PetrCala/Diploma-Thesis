@@ -1,9 +1,9 @@
 run_this:
   variable_summary_stats: yes
   effect_summary_stats: yes
-  box_plot: no
-  funnel_plot: no
-  t_stat_histogram: no
+  box_plot: yes
+  funnel_plot: yes
+  t_stat_histogram: yes
   linear_tests: yes
   nonlinear_tests: yes
   exo_tests: yes
@@ -12,6 +12,9 @@ run_this:
   fma: yes
   ma_variables_description_table: yes
   bpe: yes
+data_files:
+  master_data_set_source: data_set_master_thesis_cala.csv
+  var_list_source: var_list_master_thesis_cala.csv
 adjustable_parameters:
   effect_name: years of schooling on wage
   formal_output_on: yes
@@ -79,9 +82,6 @@ folder_paths:
   ext_package_folder: ./pckg/
   graphics_folder: ./graphics/
   scripts_folder: ./scripts/
-data_files:
-  master_data_set_source: data_set_master_thesis_cala.csv
-  var_list_source: var_list_master_thesis_cala.csv
 script_files:
   endo_kink_source: endo_kink_master_thesis_cala.R
   elliott_source: elliott_master_thesis_cala.R
@@ -102,6 +102,7 @@ export_methods:
   ma_variables_description_table: Model averaging description table
   bpe_res: Best practice estimate
   bpe_econ_sig: Economic significance
+export_log_file_path: numeric_results.txt
 use_cache: yes
 cache_age: 3600.0
 development_on: no

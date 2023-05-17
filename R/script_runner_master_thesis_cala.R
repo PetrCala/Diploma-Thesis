@@ -22,15 +22,15 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
     "bma" = T,
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
@@ -39,8 +39,8 @@ user_params <- list(
   
   # CUSTOMIZABLE FILE NAMES
   data_files = list(
-    master_data_set_source = "DATASET_terka.csv", # Master data frame
-    var_list_source = "var_list_terka.csv" # Variable information file
+    master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
+    var_list_source = "var_list_master_thesis_cala.csv" # Variable information file
   ),
   
   # USER PARAMETERS
@@ -61,7 +61,7 @@ user_params <- list(
     # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
     # Data winsorization characteristics
     "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
-    "data_precision_type" = "1/SE", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
+    "data_precision_type" = "DoF", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
     # Handle missing data - only in development
     "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
     # Effect summary statistics confidence level
@@ -72,12 +72,12 @@ user_params <- list(
     # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
-    "funnel_effect_proximity" = 0.9, # Effect axis cutoff point (perc) on either side of mean
-    "funnel_maximum_precision" = 0.9, # Precision axis maximum value cutoff point (perc)
+    "funnel_effect_proximity" = 0.15, # Effect axis cutoff point (perc) on either side of mean
+    "funnel_maximum_precision" = 0.2, # Precision axis maximum value cutoff point (perc)
     "funnel_verbose" = TRUE, # If T, print cut outlier information
     # T-statistic histogram parameters
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
-    "t_hist_upper_cutoff" = 40, # Upper cutoff point for t-statistics
+    "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
     # Caliper test parameters
     "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
     "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
@@ -160,7 +160,7 @@ user_params <- list(
     "bpe_res" = "Best practice estimate",
     "bpe_econ_sig" = "Economic significance"
   ),
-  export_log_file_path = "console_log.txt",
+  export_log_file_path = "numeric_results.txt",
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
@@ -170,11 +170,10 @@ user_params <- list(
   # Development information
   development_on = TRUE, # Keep FALSE at all times
   development_params = list(
-    csv_suffix = "terka", # Suffix of the .csv files
+    csv_suffix = "master_thesis_cala", # Suffix of the .csv files
     xlsx_data_folder = "../Data/", # Folder with the .xlsx data frame
-    xlsx_data_name = "data_set_terka.xlsx", # Name of the .xlsx data frame
-    #xlsx_sheet_names = c("data_set", "var_list") # Sheet names to read
-    xlsx_sheet_names = c("DATASET", "var_list") # Sheet names to read
+    xlsx_data_name = "data_set_master_thesis_cala.xlsm", # Name of the .xlsx data frame
+    xlsx_sheet_names = c("data_set", "var_list") # Sheet names to read
   )
 )
 

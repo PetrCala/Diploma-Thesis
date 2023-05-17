@@ -105,7 +105,7 @@ folder_paths <- user_params$folder_paths # Paths to various folders
 # Validate folder existence
 validateFolderExistence(folder_paths$cache_folder)
 validateFolderExistence(folder_paths$data_folder, require_existence = T) # No overwriting
-validateFolderExistence(folder_paths$graphics_folder, require_existence = T) # No overwriting - change later
+validateFolderExistence(folder_paths$graphics_folder)
 validateFolderExistence(folder_paths$export_folder)
 validateFolderExistence(folder_paths$ext_package_folder, require_existence = T) # No overwriting
 

@@ -349,7 +349,7 @@ validateInputVarList <- function(input_var_list){
     if (all(is.na(validity_test))){ # NAs
       next
     }
-    if (!validity_test){
+    if (!all(validity_test)){
       problematic_var <- temp_row$var_name
       message("Percentage variables must have the effect summary stats GLTL value between 0 and 1.")
       stop(paste("Problematic variable:",problematic_var))
@@ -1391,7 +1391,9 @@ generateHistTicks <- function(input_vec) {
   
   ticks <- c(ticks, t_stat_low, t_stat_high) # Base vector
   
-  # Get the length of steps the function should check at
+  #' For two numeric values, find the highest possible number (step) from a predefined list
+  #' that splits the range between these two values into at least 3 roughly equal segments.
+  #' Example: For numbers 0 and 60, such step could be 25 -> 0, 25, 50, 60
   findStepLength <- function(a,b){
     # Calculate the range
     range_ <- b - a - ((b-a)/25) # Range minus a small fraction
@@ -1411,11 +1413,11 @@ generateHistTicks <- function(input_vec) {
   
   while (current_tick < upper_bound) {
     # If not too close to bounds/t-stats, add the tick to tick list
-    if (abs(current_tick - lower_bound) >= current_tick / 10 && 
-        abs(current_tick - upper_bound) >= current_tick / 10 &&
-        abs(current_tick - t_stat_low) >= current_tick / 10 &&
-        abs(current_tick - t_stat_high) >= current_tick / 10 &&
-        abs(current_tick - mean_value) >= current_tick / 10
+    if (abs(current_tick - lower_bound) >= 2 && 
+        abs(current_tick - upper_bound) >= 2 &&
+        abs(current_tick - t_stat_low) >= 2 &&
+        abs(current_tick - t_stat_high) >= 2 &&
+        abs(current_tick - mean_value) >= 2
         ) {
       ticks <- c(ticks, round(current_tick, 2))
     }
@@ -2523,6 +2525,7 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
     is.numeric(max_groups_to_remove),
     is.logical(return_variable_vector_instead),
     is.logical(verbose),
+    length(colnames(input_data)) == length(input_var_list$bma_potential_var), # Matching dimensions
     all(c("bma_potential_var", "var_name", "group_category") %in% colnames(input_var_list))
   )
   # Remove any variables for which all values in data are the same
