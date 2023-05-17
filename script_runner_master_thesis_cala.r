@@ -24,9 +24,9 @@ user_params <- list(
   run_this = list(
     "variable_summary_stats" = T,
     "effect_summary_stats" = T,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
     "linear_tests" = T,
     "nonlinear_tests" = T,
     "exo_tests" = T,
@@ -35,6 +35,12 @@ user_params <- list(
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
     "bpe" = T # Executable only after running BMA
+  ),
+  
+  # CUSTOMIZABLE FILE NAMES
+  data_files = list(
+    master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
+    var_list_source = "var_list_master_thesis_cala.csv" # Variable information file
   ),
   
   # USER PARAMETERS
@@ -129,14 +135,7 @@ user_params <- list(
     scripts_folder = './scripts/' # Store R scripts here
   ),
   
-  # CUSTOMIZABLE FILE NAMES
-  # Files within the data folder
-  data_files = list(
-    master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
-    var_list_source = "var_list_master_thesis_cala.csv" # Variable information file
-  ),
-  
-  # Files within the scripts folder
+  # SCRIPT FILE NAMES
   script_files = list(
     endo_kink_source = "endo_kink_master_thesis_cala.R", # Endogenous Kink model (Bom & Rachinger, 2019)
     elliott_source = "elliott_master_thesis_cala.R", # Elliott p-hacking test (Elliott et al., 2022)
@@ -146,8 +145,8 @@ user_params <- list(
   ),
   
   # EXPORT OPTIONS
-  "export_results" = TRUE, # Export all results if they differ from the existing ones - no extra time
-  "export_methods" = list( # Verbose names of all allowed export methods
+  export_results = TRUE, # Export all results if they differ from the existing ones - no extra time
+  export_methods = list( # Verbose names of all allowed export methods
     "variable_summary_stats" = "Variable summary stats",
     "effect_summary_stats" = "Effect summary stats",
     "linear_tests" = "Linear tests",
@@ -161,6 +160,7 @@ user_params <- list(
     "bpe_res" = "Best practice estimate",
     "bpe_econ_sig" = "Economic significance"
   ),
+  export_log_file_path = "numeric_results.txt",
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
@@ -174,7 +174,6 @@ user_params <- list(
     xlsx_data_folder = "../Data/", # Folder with the .xlsx data frame
     xlsx_data_name = "data_set_master_thesis_cala.xlsm", # Name of the .xlsx data frame
     xlsx_sheet_names = c("data_set", "var_list") # Sheet names to read
-    #xlsx_sheet_names = c("DATASET", "Studies") # Sheet names to read
   )
 )
 
@@ -190,11 +189,24 @@ user_param_file <- 'user_parameters.yaml'
 # Save the user parameters into the working directory
 yaml::write_yaml(user_params, user_param_file)
 
+
+# Create a folder for export (must be done here explicitly)
+if (!file.exists(user_params$folder_paths$export_folder)){
+  dir.create(folder_name)
+}
+# Save the console output to a log file in the results folder
+log_file_path <- paste0(user_params$folder_paths$export_folder, user_params$export_log_file)
+sink(log_file_path, split = TRUE) # Capture console output
+
+# Run the main file
 # Time the script run
 #start_time <- Sys.time()
 #source("main_master_thesis_cala.R")
 #end_time <- Sys.time()
 #elapsed_time <- end_time - start_time
 #print(elapsed_time)
-
+ 
 source("main_master_thesis_cala.R")
+
+# Close the connection to the file
+sink()
