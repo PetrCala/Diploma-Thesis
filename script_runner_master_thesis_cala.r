@@ -23,7 +23,7 @@ user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
     "variable_summary_stats" = T,
-    "effect_summary_stats" = F,
+    "effect_summary_stats" = T,
     "box_plot" = F,
     "funnel_plot" = F,
     "t_stat_histogram" = F,
@@ -119,17 +119,34 @@ user_params <- list(
     "bpe_econ_sig_verbose" = TRUE # If TRUE, print out the economic significance table into the console
   ),
   
-  # Customizable data file names
-  master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
-  var_list_source = "var_list_master_thesis_cala.csv", # Variable information file
-  stem_source = "stem_method_master_thesis_cala.R", # STEM method (Furukawa, 2019) - fixed package handling
-  selection_model_source = "selection_model_master_thesis_cala.R", # Selection model (Andrew & Kasy, 2019)
-  endo_kink_source = "endo_kink_master_thesis_cala.R", # Endogenous Kink model (Bom & Rachinger, 2019)
-  maive_source = "maive_master_thesis_cala.R", # MAIVE Estimator (Irsova et al., 2023)
+  # FOLDER PATHS
+  folder_paths = list(
+    cache_folder = './_cache/', # Store cache files here
+    data_folder = './data/', # Store data files here
+    export_folder = './results/', # Store results here
+    ext_package_folder = './pckg/', # Store external packages here
+    graphics_folder = './graphics/', # Store graphical output here
+    scripts_folder = './scripts/' # Store R scripts here
+  ),
+  
+  # CUSTOMIZABLE FILE NAMES
+  # Files within the data folder
+  data_files = list(
+    master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
+    var_list_source = "var_list_master_thesis_cala.csv" # Variable information file
+  ),
+  
+  # Files within the scripts folder
+  script_files = list(
+    endo_kink_source = "endo_kink_master_thesis_cala.R", # Endogenous Kink model (Bom & Rachinger, 2019)
+    elliott_source = "elliott_master_thesis_cala.R", # Elliott p-hacking test (Elliott et al., 2022)
+    maive_source = "maive_master_thesis_cala.R", # MAIVE Estimator (Irsova et al., 2023)
+    selection_model_source = "selection_model_master_thesis_cala.R", # Selection model (Andrew & Kasy, 2019)
+    stem_source = "stem_method_master_thesis_cala.R" # STEM method (Furukawa, 2019) - fixed package handling
+  ),
   
   # EXPORT OPTIONS
   "export_results" = TRUE, # Export all results if they differ from the existing ones - no extra time
-  "export_path" = './_results/', # Main export path for storing the results
   "export_methods" = list( # Verbose names of all allowed export methods
     "variable_summary_stats" = "Variable summary stats",
     "effect_summary_stats" = "Effect summary stats",
@@ -148,14 +165,17 @@ user_params <- list(
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
   use_cache = TRUE, # Store intermediate output in a cache in the /_cache/ folder.
-  cache_path = './_cache/', # Path to the folder where cache should be stored.
   cache_age = 3600, # In seconds - an hour
   
-  # PACKAGE HANDLING
-  ext_package_path = './_pckg/',
-  
   # Development information
-  development_on = FALSE # Keep FALSE at all times
+  development_on = TRUE, # Keep FALSE at all times
+  development_params = list(
+    csv_suffix = "master_thesis_cala", # Suffix of the .csv files
+    xlsx_data_folder = "../Data/", # Folder with the .xlsx data frame
+    xlsx_data_name = "data_set_master_thesis_cala.xlsm", # Name of the .xlsx data frame
+    xlsx_sheet_names = c("data_set", "var_list") # Sheet names to read
+    #xlsx_sheet_names = c("DATASET", "Studies") # Sheet names to read
+  )
 )
 
 # Working directory
