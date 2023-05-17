@@ -9,8 +9,9 @@ __pycache__/
 R/tests_master_thesis_cala.R
 
 # R output files and cache
-R/_cache/
-R/_results/
+R/_cache/*
+R/results/*
+R/data/*
 
 # Shell temp files
 **/*.sh~

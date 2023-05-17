@@ -84,7 +84,7 @@ Furthermore, the existence of all folders listed above is required by the main s
      study id's, and `<CELL>` is the cell in that column on the same row you want to calculate the
      study size on. Example: `=COUNTIF(B:B,B2)`. This calculates the study size of the study located
      in cell B2, assuming that the column `B` contains the study information.
-   * **reg_df** - Degrees of freedom associated with this estimate.
+   * **reg_df** (optional) - A column denoting the number of degrees of freedom associated with the regression. Can be omitted, in which case, n_obs is used for calculation.
  5. In the file `var_list_master_thesis_cala.csv` (or your renamed version), input the list of variables you are using in your data frame,
    along with these parameters:
    * **var_name** - Name of the variable exactly as it appears in the data frame columns. Must not include

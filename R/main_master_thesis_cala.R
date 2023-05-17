@@ -181,7 +181,7 @@ data <- runCachedFunction(
 )
 
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
-runCachedFunction(
+data <- runCachedFunction(
   validateData, user_params,
   verbose_function = validateDataVerbose,
   data, var_list
