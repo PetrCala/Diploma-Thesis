@@ -36,8 +36,13 @@ captureOutput <- function(expr) {
 #' 
 #' @param folder_name [character] Name of the folder. Specify in the format
 #' "./<name_of_the_folder>/
-validateFolderExistence <- function(folder_name){
+#' @param require_existence [logical] Only check the existence of the folder.
+#'  Raise an error in case the folder does not exist.
+validateFolderExistence <- function(folder_name, require_existence = FALSE){
   if (!file.exists(folder_name)){
+    if (require_existence){
+      stop(paste("The folder", folder_name, "must exist in the working directory."))
+    }
     dir.create(folder_name)
   }
 }
@@ -239,6 +244,43 @@ loadPackages <- function(package_list) {
     }
   )
   print("All packages loaded successfully")
+}
+
+#' @title Load External Packages
+#' @description This function is used to load all external packages located in a specified folder.
+#' It iterates over the package folders and attempts to load each package using devtools::load_all function.
+#' If any error occurs during the loading process, it exits the function and throws a custom error message.
+#'
+#' @param pckg_folder [character] This parameter should be a string representing the path to the directory 
+#' containing the packages that are to be loaded. The path can be either absolute or relative.
+#'
+#' @return The function doesn't explicitly return a value. It's used for the side effect of loading packages 
+#' into the R environment.
+#'
+#' @examples
+#' loadExternalPackages("path/to/your/packages")
+#'
+#' @seealso
+#' \code{\link[devtools]{load_all}}
+#'
+#' @export
+loadExternalPackages <- function(pckg_folder){
+  pckgs <- list.files(pckg_folder, full.names = TRUE)
+  # Iterate over the package folders
+  for (pckg in pckgs) {
+    print(paste("Loading an external package ", pckg, "...", sep = ""))
+    tryCatch(
+      {
+        quietPackages(
+          devtools::load_all(pckg)
+        )
+      },
+      error = function(e) {
+        message("External package installation failed. Exiting the function...")
+        stop(customError("External package installation failed"))
+      }
+    )
+  }
 }
 
 
@@ -2795,6 +2837,61 @@ getBMAExcelBool <- function(input_var_list, bma_formula, verbose = T){
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
 
+#' Copy of the lowRankQP function from the LowRankQP package which is no longer available
+#' Source: https://cran.r-project.org/package=LowRankQP
+lowRankQPCopy <- function(Vmat,dvec,Amat,bvec,uvec,method="PFCF",verbose=FALSE,niter=200) {
+   # Some Type Checking
+   typeError <- FALSE
+   if ( nrow(Vmat)!=length(dvec) )
+   {
+        print("ERROR: nrow(Vmat)!=length(dvec)")
+        typeError <- TRUE
+   }
+   if ( nrow(Vmat)!=ncol(Amat) )
+   {
+        print("ERROR: nrow(Vmat)!=ncol(Amat)")
+        typeError <- TRUE
+   }
+   if ( nrow(Vmat)!=length(uvec) )
+   {
+        print("ERROR: nrow(Vmat)!=length(uvec)")
+        typeError <- TRUE
+   }
+   if ( nrow(Amat)!=length(bvec) )
+   {
+        print("ERROR: nrow(Amat)!=length(bvec)")
+        typeError <- TRUE
+   }
+   if (typeError) stop("ERROR: check input dimensions.")
+
+   n <- nrow(Vmat)
+   m <- ncol(Vmat)
+   p <- nrow(Amat)
+   
+   alpha <- as.array(matrix( 0.0, n, 1 ))
+   beta  <- as.array(matrix( 0.0, p, 1 ))
+   xi    <- as.array(matrix( 0.0, n, 1 ))
+   zeta  <- as.array(matrix( 0.0, n, 1 ))
+
+   # Create numerical version of method for C call.
+
+   if (method=="LU")   methodNum <- 1
+   if (method=="CHOL") methodNum <- 2
+   if (method=="SMW")  methodNum <- 3
+   if (method=="PFCF") methodNum <- 4
+
+   res <- .C("LowRankQP", n, m, p, as.integer(methodNum), as.integer(verbose),
+         as.integer(niter), Vmat, dvec, t(Amat), bvec, uvec, alpha, beta, xi, 
+         zeta, PACKAGE="LowRankQP")
+
+   alpha <- res[[12]]
+   beta  <- res[[13]]
+   xi    <- res[[14]]
+   zeta  <- res[[15]]
+
+   list(alpha=alpha, beta=beta, xi=xi, zeta=zeta)
+}
+
 #' runFMA - Run Frequentist Model Averaging
 #'
 #' This function takes a Bayesian model averaging object, a data frame, and a list of variables
@@ -2815,7 +2912,8 @@ getBMAExcelBool <- function(input_var_list, bma_formula, verbose = T){
 #' Afterward, the frequentist model averaging is performed on the ordered and preprocessed data.
 #' Finally, the function extracts and prints the results as a data frame.
 #'
-#' This function uses the LowRankQP package for optimization.
+#' This function uses the lowRankQPCopy function, a copy of the LowRankQP function from the
+#' LowRankQP package, which is not available anymore.
 runFMA <- function(bma_data, bma_model, verbose = T){
   # Validate input
   stopifnot(
@@ -2877,7 +2975,7 @@ runFMA <- function(bma_data, bma_model, verbose = T){
   b <- matrix(1,1,1)
   u <- matrix(1,M,1)
   quiet(
-    optim <- LowRankQP(Vmat=G,dvec=a,Amat=A,bvec=b,uvec=u,method="LU",verbose=FALSE)
+    optim <- LowRankQP::LowRankQP(Vmat=G,dvec=a,Amat=A,bvec=b,uvec=u,method="LU",verbose=FALSE)
   )
   weights <- as.matrix(optim$alpha)
   beta.scaled <- beta%*%weights

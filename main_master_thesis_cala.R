@@ -35,13 +35,13 @@ if (length(commandArgs()) == 0) {
 packages <- c(
   "AER", # Applied econometrics with R
   "BMS", # bayesian model averaging
-  "car", # Variance Inflation Factor
   "DescTools", # Descriptive statistics and data analysis
-  "LowRankQP", # Solving convex quadratic optimization problems
   "bayesm", # bayesian modeling and inference
   "cachem", # Cache system - creating and deleting cache files
+  "car", # Variance Inflation Factor
   "corrplot", # Graphical display of correlation matrices
   "data.table", # Fast data manipulation and aggregation
+  "devtools", # Loading local packages
   "ddpcr", # Analysis of Droplet Digital PCR (ddPCR) data
   "dplyr", # Data manipulation and data wrangling
   "fdrtool", # Elliott et al. (2022)
@@ -102,6 +102,10 @@ adj_params <- user_params$adjustable_parameters # Various parameters
 # Create temporary folders if they do not exist yet
 validateFolderExistence(user_params$cache_path)
 validateFolderExistence(user_params$export_path)
+validateFolderExistence(user_params$ext_package_path, require_existence = T) # No overwriting
+
+# Load external packages
+loadExternalPackages(user_params$ext_package_path)
 
 # Add the name-customizable files to the source file vector
 source_files <- c(

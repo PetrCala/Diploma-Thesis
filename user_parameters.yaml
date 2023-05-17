@@ -96,4 +96,5 @@ export_methods:
 use_cache: yes
 cache_path: ./_cache/
 cache_age: 3600.0
+ext_package_path: ./_pckg/
 development_on: no
