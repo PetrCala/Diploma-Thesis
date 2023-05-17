@@ -61,7 +61,7 @@ The distribution folder is structured as follows:
 The script run will also create these temporary folders:
 * `_cache/` -> Temporary cache files will be stored here.
 
-Furthermore, the existence of all folders listed above is required by the main script, and will be automatically enforced. If you wish to change the name of any of these folders, you may do so either from within the `script_runner_master_thesis_cala.R`, or by modifying the `user_parameters.yaml` file.
+Furthermore, the existence of all folders will be verified. Note that some do not appear in the repository, as there is nothing to distribute within these folders. All results (along with the folders) will be created and updated automatically.
 
 ## Prerequisites:
  1. Make sure that your working directory contains all the files from the `Dist/` folder.

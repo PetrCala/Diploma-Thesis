@@ -70,6 +70,7 @@ user_params <- list(
     "box_plot_group_by_factor_1" = "study_name", # Group by study name
     "box_plot_group_by_factor_2" = "country", # Group by country
     # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
+    "box_plot_max_studies" = 60, # Maximum number of studies to display per single plot - more plots otherwise
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
     "funnel_effect_proximity" = 0.15, # Effect axis cutoff point (perc) on either side of mean
