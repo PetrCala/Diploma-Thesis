@@ -192,11 +192,12 @@ yaml::write_yaml(user_params, user_param_file)
 
 
 # Create a folder for export (must be done here explicitly)
-if (!file.exists(user_params$folder_paths$export_folder)){
-  dir.create(folder_name)
+export_folder_path <- user_params$folder_path$export_folder
+if (!file.exists(export_folder_path)){
+  dir.create(export_folder_path)
 }
 # Save the console output to a log file in the results folder
-log_file_path <- paste0(user_params$folder_paths$export_folder, user_params$export_log_file)
+log_file_path <- paste0(export_folder_path, user_params$export_log_file)
 sink(log_file_path, split = TRUE) # Capture console output
 
 # Run the main file
