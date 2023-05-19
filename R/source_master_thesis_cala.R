@@ -278,14 +278,16 @@ loadPackages <- function(package_list) {
 #'
 #' @export
 loadExternalPackages <- function(pckg_folder){
-  pckgs <- list.files(pckg_folder, full.names = TRUE)
+  package_list <- list.files(pckg_folder, full.names = TRUE)
+  package_names <- list.files(pckg_folder, full.names = FALSE) # Package names only
   # Iterate over the package folders
-  for (pckg in pckgs) {
-    print(paste("Loading an external package ", pckg, "...", sep = ""))
+  installed_packages <- package_names %in% rownames(installed.packages())
+  if (any(installed_packages == FALSE)) {
+    print(paste("Installing an external package ", package_names[!installed_packages], "...", sep = ""))
     tryCatch(
       {
-        quiet(
-          devtools::load_all(pckg)
+        quietPackages(
+          install.packages(package_list[!installed_packages], repos = NULL, type = "source")
         )
       },
       error = function(e) {
@@ -294,7 +296,22 @@ loadExternalPackages <- function(pckg_folder){
       }
     )
   }
+  # Package loading
+  print("Attempting to load the external packages...")
+  tryCatch(
+    {
+      quietPackages(
+        invisible(lapply(package_names, library, character.only = TRUE))
+      )
+    },
+    error = function(e) {
+      message("External package loading failed. Exiting the function...")
+      stop(customError("External package loading failed"))
+    }
+  )
+  print("All external packages loaded successfully")
 }
+
 
 
 ######################### DATA PREPROCESSING #########################

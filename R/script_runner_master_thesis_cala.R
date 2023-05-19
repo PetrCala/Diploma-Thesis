@@ -15,7 +15,7 @@
 rm(list = ls()) 
 
 # Load packages
-library('yaml') # In-built package for handling parameters
+if (!require('yaml')) install.packages('yaml'); library('yaml')                   # yaml - handle params
 if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi') # Working directory
 
 # Define the initial parameters

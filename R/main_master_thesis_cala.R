@@ -17,13 +17,13 @@
 rm(list = ls()) 
 options(scipen=999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
-
+ 
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
 user_param_file <- "user_parameters.yaml" # File with user parameters
 
-# Working directory - change only if the script is being ran as the master script (not imported)
-if (length(commandArgs()) == 0) {
+# Working directory - change only if the script is being ran interactively
+if(interactive()) {
   if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
   if (! getwd() == dirname(getActiveDocumentContext()$path)){
     setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
