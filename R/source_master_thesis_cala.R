@@ -3651,7 +3651,26 @@ getEconomicSignificanceVerbose <- function(res,...){
 ######################### CACHE HANDLING #########################
 
 #' Cache a function using the memoise package if so desired
+#' 
+#' Input a function and memoise it based on disk cache if caching is on.
+#' If not, return the function as is instead.
+#' 
+#' @param f [function] The function to be memoised.
+#' @param is_cache_on [logical] Indicates whether cache should be used.
+#' @param cache_path [character] Path to the folder where cache should be stored.
+#'  Defaults to './_cache/'.
+#' @param cache_age [int] In seconds, how long the cache should exist after creation.
+#'  They get deleted with every script run. Defaults to 3600 (1 hour).
+#' @return Function. Memoised or not, based on the is_cache_on parameter.
 cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/', cache_age = 3600) {
+  # Validate input
+  stopifnot(
+    is.function(f),
+    is.logical(is_cache_on),
+    is.character(cache_path),
+    is.integer(cache_age)
+  )
+  # Main
   if (is_cache_on) {
     # Get the disk cache
     disk_cache <- cachem::cache_disk(dir = cache_path, max_size = 1e9, max_age = cache_age)
@@ -3661,8 +3680,20 @@ cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/', cache_age = 
   }
 }
 
-#' verbose_function will be a function with a single input, the result of the
-#' cached function
+#' Run a cached function by using the function call from cacheIfNeeded.
+#' 
+#' Input the function call from cacheIfNeeded, specify the user parameters list,
+#' and input the verbose input (as a function) that should get printed from
+#' the cached function call. This is because if a function call results are found
+#' in a cache, the function does not get called, so nothing gets logged into the 
+#' console.
+#' 
+#' @param f [function] Cached (or bare) function that should be called.
+#' @param user_params [list] A list with user parameters.
+#' @param verbose_function [function] A function with the verbose output of the 
+#'  function f.
+#' @inheritDotParams The parameters with which the function should be called.
+#' @return The returned object from the function call.
 runCachedFunction <- function(f, user_params, verbose_function, ...){
   # Validate input
   stopifnot(
