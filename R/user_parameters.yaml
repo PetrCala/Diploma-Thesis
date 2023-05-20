@@ -1,20 +1,31 @@
 run_this:
-  variable_summary_stats: yes
-  effect_summary_stats: yes
-  box_plot: yes
-  funnel_plot: yes
-  t_stat_histogram: yes
-  linear_tests: yes
-  nonlinear_tests: yes
-  exo_tests: yes
-  p_hacking_tests: yes
-  bma: yes
-  fma: yes
-  ma_variables_description_table: yes
-  bpe: yes
+  variable_summary_stats: no
+  effect_summary_stats: no
+  box_plot: no
+  funnel_plot: no
+  t_stat_histogram: no
+  linear_tests: no
+  nonlinear_tests: no
+  exo_tests: no
+  p_hacking_tests: no
+  bma: no
+  fma: no
+  ma_variables_description_table: no
+  bpe: no
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
+required_cols:
+  obs_id: obs_n
+  study_id: study_id
+  study_name: study_name
+  effect: effect
+  se: se
+  t_stat: t_stat
+  precision: .na
+  n_obs: n_obs
+  study_size: .na
+  reg_df: .na
 adjustable_parameters:
   effect_name: years of schooling on wage
   formal_output_on: yes

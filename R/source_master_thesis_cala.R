@@ -517,85 +517,19 @@ handleMissingDataVerbose <- function(...){
 }
 
 
-#' Winsorize input data
-#'
-#' This function applies Winsorization to the data to minimize the effect of outliers on the statistical analysis.
-#' Winsorization is a process of limiting extreme values by replacing them with the next lowest or
-#' highest value that is within a certain percentile range.
-#'
-#' @param input_data [data.frame] A data frame containing the main effect (effect),
-#' standard error of the effect (se), and t-statistic (t_stat) columns.
-#' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
-#' extreme values to be replaced with the nearest non-extreme value.
-#' @param precision_type [character] Type of precision to use. Can be one of the following:
-#'  1/SE - Inverse of the standard error is used.
-#'  DoF - Square root of the degrees of freedom is used.
-#'  Deafults to "DoF".
-#' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
-#' and t-statistic columns have been Winsorized.
-winsorizeData <- function(input_data, win_level, precision_type = "DoF"){
-  # Validate input
-  stopifnot(
-    is.data.frame(input_data),
-    is.numeric(win_level),
-    is.character(precision_type),
-    win_level > 0,
-    win_level < 1,
-    all(c('effect', 'se') %in% colnames(input_data)),
-    !(any(is.na(input_data$effect))), # No missing effect values
-    !(any(is.na(input_data$se))), # No missing SE values
-    precision_type %in% c("1/SE", "DoF")
-    )
-  # Get the winsorization interval
-  win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
-  # Create a t-stat column if it does not exist in the data
-  if (!("t_stat") %in% colnames(input_data)){
-    input_data$t_stat <- input_data$effect / input_data$se
-  }
-  # Statistic preprocessing
-  input_data$effect_w <- Winsorize(x = input_data$effect, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$se_w <- Winsorize(x = input_data$se, minval = NULL, maxval = NULL, probs = win_int)
-  if (precision_type == "1/SE"){
-    input_data$se_precision_w <- 1/input_data$se_w
-  } else if (precision_type == "DoF"){
-    if ("reg_df" %in% colnames(input_data)){ # Explicit because RRR
-      input_data$se_precision_w <- sqrt(input_data$reg_df) # DoF if available
-    } else {
-      input_data$se_precision_w <- sqrt(input_data$n_obs) # N. obs instead
-    }
-  } else {
-    stop("Invalid type of precision")
-  }
-  input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$significant_w <- c(rep(0,nrow(input_data)))
-  input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
-  # Return 
-  print("Data winsorized successfully.")
-  return(input_data)
-}
-
-
-#' Verbose output for the winsorizeData function
-winsorizeDataVerbose <- function(...){
-  print("Data winsorized successfully.")
-}
-
 #' A very restrictive function for validating the correct data types
 #' 
 #' Check that all values across all columns have the correct data type, check that all dummy groups
 #' are correctly specified across all observations (only one 1, otherwise 0), and 
 #' stop and print out the error message, if it is not so.
 #' 
-#' Allows for skipping NA values, if your data set is incomplete. Otherwise
+#' Allows for skipping NA values, if your data set is incomplete.
 #' 
 #' @param input_data [data.frame] The data frame to be validated
 #' @param input_var_list [data.frame] The data frame that specifies the data type of each variable
 #' @param ignore_missing [bool] If TRUE, allow missing values in the data frame. Deafults to FALSE.
 validateData <- function(input_data, input_var_list, ignore_missing = F){
   ### Static
-  # Columns that the data frame must contain
-  expected_columns <- c("study_name", "study_id", "effect", "se", "t_stat", "n_obs", "study_size")
-  # Reference variable restrictions
   ref_prone_types <- c("dummy", "perc") # Data types that always must have a single reference variable
   ref_forbidden_categories <- c("bma_potential_var", "bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
   ### End of static
@@ -604,8 +538,7 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   stopifnot(
     is.data.frame(input_data),
     is.data.frame(input_var_list),
-    is.logical(ignore_missing),
-    all(expected_columns %in% colnames(input_data))
+    is.logical(ignore_missing)
   )
   
   # Do not pass if any values are NA. 
@@ -704,6 +637,210 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
 validateDataVerbose <- function(...){
   print("All values across all columns of the main data frame are of the correct type.")
 }
+
+#' A list of columns that should always appear in the data frame (modified)
+#' 
+#' Return a list of column names that should always appear in the data frame,
+#' after renaming to script-accepted names. As values to the list names,
+#' put booleans that indicate whether that column must appear in the source data
+#' frame (TRUE), or can be added during preprocessing (FALSE).
+#' 
+#' @param names_only [logical] If TRUE, return names only.
+getDefaultColumns <- function(names_only=TRUE){
+  def_cols <- list(
+    "obs_id" = TRUE,
+    "study_id" = TRUE,
+    "study_name" = TRUE,
+    "effect" = TRUE,
+    "se" = TRUE,
+    "t_stat" = FALSE,
+    "precision" = FALSE,
+    "n_obs" = TRUE,
+    "study_size" = FALSE,
+    "reg_df" = FALSE
+  )
+  if (names_only){
+    return(as.vector(names(def_cols)))
+  }
+  return(def_cols)
+}
+
+#' Specify to what should be initialized default columns that the user
+#' fails to provide in their dataset. Return the values of the new column.
+#' Should be called from within the renameUserColumns function.
+#' 
+#' Currently handles these four columns:
+#'  - t_stat - Calculated as effect / standard error
+#'  - study_size - Calculated automaticcaly using the purrr package as the
+#'    number of estimates reported by each study. Uses "study_id" column for
+#'    calculation.
+#'  - reg_df - Sets to the number of observations.
+#'  - precision - Calculated using an external parameter precision_type.
+#'    This must be passed as a named dot argument to the function.
+#'    
+#' @param col_name [character] Name of the column to handle.
+#' @inheritDotParams Additional arguments - used for specification of more
+#'  complicated measures such as precision.
+#' @return function
+getMissingDefaultColumnsHandling <- function(col_name){
+  # Specify the columns that can be omitted by the user
+  possible_missing_columns <- c("t_stat", "study_size", "reg_df", "precision")
+  if (!col_name %in% possible_missing_columns){
+    stop("Incorrect name of the missing column to handle.")
+  }
+  # Validate that this column is not required
+  default_columns <- getDefaultColumns(names_only = FALSE)
+  val <- default_columns[[col_name]]
+  # Non-changeable value. Modify the default column setting if necessary.
+  if (val == TRUE){
+    message(paste(val,"is a non-changeable value."))
+    stop("This value must always be provided by the user.")
+  }
+  # Return the function for this column
+  if (col_name == "t_stat"){
+    # Handle t-stat
+    f <- function(input_data,...){ input_data$effect / input_data$se }
+  } else if (col_name == "study_size"){
+    # Handle study size
+    f <- function(input_data,...){
+      freq_table <- table(input_data$study_id) # Number of occurances of each study id
+      # Study size - for each row of the data frame
+      new_col <-  purrr::map_int(input_data$study_id, ~freq_table[as.character(.x)])
+      return(new_col)
+    }
+  } else if (col_name == "reg_df"){
+    # Handle DoF
+    f <- function(input_data,...){ input_data$n_obs }
+  } else if (col_name == "precision"){
+    # Handle precision
+    f <- function(input_data, precision_type){
+      if (precision_type == "1/SE"){
+        return ( 1/input_data$se_w )
+      } else if (precision_type == "DoF"){
+          return ( sqrt(input_data$reg_df) )
+      } else {
+        stop("Invalid type of precision")
+      }
+    }
+  } else {
+    stop("Incorrect column name.")
+  }
+  # Return the function call
+  return(f)
+}
+
+#' Modify the user-defined column names so that they fit the script readable names
+#' 
+#' If any columns are set to NA by the user, they will be automatically initialized
+#' to the values defined in the getMissingDefaultHandling function.
+renameUserColumns <- function(input_data, required_cols_list, precision_type){
+  # Default column names for the script recognition
+  def_cols_list <- getDefaultColumns(names_only = FALSE) # Whole list
+  def_cols <- names(def_cols_list) # Names of columns
+  # Validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is(required_cols_list, "list")
+  )
+  # Extract the expected colnames (by script)
+  expected_colnames <- names(required_cols_list)
+  if (!all(expected_colnames == def_cols)){
+    message("You have modified the names of the source columns in the required_cols list.")
+    message("Please rename the columns back to:")
+    message(def_cols)
+    stop("Incorrect source column names.")
+  }
+  # Iterate over all columns and validate their presence
+  for (col_name in expected_colnames){
+    required <- def_cols_list[[col_name]] # Boolean
+    user_col_name <- required_cols_list[[col_name]]
+    # Column required, but name in user data not specified (set to NA)
+    if (is.logical(user_col_name)){
+      if (required & !is.na(user_col_name)){
+        # Required, but set to NA (not present in data set)
+        message(paste("The column", col_name, "must be present in your data."))
+        message("Make sure its expected name in required_cols is correctly specified.")
+        stop("Required column not present in source data.")
+      }
+      # Missing columns in data
+      if (is.na(user_col_name)){
+        # Get the function call for the new column
+        new_col_function <- getMissingDefaultColumnsHandling(col_name)
+        # Get the values of the column
+        new_col_values <- new_col_function(input_data, precision_type = precision_type)
+        input_data[[col_name]] <- new_col_values # Initialize the column with these values
+      }
+    } else if (! user_col_name %in% colnames(input_data)){
+    # Check that the user-defined name appears in the data - for non-character only
+      message(paste("The column name", user_col_name, "does not appear in your data."))
+      stop("Incorrect user column specification.")
+    }
+    # Rename the column in source data from user's name to script recognized
+    names(input_data)[names(input_data) == user_col_name] <- col_name
+  }
+  # Print verbose output and return new data frame
+  renameUserColumnsVerbose()
+  return(input_data)
+}
+
+#' Verbose output for the renameUserColumns function
+renameUserColumnsVerbose <- function(...){
+  print("Several data frame columns renamed to fit the script expected form.")
+}
+
+#' Winsorize input data
+#'
+#' This function applies Winsorization to the data to minimize the effect of outliers on the statistical analysis.
+#' Winsorization is a process of limiting extreme values by replacing them with the next lowest or
+#' highest value that is within a certain percentile range.
+#'
+#' @param input_data [data.frame] A data frame containing the main effect (effect),
+#' standard error of the effect (se), and t-statistic (t_stat) columns.
+#' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
+#' extreme values to be replaced with the nearest non-extreme value.
+#' @param precision_type [character] Type of precision to use. Can be one of the following:
+#'  1/SE - Inverse of the standard error is used.
+#'  DoF - Square root of the degrees of freedom is used.
+#'  Deafults to "DoF".
+#' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
+#' and t-statistic columns have been Winsorized.
+winsorizeData <- function(input_data, win_level, precision_type = "DoF"){
+  # Validate input
+  required_cols <- getDefaultColumns()
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(win_level),
+    is.character(precision_type),
+    win_level > 0,
+    win_level < 1,
+    all(required_cols %in% colnames(input_data)),
+    !(any(is.na(input_data$effect))), # No missing effect values
+    !(any(is.na(input_data$se))), # No missing SE values
+    precision_type %in% c("1/SE", "DoF")
+    )
+  # Get the winsorization interval
+  win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
+  # Create a t-stat column if it does not exist in the data
+  if (!("t_stat") %in% colnames(input_data)){
+    input_data$t_stat <- input_data$effect / input_data$se
+  }
+  # Statistic preprocessing
+  input_data$effect_w <- Winsorize(x = input_data$effect, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$se_w <- Winsorize(x = input_data$se, minval = NULL, maxval = NULL, probs = win_int)
+  # Handle precision
+  input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
+  input_data$significant_w <- c(rep(0,nrow(input_data)))
+  input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
+  # Return 
+  winsorizeDataVerbose()
+  return(input_data)
+}
+
+#' Verbose output for the winsorizeData function
+winsorizeDataVerbose <- function(...){
+  print("Data winsorized successfully.")
+}
+
 
 #' An auxiliary method to limit the data frame to one study only. Use only for testing
 #' 
@@ -1201,13 +1338,13 @@ getLargeBoxPlot <- function(input_data, max_studies = 60, ...){
 #' @return [list] Filter for the data without outliers
 getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 0.2, verbose=T) {
   # Check column validity
-  expected_cols <- c('effect_w', 'se_precision_w')
+  required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     is.numeric(effect_proximity),
     is.numeric(maximum_precision),
     is.logical(verbose),
-    all(expected_cols %in% colnames(input_data)),
+    all(required_cols %in% colnames(input_data)),
     effect_proximity <= 1,
     effect_proximity >= 0,
     maximum_precision <= 1,
@@ -1215,7 +1352,7 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
   )
   
   # Get source values
-  obs <- input_data$obs_n
+  obs <- input_data$obs_id
   effect <- input_data$effect_w
   precision <- input_data$se_precision_w
   
@@ -1548,7 +1685,7 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
 #' @param data [data.frame] Input data
 getLinearTests <- function(data) {
   # Validate that the necessary columns are present
-  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
+  required_cols <- getDefaultColumns()
   stopifnot(all(required_cols %in% names(data)))
   # OLS
   ols <- lm(formula = effect_w ~ se_w, data = data)
@@ -1842,7 +1979,8 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data, script_paths) {
   # Validate the input
-  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
+  
+  required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     all(required_cols %in% names(input_data)),
@@ -3068,6 +3206,7 @@ runFMA <- function(bma_data, bma_model, verbose = T){
   u <- matrix(1,M,1)
   quiet(
     optim <- LowRankQP::LowRankQP(Vmat=G,dvec=a,Amat=A,bvec=b,uvec=u,method="LU",verbose=FALSE)
+    
   )
   weights <- as.matrix(optim$alpha)
   beta.scaled <- beta%*%weights

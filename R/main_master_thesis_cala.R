@@ -59,6 +59,7 @@ packages <- c(
   "NlcOptim", # Elliott et al. (2022) - CoxShi
   "plm", # Random Effects, Between Effects
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
+  "purrr", # Smart tables, study size
   "pracma", # MAIVE Estimator, Elliott et al. (2022)
   "rddensity", # Elliott et al. (2022)
   "readr", # Reading data into R from various file formats
@@ -171,20 +172,32 @@ data <- runCachedFunction(
   data, var_list, allowed_missing_ratio = adj_params$allowed_missing_ratio
 )
 
-# Winsorize the data
-data <- runCachedFunction(
-  winsorizeData, user_params,
-  verbose_function = winsorizeDataVerbose,
-  data,
-  win_level = adj_params$data_winsorization_level,
-  precision_type = adj_params$data_precision_type
-)
-
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
 data <- runCachedFunction(
   validateData, user_params,
   verbose_function = validateDataVerbose,
   data, var_list
+)
+
+# Rename source columns to fit the script expected colnames
+data <- renameUserColumns(data, user_params$required_cols,
+                          precision_type = adj_params$data_precision_type)
+
+
+#data <- runCachedFunction(
+#  renameUserColumns, user_params,
+#  verbose_function = renameUserColumnsVerbose,
+#  data,
+#  user_params$required_cols
+#)
+
+
+# Winsorize the data
+data <- runCachedFunction(
+  winsorizeData, user_params,
+  verbose_function = winsorizeDataVerbose,
+  data,
+  win_level = adj_params$data_winsorization_level
 )
 
 # Subset data using the conditions specified in the customizable section
