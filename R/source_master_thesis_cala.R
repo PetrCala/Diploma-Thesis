@@ -548,6 +548,19 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
     }
   }
   
+  ### Column names validation
+  valid_col_pattern <- "^[a-zA-Z0-9._]+$"
+  
+  # Check if all column names match the pattern
+  valid_column_names <- sapply(colnames(input_data), function(x) grepl(valid_col_pattern, x))
+  
+  if (!all(valid_column_names)){
+    special_char_cols <- colnames(input_data)[!valid_column_names]
+    message("These columns contain special characters. Please modify the columns so that there are no such characters.")
+    message(special_char_cols)
+    stop("Invalid column names")
+  }
+  
   ### Dummy group validation
   # Names of dummy variable columns
   dummy_group_vars <- as.vector(unlist(input_var_list[input_var_list$data_type == "dummy", "var_name"]))
@@ -3659,7 +3672,7 @@ getEconomicSignificanceVerbose <- function(res,...){
 #' @param is_cache_on [logical] Indicates whether cache should be used.
 #' @param cache_path [character] Path to the folder where cache should be stored.
 #'  Defaults to './_cache/'.
-#' @param cache_age [int] In seconds, how long the cache should exist after creation.
+#' @param cache_age [numeric] In seconds, how long the cache should exist after creation.
 #'  They get deleted with every script run. Defaults to 3600 (1 hour).
 #' @return Function. Memoised or not, based on the is_cache_on parameter.
 cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/', cache_age = 3600) {
@@ -3668,7 +3681,7 @@ cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/', cache_age = 
     is.function(f),
     is.logical(is_cache_on),
     is.character(cache_path),
-    is.integer(cache_age)
+    is.numeric(cache_age)
   )
   # Main
   if (is_cache_on) {

@@ -27,14 +27,14 @@ user_params <- list(
     "box_plot" = F,
     "funnel_plot" = F,
     "t_stat_histogram" = F,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
-    "bma" = T,
-    "fma" = T, # Executable only after running BMA
-    "ma_variables_description_table" = T, # Executable only after running BMA
-    "bpe" = T # Executable only after running BMA
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
+    "bma" = F,
+    "fma" = F, # Executable only after running BMA
+    "ma_variables_description_table" = F, # Executable only after running BMA
+    "bpe" = F # Executable only after running BMA
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -214,11 +214,7 @@ if (!file.exists(export_folder_path)){
 }
 # Save the console output to a log file in the results folder
 log_file_path <- paste0(export_folder_path, user_params$export_log_file)
-# Remove if exists
-if (file.exists(log_file_path)){
-  file.remove(log_file_path)
-}
-sink(log_file_path, split = TRUE) # Capture console output
+sink(log_file_path, split = TRUE, append = FALSE) # Capture console output
 
 # Run the main file
 # Time the script run
