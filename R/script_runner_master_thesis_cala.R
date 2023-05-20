@@ -22,19 +22,19 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
     "box_plot" = F,
-    "funnel_plot" = T,
+    "funnel_plot" = F,
     "t_stat_histogram" = F,
     "linear_tests" = T,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
-    "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F # Executable only after running BMA
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "bpe" = T # Executable only after running BMA
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -214,6 +214,10 @@ if (!file.exists(export_folder_path)){
 }
 # Save the console output to a log file in the results folder
 log_file_path <- paste0(export_folder_path, user_params$export_log_file)
+# Remove if exists
+if (file.exists(log_file_path)){
+  file.remove(log_file_path)
+}
 sink(log_file_path, split = TRUE) # Capture console output
 
 # Run the main file
