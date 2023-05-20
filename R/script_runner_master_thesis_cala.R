@@ -25,9 +25,9 @@ user_params <- list(
     "variable_summary_stats" = F,
     "effect_summary_stats" = F,
     "box_plot" = F,
-    "funnel_plot" = F,
+    "funnel_plot" = T,
     "t_stat_histogram" = F,
-    "linear_tests" = F,
+    "linear_tests" = T,
     "nonlinear_tests" = F,
     "exo_tests" = F,
     "p_hacking_tests" = F,
@@ -76,6 +76,7 @@ user_params <- list(
     # Data winsorization characteristics
     "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
     "data_precision_type" = "DoF", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
+    "winsorize_precision" = TRUE, # If TRUE, winsorize precision (for different precision types)
     #   Note: The precision will be used only in case you do not provide a column with precision yourself
     # Handle missing data - only in development
     "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
@@ -213,7 +214,7 @@ if (!file.exists(export_folder_path)){
 }
 # Save the console output to a log file in the results folder
 log_file_path <- paste0(export_folder_path, user_params$export_log_file)
-# sink(log_file_path, split = TRUE) # Capture console output
+sink(log_file_path, split = TRUE) # Capture console output
 
 # Run the main file
 # Time the script run
@@ -226,4 +227,4 @@ log_file_path <- paste0(export_folder_path, user_params$export_log_file)
 source("main_master_thesis_cala.R")
 
 # Close the connection to the file
-# sink()
+sink()

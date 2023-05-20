@@ -2,9 +2,9 @@ run_this:
   variable_summary_stats: no
   effect_summary_stats: no
   box_plot: no
-  funnel_plot: no
+  funnel_plot: yes
   t_stat_histogram: no
-  linear_tests: no
+  linear_tests: yes
   nonlinear_tests: no
   exo_tests: no
   p_hacking_tests: no
@@ -33,6 +33,7 @@ adjustable_parameters:
   data_subset_condition_2: ability_uncontrolled == 1
   data_winsorization_level: 0.01
   data_precision_type: DoF
+  winsorize_precision: yes
   allowed_missing_ratio: 0.7
   effect_summary_stats_conf_level: 0.95
   box_plot_group_by_factor_1: study_name

@@ -180,24 +180,23 @@ data <- runCachedFunction(
 )
 
 # Rename source columns to fit the script expected colnames
-data <- renameUserColumns(data, user_params$required_cols,
-                          precision_type = adj_params$data_precision_type)
-
-
-#data <- runCachedFunction(
-#  renameUserColumns, user_params,
-#  verbose_function = renameUserColumnsVerbose,
-#  data,
-#  user_params$required_cols
-#)
-
+renamed_list <- runCachedFunction(
+  renameUserColumns, user_params,
+  verbose_function = renameUserColumnsVerbose,
+  data, var_list,
+  user_params$required_cols,
+  precision_type = adj_params$data_precision_type
+)
+data <- renamed_list[[1]] # Renamed column names
+var_list <- renamed_list[[2]] # Renamed var_name vector
 
 # Winsorize the data
 data <- runCachedFunction(
   winsorizeData, user_params,
   verbose_function = winsorizeDataVerbose,
   data,
-  win_level = adj_params$data_winsorization_level
+  win_level = adj_params$data_winsorization_level,
+  winsorize_precision = adj_params$winsorize_precision
 )
 
 # Subset data using the conditions specified in the customizable section
@@ -286,10 +285,10 @@ if (run_this$linear_tests){
 
 if (run_this$nonlinear_tests){
   # Extract source script paths
-  stem_script_path <-        paste0(folder_paths$scripts_folder, script_files$stem_source)
-  selection_script_path <-   paste0(folder_paths$scripts_folder, script_files$selection_model_source)
-  endo_script_path <-        paste0(folder_paths$scripts_folder, script_files$endo_kink_source)
-  nonlinear_script_paths <-  list(stem=stem_script_path,
+  stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
+  selection_script_path <- paste0(folder_paths$scripts_folder, script_files$selection_model_source)
+  endo_script_path <- paste0(folder_paths$scripts_folder, script_files$endo_kink_source)
+  nonlinear_script_paths <- list(stem=stem_script_path,
                                  selection=selection_script_path,
                                  endo=endo_script_path)
   # Parameters
@@ -451,13 +450,9 @@ if (run_this$bma){
     mcmc=adj_params$bma_mcmc
   )
   # Print out the results
-  #bma_coefs <- runCachedFunction(
-  #  extractBMAResults, user_params,
-  #  verbose_function = extractBMAResultsVerbose,
-  #  bma_model, bma_data,
-  #  print_results = adj_params$bma_print_results
-  #)
-  bma_coefs <- extractBMAResults( # Non-cached version
+  bma_coefs <- runCachedFunction(
+    extractBMAResults, user_params,
+    verbose_function = extractBMAResultsVerbose,
     bma_model, bma_data,
     print_results = adj_params$bma_print_results
   )
