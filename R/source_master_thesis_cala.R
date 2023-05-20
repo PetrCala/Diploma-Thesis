@@ -321,6 +321,22 @@ loadExternalPackages <- function(pckg_folder){
 #'
 #' @param input_var_list [data.frame] The input variable list
 validateInputVarList <- function(input_var_list){
+  # Validate input
+  stopifnot(
+    is.data.frame(input_var_list)
+  )
+  # Allowed characters for column names
+  valid_col_pattern <- "^[a-zA-Z0-9._]+$"
+  # Check if all column names match the pattern
+  valid_column_names <- sapply(input_var_list$var_name, function(x) grepl(valid_col_pattern, x))
+  # Validate column names
+  if (!all(valid_column_names)){
+    special_char_cols <- input_var_list$var_name[!valid_column_names]
+    message("These variable names contain special characters. Please modify these names so that there are no such characters.")
+    message(special_char_cols)
+    stop("Invalid column names")
+  }
+  
   # Validate that data type stays consistent within each group
   for (i in 1:max(input_var_list$group_category)){
     data_slice <- input_var_list$data_type[input_var_list$group_category == i]
