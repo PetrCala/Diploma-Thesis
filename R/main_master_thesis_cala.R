@@ -286,12 +286,6 @@ if (run_this$t_stat_histogram){
   )
 }
 
-#save_plot_cached <- 
-#plotly_img <- ggplotly(t_hist_plot)
-#htmlwidgets::saveWidget(plotly_img, "graphics/t_hist_plot.html")
-#browseURL("graphics/t_hist_plot.html")
-
-
 ######################### LINEAR TESTS ######################### 
 
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
