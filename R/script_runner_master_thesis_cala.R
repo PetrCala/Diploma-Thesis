@@ -22,10 +22,10 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
     "box_plot" = F,
-    "funnel_plot" = F,
+    "funnel_plot" = T,
     "t_stat_histogram" = F,
     "linear_tests" = F,
     "nonlinear_tests" = F,
@@ -95,6 +95,8 @@ user_params <- list(
     # T-statistic histogram parameters
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
     "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
+    # P-uniform paramteres
+    "puni_method" = "ML", # Method used for p-uniform calculation - one of "ML", "P"
     # Caliper test parameters
     "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
     "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
@@ -177,7 +179,8 @@ user_params <- list(
     "bpe_res" = "Best practice estimate",
     "bpe_econ_sig" = "Economic significance"
   ),
-  export_log_file_path = "numeric_results.txt",
+  export_log_file_path = "numeric_results.txt", # Console log as a text file
+  export_html_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly

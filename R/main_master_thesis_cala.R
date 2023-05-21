@@ -58,6 +58,7 @@ packages <- c(
   "multiwayvcov", # Computing clustered covariance matrix estimators
   "NlcOptim", # Elliott et al. (2022) - CoxShi
   "plm", # Random Effects, Between Effects
+  "plotly", # Interactive plots
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
   "purrr", # Smart tables, study size
   "pracma", # MAIVE Estimator, Elliott et al. (2022)
@@ -247,24 +248,49 @@ if (run_this$box_plot){
 
 ###### FUNNEL PLOT ######
 if (run_this$funnel_plot){
+  run_cached_funnel <- function(use_medians, graph_name){
+    return ( 
+      runCachedFunction(
+        getFunnelPlot, user_params,
+        verbose_function = nullVerboseFunction,
+        data,
+        effect_proximity = adj_params$funnel_effect_proximity,
+        maximum_precision = adj_params$funnel_maximum_precision,
+        use_study_medians = use_medians,
+        verbose = adj_params$funnel_verbose,
+        export_html = user_params$export_html_graphs,
+        output_path = graph_name
+      )
+    )
+  }
   # Funnel with all data
-  getFunnelPlot(data, adj_params$funnel_effect_proximity,
-                adj_params$funnel_maximum_precision,
-                use_study_medians = F,
-                adj_params$funnel_verbose)
+  funnel_all_path <- paste0(folder_paths$graphics_folder, "funnel.html")
+  funnel_all <- run_cached_funnel(use_medians = FALSE, graph_name = funnel_all_path)
   # Funnel with medians only
-  getFunnelPlot(data, adj_params$funnel_effect_proximity,
-                adj_params$funnel_maximum_precision,
-                use_study_medians = T,
-                adj_params$funnel_verbose)
+  funnel_medians_path <- paste0(folder_paths$graphics_folder, "funnel_medians.html")
+  funnel_medians <- run_cached_funnel(use_medians = TRUE, graph_name = funnel_medians_path)
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
 if (run_this$t_stat_histogram){
-  getTstatHist(data, 
-               lower_cutoff = adj_params$t_hist_lower_cutoff,
-               upper_cutoff = adj_params$t_hist_upper_cutoff)
+  t_hist_path <- paste0(folder_paths$graphics_folder, "t_hist.html")
+  t_hist_plot <- runCachedFunction( # Plot only if input changes
+    getTstatHist, user_params,
+    verbose_function = nullVerboseFunction,
+    data,
+    lower_cutoff = adj_params$t_hist_lower_cutoff,
+    upper_cutoff = adj_params$t_hist_upper_cutoff,
+    verbose = TRUE, # Print into console
+    export_html = user_params$export_html_graphs,
+    output_path = t_hist_path
+  )
 }
+
+#save_plot_cached <- 
+#plotly_img <- ggplotly(t_hist_plot)
+#htmlwidgets::saveWidget(plotly_img, "graphics/t_hist_plot.html")
+#browseURL("graphics/t_hist_plot.html")
+
 
 ######################### LINEAR TESTS ######################### 
 
@@ -344,14 +370,15 @@ if (run_this$exo_tests){
     iv_results <- getIVResults(data,
                                effect_present = T, pub_bias_present = T, verbose_coefs = T)
     
-    p_uni_results <- getPUniResults(data, method = "ML",
+    p_uni_results <- getPUniResults(data, method = adj_params$puni_method,
                                     effect_present=T, pub_bias_present=T, verbose_coefs=T)
     
   } else{
     exo_tests_results <- runCachedFunction(
       getExoTests, user_params,
       verbose_function = getExoTestsVerbose,
-      data
+      data,
+      puni_method = adj_params$puni_method
     )
     if (user_params$export_results){
       exportTable(exo_tests_results, user_params, "exo_tests")

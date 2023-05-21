@@ -1500,8 +1500,11 @@ generateFunnelTicks <- function(input_vec){
 #' @param use_study_medians [bool] If TRUE, plot medians of studies instead of all observations.
 #'  Defaults to FALSE.
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
+#' @param export_html [bool] If TRUE, export the plot to an html object into the graphics folder.
+#' @param output_path [character] Full path to where the plot should be stored.
 getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
-                          use_study_medians = F, verbose = T){
+                          use_study_medians = F, verbose = T,
+                          export_html, output_path){
   # Check input validity
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -1555,7 +1558,16 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
       )
   )
     
-  suppressWarnings(print(funnel_win)) # Print out the funnel plot
+  # Print out the plot
+  if (verbose){
+    suppressWarnings(print(funnel_win))
+  }
+  # Export to a html object
+  if (export_html){
+    exportHtmlGraph(funnel_win, output_path)
+  }
+  # Return the R plot object
+  return(funnel_win)
 }
 
 #' Generate ticks for a histogram plot
@@ -1651,13 +1663,17 @@ generateHistTicks <- function(input_vec) {
 #' @param lower_cutoff An optional numeric value specifying the lower cutoff for filtering outliers. Default is -150.
 #' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
 #' @param lower_tstat A numeric value specifying which t statistic should be highlighted in the plot
-#' @param higher_tstat Similar to lower_tstat
+#' @param upper_tstat Similar to lower_tstat
+#' @param verbose If TRUE, print out the plot. Defaults to TRUE.
+#' @param export_html If TRUE, export the plot to an html object into the graphics folder.
+#' @param output_path Full path to where the plot should be stored.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
 getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
-                         lower_tstat = -1.96, upper_tstat = 1.96){
+                         lower_tstat = -1.96, upper_tstat = 1.96, verbose = T,
+                         export_html, output_path){
   # Specify a cutoff filter
-  t_hist_filter <- (data$t_stat > lower_cutoff & data$t_stat < upper_cutoff) #removing the outliers from the graph
+  t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
   hist_data <- input_data[t_hist_filter,]
   
   # Get lower bound
@@ -1687,7 +1703,15 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
         x_axis_tick_text = hist_ticks_text)
   )
   # Print out the plot
-  suppressWarnings(print(t_hist_plot))
+  if (verbose){
+    suppressWarnings(print(t_hist_plot))
+  }
+  # Export to a html object
+  if (export_html){
+    exportHtmlGraph(t_hist_plot, output_path)
+  }
+  # Return R object
+  return(t_hist_plot)
 }
 
 ######################### LINEAR TESTS ######################### 
@@ -2358,6 +2382,7 @@ getPUniResults <- function(data, method="ML",...){
 #' Performs two tests for publication bias and exogeneity in instrumental variable (IV) analyses using clustered data.
 #'
 #' @param input_data [data.frame] A data frame containing the necessary columns: "effect", "se", "study_id", "study_size", and "precision".
+#' @param puni_method [character] Method to be used for p-uniform calculation. One of "ML", "P". Defaults to "ML".
 #' @return A data frame with the results of the three tests for publication bias and exogeneity in IV analyses using clustered data.
 #'
 #' @details This function first validates that the necessary columns are present in the input data frame.
@@ -2365,7 +2390,7 @@ getPUniResults <- function(data, method="ML",...){
 #' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
 #' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
 #' The results are then printed into the console and returned invisibly.
-getExoTests <- function(input_data) {
+getExoTests <- function(input_data, puni_method = "ML") {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -2374,7 +2399,8 @@ getExoTests <- function(input_data) {
   )
   # Get coefficients
   iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
-  p_uni_res <- getPUniResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  p_uni_res <- getPUniResults(input_data, method = puni_method,
+                              effect_present = T, pub_bias_present = T, verbose_coefs = T)
   # Combine the results into a data frame
   results <- data.frame(
     iv_df = iv_res,
@@ -3868,4 +3894,10 @@ main_theme <- function(x_axis_tick_text = "black"){
         axis.text.x = element_text(color = x_axis_tick_text), axis.text.y = element_text(color = "black"),
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
         plot.background = element_rect(fill = "#DCEEF3"))
+}
+
+# browseURL
+exportHtmlGraph <- function(graph_object, export_path){
+  plotly_img <- ggplotly(graph_object)
+  htmlwidgets::saveWidget(plotly_img, export_path)
 }

@@ -12,6 +12,7 @@ R/tests_master_thesis_cala.R
 R/_cache/*
 R/results/*
 R/data/*
+R/graphics/*
 
 # Shell temp files
 **/*.sh~

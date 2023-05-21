@@ -1,8 +1,8 @@
 run_this:
-  variable_summary_stats: yes
-  effect_summary_stats: yes
+  variable_summary_stats: no
+  effect_summary_stats: no
   box_plot: no
-  funnel_plot: no
+  funnel_plot: yes
   t_stat_histogram: no
   linear_tests: no
   nonlinear_tests: no
@@ -45,6 +45,7 @@ adjustable_parameters:
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
   t_hist_upper_cutoff: 120.0
+  puni_method: ML
   caliper_thresholds:
   - 1.645
   - 1.96
@@ -116,6 +117,7 @@ export_methods:
   bpe_res: Best practice estimate
   bpe_econ_sig: Economic significance
 export_log_file_path: numeric_results.txt
+export_html_graphs: yes
 use_cache: yes
 cache_age: 3600.0
 development_on: yes

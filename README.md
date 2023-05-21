@@ -1,4 +1,4 @@
-# A simple repository for my Diploma Thesis
+﻿# A simple repository for my Diploma Thesis
 * **Topic** - Ability bias in the returns to schooling: How large it is and why it matters
 * **Author** - Bc. Petr Čala
 * **Year of defense** - 2024
@@ -124,7 +124,8 @@ To run the code, follow these steps:
 1. Put your `.csv` data files into the `data/` folder. You do not need to delete the distributed example files, but you **must change the expected names in the user parameters** for the script to recognize these new files. 
 2. Open the `script_runner_master_thesis_cala.R` file and find the `user_params` object. Within this object, **without modifying the names of the sub-objects**, change the values as you see fit. Most importantly, find the `CUSOMIZABLE FILE NAMES` section and modify the file names to refer your new files. Make sure to keep the `.csv` suffix. As of the current version, the script recognizes only `.csv` files as valid input. Also make sure, that the rest of the `user_params` values is set in accordance to the requirements outlined in the **Prerequisites** section.
 3. After modifying any paramters as you see fit, run the script. You may encounter errors caused by mismatching file names, package incompatibility, etc. The script will automatically attempt to install all the necessary packages (if they are not installed on your local machine), but I can not guarantee this will go smoothly.
-4. If all does, however, work, you should see the output in the console, and in the results folders `results/` (for numerical and text-based output) and `graphics/` (for graphical output). Any existing files will be overwritten upon running the script, so make sure to save any desired files outside these folders after they are generated.
+4. If all does, however, work, you should see the output in the console, and in the results folders `results/` (for numerical and text-based output) and `graphics/` (for graphical output). Any existing files will be overwritten upon running the script (if not cached), so make sure to save any desired files outside these folders after they are generated.
+5. To display the graphic plots, either double click the `.html` files in the graphics folder (this will open them in an interactive window in your browser), or simply write the object name into the console after running the script (find these names in the `main_master_thesis_cala.R` script under the respective code sections. Calling the objects will automatically plot them in the correct form.
 6. If you wish to see into the code a bit more, or run it only in parts, then open the script `main_master_thesis_cala.R`. The script automatically loads the `user_parameters.yaml` file, so it is assumed you have modified the parameters to your desired form. Afterwards, you can run the script as usual either at once, or by parts.
 7. If you wish to look under the hood of the code, see the file `source_master_thesis_cala.R`, which contains all the technical functions, preprocessing, and validation, that is hidden in the main file.
 
