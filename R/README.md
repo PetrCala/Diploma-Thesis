@@ -1,4 +1,4 @@
-# A simple repository for my Diploma Thesis
+﻿# A simple repository for my Diploma Thesis
 * **Topic** - Ability bias in the returns to schooling: How large it is and why it matters
 * **Author** - Bc. Petr Čala
 * **Year of defense** - 2024
@@ -62,27 +62,26 @@ The script run will also create these temporary folders:
 Furthermore, the existence of all folders will be verified. Note that some do not appear in the repository, as there is nothing to distribute within these folders. All results (along with the folders) will be created and updated automatically.
 
 ## Prerequisites:
- 1. Make sure that your working directory contains all the files from the `Dist/` folder.
+ 1. Make sure that your working directory contains all the files visible in the repository. Some temporary folders from the structure above may not exist yet - these will be automatically created during the script run. 
  2. The scripts are set in a way that recognizes the file names just as they are distributed. However, if you wish to customize the file names, you may do so from within the `script_runner_master_thesis_cala.R`, or by modifying the `user_parameters.yaml` file. Know that every run of the script runner will automatically modify the contents of the user parameters
  file, so I suggest you modify the parameters directly within the script. However, **do not to modify the names of the user parameter file and the script runner**! These are immutable.
  3. Try to eliminate as many missing values in your data frame as you can.
     The script will automatically use interpolation for missing data, so that model averaging
     can run, but in case of many missing values, the results may be unstable.
- 4. The data frame must contain these columns (named exactly as listed below):
-   * **study_name** - Name of the study, such as *Einstein et al. (1935)*.
-   * **study_id** - ID of the study. Should be numeric and unique for each study.
-   * **effect** -  The main effect/estimate values. Ideally it should be  a transformed effect, such as
-     the partial correlation coefficient.
-   * **se** - standard error of the effect
-   * **t_stat** - t-statistic of the main effect. Can be calculated as a ratio of the effect
+ 4. The data frame must contain several columns, the names of which can be modified to fit your data frame. This can be done the same way you would modify the script names (described in step 2). In the `user_parameter.yaml` file or in the script runner, navigate to the section `required_cols`, where you can modify the names of the necessary columns to fit the column names in your data frame. For the columns that are marked as optional, you can set the value to `NA` if this column is not present in your data frame. The column will then be created automatically during the script run. Required columns must then appear within your data frame. Here is the list of the expected columns:
+   * Required columns:
+      - **obs_id** - Unique ID of the observation.
+      - **study_name** - Name of the study, such as *Einstein et al. (1935)*.
+      - **study_id** - ID of the study. Should be numeric and unique for each study.
+      - **effect** -  The main effect/estimate values. If you employ any effect transformations, such as partial correlation coefficient, set this to the transformed effect.
+      - **se** - Standard error of the effect (of the transformed effect).
+      - **n_obs** - Number of observations associated with this estimate.
+   * Optional columns:
+      - **t_stat** - t-statistic of the main effect. If set to `NA`, calculated automatically as a ratio of the effect
      and its standard error.
-   * **n_obs** - Number of observations associated with this estimate.
-   * **study_size** - Size of the study that the estimate comes from. In Excel, this can be easily
-     computed as `=COUNTIF(<COL>:<COL>,<CELL>)`, where `<COL>` is the column with study names or
-     study id's, and `<CELL>` is the cell in that column on the same row you want to calculate the
-     study size on. Example: `=COUNTIF(B:B,B2)`. This calculates the study size of the study located
-     in cell B2, assuming that the column `B` contains the study information.
-   * **reg_df** (optional) - A column denoting the number of degrees of freedom associated with the regression. Can be omitted, in which case, n_obs is used for calculation.
+     - **precision** - Precision of the effect. If set to `NA`, calculated automatically if omitted using the `precision_type` parameter within the `adjustable_parameters` list of the `user_parameters.yaml` file. Defaults to *1/Standard_Error*.
+      - **study_size** - Number of estimates reported per study. If set to `NA`, calculated automatically if omitted.
+      - **reg_df** - Number of degrees of freedom associated with the regression. If set to `NA`, the number of observations associated with the estimate will be used instead.
  5. In the file `var_list_master_thesis_cala.csv` (or your renamed version), input the list of variables you are using in your data frame,
    along with these parameters:
    * **var_name** - Name of the variable exactly as it appears in the data frame columns. Must not include
@@ -101,7 +100,7 @@ Furthermore, the existence of all folders will be verified. Note that some do no
      - *stop* - Do not allow missing values. Throw an error in case there is a missing value.
      - *mean* - Interpolate with the mean of the existing data.
      - *median* - Interpolate with the median of the existing data.
-     - *allow* - Allow missing values. Use **only** for variables which whose values will be filled in automatically during preprocessing, meaning for which you can guarantee no missing values. In other words, do **not use** this.
+     - *allow* - Should **NOT** be used. Your data frame should not contain any missing observations that can not be interpolated (filled in automatically with a numeric value). If such a column exists in your data frame, consider omitting this column from the analysis.
    * **variable_summary** - Boolean. If `TRUE`, this variable will appear in the summary statistics table.
    * **effect_sum_stats** - Boolean. If `TRUE`, this variable will appear in the effect summary statistics table.
    * **equal** - Float. If set to any value, the effect summary statistics table will print out the statistics
@@ -121,7 +120,7 @@ Furthermore, the existence of all folders will be verified. Note that some do no
 ## How to Run
 To run the code, follow these steps:
 1. Put your `.csv` data files into the `data/` folder. You do not need to delete the distributed example files, but you **must change the expected names in the user parameters** for the script to recognize these new files. 
-2. Open the `script_runner_master_thesis_cala.R` file and find the `user_params` object. Within this object, **without modifying the names of the sub-objects**, change the values as you see fit. Most importantly, find the `CUSOMIZABLE FILE NAMES` section and modify the file names to refer your new files. Make sure to keep the `.csv` suffix. As of the current version, the script recognizes only `.csv` files as valid input.
+2. Open the `script_runner_master_thesis_cala.R` file and find the `user_params` object. Within this object, **without modifying the names of the sub-objects**, change the values as you see fit. Most importantly, find the `CUSOMIZABLE FILE NAMES` section and modify the file names to refer your new files. Make sure to keep the `.csv` suffix. As of the current version, the script recognizes only `.csv` files as valid input. Also make sure, that the rest of the `user_params` values is set in accordance to the requirements outlined in the **Prerequisites** section.
 3. After modifying any paramters as you see fit, run the script. You may encounter errors caused by mismatching file names, package incompatibility, etc. The script will automatically attempt to install all the necessary packages (if they are not installed on your local machine), but I can not guarantee this will go smoothly.
 4. If all does, however, work, you should see the output in the console, and in the results folders `results/` (for numerical and text-based output) and `graphics/` (for graphical output). Any existing files will be overwritten upon running the script, so make sure to save any desired files outside these folders after they are generated.
 6. If you wish to see into the code a bit more, or run it only in parts, then open the script `main_master_thesis_cala.R`. The script automatically loads the `user_parameters.yaml` file, so it is assumed you have modified the parameters to your desired form. Afterwards, you can run the script as usual either at once, or by parts.
