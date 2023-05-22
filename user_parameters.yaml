@@ -1,13 +1,13 @@
 run_this:
-  variable_summary_stats: no
-  effect_summary_stats: no
-  box_plot: no
+  variable_summary_stats: yes
+  effect_summary_stats: yes
+  box_plot: yes
   funnel_plot: yes
-  t_stat_histogram: no
-  linear_tests: no
-  nonlinear_tests: no
-  exo_tests: no
-  p_hacking_tests: no
+  t_stat_histogram: yes
+  linear_tests: yes
+  nonlinear_tests: yes
+  exo_tests: yes
+  p_hacking_tests: yes
   bma: no
   fma: no
   ma_variables_description_table: no
@@ -38,7 +38,7 @@ adjustable_parameters:
   effect_summary_stats_conf_level: 0.95
   box_plot_group_by_factor_1: study_name
   box_plot_group_by_factor_2: country
-  box_plot_max_studies: 60.0
+  box_plot_max_boxes: 60.0
   box_plot_verbose: yes
   funnel_effect_proximity: 0.15
   funnel_maximum_precision: 0.2
