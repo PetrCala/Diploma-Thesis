@@ -14,7 +14,7 @@
 ##################### ENVIRONMENT PREPARATION ########################
 
 # Clean the environment - DO NOT CHANGE THIS
-rm(list = ls()) 
+#rm(list = ls()) 
 options(scipen=999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
  
@@ -229,20 +229,21 @@ if (run_this$effect_summary_stats){
 if (run_this$box_plot){
   # Parameters
   factor_names <- getMultipleParams(adj_params, "box_plot_group_by_factor_")
-  
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
-    # Handle factors with large number of boxes - automatically split them into multiple plots
-    if (factor_name %in% c("study_name", "study_id")){
-      getLargeBoxPlot(data, max_studies = adj_params$box_plot_max_studies,
-                      factor_by = factor_name,
-                      verbose = adj_params$box_plot_verbose,
-                      effect_name = adj_params$effect_name)
-    } else {
-      getBoxPlot(data, factor_by = factor_name,
-                      verbose = adj_params$box_plot_verbose,
-                      effect_name = adj_params$effect_name)
-    }
+    # Main plot
+    box_plot_list <- runCachedFunction(
+      getLargeBoxPlot, user_params,
+      verbose_function = getBoxPlotVerbose,
+      data,
+      max_boxes = adj_params$box_plot_max_boxes,
+      verbose_on = adj_params$box_plot_verbose,
+      export_html = user_params$export_html_graphs,
+      output_folder = folder_paths$graphics_folder,
+      factor_by = factor_name,
+      effect_name = adj_params$effect_name,
+      verbose = F # Internal function parameter - no doubling
+    )
   }
 }
 
