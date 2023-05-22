@@ -1285,44 +1285,47 @@ getEffectSummaryStatsVerbose <- function(out_list, ...){
 }
 
 
-
 #' Input the main data frame, specify a factor to group by, and create a box plot.
-#' This plot is automatically printed out into the Plots window.
+#' This plot is automatically printed out into the Plots window if verbose == TRUE.
+#' 
+#' @note This function is meant to be called from within the getLargeBoxPlot()
+#'  function. If possible, do not use as a standalone function.
 #' 
 #' @param input_data [data.frame] Input data
 #' @param factor_by [str] Factor to group by. Can be one of the following:
 #'  - 'country'
 #'  - 'study_level'
 #'  Defaults to 'country'
-#' @param verbose [bool] If T, print out the information about the plot being printed.
-#'  Defaults to T.
 #' @param effect_name [character] Verbose explanation of the effect.
-getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name = 'effect'){
+#' @param verbose [bool] If T, print out the information about the plot being printed.
+#'  Defaults to F.
+getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect', verbose = F){
   # Check column and input validity
   required_cols <- getDefaultColumns()
   stopifnot(
     all(required_cols %in% colnames(input_data)),
     is.data.frame(input_data),
     is.character(factor_by),
-    is.logical(verbose),
-    is.character(effect_name)
+    is.character(effect_name),
+    is.logical(verbose)
   )
-  
   # Plot variable preparation
   factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
   factor_by_verbose <- gsub("_", " ", factor_by) # More legible y-axis label
-  
   # Construct the plot - use !!sym(factor_by) to cast some more dark magic - makes plot recognize function input
   box_plot <- ggplot(data = input_data, aes(x = effect, y=factor(!!sym(factor_by), levels = factor_levels))) +
       geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
       geom_vline(aes(xintercept = mean(effect)), color = "red", linewidth = 0.85) + 
       labs(title = NULL,x=paste("Effect of", tolower(effect_name)), y = "Grouped by " %>% paste0(factor_by_verbose)) +
       main_theme()
-  
-  # Plot the plot
-  print(paste0('Printing a box plot for the factor: ', factor_by_verbose))
-  suppressWarnings(print(box_plot))
-  cat('\n')
+  # Print the plot into the console
+  if (verbose){
+    print(paste0("Printing a box plot for the factor: ", factor_by))
+    suppressWarnings(print(box_plot))
+    cat("\n\n")
+  }
+  # Return the box plot
+  return(box_plot)
 }
 
 #' Plot multiple box plots for datasets that have too large a number of studies
@@ -1331,34 +1334,106 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name
 #' and plot a box plot for the subsets of data. If the data has fewer studies than
 #' the maximum allowed amount, plot a single plot.
 #' 
+#' @note Function is meant for caching, and as the main way of creating box plots.
+#'  Use mainly this function, not the getBoxPlot().
+#' 
 #' @param input_data [data.frame] Main data frame.
-#' @param max_studies [numeric] Maximum studies to display in a single plot.
+#' @param max_boxes [numeric] Maximum boxes to display in a single plot.
 #' Defaults to 60.
+#' @param verbose_on [logical] If TRUE, print out box plot information and box plots. Defaults to TRUE.
+#' @param export_html [logical] If TRUE, export the plot to an html object into the graphics folder.
+#'  Defaults to F.
+#' @param output_folder [character] Path to a folder where the plots should be stored. Defaults to NA.
 #' @inheritDotParams getBoxPlot Parameters that should be used in the getBoxPlot function
 #' call.
-getLargeBoxPlot <- function(input_data, max_studies = 60, ...){
+getLargeBoxPlot <- function(input_data, max_boxes = 60, verbose_on = T, export_html = F, output_folder = NA, ...){
   # Check that the number of studies is traceable, validate input
   stopifnot(
     is.data.frame(input_data),
     "study_id" %in% colnames(input_data)
   )
+  # Get the factor information
+  args <- list(...)
+  factor_by <- args$factor_by
+  stopifnot(factor_by %in% colnames(input_data)) # Validation
   # Split the data into subsets - works well with one split too
-  n_studies <- max(input_data$study_id)
+  all_factors <- as.vector(unlist(data[factor_by]))
+  unique_factors <- sort(unique(all_factors))
+  n_factors <- length(unique_factors)
   datasets <- list()
-  remaining_studies <- n_studies
+  remaining_factors <- unique_factors
   splits <- 0
-  while (remaining_studies > 0){
-    temp_df <- input_data[input_data$study_id > splits * max_studies &
-                          input_data$study_id <= (splits + 1) * max_studies,]
+  while (length(remaining_factors) > 0){
+    # Use an upper bound for slicing - either max boxes, or length of remaining factors
+    upper_bound <- ifelse(length(remaining_factors) > max_boxes, max_boxes, length(remaining_factors))
+    split_factors <- remaining_factors[1:upper_bound] # Slice of factors to use
+    temp_df <- input_data[all_factors %in% split_factors,] # Data subset
     datasets[[splits + 1]] <- temp_df
-    remaining_studies <- remaining_studies - max_studies
+    remaining_factors <- remaining_factors[!remaining_factors %in% split_factors] # Drop used factors
     splits <- splits + 1
   }
+  # Get the list of objects to return
+  out_list <- list(box_plots = list(), factor_by = factor_by) # factor_by from the dots args
   # Print a box plot for each subset of data
   for (dataset in datasets){
-    getBoxPlot(dataset, ...)
+    box_plot <- getBoxPlot(dataset, ...)
+    out_list$box_plots <- c(out_list$box_plots, list(box_plot)) # All to the first index
+  }
+  # Print the output
+  if (verbose_on){
+    getBoxPlotVerbose(out_list, verbose_on = verbose_on)
+    # Print graphs externally - this allows them to not get reprinted during cached runs
+    for (bp in out_list$box_plots){
+      suppressWarnings(print(bp))
+    }
+  }
+  # Export to a html object
+  if (export_html){
+    if (is.na(output_folder)){
+      stop("You must specify an output folder path.")
+    }
+    bp_idx <- 1
+    use_indexing <- length(out_list$box_plots) > 1
+    for (bp in out_list$box_plots){
+      bp_counter <- ifelse(use_indexing,
+                           paste0("_",bp_idx), # _1, _2, ...
+                           "") # No indexing for single plots
+      out_path <- paste0(output_folder, "box_plot_",factor_by,bp_counter,".html")
+      exportHtmlGraph(bp, out_path)
+      bp_idx <- bp_idx + 1
+    }
+  }
+  # Return the list
+  return(out_list)
+}
+
+
+#' Verbose output for the getBoxPlot function
+getBoxPlotVerbose <- function(out_list, ...){
+  args <- list(...)
+  verbose_on <- args$verbose_on
+  # Validate input
+  stopifnot(
+    is(out_list, "list"),
+    length(out_list) == 2
+  )
+  # Extract function output
+  box_plots <- out_list[[1]]
+  factor_by <- out_list[[2]]
+  # Print out the output
+  if (verbose_on){
+    bp_idx <- 1
+    bp_count <- length(box_plots)
+    for (box_plot in box_plots){
+      bp_counter <- paste0(bp_idx,"/",bp_count," ")
+      bp_verbose <- ifelse(bp_count > 1, bp_counter, "") # No info if single plot
+      print(paste0("Printing a box plot ",bp_verbose,"for the factor: ", factor_by))
+      cat("\n")
+      bp_idx <- bp_idx + 1
+    }
   }
 }
+
 
 #' Identify outliers in the data, return the filter which can be used
 #'  to get the data without these outliers.
@@ -1501,10 +1576,11 @@ generateFunnelTicks <- function(input_vec){
 #'  Defaults to FALSE.
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
 #' @param export_html [bool] If TRUE, export the plot to an html object into the graphics folder.
-#' @param output_path [character] Full path to where the plot should be stored.
+#'  Defaults to FALSE.
+#' @param output_path [character] Full path to where the plot should be stored. Defaults to NA.
 getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
                           use_study_medians = F, verbose = T,
-                          export_html, output_path){
+                          export_html = F, output_path = NA){
   # Check input validity
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -1564,6 +1640,9 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
   }
   # Export to a html object
   if (export_html){
+    if (is.na(output_path)){
+      stop("You must specify an output path.")
+    }
     exportHtmlGraph(funnel_win, output_path)
   }
   # Return the R plot object
@@ -1665,13 +1744,13 @@ generateHistTicks <- function(input_vec) {
 #' @param lower_tstat A numeric value specifying which t statistic should be highlighted in the plot
 #' @param upper_tstat Similar to lower_tstat
 #' @param verbose If TRUE, print out the plot. Defaults to TRUE.
-#' @param export_html If TRUE, export the plot to an html object into the graphics folder.
-#' @param output_path Full path to where the plot should be stored.
+#' @param export_html If TRUE, export the plot to an html object into the graphics folder. Defaults to FALSE.
+#' @param output_path Full path to where the plot should be stored. Defaults to NA.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
 getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
                          lower_tstat = -1.96, upper_tstat = 1.96, verbose = T,
-                         export_html, output_path){
+                         export_html = F, output_path = NA){
   # Specify a cutoff filter
   t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
   hist_data <- input_data[t_hist_filter,]
@@ -1708,6 +1787,9 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
   }
   # Export to a html object
   if (export_html){
+    if (is.na(output_path)){
+      stop("You must specify an output path.")
+    }
     exportHtmlGraph(t_hist_plot, output_path)
   }
   # Return R object

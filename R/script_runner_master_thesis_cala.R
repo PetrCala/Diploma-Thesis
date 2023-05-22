@@ -22,15 +22,15 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
-    "box_plot" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
+    "box_plot" = T,
     "funnel_plot" = T,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
     "bma" = F,
     "fma" = F, # Executable only after running BMA
     "ma_variables_description_table" = F, # Executable only after running BMA
@@ -86,7 +86,7 @@ user_params <- list(
     "box_plot_group_by_factor_1" = "study_name", # Group by study name
     "box_plot_group_by_factor_2" = "country", # Group by country
     # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
-    "box_plot_max_studies" = 60, # Maximum number of studies to display per single plot - more plots otherwise
+    "box_plot_max_boxes" = 60, # Maximum number of boxes to display per single plot - more plots otherwise
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
     "funnel_effect_proximity" = 0.15, # Effect axis cutoff point (perc) on either side of mean
@@ -209,17 +209,16 @@ user_param_file <- 'user_parameters.yaml'
 # Save the user parameters into the working directory
 yaml::write_yaml(user_params, user_param_file)
 
-
 # Create a folder for export (must be done here explicitly)
 export_folder_path <- user_params$folder_path$export_folder
 if (!file.exists(export_folder_path)){
   dir.create(export_folder_path)
 }
+
 # Save the console output to a log file in the results folder
 log_file_path <- paste0(export_folder_path, user_params$export_log_file)
-sink(log_file_path, split = TRUE, append = FALSE) # Capture console output
+sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 
-# Run the main file
 # Time the script run
 #start_time <- Sys.time()
 #source("main_master_thesis_cala.R")
@@ -227,6 +226,7 @@ sink(log_file_path, split = TRUE, append = FALSE) # Capture console output
 #elapsed_time <- end_time - start_time
 #print(elapsed_time)
  
+# Run the main file
 source("main_master_thesis_cala.R")
 
 # Close the connection to the file
