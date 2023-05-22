@@ -278,14 +278,16 @@ loadPackages <- function(package_list) {
 #'
 #' @export
 loadExternalPackages <- function(pckg_folder){
-  pckgs <- list.files(pckg_folder, full.names = TRUE)
+  package_list <- list.files(pckg_folder, full.names = TRUE)
+  package_names <- list.files(pckg_folder, full.names = FALSE) # Package names only
   # Iterate over the package folders
-  for (pckg in pckgs) {
-    print(paste("Loading an external package ", pckg, "...", sep = ""))
+  installed_packages <- package_names %in% rownames(installed.packages())
+  if (any(installed_packages == FALSE)) {
+    print(paste("Installing an external package ", package_names[!installed_packages], "...", sep = ""))
     tryCatch(
       {
-        quiet(
-          devtools::load_all(pckg)
+        quietPackages(
+          install.packages(package_list[!installed_packages], repos = NULL, type = "source")
         )
       },
       error = function(e) {
@@ -294,7 +296,22 @@ loadExternalPackages <- function(pckg_folder){
       }
     )
   }
+  # Package loading
+  print("Attempting to load the external packages...")
+  tryCatch(
+    {
+      quietPackages(
+        invisible(lapply(package_names, library, character.only = TRUE))
+      )
+    },
+    error = function(e) {
+      message("External package loading failed. Exiting the function...")
+      stop(customError("External package loading failed"))
+    }
+  )
+  print("All external packages loaded successfully")
 }
+
 
 
 ######################### DATA PREPROCESSING #########################
@@ -304,6 +321,22 @@ loadExternalPackages <- function(pckg_folder){
 #'
 #' @param input_var_list [data.frame] The input variable list
 validateInputVarList <- function(input_var_list){
+  # Validate input
+  stopifnot(
+    is.data.frame(input_var_list)
+  )
+  # Allowed characters for column names
+  valid_col_pattern <- "^[a-zA-Z0-9._]+$"
+  # Check if all column names match the pattern
+  valid_column_names <- sapply(input_var_list$var_name, function(x) grepl(valid_col_pattern, x))
+  # Validate column names
+  if (!all(valid_column_names)){
+    special_char_cols <- input_var_list$var_name[!valid_column_names]
+    message("These variable names contain special characters. Please modify these names so that there are no such characters.")
+    message(special_char_cols)
+    stop("Invalid column names")
+  }
+  
   # Validate that data type stays consistent within each group
   for (i in 1:max(input_var_list$group_category)){
     data_slice <- input_var_list$data_type[input_var_list$group_category == i]
@@ -500,85 +533,19 @@ handleMissingDataVerbose <- function(...){
 }
 
 
-#' Winsorize input data
-#'
-#' This function applies Winsorization to the data to minimize the effect of outliers on the statistical analysis.
-#' Winsorization is a process of limiting extreme values by replacing them with the next lowest or
-#' highest value that is within a certain percentile range.
-#'
-#' @param input_data [data.frame] A data frame containing the main effect (effect),
-#' standard error of the effect (se), and t-statistic (t_stat) columns.
-#' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
-#' extreme values to be replaced with the nearest non-extreme value.
-#' @param precision_type [character] Type of precision to use. Can be one of the following:
-#'  1/SE - Inverse of the standard error is used.
-#'  DoF - Square root of the degrees of freedom is used.
-#'  Deafults to "DoF".
-#' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
-#' and t-statistic columns have been Winsorized.
-winsorizeData <- function(input_data, win_level, precision_type = "DoF"){
-  # Validate input
-  stopifnot(
-    is.data.frame(input_data),
-    is.numeric(win_level),
-    is.character(precision_type),
-    win_level > 0,
-    win_level < 1,
-    all(c('effect', 'se') %in% colnames(input_data)),
-    !(any(is.na(input_data$effect))), # No missing effect values
-    !(any(is.na(input_data$se))), # No missing SE values
-    precision_type %in% c("1/SE", "DoF")
-    )
-  # Get the winsorization interval
-  win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
-  # Create a t-stat column if it does not exist in the data
-  if (!("t_stat") %in% colnames(input_data)){
-    input_data$t_stat <- input_data$effect / input_data$se
-  }
-  # Statistic preprocessing
-  input_data$effect_w <- Winsorize(x = input_data$effect, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$se_w <- Winsorize(x = input_data$se, minval = NULL, maxval = NULL, probs = win_int)
-  if (precision_type == "1/SE"){
-    input_data$se_precision_w <- 1/input_data$se_w
-  } else if (precision_type == "DoF"){
-    if ("reg_df" %in% colnames(input_data)){ # Explicit because RRR
-      input_data$se_precision_w <- sqrt(input_data$reg_df) # DoF if available
-    } else {
-      input_data$se_precision_w <- sqrt(input_data$n_obs) # N. obs instead
-    }
-  } else {
-    stop("Invalid type of precision")
-  }
-  input_data$t_w <- Winsorize(x = input_data$t_stat, minval = NULL, maxval = NULL, probs = win_int)
-  input_data$significant_w <- c(rep(0,nrow(input_data)))
-  input_data$significant_w[(input_data$t_w > 1.96) | (input_data$t_w < -1.96)] <- 1
-  # Return 
-  print("Data winsorized successfully.")
-  return(input_data)
-}
-
-
-#' Verbose output for the winsorizeData function
-winsorizeDataVerbose <- function(...){
-  print("Data winsorized successfully.")
-}
-
 #' A very restrictive function for validating the correct data types
 #' 
 #' Check that all values across all columns have the correct data type, check that all dummy groups
 #' are correctly specified across all observations (only one 1, otherwise 0), and 
 #' stop and print out the error message, if it is not so.
 #' 
-#' Allows for skipping NA values, if your data set is incomplete. Otherwise
+#' Allows for skipping NA values, if your data set is incomplete.
 #' 
 #' @param input_data [data.frame] The data frame to be validated
 #' @param input_var_list [data.frame] The data frame that specifies the data type of each variable
 #' @param ignore_missing [bool] If TRUE, allow missing values in the data frame. Deafults to FALSE.
 validateData <- function(input_data, input_var_list, ignore_missing = F){
   ### Static
-  # Columns that the data frame must contain
-  expected_columns <- c("study_name", "study_id", "effect", "se", "t_stat", "n_obs", "study_size")
-  # Reference variable restrictions
   ref_prone_types <- c("dummy", "perc") # Data types that always must have a single reference variable
   ref_forbidden_categories <- c("bma_potential_var", "bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
   ### End of static
@@ -587,8 +554,7 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   stopifnot(
     is.data.frame(input_data),
     is.data.frame(input_var_list),
-    is.logical(ignore_missing),
-    all(expected_columns %in% colnames(input_data))
+    is.logical(ignore_missing)
   )
   
   # Do not pass if any values are NA. 
@@ -596,6 +562,19 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
     if(any(is.na(input_data))){
       stop("This script does not allow for ANY missing values. Make sure you have called the data preprocessing function.")
     }
+  }
+  
+  ### Column names validation
+  valid_col_pattern <- "^[a-zA-Z0-9._]+$"
+  
+  # Check if all column names match the pattern
+  valid_column_names <- sapply(colnames(input_data), function(x) grepl(valid_col_pattern, x))
+  
+  if (!all(valid_column_names)){
+    special_char_cols <- colnames(input_data)[!valid_column_names]
+    message("These columns contain special characters. Please modify the columns so that there are no such characters.")
+    message(special_char_cols)
+    stop("Invalid column names")
   }
   
   ### Dummy group validation
@@ -687,6 +666,228 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
 validateDataVerbose <- function(...){
   print("All values across all columns of the main data frame are of the correct type.")
 }
+
+#' A list of columns that should always appear in the data frame (modified)
+#' 
+#' Return a list of column names that should always appear in the data frame,
+#' after renaming to script-accepted names. As values to the list names,
+#' put booleans that indicate whether that column must appear in the source data
+#' frame (TRUE), or can be added during preprocessing (FALSE).
+#' 
+#' @param names_only [logical] If TRUE, return names only.
+getDefaultColumns <- function(names_only=TRUE){
+  def_cols <- list(
+    "obs_id" = TRUE,
+    "study_id" = TRUE,
+    "study_name" = TRUE,
+    "effect" = TRUE,
+    "se" = TRUE,
+    "t_stat" = FALSE,
+    "precision" = FALSE,
+    "n_obs" = TRUE,
+    "study_size" = FALSE,
+    "reg_df" = FALSE
+  )
+  if (names_only){
+    return(as.vector(names(def_cols)))
+  }
+  return(def_cols)
+}
+
+#' Specify to what should be initialized default columns that the user
+#' fails to provide in their dataset. Return the values of the new column.
+#' Should be called from within the renameUserColumns function.
+#' 
+#' Currently handles these four columns:
+#'  - t_stat - Calculated as effect / standard error
+#'  - study_size - Calculated automaticcaly using the purrr package as the
+#'    number of estimates reported by each study. Uses "study_id" column for
+#'    calculation.
+#'  - reg_df - Sets to the number of observations.
+#'  - precision - Calculated using an external parameter precision_type.
+#' @param col_name [character] Name of the column to handle.
+#' @return function
+getMissingDefaultColumnsHandling <- function(col_name){
+  # Specify the columns that can be omitted by the user
+  possible_missing_columns <- c("t_stat", "study_size", "reg_df", "precision")
+  if (!col_name %in% possible_missing_columns){
+    stop("Incorrect name of the missing column to handle.")
+  }
+  # Validate that this column is not required
+  default_columns <- getDefaultColumns(names_only = FALSE)
+  val <- default_columns[[col_name]]
+  # Non-changeable value. Modify the default column setting if necessary.
+  if (val == TRUE){
+    message(paste(val,"is a non-changeable value."))
+    stop("This value must always be provided by the user.")
+  }
+  # Return the function for this column
+  if (col_name == "t_stat"){
+    # Handle t-stat
+    f <- function(input_data,...){ input_data$effect / input_data$se }
+  } else if (col_name == "study_size"){
+    # Handle study size
+    f <- function(input_data,...){
+      freq_table <- table(input_data$study_id) # Number of occurances of each study id
+      # Study size - for each row of the data frame
+      new_col <-  purrr::map_int(input_data$study_id, ~freq_table[as.character(.x)])
+      return(new_col)
+    }
+  } else if (col_name == "reg_df"){
+    # Handle DoF
+    f <- function(input_data,...){ input_data$n_obs }
+  } else if (col_name == "precision"){
+    # Handle precision - takes in an additional paramter
+    f <- function(input_data, precision_type){
+      if (precision_type == "1/SE"){
+        return ( 1/input_data$se )
+      } else if (precision_type == "DoF"){
+          return ( sqrt(input_data$reg_df) )
+      } else {
+        stop("Invalid type of precision")
+      }
+    }
+  } else {
+    stop("Incorrect column name.")
+  }
+  # Return the function call
+  return(f)
+}
+
+#' Modify the user-defined column names so that they fit the script readable names
+#' 
+#' If any columns are set to NA by the user, they will be automatically initialized
+#' to the values defined in the getMissingDefaultHandling function. For the detailed
+#' list of these columns, see the function getMissingDefaultColumnsHandling().
+#' 
+#' Return two of the modified data frames. The variable list data frames is handled
+#' too for unified variable names.
+#' 
+#' @param input_data [data.frame] Main data column.
+#' @param input_var_list [data.frame] Data frame with variable information.
+#' @param required_col_list [list] List with required/default column information.
+#' @param precision_type [character] Type of precision.
+#'    This parameter can be one of the following:
+#'    - 1/SE - Inverse of the standard error is used.
+#'    - DoF - Square root of the degrees of freedom is used.
+#'    Deafults to "DoF".
+#' @return List of two data frames - main data frame, variable data frame.
+renameUserColumns <- function(input_data, input_var_list, required_cols_list, precision_type){
+  # Default column names for the script recognition
+  def_cols_list <- getDefaultColumns(names_only = FALSE) # Whole list
+  def_cols <- names(def_cols_list) # Names of columns
+  # Validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is(required_cols_list, "list"),
+    is.character(precision_type),
+    precision_type %in% c("1/SE", "DoF")
+  )
+  # Extract the expected colnames (by script)
+  expected_colnames <- names(required_cols_list)
+  if (!all(expected_colnames == def_cols)){
+    message("You have modified the names of the source columns in the required_cols list.")
+    message("Please rename the columns back to:")
+    message(def_cols)
+    stop("Incorrect source column names.")
+  }
+  # Iterate over all columns and validate their presence
+  for (col_name in expected_colnames){
+    required <- def_cols_list[[col_name]] # Boolean
+    user_col_name <- required_cols_list[[col_name]]
+    # Column required, but name in user data not specified (set to NA)
+    if (is.logical(user_col_name)){
+      if (required & !is.na(user_col_name)){
+        # Required, but set to NA (not present in data set)
+        message(paste("The column", col_name, "must be present in your data."))
+        message("Make sure its expected name in required_cols is correctly specified.")
+        stop("Required column not present in source data.")
+      }
+      # Missing columns in data
+      if (is.na(user_col_name)){
+        # Get the function call for the new column
+        new_col_function <- getMissingDefaultColumnsHandling(col_name)
+        # Get the values of the column
+        new_col_values <- new_col_function(input_data,
+                                           precision_type = precision_type)
+        input_data[[col_name]] <- new_col_values # Initialize the column with these values
+        next
+      }
+    } else if (! user_col_name %in% colnames(input_data)){
+    # Check that the user-defined name appears in the data - for non-character only
+      message(paste("The column name", user_col_name, "does not appear in your data."))
+      stop("Incorrect user column specification.")
+    }
+    # Rename the column in source data from user's name to script recognized
+    names(input_data)[names(input_data) == user_col_name] <- col_name
+    # Rename the variable in variable list using dplyr - kinda RRRR approach
+    if (user_col_name %in% input_var_list$var_name){
+      input_var_list <- input_var_list %>%
+        mutate(var_name = replace(var_name, input_var_list$var_name == user_col_name, col_name))
+    }
+  }
+  # Print verbose output and return new data frame
+  renameUserColumnsVerbose()
+  return(list(input_data, input_var_list))
+}
+
+#' Verbose output for the renameUserColumns function
+renameUserColumnsVerbose <- function(...){
+  print("Several data frame columns renamed to fit the script expected form.")
+}
+
+#' Winsorize input data
+#'
+#' This function applies Winsorization to the data to minimize the effect of outliers on the statistical analysis.
+#' Winsorization is a process of limiting extreme values by replacing them with the next lowest or
+#' highest value that is within a certain percentile range.
+#'
+#' @param input_data [data.frame] A data frame containing the main effect (effect),
+#' standard error of the effect (se), and t-statistic (t_stat) columns.
+#' @param win_level [float] A numeric value between 0 and 1, exclusive, specifying the percentage of
+#' extreme values to be replaced with the nearest non-extreme value.
+#' @param winsorize_precision [logical] If TRUE, winsorize precision. Used for different types of
+#' precision. Defaults to TRUE.
+#' @return A data frame with the same columns as input_data, where the effect, standard error of the effect,
+#' and t-statistic columns have been Winsorized.
+winsorizeData <- function(input_data, win_level, winsorize_precision = TRUE){
+  # Validate input
+  required_cols <- getDefaultColumns()
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(win_level),
+    win_level > 0,
+    win_level < 1,
+    all(required_cols %in% colnames(input_data)),
+    !(any(is.na(input_data$effect))), # No missing effect values
+    !(any(is.na(input_data$se))) # No missing SE values
+    )
+  # Get the winsorization interval
+  win_int <-  c(win_level, 1-win_level) # e.g. c(0.01, 0.99)
+  # Get the winsorization function
+  win_fun <- function(input_vector, win_interval = win_int){
+    Winsorize(x = input_vector, minval = NULL, maxval = NULL, probs = win_interval)
+  }
+  # Winsorize the necessary columns
+  input_data$effect <- win_fun(input_data$effect)
+  input_data$se <- win_fun(input_data$se)
+  input_data$t_stat <- win_fun(input_data$t_stat)
+  if (winsorize_precision){
+    input_data$precision <- win_fun(input_data$precision)
+  }
+  # Add a column indicating t statistic significance
+  input_data$significant_t <- c(rep(0,nrow(input_data)))
+  input_data$significant_t[(input_data$t_stat > 1.96) | (input_data$t_stat < -1.96)] <- 1
+  # Return 
+  winsorizeDataVerbose()
+  return(input_data)
+}
+
+#' Verbose output for the winsorizeData function
+winsorizeDataVerbose <- function(...){
+  print("Data winsorized successfully.")
+}
+
 
 #' An auxiliary method to limit the data frame to one study only. Use only for testing
 #' 
@@ -886,7 +1087,7 @@ getMAVariablesDescriptionTableVerbose <- function(res,...){
 }
 
 #' The function getEffectSummaryStats() calculates the summary statistics for variables in a given data frame input_data
-#'    using the percentage of correct classification (Effect) effect_w and sample size study_size columns,
+#'    using the percentage of correct classification (Effect) effect and sample size study_size columns,
 #'    and returns a data frame with the results. The function takes as input input_var_list,
 #'    a data frame that contains metadata about the variables in input_data and which variables to calculate
 #'    summary statistics for. The summary statistics calculated are the mean, median, weighted mean,
@@ -920,7 +1121,7 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
   
   # Constants
   z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) # Z value for conf. int. calculation
-  effect_data <- with(input_data, as.vector(effect_w))
+  effect_data <- with(input_data, as.vector(effect))
   study_size_data <- with(input_data, as.vector(study_size))
   
   # Output columns
@@ -1098,9 +1299,9 @@ getEffectSummaryStatsVerbose <- function(out_list, ...){
 #' @param effect_name [character] Verbose explanation of the effect.
 getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name = 'effect'){
   # Check column and input validity
-  expected_cols <- c('effect_w', factor_by)
+  required_cols <- getDefaultColumns()
   stopifnot(
-    all(expected_cols %in% colnames(input_data)),
+    all(required_cols %in% colnames(input_data)),
     is.data.frame(input_data),
     is.character(factor_by),
     is.logical(verbose),
@@ -1112,9 +1313,9 @@ getBoxPlot <- function(input_data, factor_by = 'country', verbose=T, effect_name
   factor_by_verbose <- gsub("_", " ", factor_by) # More legible y-axis label
   
   # Construct the plot - use !!sym(factor_by) to cast some more dark magic - makes plot recognize function input
-  box_plot <- ggplot(data = input_data, aes(x = effect_w, y=factor(!!sym(factor_by), levels = factor_levels))) +
+  box_plot <- ggplot(data = input_data, aes(x = effect, y=factor(!!sym(factor_by), levels = factor_levels))) +
       geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
-      geom_vline(aes(xintercept = mean(effect_w)), color = "red", linewidth = 0.85) + 
+      geom_vline(aes(xintercept = mean(effect)), color = "red", linewidth = 0.85) + 
       labs(title = NULL,x=paste("Effect of", tolower(effect_name)), y = "Grouped by " %>% paste0(factor_by_verbose)) +
       main_theme()
   
@@ -1184,13 +1385,13 @@ getLargeBoxPlot <- function(input_data, max_studies = 60, ...){
 #' @return [list] Filter for the data without outliers
 getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 0.2, verbose=T) {
   # Check column validity
-  expected_cols <- c('effect_w', 'se_precision_w')
+  required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     is.numeric(effect_proximity),
     is.numeric(maximum_precision),
     is.logical(verbose),
-    all(expected_cols %in% colnames(input_data)),
+    all(required_cols %in% colnames(input_data)),
     effect_proximity <= 1,
     effect_proximity >= 0,
     maximum_precision <= 1,
@@ -1198,9 +1399,9 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
   )
   
   # Get source values
-  obs <- input_data$obs_n
-  effect <- input_data$effect_w
-  precision <- input_data$se_precision_w
+  obs <- input_data$obs_id
+  effect <- input_data$effect
+  precision <- input_data$precision
   
   # Maximum values and effect mean value
   max_effect <- max(effect)
@@ -1293,22 +1494,25 @@ generateFunnelTicks <- function(input_vec){
 #' @Note: In accordance with Stanley (2005), we decide to use the square root of the degrees of freedom
 #'  isntead of 1/SE as a measure of precision, to account for study size.
 #'  
-#' @param input_data [data.frame] Main data frame. Must contain cols 'effect_w', 'se_precision_w'
+#' @param input_data [data.frame] Main data frame. Must contain cols 'effect', 'precision'
 #' @param effect_proximity [float] Cutoff point for the effect. See getOutliers() for more.
 #' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
 #' @param use_study_medians [bool] If TRUE, plot medians of studies instead of all observations.
 #'  Defaults to FALSE.
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
+#' @param export_html [bool] If TRUE, export the plot to an html object into the graphics folder.
+#' @param output_path [character] Full path to where the plot should be stored.
 getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
-                          use_study_medians = F, verbose = T){
+                          use_study_medians = F, verbose = T,
+                          export_html, output_path){
   # Check input validity
-  expected_cols <- c('effect_w', 'se_precision_w')
+  required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     is.numeric(effect_proximity),
     is.numeric(maximum_precision),
     is.logical(verbose),
-    all(expected_cols %in% colnames(input_data)),
+    all(required_cols %in% colnames(input_data)),
     effect_proximity <= 1,
     effect_proximity >= 0,
     maximum_precision <= 1,
@@ -1316,25 +1520,25 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
   )
   
   # Filter out the outliers
-  filter_effect_w <- getOutliers(input_data, effect_proximity=effect_proximity, maximum_precision=maximum_precision, verbose=verbose)
+  filter_effect <- getOutliers(input_data, effect_proximity=effect_proximity, maximum_precision=maximum_precision, verbose=verbose)
   
   # Create the data frame for the funnel plot
-  funnel_data <- data[filter_effect_w, c('study_id', 'effect_w', 'se_precision_w')] # Only Effect, Precision
+  funnel_data <- data[filter_effect, c('study_id', 'effect', 'precision')] # Only Effect, Precision
   funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
   
   # Plot study medians instead
   if (use_study_medians){
     funnel_data <- funnel_data %>%
       group_by(study_id) %>% 
-      summarize(median_effect_w = median(effect_w),
-              median_se_precision_w = se_precision_w[which.min(abs(effect_w - median_effect_w))])
-    colnames(funnel_data) <- c("study_id", "effect_w", "se_precision_w")
+      summarize(median_effect = median(effect),
+              median_precision = precision[which.min(abs(effect - median_effect))])
+    colnames(funnel_data) <- c("study_id", "effect", "precision")
   }
   
   # Get visual bounds and tick colors
-  funnel_x_lbound <- min(funnel_data$effect_w)
-  funnel_x_ubound <- max(funnel_data$effect_w)
-  mean_x_tick <- mean(funnel_data$effect_w)
+  funnel_x_lbound <- min(funnel_data$effect)
+  funnel_x_ubound <- max(funnel_data$effect)
+  mean_x_tick <- mean(funnel_data$effect)
   # Generate and extract the info
   base_funnel_ticks <- c(funnel_x_lbound, funnel_x_ubound, mean_x_tick) # c(lbound, ubound, mean)
   funnel_visual_info <- generateFunnelTicks(base_funnel_ticks)
@@ -1344,9 +1548,9 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
   # Plot the plot
   x_title <- ifelse(use_study_medians, "study median values", "all observations")
   quiet(
-    funnel_win <- ggplot(data = funnel_data, aes(x = effect_w, y = se_precision_w)) + 
+    funnel_win <- ggplot(data = funnel_data, aes(x = effect, y = precision)) + 
       geom_point(color = "#0d4ed1") + 
-      geom_vline(aes(xintercept = mean(effect_w)), color = "red", linewidth = 0.5) + 
+      geom_vline(aes(xintercept = mean(effect)), color = "red", linewidth = 0.5) + 
       labs(title = NULL, x = paste("Estimate of the effect -",x_title), y = "Precision of the effect") +
       scale_x_continuous(breaks = funnel_ticks) +
       main_theme(
@@ -1354,7 +1558,16 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
       )
   )
     
-  suppressWarnings(print(funnel_win)) # Print out the funnel plot
+  # Print out the plot
+  if (verbose){
+    suppressWarnings(print(funnel_win))
+  }
+  # Export to a html object
+  if (export_html){
+    exportHtmlGraph(funnel_win, output_path)
+  }
+  # Return the R plot object
+  return(funnel_win)
 }
 
 #' Generate ticks for a histogram plot
@@ -1450,23 +1663,27 @@ generateHistTicks <- function(input_vec) {
 #' @param lower_cutoff An optional numeric value specifying the lower cutoff for filtering outliers. Default is -150.
 #' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
 #' @param lower_tstat A numeric value specifying which t statistic should be highlighted in the plot
-#' @param higher_tstat Similar to lower_tstat
+#' @param upper_tstat Similar to lower_tstat
+#' @param verbose If TRUE, print out the plot. Defaults to TRUE.
+#' @param export_html If TRUE, export the plot to an html object into the graphics folder.
+#' @param output_path Full path to where the plot should be stored.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
 getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
-                         lower_tstat = -1.96, upper_tstat = 1.96){
+                         lower_tstat = -1.96, upper_tstat = 1.96, verbose = T,
+                         export_html, output_path){
   # Specify a cutoff filter
-  t_hist_filter <- (data$t_w > lower_cutoff & data$t_w < upper_cutoff) #removing the outliers from the graph
+  t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
   hist_data <- input_data[t_hist_filter,]
   
   # Get lower bound
-  lbound_choices <- c(lower_cutoff, min(hist_data$t_w)) # Either lowest t-stat, or cutoff point
+  lbound_choices <- c(lower_cutoff, min(hist_data$t_stat)) # Either lowest t-stat, or cutoff point
   hist_lbound <- lbound_choices[which.max(lbound_choices)] # Choose the higher one
   # Get upper bound
-  ubound_choices <- c(upper_cutoff, max(hist_data$t_w)) # Either highest t-stat, or cutoff point
+  ubound_choices <- c(upper_cutoff, max(hist_data$t_stat)) # Either highest t-stat, or cutoff point
   hist_ubound <- ubound_choices[which.min(ubound_choices)] # Choose the lower one
   # Put all the visual information input together
-  hist_mean <- mean(hist_data$t_w)
+  hist_mean <- mean(hist_data$t_stat)
   base_hist_ticks <- c(hist_lbound, hist_ubound, hist_mean, lower_tstat, upper_tstat)
   # Generate and extract variable visual information
   hist_visual_info <- generateHistTicks(base_hist_ticks)
@@ -1475,9 +1692,9 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
   
   # Construct the histogram
   quiet(
-    t_hist_plot <- ggplot(data = hist_data, aes(x = t_w, y = after_stat(density))) +
+    t_hist_plot <- ggplot(data = hist_data, aes(x = t_stat, y = after_stat(density))) +
       geom_histogram(color = "black", fill = "#1261ff", bins = 80) +
-      geom_vline(aes(xintercept = mean(t_w)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
+      geom_vline(aes(xintercept = mean(t_stat)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
       geom_vline(aes(xintercept = lower_tstat), color = "red", linewidth = 0.5) +
       geom_vline(aes(xintercept = upper_tstat), color = "red", linewidth = 0.5) +
       labs(x = "T-statistic", y = "Density") +
@@ -1486,7 +1703,15 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
         x_axis_tick_text = hist_ticks_text)
   )
   # Print out the plot
-  suppressWarnings(print(t_hist_plot))
+  if (verbose){
+    suppressWarnings(print(t_hist_plot))
+  }
+  # Export to a html object
+  if (export_html){
+    exportHtmlGraph(t_hist_plot, output_path)
+  }
+  # Return R object
+  return(t_hist_plot)
 }
 
 ######################### LINEAR TESTS ######################### 
@@ -1531,26 +1756,26 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
 #' @param data [data.frame] Input data
 getLinearTests <- function(data) {
   # Validate that the necessary columns are present
-  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
+  required_cols <- getDefaultColumns()
   stopifnot(all(required_cols %in% names(data)))
   # OLS
-  ols <- lm(formula = effect_w ~ se_w, data = data)
+  ols <- lm(formula = effect ~ se, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
   ols_coefs <- extractLinearCoefs(ols_res)
   # Between effects
-  be <- plm(effect_w ~ se_w, model = "between", index = "study_id", data = data)
+  be <- plm(effect ~ se, model = "between", index = "study_id", data = data)
   be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
   be_coefs <- extractLinearCoefs(be_res)
   # Random Effects
-  re <- plm(effect_w ~ se_w, model = "random", index = "study_id", data = data)
+  re <- plm(effect ~ se, model = "random", index = "study_id", data = data)
   re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
   re_coefs <- extractLinearCoefs(re_res)
   # Weighted by number of observations per study
-  ols_w_study <- lm(formula = effect_w ~ se_w, data = data, weight = (data$study_size*data$study_size))
+  ols_w_study <- lm(formula = effect ~ se, data = data, weight = (data$study_size*data$study_size))
   ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
   ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res)
   # Weighted by precision
-  ols_w_precision <- lm(formula = effect_w ~ se_w, data = data, weight = c(data$se_precision_w*data$se_precision_w))
+  ols_w_precision <- lm(formula = effect ~ se, data = data, weight = c(data$precision*data$precision))
   ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
   ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res)
   # Combine the results into a data frame
@@ -1616,9 +1841,9 @@ extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbos
 ###### PUBLICATION BIAS - WAAP (Ioannidis et al., 2017) ######
 
 getWaapResults <- function(data, ...){
-  WLS_FE_avg <- sum(data$effect_w/data$se_w)/sum(1/data$se_w)
+  WLS_FE_avg <- sum(data$effect/data$se)/sum(1/data$se)
   WAAP_bound <- abs(WLS_FE_avg)/2.8
-  WAAP_reg <- lm(formula = effect_w ~ -se_precision_w, data = data[data$se_w<WAAP_bound,])
+  WAAP_reg <- lm(formula = effect ~ -precision, data = data[data$se<WAAP_bound,])
   WAAP_reg_cluster <- coeftest(WAAP_reg, vcov = vcovHC(WAAP_reg, type = "HC0", cluster = c(data$study_id)))
   WAAP_coefs <- extractNonlinearCoefs(WAAP_reg_cluster, ...)
   invisible(WAAP_coefs)
@@ -1628,8 +1853,8 @@ getWaapResults <- function(data, ...){
 
 
 getTop10Results <- function(data, ...){
-  T10_bound <- quantile(data$se_precision_w, probs = 0.9) #Setting the 90th quantile bound
-  T10_reg <- lm(formula = effect_w ~ -se_precision_w, data = data[data$se_precision_w>T10_bound,]) #Regression using the filtered data
+  T10_bound <- quantile(data$precision, probs = 0.9) #Setting the 90th quantile bound
+  T10_reg <- lm(formula = effect ~ -precision, data = data[data$precision>T10_bound,]) #Regression using the filtered data
   T10_reg_cluster <- coeftest(T10_reg, vcov = vcovHC(T10_reg, type = "HC0", cluster = c(data$study_id)))
   T10_coefs <- extractNonlinearCoefs(T10_reg_cluster, ...)
   invisible(T10_coefs)
@@ -1662,7 +1887,7 @@ getStemResults <- function(data, script_path, ...){
     10^3 # max_N_count - set maximum number of iteration before termination
   )
   
-  est_stem <- stem(data$effect_w, data$se_w, stem_param)$estimates # Actual esimation
+  est_stem <- stem(data$effect, data$se, stem_param)$estimates # Actual esimation
   
   # Save results
   stem_coefs <- extractNonlinearCoefs(est_stem, ...)
@@ -1693,9 +1918,9 @@ getHierResults <- function(data, ...){
   regdata_h <- NULL
   for (i in 1:nreg_h) {
     filter <- data$study_name==study_levels_h[i] #T/F vector identifying if the observation is from the i-th study
-    y <- data$effect_w[filter] #Effects from the i-th study
+    y <- data$effect[filter] #Effects from the i-th study
     X <- cbind(1,
-               data$se_w[filter])
+               data$se[filter])
     regdata_h[[i]] <- list(y=y, X=X)
   }
   Data_h <- list(regdata=regdata_h)
@@ -1750,11 +1975,11 @@ getSelectionResults <- function(data, script_path, cutoffs = c(1.960),
   stopifnot(all(cutoffs %in% c(1.645, 1.960, 2.576))) # Cutoffs
   stopifnot(modelmu %in% c("normal", "t")) # Model
   # Validate that the necessary columns are present
-  required_cols <- c("effect_w", "se_w")
+  required_cols <- getDefaultColumns()
   stopifnot(all(required_cols %in% names(data)))
   # Extract winsorized estimates, standard errors
-  sel_X <- data$effect_w # Effect - Winsorized
-  sel_sigma <- data$se_w # SE - Winsorized
+  sel_X <- data$effect # Effect - Winsorized
+  sel_sigma <- data$se # SE - Winsorized
   
   # Estimation
   estimates <- metastudies_estimation(sel_X, sel_sigma, cutoffs, symmetric, model = modelmu)
@@ -1779,7 +2004,7 @@ getSelectionResults <- function(data, script_path, cutoffs = c(1.960),
 #'  - Source: https://osf.io/f6nzb/
 
 #'  @param data [data.frame] The main data frame on which to run the estimation on.
-#'    Must contain the columns - "effect_w", and "se_w"
+#'    Must contain the columns - "effect", and "se"
 #'  @param script_path [character] Path to the source script
 #'  @inheritDotParams Parameters for the extractNonlinearCoefs function.
 #'  
@@ -1797,10 +2022,10 @@ getEndoKinkResults <- function(data, script_path, ...){
   # Read the source file
   source(script_path)
   # Validate that the necessary columns are present
-  required_cols <- c("effect_w", "se_w")
+  required_cols <- getDefaultColumns()
   stopifnot(all(required_cols %in% names(data))) 
   # Extract winsorized estimates, standard errors
-  data <- data[,required_cols]
+  data <- data[,c("effect", "se")]
   # Run the model estimation and get the four coefficients
   estimates_vec <- runEndoKink(data, verbose = F)
   # Handle output and return verbose coefs
@@ -1825,7 +2050,8 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data, script_paths) {
   # Validate the input
-  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
+  
+  required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     all(required_cols %in% names(input_data)),
@@ -1929,8 +2155,8 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
 #' and Sargan test. If multiple instruments are tied for the best performance, all of them will be returned.
 #' The function also prints the identified best instrument(s).
 #'
-#' @param input_data [data.frame] A data frame containing the effect (effect_w), its standard error (se_w), study ids, and source
-#' data for the instrument(s) (specified as separate columns). It must have the columns "effect_w", "se_w", "study_id", and "n_obs".
+#' @param input_data [data.frame] A data frame containing the effect (effect), its standard error (se), study ids, and source
+#' data for the instrument(s) (specified as separate columns). It must have the columns "effect", "se", "study_id", and "n_obs".
 #' @param instruments [list] A list of potential instruments. Each element of the list should be a vector of numeric values.
 #'  Ideally specify as 1/data$n_obs, etc.
 #' @param instruments_verbose [vector] A vector of verbose names (strings) for each instrument. It must have the same length
@@ -1943,11 +2169,12 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
 #' findBestInstrument(instrument_data, instruments, instruments_verbose)
 findBestInstrument <- function(input_data, instruments, instruments_verbose){
   # Validity checks
+  required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     is.list(instruments),
     is.vector(instruments_verbose),
-    all(c("effect_w", "se_w", "study_id", "n_obs") %in% colnames(input_data))
+    all(required_cols %in% colnames(input_data))
   )
   # Initialize an empty data frame - each row will be one instrument
   results <- data.frame(r_squared = numeric(length(instruments)),
@@ -1958,7 +2185,7 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
   for (i in seq_along(instruments)) {
     instrument <- instruments[i][[1]] # Unlist
     stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
-    model <- ivreg(formula = effect_w ~ se_w | instrument, data = input_data)
+    model <- ivreg(formula = effect ~ se | instrument, data = input_data)
     model_summary <- summary(model, vcov = vcovHC(model, cluster = c(input_data$study_id)), diagnostics=T)
     # Extract relevant statistics
     results[i,"r_squared"] <- model_summary$r.squared
@@ -2005,7 +2232,7 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 
 #' getIVResults function
 #'
-#' This function takes in data and finds the best instrument for the IV regression of effect_w against se_w.
+#' This function takes in data and finds the best instrument for the IV regression of effect against se.
 #' It then runs the IV regression and extracts the coefficients. The strength of the function is found
 #' in being able to identify the best instrument automatically. The list of instruments is unmodifiable as of now.
 #' 
@@ -2026,7 +2253,7 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 #' extracts the coefficients using extractExoCoefs.
 #'
 #' @examples
-#' data <- data.frame(effect_w = rnorm(10), se_w = rnorm(10), n_obs = rep(10, 10), study_id = rep(1:10, each = 1))
+#' data <- data.frame(effect = rnorm(10), se = rnorm(10), n_obs = rep(10, 10), study_id = rep(1:10, each = 1))
 #' getIVResults(data)
 getIVResults <- function(data, ...){
   # Define the instruments to use
@@ -2048,15 +2275,15 @@ getIVResults <- function(data, ...){
   # Run the regression
   instrument <- best_instrument[[1]] # Unlist
   stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
-  model <- ivreg(formula = effect_w ~ se_w | instrument, data = data)
+  model <- ivreg(formula = effect ~ se | instrument, data = data)
   model_summary <- summary(model, vcov = vcovHC(model, cluster = c(data$study_id)), diagnostics=T)
   # Get the coefficients
   all_coefs <- model_summary$coefficients
   IV_coefs_vec <- c(
     all_coefs["(Intercept)","Estimate"], # Effect
     all_coefs["(Intercept)", "Std. Error"], # Effect SE
-    all_coefs["se_w", "Estimate"], # Pub Bias
-    all_coefs["se_w", "Std. Error"] # Pub Bias SE
+    all_coefs["se", "Estimate"], # Pub Bias
+    all_coefs["se", "Std. Error"] # Pub Bias SE
     ) 
   iv_coefs_mat <- matrix(IV_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
   # Extract the coefficients and return as a vector
@@ -2066,7 +2293,7 @@ getIVResults <- function(data, ...){
 
 ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
 
-#' getMedians - Calculates the vector of medians for effect_w
+#' getMedians - Calculates the vector of medians for effect
 #' Input the data frame, and the name of the column to calculate a vector of medians for,
 #'  grouped by the study levels.
 #' 
@@ -2116,7 +2343,7 @@ getPUniResults <- function(data, method="ML",...){
     method %in% c("ML", "P") # Max likelihood, Moments
   )
   # Calculate medians for all studies
-  med_t <- getMedians(data, 't_w') # T-stat vector of medians
+  med_t <- getMedians(data, 't_stat') # T-stat vector of medians
   med_nobs <- getMedians(data, 'n_obs') # N-obs vector of medians
   #Estimation
   if (method == "ML"){
@@ -2154,7 +2381,8 @@ getPUniResults <- function(data, method="ML",...){
 #'
 #' Performs two tests for publication bias and exogeneity in instrumental variable (IV) analyses using clustered data.
 #'
-#' @param input_data [data.frame] A data frame containing the necessary columns: "effect_w", "se_w", "study_id", "study_size", and "se_precision_w".
+#' @param input_data [data.frame] A data frame containing the necessary columns: "effect", "se", "study_id", "study_size", and "precision".
+#' @param puni_method [character] Method to be used for p-uniform calculation. One of "ML", "P". Defaults to "ML".
 #' @return A data frame with the results of the three tests for publication bias and exogeneity in IV analyses using clustered data.
 #'
 #' @details This function first validates that the necessary columns are present in the input data frame.
@@ -2162,16 +2390,17 @@ getPUniResults <- function(data, method="ML",...){
 #' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
 #' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
 #' The results are then printed into the console and returned invisibly.
-getExoTests <- function(input_data) {
+getExoTests <- function(input_data, puni_method = "ML") {
   # Validate that the necessary columns are present
-  required_cols <- c("effect_w", "se_w", "study_id", "study_size", "se_precision_w")
+  required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     all(required_cols %in% names(input_data))
   )
   # Get coefficients
   iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
-  p_uni_res <- getPUniResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  p_uni_res <- getPUniResults(input_data, method = puni_method,
+                              effect_present = T, pub_bias_present = T, verbose_coefs = T)
   # Combine the results into a data frame
   results <- data.frame(
     iv_df = iv_res,
@@ -2200,41 +2429,42 @@ getExoTestsVerbose <- function(res, ...){
 #' This function performs a Caliper test on a data set to detect selective reporting of statistically significant results.
 #'
 #' @param input_data [data.frame] A data.frame containing the data set to be tested. The data.frame must have at least two columns named
-#'  "t_w" and "study_id", and these columns must be numeric.
+#'  "t_stat" and "study_id", and these columns must be numeric.
 #' @param threshold [numeric] The t-statistic threshold used to define statistically significant results. Default is 1.96.
 #' @param width [numeric] The width of the Caliper interval used to define the sub-sample of observations used in the test. Default is 0.05.
 #' @return A numeric vector with four elements: the estimate of the proportion of results reported, the standard error of the estimate,
 #' the number of observations with t-statistics above the threshold, and the number of observations with t-statistics below the threshold.
 runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
   # Validate input
+  required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     is.numeric(threshold),
     is.numeric(width),
-    all(c("t_w", "study_id") %in% colnames(input_data))
+    all(required_cols %in% colnames(input_data))
   )
   # Add a column indicating which observations have t-stats above (below) threshold
   if (threshold >= 0){ # Explicit because ifelse does not work, due to some dark spells probably
-    significant_obs <- input_data$t_w > threshold
+    significant_obs <- input_data$t_stat > threshold
   } else {
-    significant_obs <- input_data$t_w < threshold
+    significant_obs <- input_data$t_stat < threshold
   }
-  input_data$significant_w <- ifelse(significant_obs, 1, 0) # Col of 0/1
+  input_data$significant_t <- ifelse(significant_obs, 1, 0) # Col of 0/1
   # Initialize variables for output storage
   caliper_output <- list()
   # Run the test
-  lower_bound <- input_data$t_w > ( threshold - width ) # Bool vector
-  upper_bound <- input_data$t_w < ( threshold + width ) # Bool vector
+  lower_bound <- input_data$t_stat > ( threshold - width ) # Bool vector
+  upper_bound <- input_data$t_stat < ( threshold + width ) # Bool vector
   subsetted_data <- input_data[lower_bound & upper_bound,] # Only desired rows
   if (nrow(subsetted_data) == 0){
     return(c(0,0,0,0)) # No observations in the interval
   }
-  cal_res <- lm(formula = significant_w ~ t_w - 1, data = subsetted_data)
+  cal_res <- lm(formula = significant_t ~ t_stat - 1, data = subsetted_data)
   cal_res_coefs <- coeftest(cal_res, vcov = vcovHC(cal_res, type = "const", cluster = c(input_data$study_id)))
-  cal_est <- cal_res_coefs["t_w", "Estimate"] # Estimate
-  cal_se <- cal_res_coefs["t_w", "Std. Error"] # Standard Error
-  cal_above <- nrow(subsetted_data[subsetted_data$t_w > threshold, ]) # N. obs above the threshold
-  cal_below <- nrow(subsetted_data[subsetted_data$t_w < threshold, ]) # N. obs below the threshold
+  cal_est <- cal_res_coefs["t_stat", "Estimate"] # Estimate
+  cal_se <- cal_res_coefs["t_stat", "Std. Error"] # Standard Error
+  cal_above <- nrow(subsetted_data[subsetted_data$t_stat > threshold, ]) # N. obs above the threshold
+  cal_below <- nrow(subsetted_data[subsetted_data$t_stat < threshold, ]) # N. obs below the threshold
   # Return the output
   res <- c(
     round(cal_est, 3),
@@ -2315,7 +2545,7 @@ getCaliperResultsVerbose <- function(res, ...){
 #' getElliottResults - Calculate Elliott's five tests and other statistics for a given dataset
 #'  - Source: https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA18583
 #'
-#' @param input_data A data frame containing at least the "t_w" column.
+#' @param input_data A data frame containing at least the "t_stat" column.
 #' @param script_path Full path to the source script.
 #' @param temp_data_path Store temporary output here.
 #' @param data_subsets A character vector with the names of the subsets of data to test. By default, only "All data" is tested.
@@ -2339,7 +2569,7 @@ getElliottResults <- function(input_data, script_path, temp_data_path, data_subs
     is.numeric(d_point),
     is.numeric(CS_bins),
     is.logical(verbose),
-    all("t_w" %in% colnames(input_data))
+    all("t_stat" %in% colnames(input_data))
   )
   # Static values, not necessary to adjust (probably)
   id <- 1 # No dependence
@@ -2384,9 +2614,9 @@ getElliottResults <- function(input_data, script_path, temp_data_path, data_subs
     data <- input_data # Adjust later if desired
     
     # Convert t-statistics to p-values
-    t_w <- data$t_w
+    t_stat <- data$t_stat
     df <- ifelse("reg_df" %in% colnames(data), data$reg_df, data$n_obs) # Nobs if DoF not available
-    P <- 2 * pt(abs(t_w), df = df, lower.tail=FALSE) # p-values
+    P <- 2 * pt(abs(t_stat), df = df, lower.tail=FALSE) # p-values
      
     # Tests (each test returns the corresponding p-value)
     Bin_test <- Binomial(P, p_min, p_max, "c")
@@ -2455,7 +2685,7 @@ getMaiveResults <- function(data, script_path, method = 3, weight = 0, instrumen
   # Read the source file
   source(script_path)
   # Validate that the necessary columns are present
-  required_cols <- c("effect_w", "se_w", "study_id")
+  required_cols <- getDefaultColumns()
   stopifnot(
     all(required_cols %in% names(data)),
     is.character(script_path),
@@ -2466,7 +2696,7 @@ getMaiveResults <- function(data, script_path, method = 3, weight = 0, instrumen
     is.logical(verbose)
   )
   # Subset data and rename columns
-  data <- data[,required_cols]
+  data <- data[,c("effect", "se", "n_obs", "study_id")]
   colnames(data) <- c('bs', 'sebs', 'Ns', 'studyid')
   # Run the estimation
   MAIVE <- maive(dat=data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
@@ -2524,9 +2754,10 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
     is.numeric(max_groups_to_remove),
     is.logical(return_variable_vector_instead),
     is.logical(verbose),
-    length(colnames(input_data)) == length(input_var_list$bma_potential_var), # Matching dimensions
     all(c("bma_potential_var", "var_name", "group_category") %in% colnames(input_var_list))
   )
+  # Subset input data to only columns defined in variable list
+  input_data <- input_data[,colnames(input_data) %in% input_var_list$var_name]
   # Remove any variables for which all values in data are the same
   non_const_cols <- apply(input_data, 2, function(col){length(unique(col)) > 1})
   input_data <- input_data[,non_const_cols]
@@ -2536,8 +2767,8 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
   var_grouping <- input_var_list$group_category[bma_potential_vars_bool]
   
   # Pop the effect from var grouping and potential vars (not used in the iteration)
-  var_grouping <- var_grouping[!potential_vars == "effect_w"]
-  potential_vars <- potential_vars[!potential_vars == "effect_w"]
+  var_grouping <- var_grouping[!potential_vars == "effect"]
+  potential_vars <- potential_vars[!potential_vars == "effect"]
   
   # Get initial BMA formula and VIF coefficients
   bma_formula <- getBMAFormula(potential_vars, input_data)
@@ -2618,10 +2849,10 @@ findOptimalBMAFormulaVerbose <- function(out_list, ...){
 #' Creates a formula for Bayesian model averaging
 #'
 #' This function creates a formula for Bayesian model averaging based on the variables in \code{var_vector}.
-#' The formula includes the variables "effect_w" and "se_w", as well as any other variables specified in \code{var_vector}.
+#' The formula includes the variables "effect" and "se", as well as any other variables specified in \code{var_vector}.
 #'
 #' @param input_var [vector] A vector of variables that should be used to construct the formula. Must include
-#' "effect_w" and "se_w".
+#' "effect" and "se".
 #' @param input_data [data.frame] A data frame on which the formula will later be used. Skip adding any variables
 #'  where all values of this data frame are 0 for the variable.
 #' @param get_var_vector_instead [bool] If TRUE, return a vector with variable names instead, with effect and se
@@ -2631,19 +2862,19 @@ findOptimalBMAFormulaVerbose <- function(out_list, ...){
 #' @note To get the vector itself from the formula, you can use the in-built "all.vars()" method instead.
 getBMAFormula <- function(input_var, input_data, get_var_vector_instead = F){
   # Separate the effect and SE from the remaining variables
-  bool_wo_effect <- input_var != "effect_w" # Pop effect
-  bool_wo_se <- input_var != "se_w" # Pop se
+  bool_wo_effect <- input_var != "effect" # Pop effect
+  bool_wo_se <- input_var != "se" # Pop se
   remaining_vars <- input_var[bool_wo_effect & bool_wo_se] # Remaining variables
   # Remove any variables for which all values in data are the same
   zero_vars <- input_data %>% select_if(~ length(unique(.)) == 1) %>% names
   remaining_vars <- remaining_vars[!remaining_vars %in% zero_vars]
   # Get the formula
   if (get_var_vector_instead){
-    var_vector <- c("effect_w", "se_w", remaining_vars)
+    var_vector <- c("effect", "se", remaining_vars)
     return(var_vector)
   }
   remaining_vars_verbose <- paste(remaining_vars, sep="", collapse = " + ")
-  all_vars_verbose <- paste0("effect_w ~ se_w + ", remaining_vars_verbose)
+  all_vars_verbose <- paste0("effect ~ se + ", remaining_vars_verbose)
   bma_formula <- as.formula(all_vars_verbose)
   return(bma_formula)
 }
@@ -2778,7 +3009,7 @@ getBMAData <- function(input_data, input_var_list, variable_info, from_vector = 
 #' estimation inside the 'bms' function. Validate correct input, run the estimation, and
 #' return the BMA model without printing any results.
 #' 
-#' @param bma_data [data.frame] The data for BMA. "effect_w" must be in the first column.
+#' @param bma_data [data.frame] The data for BMA. "effect" must be in the first column.
 #' @inheritDotParams Parameters to be used inside the "bms" function. These are:
 #' burn, iter, g, mprior, nmodel, mcmc
 #' For more info see the "bms" function documentation.
@@ -2789,7 +3020,7 @@ runBMA <- function(bma_data, ...){
     is.data.frame(bma_data),
     !any(is.na(bma_data)), # No missing obs
     all(sapply(bma_data,is.numeric)), # Only numeric obs
-    colnames(bma_data[,1]) == "effect_w"
+    colnames(bma_data[,1]) == "effect"
   )
   # Actual estimation with inhereted parameters
   runBMAVerbose()
@@ -2994,7 +3225,7 @@ runFMA <- function(bma_data, bma_model, verbose = T){
   stopifnot(
     is.data.frame(bma_data),
     class(bma_model) == "bma",
-    names(bma_data[,1]) == "effect_w" # Restrictive, but extra safe
+    names(bma_data[,1]) == "effect" # Restrictive, but extra safe
   )
   # Estimation from here
   print("Running the Frequentist Model Averaging...")
@@ -3051,6 +3282,7 @@ runFMA <- function(bma_data, bma_model, verbose = T){
   u <- matrix(1,M,1)
   quiet(
     optim <- LowRankQP::LowRankQP(Vmat=G,dvec=a,Amat=A,bvec=b,uvec=u,method="LU",verbose=FALSE)
+    
   )
   weights <- as.matrix(optim$alpha)
   beta.scaled <- beta%*%weights
@@ -3189,7 +3421,7 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
   bpe_est_string <- ifelse(include_intercept, bpe_string_base, "") # Empty for no intercept
   # Iterate over the bma_vars and add the corresponding coefficients from input_var_list
   for (bma_var in bma_vars) {
-    if (!bma_var %in% c("(Intercept)","se_w")){
+    if (!bma_var %in% c("(Intercept)","se")){
       # Use a study
       if (study_id != 0){
         coef <- median(bma_data[input_data$study_id==study_id,bma_var])
@@ -3474,7 +3706,26 @@ getEconomicSignificanceVerbose <- function(res,...){
 ######################### CACHE HANDLING #########################
 
 #' Cache a function using the memoise package if so desired
+#' 
+#' Input a function and memoise it based on disk cache if caching is on.
+#' If not, return the function as is instead.
+#' 
+#' @param f [function] The function to be memoised.
+#' @param is_cache_on [logical] Indicates whether cache should be used.
+#' @param cache_path [character] Path to the folder where cache should be stored.
+#'  Defaults to './_cache/'.
+#' @param cache_age [numeric] In seconds, how long the cache should exist after creation.
+#'  They get deleted with every script run. Defaults to 3600 (1 hour).
+#' @return Function. Memoised or not, based on the is_cache_on parameter.
 cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/', cache_age = 3600) {
+  # Validate input
+  stopifnot(
+    is.function(f),
+    is.logical(is_cache_on),
+    is.character(cache_path),
+    is.numeric(cache_age)
+  )
+  # Main
   if (is_cache_on) {
     # Get the disk cache
     disk_cache <- cachem::cache_disk(dir = cache_path, max_size = 1e9, max_age = cache_age)
@@ -3484,8 +3735,20 @@ cacheIfNeeded <- function(f, is_cache_on, cache_path = './_cache/', cache_age = 
   }
 }
 
-#' verbose_function will be a function with a single input, the result of the
-#' cached function
+#' Run a cached function by using the function call from cacheIfNeeded.
+#' 
+#' Input the function call from cacheIfNeeded, specify the user parameters list,
+#' and input the verbose input (as a function) that should get printed from
+#' the cached function call. This is because if a function call results are found
+#' in a cache, the function does not get called, so nothing gets logged into the 
+#' console.
+#' 
+#' @param f [function] Cached (or bare) function that should be called.
+#' @param user_params [list] A list with user parameters.
+#' @param verbose_function [function] A function with the verbose output of the 
+#'  function f.
+#' @inheritDotParams The parameters with which the function should be called.
+#' @return The returned object from the function call.
 runCachedFunction <- function(f, user_params, verbose_function, ...){
   # Validate input
   stopifnot(
@@ -3631,4 +3894,13 @@ main_theme <- function(x_axis_tick_text = "black"){
         axis.text.x = element_text(color = x_axis_tick_text), axis.text.y = element_text(color = "black"),
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
         plot.background = element_rect(fill = "#DCEEF3"))
+}
+
+#' Export the graph into an HTML file using the plotly package
+#' 
+#' @param graph_object The object generated by ggplot
+#' @param export_path Full path to where the object should be stored.
+exportHtmlGraph <- function(graph_object, export_path){
+  plotly_img <- ggplotly(graph_object)
+  htmlwidgets::saveWidget(plotly_img, export_path)
 }

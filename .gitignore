@@ -1,0 +1,22 @@
+# Python temp files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# R temp files
+**/*.Rhistory
+**/*.Rdata
+
+# R output files and cache
+_cache/*
+
+# Shell temp files
+**/*.sh~
+**/*.sh.un~
+
+# Excel temp files
+**/~$*.xlsx
+**/~$*.xlsm
+
+# Shortcuts
+*.lnk
