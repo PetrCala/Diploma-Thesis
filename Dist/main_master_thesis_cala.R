@@ -17,13 +17,13 @@
 rm(list = ls()) 
 options(scipen=999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
-
+ 
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
 user_param_file <- "user_parameters.yaml" # File with user parameters
 
-# Working directory - change only if the script is being ran as the master script (not imported)
-if (length(commandArgs()) == 0) {
+# Working directory - change only if the script is being ran interactively
+if(interactive()) {
   if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
   if (! getwd() == dirname(getActiveDocumentContext()$path)){
     setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
@@ -58,7 +58,9 @@ packages <- c(
   "multiwayvcov", # Computing clustered covariance matrix estimators
   "NlcOptim", # Elliott et al. (2022) - CoxShi
   "plm", # Random Effects, Between Effects
+  "plotly", # Interactive plots
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
+  "purrr", # Smart tables, study size
   "pracma", # MAIVE Estimator, Elliott et al. (2022)
   "rddensity", # Elliott et al. (2022)
   "readr", # Reading data into R from various file formats
@@ -171,20 +173,31 @@ data <- runCachedFunction(
   data, var_list, allowed_missing_ratio = adj_params$allowed_missing_ratio
 )
 
+# Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
+data <- runCachedFunction(
+  validateData, user_params,
+  verbose_function = validateDataVerbose,
+  data, var_list
+)
+
+# Rename source columns to fit the script expected colnames
+renamed_list <- runCachedFunction(
+  renameUserColumns, user_params,
+  verbose_function = renameUserColumnsVerbose,
+  data, var_list,
+  user_params$required_cols,
+  precision_type = adj_params$data_precision_type
+)
+data <- renamed_list[[1]] # Renamed column names
+var_list <- renamed_list[[2]] # Renamed var_name vector
+
 # Winsorize the data
 data <- runCachedFunction(
   winsorizeData, user_params,
   verbose_function = winsorizeDataVerbose,
   data,
   win_level = adj_params$data_winsorization_level,
-  precision_type = adj_params$data_precision_type
-)
-
-# Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
-data <- runCachedFunction(
-  validateData, user_params,
-  verbose_function = validateDataVerbose,
-  data, var_list
+  winsorize_precision = adj_params$winsorize_precision
 )
 
 # Subset data using the conditions specified in the customizable section
@@ -235,23 +248,42 @@ if (run_this$box_plot){
 
 ###### FUNNEL PLOT ######
 if (run_this$funnel_plot){
+  run_cached_funnel <- function(use_medians, graph_name){
+    return ( 
+      runCachedFunction(
+        getFunnelPlot, user_params,
+        verbose_function = nullVerboseFunction,
+        data,
+        effect_proximity = adj_params$funnel_effect_proximity,
+        maximum_precision = adj_params$funnel_maximum_precision,
+        use_study_medians = use_medians,
+        verbose = adj_params$funnel_verbose,
+        export_html = user_params$export_html_graphs,
+        output_path = graph_name
+      )
+    )
+  }
   # Funnel with all data
-  getFunnelPlot(data, adj_params$funnel_effect_proximity,
-                adj_params$funnel_maximum_precision,
-                use_study_medians = F,
-                adj_params$funnel_verbose)
+  funnel_all_path <- paste0(folder_paths$graphics_folder, "funnel.html")
+  funnel_all <- run_cached_funnel(use_medians = FALSE, graph_name = funnel_all_path)
   # Funnel with medians only
-  getFunnelPlot(data, adj_params$funnel_effect_proximity,
-                adj_params$funnel_maximum_precision,
-                use_study_medians = T,
-                adj_params$funnel_verbose)
+  funnel_medians_path <- paste0(folder_paths$graphics_folder, "funnel_medians.html")
+  funnel_medians <- run_cached_funnel(use_medians = TRUE, graph_name = funnel_medians_path)
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
 if (run_this$t_stat_histogram){
-  getTstatHist(data, 
-               lower_cutoff = adj_params$t_hist_lower_cutoff,
-               upper_cutoff = adj_params$t_hist_upper_cutoff)
+  t_hist_path <- paste0(folder_paths$graphics_folder, "t_hist.html")
+  t_hist_plot <- runCachedFunction( # Plot only if input changes
+    getTstatHist, user_params,
+    verbose_function = nullVerboseFunction,
+    data,
+    lower_cutoff = adj_params$t_hist_lower_cutoff,
+    upper_cutoff = adj_params$t_hist_upper_cutoff,
+    verbose = TRUE, # Print into console
+    export_html = user_params$export_html_graphs,
+    output_path = t_hist_path
+  )
 }
 
 ######################### LINEAR TESTS ######################### 
@@ -273,10 +305,10 @@ if (run_this$linear_tests){
 
 if (run_this$nonlinear_tests){
   # Extract source script paths
-  stem_script_path <-        paste0(folder_paths$scripts_folder, script_files$stem_source)
-  selection_script_path <-   paste0(folder_paths$scripts_folder, script_files$selection_model_source)
-  endo_script_path <-        paste0(folder_paths$scripts_folder, script_files$endo_kink_source)
-  nonlinear_script_paths <-  list(stem=stem_script_path,
+  stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
+  selection_script_path <- paste0(folder_paths$scripts_folder, script_files$selection_model_source)
+  endo_script_path <- paste0(folder_paths$scripts_folder, script_files$endo_kink_source)
+  nonlinear_script_paths <- list(stem=stem_script_path,
                                  selection=selection_script_path,
                                  endo=endo_script_path)
   # Parameters
@@ -332,14 +364,15 @@ if (run_this$exo_tests){
     iv_results <- getIVResults(data,
                                effect_present = T, pub_bias_present = T, verbose_coefs = T)
     
-    p_uni_results <- getPUniResults(data, method = "ML",
+    p_uni_results <- getPUniResults(data, method = adj_params$puni_method,
                                     effect_present=T, pub_bias_present=T, verbose_coefs=T)
     
   } else{
     exo_tests_results <- runCachedFunction(
       getExoTests, user_params,
       verbose_function = getExoTestsVerbose,
-      data
+      data,
+      puni_method = adj_params$puni_method
     )
     if (user_params$export_results){
       exportTable(exo_tests_results, user_params, "exo_tests")
@@ -438,13 +471,9 @@ if (run_this$bma){
     mcmc=adj_params$bma_mcmc
   )
   # Print out the results
-  #bma_coefs <- runCachedFunction(
-  #  extractBMAResults, user_params,
-  #  verbose_function = extractBMAResultsVerbose,
-  #  bma_model, bma_data,
-  #  print_results = adj_params$bma_print_results
-  #)
-  bma_coefs <- extractBMAResults( # Non-cached version
+  bma_coefs <- runCachedFunction(
+    extractBMAResults, user_params,
+    verbose_function = extractBMAResultsVerbose,
     bma_model, bma_data,
     print_results = adj_params$bma_print_results
   )

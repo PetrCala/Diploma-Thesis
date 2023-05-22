@@ -15,32 +15,46 @@
 rm(list = ls()) 
 
 # Load packages
-library('yaml') # In-built package for handling parameters
+if (!require('yaml')) install.packages('yaml'); library('yaml')                   # yaml - handle params
 if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi') # Working directory
 
 # Define the initial parameters
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
-    "box_plot" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
+    "box_plot" = F,
     "funnel_plot" = T,
-    "t_stat_histogram" = T,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
-    "bma" = T,
-    "fma" = T, # Executable only after running BMA
-    "ma_variables_description_table" = T, # Executable only after running BMA
-    "bpe" = T # Executable only after running BMA
+    "t_stat_histogram" = F,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
+    "bma" = F,
+    "fma" = F, # Executable only after running BMA
+    "ma_variables_description_table" = F, # Executable only after running BMA
+    "bpe" = F # Executable only after running BMA
   ),
   
   # CUSTOMIZABLE FILE NAMES
   data_files = list(
     master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
     var_list_source = "var_list_master_thesis_cala.csv" # Variable information file
+  ),
+
+  # CUSTOMIZABLE COLUMN NAMES - set value to NA if not present in your data set
+  required_cols = list(
+    obs_id = "obs_n", # Observation id
+    study_id = "study_id", # Study id
+    study_name = "study_name", # Study name
+    effect = "effect", # Main effect
+    se = "se", # Standard error
+    t_stat = "t_stat", # T-statistic (optional)
+    precision = NA, # A measure of precision (optional) - handle during winsorization
+    n_obs = "n_obs", # Number of observations associated with the estimate
+    study_size = NA, # Number of estimates reported per study (optional)
+    reg_df = NA # Degrees of Freedom in the regression (optional)
   ),
   
   # USER PARAMETERS
@@ -62,6 +76,8 @@ user_params <- list(
     # Data winsorization characteristics
     "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
     "data_precision_type" = "DoF", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
+    "winsorize_precision" = TRUE, # If TRUE, winsorize precision (for different precision types)
+    #   Note: The precision will be used only in case you do not provide a column with precision yourself
     # Handle missing data - only in development
     "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
     # Effect summary statistics confidence level
@@ -79,6 +95,8 @@ user_params <- list(
     # T-statistic histogram parameters
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
     "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
+    # P-uniform paramteres
+    "puni_method" = "ML", # Method used for p-uniform calculation - one of "ML", "P"
     # Caliper test parameters
     "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
     "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
@@ -161,7 +179,8 @@ user_params <- list(
     "bpe_res" = "Best practice estimate",
     "bpe_econ_sig" = "Economic significance"
   ),
-  export_log_file_path = "numeric_results.txt",
+  export_log_file_path = "numeric_results.txt", # Console log as a text file
+  export_html_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
@@ -192,12 +211,13 @@ yaml::write_yaml(user_params, user_param_file)
 
 
 # Create a folder for export (must be done here explicitly)
-if (!file.exists(user_params$folder_paths$export_folder)){
-  dir.create(folder_name)
+export_folder_path <- user_params$folder_path$export_folder
+if (!file.exists(export_folder_path)){
+  dir.create(export_folder_path)
 }
 # Save the console output to a log file in the results folder
-log_file_path <- paste0(user_params$folder_paths$export_folder, user_params$export_log_file)
-sink(log_file_path, split = TRUE) # Capture console output
+log_file_path <- paste0(export_folder_path, user_params$export_log_file)
+sink(log_file_path, split = TRUE, append = FALSE) # Capture console output
 
 # Run the main file
 # Time the script run
