@@ -1,0 +1,3 @@
+bma: 1400 x 1341
+bma_dist: 528 x 506
+bma_corr: 700 x 669

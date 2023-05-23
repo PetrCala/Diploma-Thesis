@@ -20,6 +20,8 @@ cc
 \multicolumn{4}{r}{{\scriptsize Continued on next page}} \\
 \endfoot
 \endlastfoot
+                 Effect &                                                                                       The effect of an additional year of schooling on logarithmic wage. &  7.628 & 4.801 \\
+         Standard Error &                                                                                                                   The standard error of the main effect. &  1.268 & 1.723 \\
               Short Run &                                                                                                        =1 if the data span a period shorter than a year. &  0.552 & 0.497 \\
                Long Run &                                                                                    =1 if the data span a period longer than a year (reference category). &  0.448 & 0.497 \\
          Estimate: City &                                                                                  =1 if the estimates within the study can be aggregated on a city level. &  0.119 & 0.323 \\
@@ -97,8 +99,6 @@ Control: Experience$^2$ &                                                       
               Citations & The logarithm of the mean number of Google Scholar citations received per year since the appearance of the study in Google Scholar (as of January 2023). &  4.029 & 2.177 \\
        Study: Published &                                                                                                              =1 if the study was published in a journal. &  0.764 & 0.425 \\
      Study: Unpublished &                                                                                     =1 if the study was not published in a journal (reference category). &  0.236 & 0.425 \\
-            Main Effect &                                                                           The effect of an additional year of schooling on logarithmic wage, winsorized. &  7.628 & 4.801 \\
-         Standard Error &                                                                                                       The standard error of the main effect, winsorized. &  1.268 & 1.723 \\
 \bottomrule
    
  \multicolumn{4}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the summary statistics and descriptions for each of the various study characteristics. SD = standard deviation, FE = Fixed Effects, 2SLS = 2 Stage Least Squares.}

@@ -1,0 +1,22 @@
+runBMATemp <- function(data, g, mprior){
+  bma_<- runCachedFunction(
+    runBMA, user_params,
+    verbose_function = runBMAVerbose,
+    data,
+    burn=1e5,
+    iter=3e5,
+    g=g, # UIP, BRIC, HQ
+    mprior=mprior, # uniform, random
+    nmodel=50000,
+    mcmc="bd",
+    user.int = FALSE
+  )
+}
+
+
+BMA1 <- runBMATemp(data = bma_data, g = "UIP", mprior = "uniform")
+BMA2 <- runBMATemp(data = bma_data, g = "UIP", mprior = "dilut")
+BMA3 <- runBMATemp(data = bma_data, g = "BRIC", mprior = "random")
+
+plotComp("UIP and Dilut"=BMA1, "UIP and Uniform"=BMA2,"BRIC and Random"=BMA3,
+         add.grid=F,cex.xaxis=0.7, do.par = FALSE)

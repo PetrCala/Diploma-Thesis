@@ -14,7 +14,7 @@
 ##################### ENVIRONMENT PREPARATION ########################
 
 # Clean the environment - DO NOT CHANGE THIS
-#rm(list = ls()) 
+rm(list = ls()) 
 options(scipen=999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
  

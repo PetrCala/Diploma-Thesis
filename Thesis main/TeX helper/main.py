@@ -2,7 +2,7 @@
 
 import populate_tables_source as populate
 
-SOURCE_PATH = r'C:/Users/hso20/OneDrive/Plocha/IES/Diploma-Thesis/R/_results/'
+SOURCE_PATH = r'C:/Users/hso20/OneDrive/Plocha/IES/Diploma-Thesis/R/results/'
 ALL_PATHS = { # Names of the files in values
     "var_sum_stats": "variable_summary_stats",
     "effect_sum_stats": "effect_summary_stats",
@@ -41,7 +41,7 @@ def readCSV(method_name:str):
         raise ValueError("Incorrectly specified method name.")
     method_path = ALL_PATHS.get(method_name)
     full_path = SOURCE_PATH + method_path + ".csv" 
-    df = pd.read_csv(full_path)
+    df = pd.read_csv(full_path, encoding = 'utf-8')
     return df
 
 def runMethod(method_name:str, df:pd.DataFrame):

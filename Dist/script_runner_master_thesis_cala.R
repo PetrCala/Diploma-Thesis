@@ -31,10 +31,10 @@ user_params <- list(
     "nonlinear_tests" = T,
     "exo_tests" = T,
     "p_hacking_tests" = T,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
-    "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F # Executable only after running BMA
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "bpe" = T # Executable only after running BMA
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -76,7 +76,7 @@ user_params <- list(
     # Data winsorization characteristics
     "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
     "data_precision_type" = "DoF", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
-    "winsorize_precision" = TRUE, # If TRUE, winsorize precision (for different precision types)
+    "winsorize_precision" = FALSE, # If TRUE, winsorize precision (for different precision types)
     #   Note: The precision will be used only in case you do not provide a column with precision yourself
     # Handle missing data - only in development
     "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
@@ -119,11 +119,11 @@ user_params <- list(
     "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
     "bma_burn" = 1e4, # Burn-ins (def 1e5)
     "bma_iter" = 3e4, # Draws (def 3e5)
-    "bma_g" = "HQ", # g-Prior
-    "bma_mprior" = "random", # Model Prior
+    "bma_g" = "UIP", # g-Prior
+    "bma_mprior" = "dilut", # Model Prior
     "bma_nmodel" = 20000, # Number of models (def 50000)
     "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-    "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
+    "bma_print_results" = "all", # Print raw results - one of c("none", "fast", "verbose", "all")
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters
@@ -131,11 +131,12 @@ user_params <- list(
     "ma_variables_description_table_verbose" = FALSE, # If TRUE, print out the BMA variable desc table into console
     "ma_variables_description_table_clip" = FALSE, # If TRUE, copy the table to a clipboard
     # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
-    "bpe_studies" = c( # Vector of study indexes for which to run the BPE. For author's BPE, use 0.
-      0, # Author
-      2, # Bartlolj et al. (2013) - Most years of schooling
-      112, # Staiger et al. (1997) - Most citations
-      7 # Webbink (2004) - Random, unpublished, uncited work
+    "bpe_studies" = c( 
+      # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, use "all".
+       0, # Author
+       2, # Bartlolj et al. (2013) - Most years of schooling
+       112, # Staiger et al. (1997) - Most citations
+       7 # Webbink (2004) - Random, unpublished, uncited work
     ),
     "bpe_use_ci" = TRUE, # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
     "bpe_study_info" = TRUE, # If TRUE, print out information about individual studies being estimated

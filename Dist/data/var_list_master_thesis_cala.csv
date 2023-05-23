@@ -3,7 +3,7 @@ obs_n,Observation Number,The observation number.,int,1,stop,FALSE,FALSE,NA,NA,FA
 study_id,Study ID,The ID associated with the study.,int,2,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
 study_name,Study Name,The name of the study.,category,3,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
 effect,Effect,The effect of an additional year of schooling on logarithmic wage.,float,4,stop,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,stop
-se,Effect Standard Error,The standard error of the main effect.,float,5,stop,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,0
+se,Standard Error,The standard error of the main effect.,float,5,stop,TRUE,FALSE,NA,NA,TRUE,TRUE,FALSE,FALSE,0
 t_stat,T-Statistic,The t-statistic of the main effect.,float,6,stop,TRUE,TRUE,NA,median,FALSE,FALSE,FALSE,FALSE,stop
 95_lower,95% CI Lower Bound of the Effect,The lower bound of the 95% confidence interval of the main effect.,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
 95_upper,95% CI Upper Bound of the Effect,The upper bound of the 95% confidence interval of the main effect.,float,7,stop,FALSE,FALSE,NA,NA,FALSE,FALSE,FALSE,FALSE,stop
