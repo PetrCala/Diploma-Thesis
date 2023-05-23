@@ -1,3 +1,6 @@
+box_plot_studies_1: 800 x 1100
+box_plot_studies_2: 800 x 1100
+box_plot_countries: 800 x 1100
 bma: 1400 x 1341
 bma_dist: 528 x 506
 bma_corr: 700 x 669
