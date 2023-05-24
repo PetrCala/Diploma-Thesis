@@ -1,0 +1,15 @@
+- nepsat ohledně diplomky, psát to jako paper
+- Zdůraznit problém předchozích meta analýz, podobně jak v bakalářce, konkretizovat
+- Age of schooling nelinearne? Podchycené meanem yos, yoe
+- funnel ploty ukazat newinsorizovane, testy pak s winsrizaci
+- v funnel plotu pouzivat newinsorizovany mean, median
+- funnel testy nejaka asymetrie jo, ale nehraje roli
+- mozna newinsorizovat precision pro maive, obecne
+- efekt je semielasticity
+- dulezity veci okolo estimacni metody, umet rict, ktery metody jsou dobry, a ne, pak jaka je elasticita toho dodatecnyho roky vzdelani
+- pouzit vsechny odhady, ale umet dat vahu tem, ktery jsou spravny (napr metodam a tak)
+- pub bias tam nejaky je, ale ne brutální (docela ne actually)
+- tim ze jsou ty odhady vzdycky pozitivni a signifikantni, tak neni potreba davat selectivitu (cool story)
+- robma? Mozna signifikantni vysledky neumoznuji fungovat selectivity modelum
+- dulezita heterogeneita, vybrani best practice
+- u pub bias nebude story, jenom to ze tam neni
