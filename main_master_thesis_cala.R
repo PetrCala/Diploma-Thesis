@@ -190,6 +190,7 @@ renamed_list <- runCachedFunction(
 )
 data <- renamed_list[[1]] # Renamed column names
 var_list <- renamed_list[[2]] # Renamed var_name vector
+funnel_data <- data # A copy of the data frame before winsoriaztion - used in funnel plot
 
 # Winsorize the data
 data <- runCachedFunction(
@@ -254,7 +255,7 @@ if (run_this$funnel_plot){
       runCachedFunction(
         getFunnelPlot, user_params,
         verbose_function = nullVerboseFunction,
-        data,
+        funnel_data,
         effect_proximity = adj_params$funnel_effect_proximity,
         maximum_precision = adj_params$funnel_maximum_precision,
         use_study_medians = use_medians,
