@@ -3625,8 +3625,8 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
 #' all results are presented neatly as estimates and their 95% confidence bounds.
 #' Alternatively, they can be presented as estimates and their standard errors.
 #' 
-#' @param study_indexes [numeric|vector] A vector with indexes of studies for which the 
-#' estimation shall be ran.
+#' @param study_ids [numeric|vector] A vector with indexes of studies for which the 
+#' estimation shall be ran. Can be set to "all", in which case all studies will be evaluated.
 #' @param input_data [data.frame] Main data frame.
 #' @param input_var_list [data.frame] Data frame with variable information.
 #' @param bma_model Main model on which to evaluate the BPE on.
@@ -3642,6 +3642,10 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     res_df <- data.frame("estimate" = numeric(0), "ci_95_lower" = numeric(0), "ci_95_higher" = numeric(0))
   } else {
     res_df <- data.frame("estimate" = numeric(0), "standard_error" = numeric(0))
+  }
+  # Set study ids to all ids if required
+  if (all(study_ids == "all")){
+    study_ids <- seq(from = 0, to = max(input_data$study_id), by = 1)
   }
   # Loop through study ids
   for (study_id in study_ids) {
