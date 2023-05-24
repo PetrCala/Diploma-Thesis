@@ -1599,7 +1599,7 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
   filter_effect <- getOutliers(input_data, effect_proximity=effect_proximity, maximum_precision=maximum_precision, verbose=verbose)
   
   # Create the data frame for the funnel plot
-  funnel_data <- data[filter_effect, c('study_id', 'effect', 'precision')] # Only Effect, Precision
+  funnel_data <- input_data[filter_effect, c('study_id', 'effect', 'precision')] # Only Effect, Precision
   funnel_data[] <- lapply(funnel_data, as.numeric) # To numeric
   
   # Plot study medians instead

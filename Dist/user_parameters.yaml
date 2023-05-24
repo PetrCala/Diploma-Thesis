@@ -1,17 +1,17 @@
 run_this:
-  variable_summary_stats: yes
-  effect_summary_stats: yes
-  box_plot: yes
+  variable_summary_stats: no
+  effect_summary_stats: no
+  box_plot: no
   funnel_plot: yes
-  t_stat_histogram: yes
-  linear_tests: yes
-  nonlinear_tests: yes
-  exo_tests: yes
-  p_hacking_tests: yes
-  bma: yes
-  fma: yes
-  ma_variables_description_table: yes
-  bpe: yes
+  t_stat_histogram: no
+  linear_tests: no
+  nonlinear_tests: no
+  exo_tests: no
+  p_hacking_tests: no
+  bma: no
+  fma: no
+  ma_variables_description_table: no
+  bpe: no
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
@@ -40,8 +40,8 @@ adjustable_parameters:
   box_plot_group_by_factor_2: country
   box_plot_max_boxes: 60.0
   box_plot_verbose: yes
-  funnel_effect_proximity: 0.15
-  funnel_maximum_precision: 0.2
+  funnel_effect_proximity: 1.0
+  funnel_maximum_precision: 1.0
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
   t_hist_upper_cutoff: 120.0
@@ -79,7 +79,11 @@ adjustable_parameters:
   ma_results_table: yes
   ma_variables_description_table_verbose: no
   ma_variables_description_table_clip: no
-  bpe_studies: all
+  bpe_studies:
+  - 0.0
+  - 2.0
+  - 112.0
+  - 7.0
   bpe_use_ci: yes
   bpe_study_info: yes
   bpe_result_table_verbose: yes

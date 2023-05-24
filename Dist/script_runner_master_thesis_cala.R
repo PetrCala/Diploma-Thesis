@@ -22,19 +22,19 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
-    "box_plot" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
+    "box_plot" = F,
     "funnel_plot" = T,
-    "t_stat_histogram" = T,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
-    "bma" = T,
-    "fma" = T, # Executable only after running BMA
-    "ma_variables_description_table" = T, # Executable only after running BMA
-    "bpe" = T # Executable only after running BMA
+    "t_stat_histogram" = F,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
+    "bma" = F,
+    "fma" = F, # Executable only after running BMA
+    "ma_variables_description_table" = F, # Executable only after running BMA
+    "bpe" = F # Executable only after running BMA
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -89,8 +89,8 @@ user_params <- list(
     "box_plot_max_boxes" = 60, # Maximum number of boxes to display per single plot - more plots otherwise
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
-    "funnel_effect_proximity" = 0.15, # Effect axis cutoff point (perc) on either side of mean
-    "funnel_maximum_precision" = 0.2, # Precision axis maximum value cutoff point (perc)
+    "funnel_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
+    "funnel_maximum_precision" = 1, # Precision axis maximum value cutoff point (perc)
     "funnel_verbose" = TRUE, # If T, print cut outlier information
     # T-statistic histogram parameters
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics

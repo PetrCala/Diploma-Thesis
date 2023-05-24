@@ -24,8 +24,8 @@ user_params <- list(
   run_this = list(
     "variable_summary_stats" = F,
     "effect_summary_stats" = F,
-    "box_plot" = T,
-    "funnel_plot" = F,
+    "box_plot" = F,
+    "funnel_plot" = T,
     "t_stat_histogram" = F,
     "linear_tests" = F,
     "nonlinear_tests" = F,
@@ -89,8 +89,8 @@ user_params <- list(
     "box_plot_max_boxes" = 60, # Maximum number of boxes to display per single plot - more plots otherwise
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
-    "funnel_effect_proximity" = 0.15, # Effect axis cutoff point (perc) on either side of mean
-    "funnel_maximum_precision" = 0.2, # Precision axis maximum value cutoff point (perc)
+    "funnel_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
+    "funnel_maximum_precision" = 1, # Precision axis maximum value cutoff point (perc)
     "funnel_verbose" = TRUE, # If T, print cut outlier information
     # T-statistic histogram parameters
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics

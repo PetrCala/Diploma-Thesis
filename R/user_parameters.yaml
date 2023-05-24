@@ -1,8 +1,8 @@
 run_this:
   variable_summary_stats: no
   effect_summary_stats: no
-  box_plot: yes
-  funnel_plot: no
+  box_plot: no
+  funnel_plot: yes
   t_stat_histogram: no
   linear_tests: no
   nonlinear_tests: no
@@ -40,8 +40,8 @@ adjustable_parameters:
   box_plot_group_by_factor_2: country
   box_plot_max_boxes: 60.0
   box_plot_verbose: yes
-  funnel_effect_proximity: 0.15
-  funnel_maximum_precision: 0.2
+  funnel_effect_proximity: 1.0
+  funnel_maximum_precision: 1.0
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
   t_hist_upper_cutoff: 120.0
