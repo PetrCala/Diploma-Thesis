@@ -1327,12 +1327,15 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
   plot_color <- plot_colors[[3]]
   vline_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Construct the plot - use !!sym(factor_by) to cast some more dark magic - makes plot recognize function input
-  box_plot <- ggplot(data = input_data, aes(x = effect, y=factor(!!sym(factor_by), levels = factor_levels))) +
-      geom_boxplot(outlier.colour = plot_outlier_color, outlier.shape = 21, outlier.fill = plot_outlier_color,
-                   fill=plot_fill, color = plot_color) +
-      geom_vline(aes(xintercept = mean(effect)), color = vline_color, linewidth = 0.85) + 
-      labs(title = NULL,x=paste("Effect of", tolower(effect_name)), y = "Grouped by " %>% paste0(factor_by_verbose)) +
-      current_theme
+  # Also double flip the axis - this makes ggplotly draw the boxes in the correct way. Really, what are these spells.
+   box_plot <- ggplot(data = input_data, aes(y = effect, x=factor(!!sym(factor_by), levels = factor_levels))) +
+       geom_boxplot(outlier.colour = plot_outlier_color, outlier.shape = 21, outlier.fill = plot_outlier_color,
+                    fill=plot_fill, color = plot_color) +
+       geom_hline(aes(yintercept = mean(effect)), color = vline_color, linewidth = 0.85) + 
+       coord_flip() + # The dark speech of Mordor, let it be heard around every corner
+       labs(title = NULL,y=paste("Effect of", tolower(effect_name)), x = "Grouped by " %>% paste0(factor_by_verbose)) +
+       current_theme
+  
   # Print the plot into the console
   if (verbose){
     print(paste0("Printing a box plot for the factor: ", factor_by))
