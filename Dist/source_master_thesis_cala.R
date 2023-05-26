@@ -683,10 +683,10 @@ getDefaultColumns <- function(names_only=TRUE){
     "effect" = TRUE,
     "se" = TRUE,
     "t_stat" = FALSE,
-    "precision" = FALSE,
     "n_obs" = TRUE,
     "study_size" = FALSE,
-    "reg_df" = FALSE
+    "reg_df" = FALSE,
+    "precision" = FALSE
   )
   if (names_only){
     return(as.vector(names(def_cols)))

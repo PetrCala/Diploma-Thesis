@@ -30,6 +30,7 @@ R/graphics/*
 **/automatically_updated_data_set_master_thesis_cala.xlsx
 **/impact_factor_data.*
 Thesis main/Historic/
+Data/AdditionalData/
 
 # P&P folder files
 **/P&P (2018) analysis/Tools/*
