@@ -568,8 +568,3 @@ if (run_this$bpe){
      exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
   }
 }
- 
-temp_path <- paste0(folder_paths$graphics_folder, "temp_bp.html")
-temp_bp <- box_plot_list[[1]][[1]]
-exportHtmlGraph(temp_bp, temp_path)
-
