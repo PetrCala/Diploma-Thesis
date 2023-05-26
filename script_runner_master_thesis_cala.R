@@ -51,10 +51,10 @@ user_params <- list(
     effect = "effect", # Main effect
     se = "se", # Standard error
     t_stat = "t_stat", # T-statistic (optional)
-    precision = NA, # A measure of precision (optional) - handle during winsorization
     n_obs = "n_obs", # Number of observations associated with the estimate
-    study_size = NA, # Number of estimates reported per study (optional)
-    reg_df = NA # Degrees of Freedom in the regression (optional)
+    study_size = "study_size", # Number of estimates reported per study (optional)
+    reg_df = "reg_df", # Degrees of Freedom in the regression (optional)
+    precision = NA # A measure of precision (optional) - handle during winsorization
   ),
   
   # USER PARAMETERS
@@ -89,8 +89,8 @@ user_params <- list(
     "box_plot_max_boxes" = 60, # Maximum number of boxes to display per single plot - more plots otherwise
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
-    "funnel_effect_proximity" = 0.15, # Effect axis cutoff point (perc) on either side of mean
-    "funnel_maximum_precision" = 0.2, # Precision axis maximum value cutoff point (perc)
+    "funnel_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
+    "funnel_maximum_precision" = 1, # Precision axis maximum value cutoff point (perc)
     "funnel_verbose" = TRUE, # If T, print cut outlier information
     # T-statistic histogram parameters
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
@@ -182,6 +182,7 @@ user_params <- list(
   ),
   export_log_file_path = "numeric_results.txt", # Console log as a text file
   export_html_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
+  theme = "blue", # One of "blue", "yellow", "green", "red"
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
