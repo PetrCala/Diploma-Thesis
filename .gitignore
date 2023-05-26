@@ -8,6 +8,7 @@ __pycache__/
 **/*.Rdata
 
 # Leftover folders from the subtree split
+Data/AdditionalData/
 Dist/
 R/
 Thesis main/
