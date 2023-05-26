@@ -22,19 +22,19 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
-    "box_plot" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
+    "box_plot" = F,
     "funnel_plot" = T,
-    "t_stat_histogram" = T,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
-    "bma" = T,
-    "fma" = T, # Executable only after running BMA
-    "ma_variables_description_table" = T, # Executable only after running BMA
-    "bpe" = T # Executable only after running BMA
+    "t_stat_histogram" = F,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
+    "bma" = F,
+    "fma" = F, # Executable only after running BMA
+    "ma_variables_description_table" = F, # Executable only after running BMA
+    "bpe" = F # Executable only after running BMA
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -186,10 +186,11 @@ user_params <- list(
   ),
   export_log_file_path = "numeric_results.txt", # Console log as a text file
   export_html_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
+  theme = "green", # One of "blue", "yellow", "green", "red"
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache = TRUE, # Store intermediate output in a cache in the /_cache/ folder.
+  use_cache = FALSE, # Store intermediate output in a cache in the /_cache/ folder.
   cache_age = 3600, # In seconds - an hour
   
   # Development information
@@ -197,7 +198,7 @@ user_params <- list(
   development_params = list(
     # csv_suffix = "master_thesis_cala", # Suffix of the .csv files
      csv_suffix = "terka", # Suffix of the .csv files
-    xlsx_data_folder = "../Data/", # Folder with the .xlsx data frame
+    xlsx_data_folder = "../Data/AdditionalData/", # Folder with the .xlsx data frame
     # xlsx_data_name = "data_set_master_thesis_cala.xlsm", # Name of the .xlsx data frame
     # xlsx_sheet_names = c("data_set", "var_list") # Sheet names to read
      xlsx_data_name = "data_set_terka.xlsx", # Name of the .xlsx data frame

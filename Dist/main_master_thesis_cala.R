@@ -243,6 +243,7 @@ if (run_this$box_plot){
       output_folder = folder_paths$graphics_folder,
       factor_by = factor_name,
       effect_name = adj_params$effect_name,
+      theme = user_params$theme,
       verbose = F # Internal function parameter - no doubling
     )
   }
@@ -259,6 +260,7 @@ if (run_this$funnel_plot){
         effect_proximity = adj_params$funnel_effect_proximity,
         maximum_precision = adj_params$funnel_maximum_precision,
         use_study_medians = use_medians,
+        theme = user_params$theme,
         verbose = adj_params$funnel_verbose,
         export_html = user_params$export_html_graphs,
         output_path = graph_name
@@ -282,6 +284,7 @@ if (run_this$t_stat_histogram){
     data,
     lower_cutoff = adj_params$t_hist_lower_cutoff,
     upper_cutoff = adj_params$t_hist_upper_cutoff,
+    theme = user_params$theme,
     verbose = TRUE, # Print into console
     export_html = user_params$export_html_graphs,
     output_path = t_hist_path
