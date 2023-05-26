@@ -1296,10 +1296,11 @@ getEffectSummaryStatsVerbose <- function(out_list, ...){
 #'  - 'country'
 #'  - 'study_level'
 #'  Defaults to 'country'
+#' @param theme [character] Theme to use. Defaults to "blue".
 #' @param effect_name [character] Verbose explanation of the effect.
 #' @param verbose [bool] If T, print out the information about the plot being printed.
 #'  Defaults to F.
-getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect', verbose = F){
+getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect', theme = "blue", verbose = F){
   # Check column and input validity
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -1312,12 +1313,26 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
   # Plot variable preparation
   factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
   factor_by_verbose <- gsub("_", " ", factor_by) # More legible y-axis label
+  # Get the theme to use
+  current_theme <- getTheme(theme)
+  plot_colors <- switch(theme,
+     blue = list("#005CAB","#e6f3ff","#0d4ed1"),
+     yellow = list("#AB9800","#FFF5CC","#D1B00D"),
+     green = list("#009B0F","#CCF3D1","#0DD146"),
+     red = list("#AB0000","#FFCCCC","#D10D0D"),
+    stop("Invalid theme type")
+  )
+  plot_outlier_color <- plot_colors[[1]]
+  plot_fill <- plot_colors[[2]]
+  plot_color <- plot_colors[[3]]
+  vline_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Construct the plot - use !!sym(factor_by) to cast some more dark magic - makes plot recognize function input
   box_plot <- ggplot(data = input_data, aes(x = effect, y=factor(!!sym(factor_by), levels = factor_levels))) +
-      geom_boxplot(outlier.colour = "#005CAB", outlier.shape = 21, outlier.fill = "#005CAB", fill="#e6f3ff", color = "#0d4ed1") +
-      geom_vline(aes(xintercept = mean(effect)), color = "red", linewidth = 0.85) + 
+      geom_boxplot(outlier.colour = plot_outlier_color, outlier.shape = 21, outlier.fill = plot_outlier_color,
+                   fill=plot_fill, color = plot_color) +
+      geom_vline(aes(xintercept = mean(effect)), color = vline_color, linewidth = 0.85) + 
       labs(title = NULL,x=paste("Effect of", tolower(effect_name)), y = "Grouped by " %>% paste0(factor_by_verbose)) +
-      main_theme()
+      current_theme
   # Print the plot into the console
   if (verbose){
     print(paste0("Printing a box plot for the factor: ", factor_by))
@@ -1531,10 +1546,11 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
 #' vector, where the "red" color corresponds to the position of the mean value.
 #'
 #' @param input_vec [numeric(3)] A numeric vector of length 3, containing the lower bound, upper bound, and mean value.
+#' @param theme [character] Theme to use for the ticks
 #' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values and the mean value,
 #'         and "x_axis_tick_text", a character vector of the same length as "output_vec", 
 #'         with "red" indicating the position of the mean value and "black" for all other positions.
-generateFunnelTicks <- function(input_vec){
+generateFunnelTicks <- function(input_vec, theme = "blue"){
   lower_bound <- input_vec[1]
   upper_bound <- input_vec[2]
   mean_value <- input_vec[3]
@@ -1555,7 +1571,7 @@ generateFunnelTicks <- function(input_vec){
   # Create the color vector
   x_axis_tick_text <- rep("black", length(funnel_ticks))
   mean_index <- which(funnel_ticks == mean_value)
-  x_axis_tick_text[mean_index] <- "red"
+  x_axis_tick_text[mean_index] <- ifelse(theme %in% c("blue", "green"), "red", "blue")
   
   # Round all ticks to 2 decimal spaces
   funnel_ticks <- round(funnel_ticks, 2)
@@ -1574,12 +1590,13 @@ generateFunnelTicks <- function(input_vec){
 #' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
 #' @param use_study_medians [bool] If TRUE, plot medians of studies instead of all observations.
 #'  Defaults to FALSE.
+#' @param theme [character] Theme to use. Defaults to "blue".
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
 #' @param export_html [bool] If TRUE, export the plot to an html object into the graphics folder.
 #'  Defaults to FALSE.
 #' @param output_path [character] Full path to where the plot should be stored. Defaults to NA.
 getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
-                          use_study_medians = F, verbose = T,
+                          use_study_medians = F, theme = "blue", verbose = T,
                           export_html = F, output_path = NA){
   # Check input validity
   required_cols <- getDefaultColumns()
@@ -1611,27 +1628,35 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
     colnames(funnel_data) <- c("study_id", "effect", "precision")
   }
   
-  # Get visual bounds and tick colors
+  # Get visual bounds and tick colorshttp://127.0.0.1:45381/graphics/plot_zoom_png?width=1200&height=900
   funnel_x_lbound <- min(funnel_data$effect)
   funnel_x_ubound <- max(funnel_data$effect)
   mean_x_tick <- mean(funnel_data$effect)
   # Generate and extract the info
   base_funnel_ticks <- c(funnel_x_lbound, funnel_x_ubound, mean_x_tick) # c(lbound, ubound, mean)
-  funnel_visual_info <- generateFunnelTicks(base_funnel_ticks)
+  funnel_visual_info <- generateFunnelTicks(base_funnel_ticks, theme = theme)
   funnel_ticks <- funnel_visual_info$funnel_ticks
   funnel_tick_text <- funnel_visual_info$x_axis_tick_text
+  # Get the theme to use
+  current_theme <- getTheme(theme, x_axis_tick_text = funnel_tick_text)
+  point_color <- switch(theme,
+    blue = "#1261ff",
+    yellow =  "#FFD700",
+    green =  "#00FF00",
+    red =  "#FF0000",
+    stop("Invalid theme type")
+  )
+  vline_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   
   # Plot the plot
   x_title <- ifelse(use_study_medians, "study median values", "all observations")
   quiet(
     funnel_win <- ggplot(data = funnel_data, aes(x = effect, y = precision)) + 
-      geom_point(color = "#0d4ed1") + 
-      geom_vline(aes(xintercept = mean(effect)), color = "red", linewidth = 0.5) + 
+      geom_point(color = point_color) + 
+      geom_vline(aes(xintercept = mean(effect)), color = vline_color, linewidth = 0.5) + 
       labs(title = NULL, x = paste("Estimate of the effect -",x_title), y = "Precision of the effect") +
       scale_x_continuous(breaks = funnel_ticks) +
-      main_theme(
-          x_axis_tick_text = funnel_tick_text
-      )
+      current_theme
   )
     
   # Print out the plot
@@ -1661,10 +1686,11 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
 #' to the position of the mean value.
 #'
 #' @param input_vec [numeric(3)] A numeric vector of length 5, containing the lower bound, upper bound, mean value, and the t-stats.
+#' @param theme [character] Type of theme to use
 #' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values, the mean value,
 #'         and the t-statistics values, and "x_axis_tick_text", a character vector of the same length as "output_vec",
 #'         with "red" indicating the positions of the t-statistics values, "darkoran
-generateHistTicks <- function(input_vec) {
+generateHistTicks <- function(input_vec, theme = "blue") {
   lower_bound <- input_vec[1]
   upper_bound <- input_vec[2]
   mean_value <- input_vec[3]
@@ -1724,9 +1750,10 @@ generateHistTicks <- function(input_vec) {
   t_stat_low_index <- which(hist_ticks == t_stat_low)
   t_stat_high_index <- which(hist_ticks == t_stat_high)
   
-  x_axis_tick_text[mean_index] <- "darkorange"
-  x_axis_tick_text[t_stat_low_index] <- "red"
-  x_axis_tick_text[t_stat_high_index] <- "red"
+  # Get colors for the ticks
+  x_axis_tick_text[mean_index] <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
+  x_axis_tick_text[t_stat_low_index] <- ifelse(theme %in% c("blue", "green"), "red", "blue")
+  x_axis_tick_text[t_stat_high_index] <- ifelse(theme %in% c("blue", "green"), "red", "blue")
   
   # Round the tick values to 2 decimal points
   hist_ticks <- round(hist_ticks, 2)
@@ -1743,13 +1770,14 @@ generateHistTicks <- function(input_vec) {
 #' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
 #' @param lower_tstat A numeric value specifying which t statistic should be highlighted in the plot
 #' @param upper_tstat Similar to lower_tstat
+#' @param theme Theme to use. Defaults to "blue".
 #' @param verbose If TRUE, print out the plot. Defaults to TRUE.
 #' @param export_html If TRUE, export the plot to an html object into the graphics folder. Defaults to FALSE.
 #' @param output_path Full path to where the plot should be stored. Defaults to NA.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
 getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
-                         lower_tstat = -1.96, upper_tstat = 1.96, verbose = T,
+                         lower_tstat = -1.96, upper_tstat = 1.96, theme = "blue", verbose = T,
                          export_html = F, output_path = NA){
   # Specify a cutoff filter
   t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
@@ -1765,21 +1793,30 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
   hist_mean <- mean(hist_data$t_stat)
   base_hist_ticks <- c(hist_lbound, hist_ubound, hist_mean, lower_tstat, upper_tstat)
   # Generate and extract variable visual information
-  hist_visual_info <- generateHistTicks(base_hist_ticks)
+  hist_visual_info <- generateHistTicks(base_hist_ticks, theme = theme)
   hist_ticks <- hist_visual_info$hist_ticks
   hist_ticks_text <- hist_visual_info$x_axis_tick_text
-  
+  # Get the theme to use
+  current_theme <- getTheme(theme, x_axis_tick_text = hist_ticks_text)
+  fill_color <- switch(theme,
+    blue = "#1261ff",
+    yellow =  "#FFD700",
+    green =  "#00FF00",
+    red =  "#FF0000",
+    stop("Invalid theme type")
+  )
+  mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
+  tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Construct the histogram
   quiet(
     t_hist_plot <- ggplot(data = hist_data, aes(x = t_stat, y = after_stat(density))) +
-      geom_histogram(color = "black", fill = "#1261ff", bins = 80) +
-      geom_vline(aes(xintercept = mean(t_stat)), color = "dark orange", linetype = "dashed", linewidth = 0.7) + 
-      geom_vline(aes(xintercept = lower_tstat), color = "red", linewidth = 0.5) +
-      geom_vline(aes(xintercept = upper_tstat), color = "red", linewidth = 0.5) +
+      geom_histogram(color = "black", fill = fill_color, bins = 80) +
+      geom_vline(aes(xintercept = mean(t_stat)), color = mean_line_color, linetype = "dashed", linewidth = 0.7) + 
+      geom_vline(aes(xintercept = lower_tstat), color = tstat_line_color, linewidth = 0.5) +
+      geom_vline(aes(xintercept = upper_tstat), color = tstat_line_color, linewidth = 0.5) +
       labs(x = "T-statistic", y = "Density") +
       scale_x_continuous(breaks = hist_ticks) + 
-      main_theme(
-        x_axis_tick_text = hist_ticks_text)
+      current_theme
   )
   # Print out the plot
   if (verbose){
@@ -3980,6 +4017,33 @@ main_theme <- function(x_axis_tick_text = "black"){
         axis.text.x = element_text(color = x_axis_tick_text), axis.text.y = element_text(color = "black"),
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
         plot.background = element_rect(fill = "#DCEEF3"))
+}
+
+#' Specify the type of theme to use and return the theme
+#' 
+#' Available choices - main, yellow, green, red
+getTheme <- function(theme_type, x_axis_tick_text = "black"){
+  # Validate the theme type
+  available_themes <- c("blue", "yellow", "green", "red")
+  if (!theme_type %in% available_themes){ # Loaded from source
+    message(paste(theme_type, "is not a valid theme."))
+    message("You must choose one of the following themes:")
+    message(available_themes)
+    stop("Invalid theme")
+  }
+  # Get specific colors
+  theme_color <- switch(theme_type,
+    blue = "#DCEEF3",
+    yellow = "#FFFFD1",
+    green = "#D1FFD1",
+    red = "#FFD1D1",
+    stop("Invalid theme type.")
+  )
+  # Construct and return the theme
+  theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid"),
+        axis.text.x = element_text(color = x_axis_tick_text), axis.text.y = element_text(color = "black"),
+        panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
+        plot.background = element_rect(fill = theme_color))
 }
 
 #' Export the graph into an HTML file using the plotly package
