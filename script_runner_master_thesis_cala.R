@@ -22,25 +22,25 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
-    "box_plot" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
+    "box_plot" = T,
     "funnel_plot" = T,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
-    "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F # Executable only after running BMA
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "bpe" = T # Executable only after running BMA
   ),
   
   # CUSTOMIZABLE FILE NAMES
   data_files = list(
-    master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
-    var_list_source = "var_list_master_thesis_cala.csv" # Variable information file
+    master_data_set_source = "DATASET_terka.csv", # Master data frame
+    var_list_source = "var_list_terka.csv" # Variable information file
   ),
 
   # CUSTOMIZABLE COLUMN NAMES - set value to NA if not present in your data set
@@ -51,10 +51,10 @@ user_params <- list(
     effect = "effect", # Main effect
     se = "se", # Standard error
     t_stat = "t_stat", # T-statistic (optional)
-    precision = NA, # A measure of precision (optional) - handle during winsorization
     n_obs = "n_obs", # Number of observations associated with the estimate
-    study_size = NA, # Number of estimates reported per study (optional)
-    reg_df = NA # Degrees of Freedom in the regression (optional)
+    study_size = "study_size", # Number of estimates reported per study (optional)
+    reg_df = NA, # Degrees of Freedom in the regression (optional)
+    precision = NA # A measure of precision (optional) - handle during winsorization
   ),
   
   # USER PARAMETERS
@@ -64,7 +64,8 @@ user_params <- list(
   #    the names of vectors, or value types (character, integer, vector...)
   adjustable_parameters = list(
     # Effect name
-    "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
+    # "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
+    "effect_name" = "peer effect", # A verbose name of what the effect represents
     # Formal output
     "formal_output_on" = TRUE, # If TRUE, return tables in a form presentable in text
     # Data subsetting conditions
@@ -86,7 +87,7 @@ user_params <- list(
     "box_plot_group_by_factor_1" = "study_name", # Group by study name
     "box_plot_group_by_factor_2" = "country", # Group by country
     # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
-    "box_plot_max_boxes" = 60, # Maximum number of boxes to display per single plot - more plots otherwise
+    "box_plot_max_boxes" = 80, # Maximum number of boxes to display per single plot - more plots otherwise
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
     "funnel_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
@@ -123,7 +124,7 @@ user_params <- list(
     "bma_mprior" = "dilut", # Model Prior
     "bma_nmodel" = 20000, # Number of models (def 50000)
     "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-    "bma_print_results" = "all", # Print raw results - one of c("none", "fast", "verbose", "all")
+    "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters
@@ -134,9 +135,12 @@ user_params <- list(
     "bpe_studies" = c( 
       # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, use "all".
        0, # Author
-       2, # Bartlolj et al. (2013) - Most years of schooling
-       112, # Staiger et al. (1997) - Most citations
-       7 # Webbink (2004) - Random, unpublished, uncited work
+       # 2, # Bartlolj et al. (2013) - Most years of schooling
+       # 112, # Staiger et al. (1997) - Most citations
+       # 7 # Webbink (2004) - Random, unpublished, uncited work
+       5,
+       8,
+       10
     ),
     "bpe_use_ci" = TRUE, # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
     "bpe_study_info" = TRUE, # If TRUE, print out information about individual studies being estimated
@@ -191,10 +195,13 @@ user_params <- list(
   # Development information
   development_on = TRUE, # Keep FALSE at all times
   development_params = list(
-    csv_suffix = "master_thesis_cala", # Suffix of the .csv files
+    # csv_suffix = "master_thesis_cala", # Suffix of the .csv files
+     csv_suffix = "terka", # Suffix of the .csv files
     xlsx_data_folder = "../Data/", # Folder with the .xlsx data frame
-    xlsx_data_name = "data_set_master_thesis_cala.xlsm", # Name of the .xlsx data frame
-    xlsx_sheet_names = c("data_set", "var_list") # Sheet names to read
+    # xlsx_data_name = "data_set_master_thesis_cala.xlsm", # Name of the .xlsx data frame
+    # xlsx_sheet_names = c("data_set", "var_list") # Sheet names to read
+     xlsx_data_name = "data_set_terka.xlsx", # Name of the .xlsx data frame
+     xlsx_sheet_names = c("DATASET", "var_list") # Sheet names to read
   )
 )
 
