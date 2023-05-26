@@ -7,6 +7,12 @@ __pycache__/
 **/*.Rhistory
 **/*.Rdata
 
+# Leftover folders from the subtree split
+Data/AdditionalData/
+Dist/
+R/
+Thesis main/
+
 # R output files and cache
 _cache/*
 
