@@ -186,7 +186,7 @@ user_params <- list(
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache = FALSE, # Store intermediate output in a cache in the /_cache/ folder.
+  use_cache = TRUE, # Store intermediate output in a cache in the /_cache/ folder.
   cache_age = 3600, # In seconds - an hour
   
   # Development information

@@ -336,7 +336,14 @@ validateInputVarList <- function(input_var_list){
     message(special_char_cols)
     stop("Invalid column names")
   }
-  
+  # Validate that there are no two same column names
+  if (any(duplicated(input_var_list$var_name))){
+    duplicated_col <- input_Var_list$var_name[which(duplicated(input_var_lsit$var_name))]
+    message("Duplicate column values are not allowed.")
+    message("Modify the names of these columns:")
+    message(duplicated_col)
+    stop("Duplicate columns.")
+  }
   # Validate that data type stays consistent within each group
   for (i in 1:max(input_var_list$group_category)){
     data_slice <- input_var_list$data_type[input_var_list$group_category == i]
@@ -346,7 +353,6 @@ validateInputVarList <- function(input_var_list){
       stop(paste("Incorrect data type for group", i))
     }
   }
-  
   # Validate that specifications are present for all variables where sum stats are required
   data_to_summarize <- input_var_list[input_var_list$effect_sum_stats == TRUE, ]
   for (i in 1:nrow(data_to_summarize)){
@@ -563,20 +569,24 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
       stop("This script does not allow for ANY missing values. Make sure you have called the data preprocessing function.")
     }
   }
-  
   ### Column names validation
   valid_col_pattern <- "^[a-zA-Z0-9._]+$"
-  
   # Check if all column names match the pattern
   valid_column_names <- sapply(colnames(input_data), function(x) grepl(valid_col_pattern, x))
-  
   if (!all(valid_column_names)){
     special_char_cols <- colnames(input_data)[!valid_column_names]
     message("These columns contain special characters. Please modify the columns so that there are no such characters.")
     message(special_char_cols)
     stop("Invalid column names")
   }
-  
+  # Validate that there are no two same column names
+  if (any(duplicated(colnames(input_data)))){
+    duplicated_col <- colnames(input_data)[which(duplicated(colnames(input_data)))]
+    message("Duplicate column values are not allowed.")
+    message("Modify the names of these columns:")
+    message(duplicated_col)
+    stop("Duplicate columns.")
+  }
   ### Dummy group validation
   # Names of dummy variable columns
   dummy_group_vars <- as.vector(unlist(input_var_list[input_var_list$data_type == "dummy", "var_name"]))

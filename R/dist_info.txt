@@ -1,6 +1,5 @@
 main_master_thesis_cala.R
 script_runner_master_thesis_cala.R
 source_master_thesis_cala.R
-user_parameters.yaml
 data/data_set_master_thesis_cala.csv
 data/var_list_master_thesis_cala.csv
