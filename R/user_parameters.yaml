@@ -1,17 +1,17 @@
 run_this:
-  variable_summary_stats: no
-  effect_summary_stats: no
+  variable_summary_stats: yes
+  effect_summary_stats: yes
   box_plot: yes
-  funnel_plot: no
-  t_stat_histogram: no
-  linear_tests: no
-  nonlinear_tests: no
-  exo_tests: no
-  p_hacking_tests: no
-  bma: no
-  fma: no
-  ma_variables_description_table: no
-  bpe: no
+  funnel_plot: yes
+  t_stat_histogram: yes
+  linear_tests: yes
+  nonlinear_tests: yes
+  exo_tests: yes
+  p_hacking_tests: yes
+  bma: yes
+  fma: yes
+  ma_variables_description_table: yes
+  bpe: yes
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
@@ -32,7 +32,7 @@ adjustable_parameters:
   data_subset_condition_1: .na
   data_subset_condition_2: ability_uncontrolled == 1
   data_winsorization_level: 0.01
-  data_precision_type: DoF
+  data_precision_type: 1/SE
   winsorize_precision: no
   allowed_missing_ratio: 0.7
   effect_summary_stats_conf_level: 0.95
@@ -119,7 +119,7 @@ export_methods:
 export_log_file_path: numeric_results.txt
 export_html_graphs: yes
 theme: blue
-use_cache: no
+use_cache: yes
 cache_age: 3600.0
 development_on: yes
 development_params:

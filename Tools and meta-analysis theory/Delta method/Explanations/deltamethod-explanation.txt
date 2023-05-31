@@ -1,0 +1,67 @@
+1. **How the Delta Method works:**
+
+   The delta method is a statistical technique that is used to approximate the variance and standard error of a function of a random variable. It's often used when we transform model parameters in some way, and we want to get an idea of the uncertainty of this transformed estimate. 
+
+   The simplest case is when you have an estimate of a single parameter, and you apply a function to it. Let's say you have an estimate θ̂ of a parameter θ, and you apply a function g(θ) to it, resulting in a transformed estimate g(θ̂). If θ̂ is approximately normally distributed, then according to the delta method, g(θ̂) is also approximately normally distributed, with variance [g'(θ)]²Var(θ̂), where g' is the derivative of g, and Var(θ̂) is the variance of the original estimate.
+
+   If you have a vector of estimates (like in your case), and you apply a function to them, the delta method can still be used. The formula becomes a bit more complex, involving the gradient of the function and the covariance matrix of the estimates, but the idea is the same.
+
+2. **How to calculate the desired standard error using the delta method:**
+
+   The delta method involves several steps:
+
+   - You need to find the derivative of the function with respect to each parameter (in this case, β_{i, higher} and β_{i, lower}). This will give you a gradient (a vector of first derivatives).
+   
+   - Then you need to calculate the covariance matrix of your estimates. Since you have the standard errors of your estimates, if you assume they are uncorrelated, this will be a diagonal matrix with the squares of the standard errors on the diagonal.
+   
+   - Multiply the gradient by the covariance matrix, and then by the gradient again (this is essentially a quadratic form). This will give you the variance of your transformed estimate.
+   
+   - Finally, take the square root of this variance to get the standard error.
+
+3. **The inner workings behind the previous step:**
+
+   The key assumption of the delta method is that the estimates are approximately normally distributed. The math behind the delta method is based on a first-order Taylor series approximation of the function around the estimated parameters. The derivatives come into play because they determine how much a small change in the parameters affects the transformed estimate.
+
+   In terms of the covariance matrix, each element on the diagonal represents the variance of a single estimate, while the off-diagonal elements represent the covariance between different estimates. The reason you use this matrix in the calculation is because the uncertainty of the transformed estimate depends not only on the uncertainty of each individual estimate (the variances), but also on how these estimates covary. In other words, if two estimates are strongly correlated, a change in one is likely to be accompanied by a change in the other, which can affect the uncertainty of the transformed estimate.
+
+4. **Explicit formulas for Excel and R:**
+
+   In your case, the function is somewhat complex, and the derivative might be a bit hard to calculate by hand. Fortunately, both Excel and R have tools to calculate derivatives and to apply the delta method.
+
+   **For Excel:**
+
+   Excel doesn't have built-in support for the delta method, or for calculating derivatives. Therefore, you might have to manually calculate the derivatives of your function with respect to each parameter, and then implement the steps of the delta method using Excel formulas. I'll omit the exact formulas here, because they will depend on the specific form of your function and could get quite complex.
+
+   **For R:**
+
+   In R, the `car` package provides a function
+
+ called `deltamethod()` that can do all of this for you. Here's how you could use it:
+
+   ```R
+   # Load the car package
+   library(car)
+
+   # Define the function
+   g <- function(beta_higher, beta_lower, y_higher, y_lower) {
+     (1 + beta_higher - beta_lower)^(1 / (y_higher - y_lower)) - 1
+   }
+
+   # Estimate the parameters
+   beta_higher_est <- ... # insert your estimate here
+   beta_lower_est <- ... # insert your estimate here
+   y_higher <- ... # insert the constant here
+   y_lower <- ... # insert the constant here
+
+   # The covariance matrix
+   cov_matrix <- diag(c(SE_beta_higher^2, SE_beta_lower^2))
+
+   # Use the delta method
+   deltamethod(~ g(beta_higher, beta_lower, y_higher, y_lower), 
+               c(beta_higher = beta_higher_est, beta_lower = beta_lower_est), 
+               cov_matrix)
+   ```
+
+   Note that you need to replace the `...` with your actual values. The `SE_beta_higher` and `SE_beta_lower` should be the standard errors of your estimates.
+
+   The `deltamethod()` function calculates the derivatives for you and applies the formula I described above. The result is the standard error of the transformed estimate.

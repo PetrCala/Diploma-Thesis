@@ -1,0 +1,2 @@
+-If the metric should never be used (wrong type), set the value to 999 - validate this in code
+-Always input the number of years that it takes to finish the level from the previous one, NOT in total (so already the difference)

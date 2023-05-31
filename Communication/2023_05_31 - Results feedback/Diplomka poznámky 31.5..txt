@@ -1,0 +1,13 @@
+Diplomka poznámky 31.5.
+-zkusit udělat logaritmické osy pro funnel plot
+-Upravit standard errors pro deltamethod
+-P-uni a robma zkusit checkout
+-Stem method a elliott úpravy dát do contribution
+-Publication bias projet pro různé subsety a koukat, jestli tam je:
+  Top journals vs. All journals
+  Regions na western world vs. newestern (podobný ed. concept)
+-Ratio variable usmmary statistics broken (private vs public workers)
+-Všude 1 pro kontrolky na bpe, možná třeba 0.95 quantil pro proměnné s velkýma outlierama
+-Spojit fixed effects a cohort do jedné proměnné?
+-Winsorizace na maive garantovat že je 
+   

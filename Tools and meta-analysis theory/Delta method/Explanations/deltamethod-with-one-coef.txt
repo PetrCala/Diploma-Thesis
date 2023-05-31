@@ -1,0 +1,35 @@
+Even with just one coefficient, you would still use the delta method if you want to find the standard error of a transformed estimate. This is because standard errors, like the parameters themselves, don't directly carry over through nonlinear transformations. In your case, the function applied to the estimate is nonlinear, so the delta method would be appropriate.
+
+The steps would be:
+
+- Calculate the derivative of your function with respect to the parameter.
+- Multiply this derivative by the standard error of your estimate.
+- Take the square root of the resulting quantity.
+
+In R, you can calculate this as follows:
+
+```R
+# Load the car package
+library(car)
+
+# Define the function
+g <- function(beta, y) {
+  (1 + beta)^(1 / y) - 1
+}
+
+# Estimate the parameter
+beta_est <- ... # insert your estimate here
+y <- ... # insert the constant here
+
+# The variance of the estimate
+var_beta_est <- (SE_beta)^2
+
+# Use the delta method
+deltamethod(~ g(beta, y), 
+            c(beta = beta_est), 
+            var_beta_est)
+```
+
+In this code, replace `...` with your actual values. The `SE_beta` should be the standard error of your beta estimate.
+
+In Excel, you would need to manually calculate the derivative, then implement the steps of the delta method using Excel formulas. The derivative of your function with respect to β is `(1 / y) * (1 + β)^(1 / y - 1)`. After calculating the derivative at the estimated β, you would multiply this by the standard error of your estimate, then take the square root.

@@ -1,9 +1,0 @@
-Exploration of the P&P (2018) meta analysis
-
--Transformed the original dataset into a form that R is able to handle easily
-
--Tried running several simple regressions (mincerian private returns ~ years of schooling)
-
--Did a bunch of reading on the Mincer equation
-
--Started collecting/downloading the studies from P&P - found several that are difficult to find - left for later
