@@ -22,10 +22,10 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
     "box_plot" = F,
-    "funnel_plot" = T,
+    "funnel_plot" = F,
     "t_stat_histogram" = F,
     "linear_tests" = F,
     "nonlinear_tests" = F,
@@ -70,13 +70,14 @@ user_params <- list(
     # Data subsetting conditions
     # Note - if you do not with to use any conditions, set ANY condition to NA. The data will not subset.
     # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
+    # "data_subset_condition_1" = "impact_factor > 0.4",
     "data_subset_condition_1" = NA,
     "data_subset_condition_2" = "ability_uncontrolled == 1",
     # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
     # Data winsorization characteristics
     "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
     "data_precision_type" = "1/SE", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
-    "winsorize_precision" = FALSE, # If TRUE, winsorize precision (for different precision types)
+    "winsorize_precision" = TRUE, # If TRUE, winsorize precision (for different precision types)
     #   Note: The precision will be used only in case you do not provide a column with precision yourself
     # Handle missing data - only in development
     "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
@@ -123,7 +124,7 @@ user_params <- list(
     "bma_mprior" = "dilut", # Model Prior
     "bma_nmodel" = 20000, # Number of models (def 50000)
     "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-    "bma_print_results" = "all", # Print raw results - one of c("none", "fast", "verbose", "all")
+    "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters
@@ -186,7 +187,7 @@ user_params <- list(
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache = FALSE, # Store intermediate output in a cache in the /_cache/ folder.
+  use_cache = TRUE, # Store intermediate output in a cache in the /_cache/ folder.
   cache_age = 3600, # In seconds - an hour
   
   # Development information
