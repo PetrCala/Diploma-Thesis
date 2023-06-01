@@ -49,6 +49,7 @@ packages <- c(
   "gdata", # Elliott et al. (2022)
   "grDevices", # Elliott et al. (2022)
   "ggplot2", # Creating graphics and data visualizations
+  "ggtext", # ggplot axis text without warnings
   "haven", # Importing and exporting data from SAS, SPSS, and Stata
   "lmtest", # Hypothesis testing and diagnostics for linear regression models
   "memoise", # Cache system - speeding up deterministic function calls
@@ -72,6 +73,7 @@ packages <- c(
   "testthat", # Unit testing for R
   "tidyverse", # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
   "varhandle", # MAIVE estimator
+  "xfun", # Proper ggplot label display
   "xtable", # Creating tables in LaTeX or HTML
   "yaml" # User parameters
 )

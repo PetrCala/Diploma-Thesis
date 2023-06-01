@@ -4024,14 +4024,6 @@ exportTable <- function(results_table, user_params, method_name){
 
 ######################### GRAPHICS #########################
 
-#' Custom ggplot theme
-main_theme <- function(x_axis_tick_text = "black"){
-  theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid"),
-        axis.text.x = element_text(color = x_axis_tick_text), axis.text.y = element_text(color = "black"),
-        panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = "#DCEEF3"),
-        plot.background = element_rect(fill = "#DCEEF3"))
-}
-
 #' Specify the type of theme to use and return the theme
 #' 
 #' Available choices - main, yellow, green, red
@@ -4054,7 +4046,8 @@ getTheme <- function(theme_type, x_axis_tick_text = "black"){
   )
   # Construct and return the theme
   theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid"),
-        axis.text.x = element_text(color = x_axis_tick_text), axis.text.y = element_text(color = "black"),
+        axis.text.x = ggtext::element_markdown(color = x_axis_tick_text),
+        axis.text.y = ggtext::element_markdown(color = "black"),
         panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
         plot.background = element_rect(fill = theme_color))
 }

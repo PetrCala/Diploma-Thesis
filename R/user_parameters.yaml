@@ -1,17 +1,17 @@
 run_this:
-  variable_summary_stats: yes
-  effect_summary_stats: yes
-  box_plot: yes
+  variable_summary_stats: no
+  effect_summary_stats: no
+  box_plot: no
   funnel_plot: yes
-  t_stat_histogram: yes
-  linear_tests: yes
-  nonlinear_tests: yes
-  exo_tests: yes
-  p_hacking_tests: yes
-  bma: yes
-  fma: yes
-  ma_variables_description_table: yes
-  bpe: yes
+  t_stat_histogram: no
+  linear_tests: no
+  nonlinear_tests: no
+  exo_tests: no
+  p_hacking_tests: no
+  bma: no
+  fma: no
+  ma_variables_description_table: no
+  bpe: no
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
@@ -119,7 +119,7 @@ export_methods:
 export_log_file_path: numeric_results.txt
 export_html_graphs: yes
 theme: blue
-use_cache: yes
+use_cache: no
 cache_age: 3600.0
 development_on: yes
 development_params:
