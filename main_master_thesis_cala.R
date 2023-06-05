@@ -362,6 +362,9 @@ if (run_this$nonlinear_tests){
 ### Apply p-uniform* method using sample means
 
 ######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
+iv_temp <- getIVResults(data,
+                           effect_present = T, pub_bias_present = T, verbose_coefs = T)
+
 if (run_this$exo_tests){
   # Parameters
   global_exo_tests <- T # Set to false if tests should be ran separately
