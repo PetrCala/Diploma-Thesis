@@ -2317,7 +2317,10 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
   for (i in seq_along(instruments)) {
     instrument <- instruments[i][[1]] # Unlist
     stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
-    model <- ivreg(formula = effect ~ se | instrument, data = input_data)
+    instrument_verbose <- instruments_verbose[i]
+    input_data$instr_temp <- instrument # Add a column with the instrument values
+    iv_formula <- as.formula("effect ~ se | instr_temp")
+    model <- ivreg(formula = iv_formula, data = input_data)
     model_summary <- summary(model, vcov = vcovHC(model, cluster = c(input_data$study_id)), diagnostics=T)
     # Extract relevant statistics
     results[i,"r_squared"] <- model_summary$r.squared
@@ -2390,7 +2393,7 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 getIVResults <- function(data, ...){
   # Define the instruments to use
   instruments <- list(1/sqrt(data$n_obs), 1/data$n_obs, 1/data$n_obs^2, log(data$n_obs))
-  instruments_verbose <- c('1/sqrt(data$n_obs)', '1/data$n_obs', '1/data$n_obs^2', 'log(data$n_obs)')
+  instruments_verbose <- c('1/sqrt(n_obs)', '1/n_obs', '1/n_obs^2', 'log(n_obs)')
   # Find out the best instrument
   best_instrument <- findBestInstrument(data, instruments, instruments_verbose)
   # If more best instruments are identified
@@ -2403,11 +2406,11 @@ getIVResults <- function(data, ...){
     length(best_instrument) == 1 # Should be redundant
     )
   # Get instrument values instead of name
-  best_instrument <- instruments[match(best_instrument, instruments_verbose)]
+  best_instrument_values <- instruments[match(best_instrument, instruments_verbose)][[1]]
   # Run the regression
-  instrument <- best_instrument[[1]] # Unlist
-  stopifnot(is.numeric(instrument)) # Amend previous line if this keeps failing - should be only numeric
-  model <- ivreg(formula = effect ~ se | instrument, data = data)
+  data$instr_temp <- best_instrument_values
+  iv_formula <- as.formula("effect ~ se | instr_temp")
+  model <- ivreg(formula = iv_formula, data = data)
   model_summary <- summary(model, vcov = vcovHC(model, cluster = c(data$study_id)), diagnostics=T)
   # Get the coefficients
   all_coefs <- model_summary$coefficients

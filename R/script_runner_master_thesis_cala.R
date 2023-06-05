@@ -25,12 +25,12 @@ user_params <- list(
     "variable_summary_stats" = T,
     "effect_summary_stats" = T,
     "box_plot" = F,
-    "funnel_plot" = F,
+    "funnel_plot" = T,
     "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
     "bma" = F,
     "fma" = F, # Executable only after running BMA
     "ma_variables_description_table" = F, # Executable only after running BMA
@@ -53,7 +53,7 @@ user_params <- list(
     t_stat = "t_stat", # T-statistic (optional)
     n_obs = "n_obs", # Number of observations associated with the estimate
     study_size = "study_size", # Number of estimates reported per study (optional)
-    reg_df = "reg_df", # Degrees of Freedom in the regression (optional)
+    reg_df = NA, # Degrees of Freedom in the regression (optional)
     precision = NA # A measure of precision (optional) - handle during winsorization
   ),
   
@@ -70,7 +70,6 @@ user_params <- list(
     # Data subsetting conditions
     # Note - if you do not with to use any conditions, set ANY condition to NA. The data will not subset.
     # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
-    # "data_subset_condition_1" = "impact_factor > 0.4",
     "data_subset_condition_1" = NA,
     "data_subset_condition_2" = "ability_uncontrolled == 1",
     # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
@@ -124,7 +123,7 @@ user_params <- list(
     "bma_mprior" = "dilut", # Model Prior
     "bma_nmodel" = 20000, # Number of models (def 50000)
     "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-    "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
+    "bma_print_results" = "all", # Print raw results - one of c("none", "fast", "verbose", "all")
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters
@@ -183,7 +182,7 @@ user_params <- list(
   ),
   export_log_file_path = "numeric_results.txt", # Console log as a text file
   export_html_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
-  theme = "blue", # One of "blue", "yellow", "green", "red"
+  theme = "green", # One of "blue", "yellow", "green", "red"
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
@@ -223,11 +222,11 @@ log_file_path <- paste0(export_folder_path, user_params$export_log_file)
 sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 
 # Time the script run
-#start_time <- Sys.time()
-#source("main_master_thesis_cala.R")
-#end_time <- Sys.time()
-#elapsed_time <- end_time - start_time
-#print(elapsed_time)
+# start_time <- Sys.time()
+# source("main_master_thesis_cala.R")
+# end_time <- Sys.time()
+# elapsed_time <- end_time - start_time
+# print(elapsed_time)
  
 # Run the main file
 source("main_master_thesis_cala.R")

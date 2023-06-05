@@ -2,12 +2,12 @@ run_this:
   variable_summary_stats: yes
   effect_summary_stats: yes
   box_plot: no
-  funnel_plot: no
+  funnel_plot: yes
   t_stat_histogram: no
-  linear_tests: no
-  nonlinear_tests: no
-  exo_tests: no
-  p_hacking_tests: no
+  linear_tests: yes
+  nonlinear_tests: yes
+  exo_tests: yes
+  p_hacking_tests: yes
   bma: no
   fma: no
   ma_variables_description_table: no
@@ -24,12 +24,13 @@ required_cols:
   t_stat: t_stat
   n_obs: n_obs
   study_size: study_size
-  reg_df: reg_df
+  reg_df: .na
   precision: .na
 adjustable_parameters:
   effect_name: years of schooling on wage
   formal_output_on: yes
-  data_subset_condition_1: impact_factor > 0.4
+  data_subset_condition_1: .na
+  data_subset_condition_2: ability_uncontrolled == 1
   data_winsorization_level: 0.01
   data_precision_type: 1/SE
   winsorize_precision: yes
@@ -73,7 +74,7 @@ adjustable_parameters:
   bma_mprior: dilut
   bma_nmodel: 20000.0
   bma_mcmc: bd
-  bma_print_results: none
+  bma_print_results: all
   fma_verbose: no
   ma_results_table: yes
   ma_variables_description_table_verbose: no
@@ -117,7 +118,7 @@ export_methods:
   bpe_econ_sig: Economic significance
 export_log_file_path: numeric_results.txt
 export_html_graphs: yes
-theme: blue
+theme: green
 use_cache: yes
 cache_age: 3600.0
 development_on: yes

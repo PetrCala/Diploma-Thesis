@@ -1,0 +1,38 @@
+Running bachelor vs. master thesis code:
+-Bachelor thesis: ~9 minutes
+-Master thesis: 16.77s uncached, 2.31s cached
+
+Running source vs. upgraded stem method: (06-05, compute_submat_sums)
+-Source: 99.52s
+-Upgraded: 2.84s
+
+
+Out:
+> print(stem2)
+     estimate       se sd of total heterogeneity n_stem n_iteration multiple % info used
+[1,]      7.2 1.231869                  2.133449      3           2        0 0.002256697
+
+> print(time_df)
+          Time
+elapsed   3.07
+elapsed1  3.09
+elapsed2  2.98
+elapsed3  2.60
+elapsed4  2.77
+elapsed5  2.78
+elapsed6  3.17
+elapsed7  2.60
+elapsed8  2.64
+elapsed9  3.16
+elapsed10 2.62
+elapsed11 2.97
+elapsed12 3.45
+elapsed13 2.23
+elapsed14 3.07
+elapsed15 2.83
+elapsed16 2.75
+elapsed17 2.82
+elapsed18 2.63
+elapsed19 2.65
+> print(paste("Mean elapsed time:",round(mean(time_df$Time), 2)))
+[1] "Mean elapsed time: 2.84"
