@@ -22,15 +22,15 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
-    "box_plot" = T,
-    "funnel_plot" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
+    "box_plot" = F,
+    "funnel_plot" = T,
     "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
     "bma" = F,
     "fma" = F, # Executable only after running BMA
     "ma_variables_description_table" = F, # Executable only after running BMA
@@ -53,7 +53,7 @@ user_params <- list(
     t_stat = "t_stat", # T-statistic (optional)
     n_obs = "n_obs", # Number of observations associated with the estimate
     study_size = "study_size", # Number of estimates reported per study (optional)
-    reg_df = "reg_df", # Degrees of Freedom in the regression (optional)
+    reg_df = NA, # Degrees of Freedom in the regression (optional)
     precision = NA # A measure of precision (optional) - handle during winsorization
   ),
   
@@ -75,8 +75,8 @@ user_params <- list(
     # "data_subset_condition_X" = X, # Add more conditions in this manner - up to 20
     # Data winsorization characteristics
     "data_winsorization_level" = 0.01, # Between 0 and 1 (excluding)
-    "data_precision_type" = "DoF", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
-    "winsorize_precision" = FALSE, # If TRUE, winsorize precision (for different precision types)
+    "data_precision_type" = "1/SE", # Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
+    "winsorize_precision" = TRUE, # If TRUE, winsorize precision (for different precision types)
     #   Note: The precision will be used only in case you do not provide a column with precision yourself
     # Handle missing data - only in development
     "allowed_missing_ratio" = 0.7, # Allow ratio*100(%) missing observations for each variable
@@ -182,7 +182,7 @@ user_params <- list(
   ),
   export_log_file_path = "numeric_results.txt", # Console log as a text file
   export_html_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
-  theme = "blue", # One of "blue", "yellow", "green", "red"
+  theme = "green", # One of "blue", "yellow", "green", "red"
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
@@ -222,11 +222,11 @@ log_file_path <- paste0(export_folder_path, user_params$export_log_file)
 sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 
 # Time the script run
-#start_time <- Sys.time()
-#source("main_master_thesis_cala.R")
-#end_time <- Sys.time()
-#elapsed_time <- end_time - start_time
-#print(elapsed_time)
+# start_time <- Sys.time()
+# source("main_master_thesis_cala.R")
+# end_time <- Sys.time()
+# elapsed_time <- end_time - start_time
+# print(elapsed_time)
  
 # Run the main file
 source("main_master_thesis_cala.R")
