@@ -2464,8 +2464,7 @@ getMedians <- function(input_data, med_col){
 #' the Maximum Likelihood (ML) or Moments (P) method to estimate the publication bias.
 #'
 #' @param data [data.frame] A data frame containing the effects with their corresponding standard errors.
-#' @param method [str] A character string indicating which method to use to estimate publication bias.
-#' "ML" for Maximum Likelihood and "P" for Moments. Default is "ML".
+#' @inheritDotParams Parameters to pass to the main 'puni_star' call
 #'
 #' @return A vector containing the following four elements:
 #' \describe{
@@ -2475,38 +2474,44 @@ getMedians <- function(input_data, med_col){
 #' \item{Effect Beyond Bias}{A numeric value indicating the effect beyond bias estimate.}
 #' \item{Effect Standard Error}{A character string indicating the standard error of the effect beyond bias estimate.}
 #' }
-getPUniResults <- function(data, method="ML",...){
+getPUniResults <- function(data, ...){
+  # Unlist arguments
+  args <- list(...)
+  puni_side <- args$puni_side
+  puni_method <- args$puni_method
+  puni_alpha <- args$puni_alpha
+  puni_controls <- args$puni_controls
   # Validation
   stopifnot(
     is.data.frame(data),
-    is.character(method),
-    method %in% c("ML", "P") # Max likelihood, Moments
+    is.character(puni_side),
+    puni_method %in% c("ML", "P"), # Max likelihood, Moments
+    is.numeric(puni_alpha)
   )
   # Calculate medians for all studies
-  med_t <- getMedians(data, 't_stat') # T-stat vector of medians
-  med_nobs <- getMedians(data, 'n_obs') # N-obs vector of medians
+  med_yi <- getMedians(data, "effect")
+  med_ni <- getMedians(data, "study_size")
+  med_ses <- getMedians(data, "se")
+  med_sample_sizes <- getMedians(data, "n_obs")
+  med_sdi <- med_ses * sqrt(med_sample_sizes) # SD = SE * sqrt(sample_size)
   #Estimation
-  if (method == "ML"){
-    #Maximum likelihood
-    quiet(
-      est_main <- puni_star(tobs = med_t, ni = med_nobs, side = "right", method = "ML", alpha = 0.05,
-                             control=list(stval.tau=0.5, max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
+  quiet(
+    est_main <- puni_star(
+      yi = med_yi,
+      vi = med_sdi^2, # Squared sd
+      ni = med_ni,
+      alpha = puni_alpha,
+      side = puni_side,
+      method = puni_method,
+      control = puni_controls
     )
-  } else if (method == "P"){
-    # Moments method estimation
-    quiet(
-      est_main <- puni_star(tobs = med_t, ni = med_nobs, side = "right", method = "P",
-                          alpha = 0.05,control=list(stval.tau = 0.5, max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
-    )
-  } else {
-    stop("Broken validity checks") # Should not happen
-  }
-  est_se <- (est_main$ci.ub - est_main$ci.lb) / (2*1.96) # Standard error of the estmiate
+  )
   # Extract and save coefficients - using a custom format for this method
-  est_effect_verbose <- round(est_main$est, 5) # Effect Beyond Bias
-  est_se_verbose <- paste0("(", round(est_se, 5), ")") # Effect Standard Error
-  est_pub_test_verbose <- paste0("L = ", round(est_main$L.0, 5)) # Test statistic of p-uni publication bias test
-  est_pub_p_val_verbose <- paste0("(p = ", round(est_main$pval.0, 5), ")") # P-value for the L test statistic
+  est_se <- (est_main$ci.ub - est_main$est) / 1.96 # Standard error of the estmiate
+  est_effect_verbose <- round(est_main$est, 3) # Effect Beyond Bias
+  est_se_verbose <- paste0("(", round(est_se, 3), ")") # Effect Standard Error
+  est_pub_test_verbose <- paste0("L = ", round(est_main$L.0, 3)) # Test statistic of p-uni publication bias test
+  est_pub_p_val_verbose <- paste0("(p = ", round(est_main$pval.0, 3), ")") # P-value for the L test statistic
   # Return as a vector
   p_uni_coefs_out <- c(
     est_pub_test_verbose,
@@ -2530,7 +2535,8 @@ getPUniResults <- function(data, method="ML",...){
 #' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
 #' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
 #' The results are then printed into the console and returned invisibly.
-getExoTests <- function(input_data, puni_method = "ML") {
+getExoTests <- function(input_data, puni_side = "right", puni_method = "ML",
+                        puni_alpha = 0.05, puni_controls = NA) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -2539,8 +2545,12 @@ getExoTests <- function(input_data, puni_method = "ML") {
   )
   # Get coefficients
   iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
-  p_uni_res <- getPUniResults(input_data, method = puni_method,
-                              effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  p_uni_res <- getPUniResults(input_data,
+                              puni_side = puni_side,
+                              puni_method = puni_method,
+                              puni_alpha = puni_alpha,
+                              puni_controls = puni_controls
+                              )
   # Combine the results into a data frame
   results <- data.frame(
     iv_df = iv_res,

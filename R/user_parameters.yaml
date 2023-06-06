@@ -45,7 +45,20 @@ adjustable_parameters:
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
   t_hist_upper_cutoff: 120.0
+  puni_side: right
   puni_method: ML
+  puni_alpha: 0.05
+  puni_controls:
+    max.iter: 1000.0
+    tol: 0.1
+    reps: 10000.0
+    int:
+    - -5.0
+    - 25.0
+    est.ci:
+    - -10.0
+    - 10.0
+    verbose: yes
   caliper_thresholds:
   - 1.645
   - 1.96

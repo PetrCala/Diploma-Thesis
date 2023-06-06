@@ -96,7 +96,10 @@ user_params <- list(
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
     "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
     # P-uniform paramteres
+    "puni_side" = "right", # puni_star side argument
     "puni_method" = "ML", # Method used for p-uniform calculation - one of "ML", "P"
+    "puni_alpha" = 0.05, # puni_star alpha argument
+    "puni_controls" = list(max.iter=1000,tol=0.1,reps=10000, int=c(-5,25), est.ci = c(-10,10), verbose=TRUE), # puni_star controls
     # Caliper test parameters
     "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
     "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector

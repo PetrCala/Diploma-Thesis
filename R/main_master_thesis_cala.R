@@ -372,15 +372,22 @@ if (run_this$exo_tests){
     iv_results <- getIVResults(data,
                                effect_present = T, pub_bias_present = T, verbose_coefs = T)
     
-    p_uni_results <- getPUniResults(data, method = adj_params$puni_method,
-                                    effect_present=T, pub_bias_present=T, verbose_coefs=T)
+    p_uni_results <- getPUniResults(data,
+                                    puni_side = adj_params$puni_side,
+                                    puni_method = adj_params$puni_method,
+                                    puni_alpha = adj_params$puni_alpha,
+                                    puni_controls = adj_params$puni_controls
+                                    )
     
   } else{
     exo_tests_results <- runCachedFunction(
       getExoTests, user_params,
       verbose_function = getExoTestsVerbose,
       data,
-      puni_method = adj_params$puni_method
+      puni_side = adj_params$puni_side,
+      puni_method = adj_params$puni_method,
+      puni_alpha = adj_params$puni_alpha,
+      puni_controls = adj_params$puni_controls
     )
     if (user_params$export_results){
       exportTable(exo_tests_results, user_params, "exo_tests")
