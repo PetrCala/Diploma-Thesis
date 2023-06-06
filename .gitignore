@@ -13,6 +13,7 @@ R/_cache/*
 R/results/*
 R/data/*
 R/graphics/*
+R/*_debug.R
 
 # Shell temp files
 **/*.sh~
