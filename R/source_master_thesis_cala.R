@@ -2816,13 +2816,13 @@ getElliottResultsVerbose <- function(res, ...){
 #' @inheritDotParams Parameters for the extractExoCoefs function.
 #' 
 #' @import maive_master_thesis_cala.R
-getMaiveResults <- function(data, script_path, method = 3, weight = 0, instrument = 1, studylevel = 2, verbose = T, ...){
+getMaiveResults <- function(input_data, script_path, method = 3, weight = 0, instrument = 1, studylevel = 2, verbose = T, ...){
   # Read the source file
   source(script_path)
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
-    all(required_cols %in% names(data)),
+    all(required_cols %in% names(input_data)),
     is.character(script_path),
     method %in% c(1,2,3,4),
     weight %in% c(0,1,2),
@@ -2831,10 +2831,10 @@ getMaiveResults <- function(data, script_path, method = 3, weight = 0, instrumen
     is.logical(verbose)
   )
   # Subset data and rename columns
-  data <- data[,c("effect", "se", "n_obs", "study_id")]
-  colnames(data) <- c('bs', 'sebs', 'Ns', 'studyid')
+  input_data <- input_data[,c("effect", "se", "n_obs", "study_id")]
+  colnames(input_data) <- c('bs', 'sebs', 'Ns', 'studyid')
   # Run the estimation
-  MAIVE <- maive(dat=data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
+  MAIVE <- maive(dat=input_data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
   # Extract (and print) the output
   object<-c("MAIVE coefficient","MAIVE standard error","F-test of first step in IV",
             "Hausman-type test (use with caution)","Critical Value of Chi2(1)")

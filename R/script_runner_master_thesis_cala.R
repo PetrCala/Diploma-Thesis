@@ -22,19 +22,19 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
     "box_plot" = F,
-    "funnel_plot" = T,
+    "funnel_plot" = F,
     "t_stat_histogram" = F,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
     "exo_tests" = T,
     "p_hacking_tests" = T,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
-    "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F # Executable only after running BMA
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "bpe" = T # Executable only after running BMA
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -53,7 +53,7 @@ user_params <- list(
     t_stat = "t_stat", # T-statistic (optional)
     n_obs = "n_obs", # Number of observations associated with the estimate
     study_size = "study_size", # Number of estimates reported per study (optional)
-    reg_df = NA, # Degrees of Freedom in the regression (optional)
+    reg_df = "reg_df", # Degrees of Freedom in the regression (optional)
     precision = NA # A measure of precision (optional) - handle during winsorization
   ),
   
@@ -112,7 +112,7 @@ user_params <- list(
     "maive_method" = 3, # 3 = PET-PEESE
     "maive_weight" = 0, # 0 = no weights
     "maive_instrument" = 1, # 1 = Yes (instrument SEs)
-    "maive_studylevel" = 2, # 2 = cluster-robust SEs
+    "maive_studylevel" = 0, # 0 = No study-level correlation
     "maive_verbose" = TRUE,
     # Bayesian Model Averaging parameters
     "automatic_bma" = TRUE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
@@ -123,7 +123,7 @@ user_params <- list(
     "bma_mprior" = "dilut", # Model Prior
     "bma_nmodel" = 20000, # Number of models (def 50000)
     "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-    "bma_print_results" = "all", # Print raw results - one of c("none", "fast", "verbose", "all")
+    "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters

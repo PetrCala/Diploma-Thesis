@@ -1,0 +1,7 @@
+Correct MAIVE:
+                                       object  value
+1                           MAIVE coefficient  5.798
+2                        MAIVE standard error  0.457
+3                  F-test of first step in IV 13.697
+4 Hausman-type test (to be used with caution)  2.379
+5                   Critical Value of Chi2(1)  3.841
