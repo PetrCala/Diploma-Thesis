@@ -569,7 +569,12 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
       stop("This script does not allow for ANY missing values. Make sure you have called the data preprocessing function.")
     }
   }
-  ### Column names validation
+  # Verify that all studies are unique
+  runs <- rle(as.character(input_data$study_name)) # Study names in chunks
+  if (length(runs$values) != length(unique(runs$values))) {
+    stop("Each study must appear only once in the data and in one continuous chunk.")
+  }
+  ## Column names validation
   valid_col_pattern <- "^[a-zA-Z0-9._]+$"
   # Check if all column names match the pattern
   valid_column_names <- sapply(colnames(input_data), function(x) grepl(valid_col_pattern, x))
