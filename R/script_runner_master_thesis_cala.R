@@ -22,13 +22,13 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
     "exo_tests" = T,
     "p_hacking_tests" = T,
     "bma" = T,
