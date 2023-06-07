@@ -22,19 +22,20 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
-    "box_plot" = T,
-    "funnel_plot" = T,
-    "t_stat_histogram" = T,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
-    "bma" = T,
-    "fma" = T, # Executable only after running BMA
-    "ma_variables_description_table" = T, # Executable only after running BMA
-    "bpe" = T # Executable only after running BMA
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
+    "box_plot" = F,
+    "funnel_plot" = F,
+    "t_stat_histogram" = F,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
+    "bma" = F,
+    "fma" = F, # Executable only after running BMA
+    "ma_variables_description_table" = F, # Executable only after running BMA
+    "bpe" = F, # Executable only after running BMA
+    "robma" = T # Computationally expensive
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -60,8 +61,8 @@ user_params <- list(
   # USER PARAMETERS
   # Adjust the parameters by modifying the numbers, or boolean values
   # Note:
-  #  Do NOT change the variable names (apart from when adding new Box plot factors),
-  #    the names of vectors, or value types (character, integer, vector...)
+  #  Do NOT change the variable names, the names of vectors,
+  #  or value types (character, integer, vector...) (apart from when specified explicitly)
   adjustable_parameters = list(
     # Effect name
     "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
@@ -145,7 +146,11 @@ user_params <- list(
     "bpe_study_info" = TRUE, # If TRUE, print out information about individual studies being estimated
     "bpe_result_table_verbose" = TRUE, # If TRUE, print out the table into the console
     "bpe_econ_sig_large_pip_only" = TRUE, # If TRUE, display econ. significance for variables with PIP >= 0.5
-    "bpe_econ_sig_verbose" = TRUE # If TRUE, print out the economic significance table into the console
+    "bpe_econ_sig_verbose" = TRUE, # If TRUE, print out the economic significance table into the console
+    # Robust Bayesian Model Averaging parameters - do not pass nested lists, priors etc.
+    "robma_verbose" = TRUE,
+    "robma_param_priors_bias" = NULL,
+    "robma_param_parallel" = TRUE
   ),
   
   # FOLDER PATHS
@@ -181,7 +186,9 @@ user_params <- list(
     "ma" = "Model averaging",
     "ma_variables_description_table" = "Model averaging description table",
     "bpe_res" = "Best practice estimate",
-    "bpe_econ_sig" = "Economic significance"
+    "bpe_econ_sig" = "Economic significance",
+    "robma_components" = "RoBMA components",
+    "robma_estimates" = "RoBMA estimates"
   ),
   export_log_file_path = "numeric_results.txt", # Console log as a text file
   export_html_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files

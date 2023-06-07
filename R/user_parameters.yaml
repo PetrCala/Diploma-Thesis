@@ -1,17 +1,18 @@
 run_this:
-  variable_summary_stats: yes
-  effect_summary_stats: yes
-  box_plot: yes
-  funnel_plot: yes
-  t_stat_histogram: yes
-  linear_tests: yes
-  nonlinear_tests: yes
-  exo_tests: yes
-  p_hacking_tests: yes
-  bma: yes
-  fma: yes
-  ma_variables_description_table: yes
-  bpe: yes
+  variable_summary_stats: no
+  effect_summary_stats: no
+  box_plot: no
+  funnel_plot: no
+  t_stat_histogram: no
+  linear_tests: no
+  nonlinear_tests: no
+  exo_tests: no
+  p_hacking_tests: no
+  bma: no
+  fma: no
+  ma_variables_description_table: no
+  bpe: no
+  robma: yes
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
@@ -102,6 +103,9 @@ adjustable_parameters:
   bpe_result_table_verbose: yes
   bpe_econ_sig_large_pip_only: yes
   bpe_econ_sig_verbose: yes
+  robma_verbose: yes
+  robma_param_priors_bias: ~
+  robma_param_parallel: yes
 folder_paths:
   cache_folder: ./_cache/
   data_folder: ./data/
@@ -129,6 +133,8 @@ export_methods:
   ma_variables_description_table: Model averaging description table
   bpe_res: Best practice estimate
   bpe_econ_sig: Economic significance
+  robma_components: RoBMA components
+  robma_estimates: RoBMA estimates
 export_log_file_path: numeric_results.txt
 export_html_graphs: yes
 theme: green

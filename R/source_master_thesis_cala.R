@@ -115,43 +115,32 @@ validateFiles <- function(files){
 #' Extract multiple parameters from a vector dictionary
 #' 
 #' Input the adjustable parameters list and the name of the parameter to extract
-#' the values for. Extract all the values of that parameters and return the vector of the values
-#' 
-#' @details The reason for having this function is that if the user inputs multiple
-#' values into the list in R, the language assigns each value its unique
-#' key, as it can not store a nested element. RRRRRRRR
+#' the values for. Extract all the values of that parameters and return the vector of the values.
+#' In case the list itself should be extracted, set "extract_list" to TRUE.
 #' 
 #' @param adj_params [list] The list with adjustable parameters.
-#' @param desired_param [character] The name of the parameter for which to extract
-#' the values for
+#' @param prefix [character] The prefix for which to extract the values for. Note that the 
+#'  parameters names MUST START with this prefix.
+#' @param extract_list [logical] If TRUE, extract the whole list instead. Deafults to FALSE.
+#' @param drop_prefix [logical] If TRUE, extract the list without the prefix. Defaults to FALSE.
 #' @return Vector of values.
-getMultipleParams <- function(adj_params, desired_param){
+getMultipleParams <- function(adj_params, prefix, extract_list = FALSE, drop_prefix = FALSE){
   # Validate input
   stopifnot(
     is.list(adj_params),
-    is.character(desired_param)
+    is.character(prefix),
+    is.logical(extract_list)
   )
-  res <- list()
-  # Parameter in parameter list
-  if (desired_param %in% names(adj_params)){
-    val <- adj_params[[desired_param]]
-    res <- append(res, val)
-  } else {
-    # More values or no value
-    keep_going <- T
-    i <- 1
-    while (keep_going){
-      new_key <- paste0(desired_param,as.character(i))
-      if (new_key %in% names(adj_params)) {
-        val <- adj_params[[new_key]]
-        res <- append(res, val)
-        i <- i + 1
-      } else {
-        keep_going <- F
-      }
+  # Extract the list
+  param_list <- adj_params[grep(paste0("^", prefix), names(adj_params))]
+  if (extract_list){
+    if (drop_prefix){
+      param_list <- setNames(param_list, sub(paste0("^", prefix), "", names(param_list))) # No prefixes
     }
+    return(param_list)
   }
-  return(res)
+  value_vector <- as.vector(unlist(param_list)) # Values instead
+  return(value_vector)
 }
 
 
@@ -3857,6 +3846,64 @@ getEconomicSignificanceVerbose <- function(res,...){
     cat("\n\n")
   }
 }
+
+######################### ROBUST BAYESIAN MODEL AVERAGING #########################
+
+getRoBMA <- function(input_data, verbose, ...){
+  # Validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is.logical(verbose)
+  )
+  # Handle arguments
+  fixed_params <- list(
+      y = input_data$effect,
+      se = input_data$se,
+      study_names = input_data$study_name,
+      priors_effect  = prior(
+        distribution = "cauchy",
+        parameters = list(location = 0, scale = 1/sqrt(2)),
+        truncation = list(0, Inf)),
+      priors_heterogeneity = prior(
+        distribution = "invgamma",
+        parameters = list(shape = 1, scale = 0.15))
+  )
+  all_params <- c(fixed_params, ...) # Vector of lists for the do.call
+  # Estimation
+  robma_est <- do.call(
+    RoBMA, # Function
+    all_params # Parameters
+  )
+  robma_out <- list(
+    summary(robma_est)$components,
+    summary(robma_est)$estimates
+  )
+  names(robma_out) <- c("Components","Estimates")
+  # Return the output
+  if (verbose) {
+    getRoBMAVerbose(robma_out, verbose = verbose)
+  }
+  return(robma_out)
+}
+
+#' Verbose output for the getRoBMA function
+getRoBMAVerbose <- function(res,...){
+  args <- list(...)
+  verbose_on <- args$verbose
+  robma_components <- res$Components
+  robma_estimates <- res$Estimates
+  # Print verbose output
+  if (verbose_on){
+    print("Robust Bayesian Model Averaging results:")
+    cat("\n")
+    print(robma_components)
+    cat("\n")
+    print(robma_estimates)
+    cat("\n\n")
+  }
+}
+
+
 ######################### CACHE HANDLING #########################
 
 #' Cache a function using the memoise package if so desired

@@ -66,6 +66,7 @@ packages <- c(
   "rddensity", # Elliott et al. (2022)
   "readr", # Reading data into R from various file formats
   "readxl", # Reading Excel files
+  "RoBMA", # Robust BMA, Bartos et al. (2021)
   "sandwich", # Computing robust covariance matrix estimators, MAIVE estimator
   "shiny", # Andrew & Kasy (2019) Selection model
   "spatstat", # Elliott et al. (2022)
@@ -204,7 +205,7 @@ data <- runCachedFunction(
 )
 
 # Subset data using the conditions specified in the customizable section
-subset_conditions <- getMultipleParams(adj_params, "data_subset_condition_") # Extract all the data subset conditions
+subset_conditions <- getMultipleParams(adj_params, "data_subset_condition_", T) # Extract all the data subset conditions
 data <- runCachedFunction(
   applyDataSubsetConditions, user_params, 
   verbose_function = applyDataSubsetConditionsVerbose,
@@ -576,5 +577,24 @@ if (run_this$bpe){
   if (user_params$export_results){
      exportTable(bpe_res, user_params, "bpe_res")
      exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
+  }
+}
+
+######################### ROBUST BAYESIAN MODEL AVERAGING #########################
+
+# Source:  https://github.com/FBartos/RoBMA
+if (run_this$robma){
+  robma_params <- getMultipleParams(adj_params, "robma_param_", extract_list = T, drop_prefix = T)
+  robma_res <- runCachedFunction(
+    getRoBMA, user_params,
+    verbose_function = getRoBMAVerbose,
+    data,
+    verbose = adj_params$robma_verbose,
+    robma_params
+  )
+  # Export
+  if (user_params$export_results){
+     exportTable(robma_res$Components, user_params, "robma_components")
+     exportTable(robma_res$Estimates, user_params, "robma_estimates")
   }
 }
