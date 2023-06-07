@@ -22,19 +22,20 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
     "box_plot" = F,
-    "funnel_plot" = T,
+    "funnel_plot" = F,
     "t_stat_histogram" = F,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
     "bma" = F,
     "fma" = F, # Executable only after running BMA
     "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F # Executable only after running BMA
+    "bpe" = F, # Executable only after running BMA
+    "robma" = T # Computationally expensive
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -53,15 +54,15 @@ user_params <- list(
     t_stat = "t_stat", # T-statistic (optional)
     n_obs = "n_obs", # Number of observations associated with the estimate
     study_size = "study_size", # Number of estimates reported per study (optional)
-    reg_df = NA, # Degrees of Freedom in the regression (optional)
+    reg_df = "reg_df", # Degrees of Freedom in the regression (optional)
     precision = NA # A measure of precision (optional) - handle during winsorization
   ),
   
   # USER PARAMETERS
   # Adjust the parameters by modifying the numbers, or boolean values
   # Note:
-  #  Do NOT change the variable names (apart from when adding new Box plot factors),
-  #    the names of vectors, or value types (character, integer, vector...)
+  #  Do NOT change the variable names, the names of vectors,
+  #  or value types (character, integer, vector...) (apart from when specified explicitly)
   adjustable_parameters = list(
     # Effect name
     "effect_name" = "years of schooling on wage", # A verbose name of what the effect represents
@@ -96,7 +97,10 @@ user_params <- list(
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
     "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
     # P-uniform paramteres
+    "puni_side" = "right", # puni_star side argument
     "puni_method" = "ML", # Method used for p-uniform calculation - one of "ML", "P"
+    "puni_alpha" = 0.05, # puni_star alpha argument
+    "puni_controls" = list(max.iter=1000,tol=0.1,reps=10000, int=c(-5,25), est.ci = c(-10,10), verbose=TRUE), # puni_star controls
     # Caliper test parameters
     "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
     "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
@@ -112,7 +116,7 @@ user_params <- list(
     "maive_method" = 3, # 3 = PET-PEESE
     "maive_weight" = 0, # 0 = no weights
     "maive_instrument" = 1, # 1 = Yes (instrument SEs)
-    "maive_studylevel" = 2, # 2 = cluster-robust SEs
+    "maive_studylevel" = 0, # 0 = No study-level correlation
     "maive_verbose" = TRUE,
     # Bayesian Model Averaging parameters
     "automatic_bma" = TRUE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
@@ -123,7 +127,7 @@ user_params <- list(
     "bma_mprior" = "dilut", # Model Prior
     "bma_nmodel" = 20000, # Number of models (def 50000)
     "bma_mcmc" = "bd", # Markov Chain Monte Carlo
-    "bma_print_results" = "all", # Print raw results - one of c("none", "fast", "verbose", "all")
+    "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters
@@ -142,7 +146,11 @@ user_params <- list(
     "bpe_study_info" = TRUE, # If TRUE, print out information about individual studies being estimated
     "bpe_result_table_verbose" = TRUE, # If TRUE, print out the table into the console
     "bpe_econ_sig_large_pip_only" = TRUE, # If TRUE, display econ. significance for variables with PIP >= 0.5
-    "bpe_econ_sig_verbose" = TRUE # If TRUE, print out the economic significance table into the console
+    "bpe_econ_sig_verbose" = TRUE, # If TRUE, print out the economic significance table into the console
+    # Robust Bayesian Model Averaging parameters - do not pass nested lists, priors etc.
+    "robma_verbose" = TRUE,
+    "robma_param_priors_bias" = NULL,
+    "robma_param_parallel" = TRUE
   ),
   
   # FOLDER PATHS
@@ -178,7 +186,9 @@ user_params <- list(
     "ma" = "Model averaging",
     "ma_variables_description_table" = "Model averaging description table",
     "bpe_res" = "Best practice estimate",
-    "bpe_econ_sig" = "Economic significance"
+    "bpe_econ_sig" = "Economic significance",
+    "robma_components" = "RoBMA components",
+    "robma_estimates" = "RoBMA estimates"
   ),
   export_log_file_path = "numeric_results.txt", # Console log as a text file
   export_html_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files

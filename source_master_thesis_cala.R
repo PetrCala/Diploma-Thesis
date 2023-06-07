@@ -115,43 +115,32 @@ validateFiles <- function(files){
 #' Extract multiple parameters from a vector dictionary
 #' 
 #' Input the adjustable parameters list and the name of the parameter to extract
-#' the values for. Extract all the values of that parameters and return the vector of the values
-#' 
-#' @details The reason for having this function is that if the user inputs multiple
-#' values into the list in R, the language assigns each value its unique
-#' key, as it can not store a nested element. RRRRRRRR
+#' the values for. Extract all the values of that parameters and return the vector of the values.
+#' In case the list itself should be extracted, set "extract_list" to TRUE.
 #' 
 #' @param adj_params [list] The list with adjustable parameters.
-#' @param desired_param [character] The name of the parameter for which to extract
-#' the values for
+#' @param prefix [character] The prefix for which to extract the values for. Note that the 
+#'  parameters names MUST START with this prefix.
+#' @param extract_list [logical] If TRUE, extract the whole list instead. Deafults to FALSE.
+#' @param drop_prefix [logical] If TRUE, extract the list without the prefix. Defaults to FALSE.
 #' @return Vector of values.
-getMultipleParams <- function(adj_params, desired_param){
+getMultipleParams <- function(adj_params, prefix, extract_list = FALSE, drop_prefix = FALSE){
   # Validate input
   stopifnot(
     is.list(adj_params),
-    is.character(desired_param)
+    is.character(prefix),
+    is.logical(extract_list)
   )
-  res <- list()
-  # Parameter in parameter list
-  if (desired_param %in% names(adj_params)){
-    val <- adj_params[[desired_param]]
-    res <- append(res, val)
-  } else {
-    # More values or no value
-    keep_going <- T
-    i <- 1
-    while (keep_going){
-      new_key <- paste0(desired_param,as.character(i))
-      if (new_key %in% names(adj_params)) {
-        val <- adj_params[[new_key]]
-        res <- append(res, val)
-        i <- i + 1
-      } else {
-        keep_going <- F
-      }
+  # Extract the list
+  param_list <- adj_params[grep(paste0("^", prefix), names(adj_params))]
+  if (extract_list){
+    if (drop_prefix){
+      param_list <- setNames(param_list, sub(paste0("^", prefix), "", names(param_list))) # No prefixes
     }
+    return(param_list)
   }
-  return(res)
+  value_vector <- as.vector(unlist(param_list)) # Values instead
+  return(value_vector)
 }
 
 
@@ -569,7 +558,12 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
       stop("This script does not allow for ANY missing values. Make sure you have called the data preprocessing function.")
     }
   }
-  ### Column names validation
+  # Verify that all studies are unique
+  runs <- rle(as.character(input_data$study_name)) # Study names in chunks
+  if (length(runs$values) != length(unique(runs$values))) {
+    stop("Each study must appear only once in the data and in one continuous chunk.")
+  }
+  ## Column names validation
   valid_col_pattern <- "^[a-zA-Z0-9._]+$"
   # Check if all column names match the pattern
   valid_column_names <- sapply(colnames(input_data), function(x) grepl(valid_col_pattern, x))
@@ -2459,8 +2453,7 @@ getMedians <- function(input_data, med_col){
 #' the Maximum Likelihood (ML) or Moments (P) method to estimate the publication bias.
 #'
 #' @param data [data.frame] A data frame containing the effects with their corresponding standard errors.
-#' @param method [str] A character string indicating which method to use to estimate publication bias.
-#' "ML" for Maximum Likelihood and "P" for Moments. Default is "ML".
+#' @inheritDotParams Parameters to pass to the main 'puni_star' call
 #'
 #' @return A vector containing the following four elements:
 #' \describe{
@@ -2470,38 +2463,44 @@ getMedians <- function(input_data, med_col){
 #' \item{Effect Beyond Bias}{A numeric value indicating the effect beyond bias estimate.}
 #' \item{Effect Standard Error}{A character string indicating the standard error of the effect beyond bias estimate.}
 #' }
-getPUniResults <- function(data, method="ML",...){
+getPUniResults <- function(data, ...){
+  # Unlist arguments
+  args <- list(...)
+  puni_side <- args$puni_side
+  puni_method <- args$puni_method
+  puni_alpha <- args$puni_alpha
+  puni_controls <- args$puni_controls
   # Validation
   stopifnot(
     is.data.frame(data),
-    is.character(method),
-    method %in% c("ML", "P") # Max likelihood, Moments
+    is.character(puni_side),
+    puni_method %in% c("ML", "P"), # Max likelihood, Moments
+    is.numeric(puni_alpha)
   )
   # Calculate medians for all studies
-  med_t <- getMedians(data, 't_stat') # T-stat vector of medians
-  med_nobs <- getMedians(data, 'n_obs') # N-obs vector of medians
+  med_yi <- getMedians(data, "effect")
+  med_ni <- getMedians(data, "study_size")
+  med_ses <- getMedians(data, "se")
+  med_sample_sizes <- getMedians(data, "n_obs")
+  med_sdi <- med_ses * sqrt(med_sample_sizes) # SD = SE * sqrt(sample_size)
   #Estimation
-  if (method == "ML"){
-    #Maximum likelihood
-    quiet(
-      est_main <- puni_star(tobs = med_t, ni = med_nobs, side = "right", method = "ML", alpha = 0.05,
-                             control=list(stval.tau=0.5, max.iter=1000,tol=0.1,reps=10000, int=c(0,2), verbose=TRUE))
+  quiet(
+    est_main <- puni_star(
+      yi = med_yi,
+      vi = med_sdi^2, # Squared sd
+      ni = med_ni,
+      alpha = puni_alpha,
+      side = puni_side,
+      method = puni_method,
+      control = puni_controls
     )
-  } else if (method == "P"){
-    # Moments method estimation
-    quiet(
-      est_main <- puni_star(tobs = med_t, ni = med_nobs, side = "right", method = "P",
-                          alpha = 0.05,control=list(stval.tau = 0.5, max.iter=1000, tol=0.05, reps=10000, int=c(-1,1), verbose=TRUE))
-    )
-  } else {
-    stop("Broken validity checks") # Should not happen
-  }
-  est_se <- (est_main$ci.ub - est_main$ci.lb) / (2*1.96) # Standard error of the estmiate
+  )
   # Extract and save coefficients - using a custom format for this method
-  est_effect_verbose <- round(est_main$est, 5) # Effect Beyond Bias
-  est_se_verbose <- paste0("(", round(est_se, 5), ")") # Effect Standard Error
-  est_pub_test_verbose <- paste0("L = ", round(est_main$L.0, 5)) # Test statistic of p-uni publication bias test
-  est_pub_p_val_verbose <- paste0("(p = ", round(est_main$pval.0, 5), ")") # P-value for the L test statistic
+  est_se <- (est_main$ci.ub - est_main$est) / 1.96 # Standard error of the estmiate
+  est_effect_verbose <- round(est_main$est, 3) # Effect Beyond Bias
+  est_se_verbose <- paste0("(", round(est_se, 3), ")") # Effect Standard Error
+  est_pub_test_verbose <- paste0("L = ", round(est_main$L.0, 3)) # Test statistic of p-uni publication bias test
+  est_pub_p_val_verbose <- paste0("(p = ", round(est_main$pval.0, 3), ")") # P-value for the L test statistic
   # Return as a vector
   p_uni_coefs_out <- c(
     est_pub_test_verbose,
@@ -2525,7 +2524,8 @@ getPUniResults <- function(data, method="ML",...){
 #' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
 #' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
 #' The results are then printed into the console and returned invisibly.
-getExoTests <- function(input_data, puni_method = "ML") {
+getExoTests <- function(input_data, puni_side = "right", puni_method = "ML",
+                        puni_alpha = 0.05, puni_controls = NA) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -2534,8 +2534,12 @@ getExoTests <- function(input_data, puni_method = "ML") {
   )
   # Get coefficients
   iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
-  p_uni_res <- getPUniResults(input_data, method = puni_method,
-                              effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  p_uni_res <- getPUniResults(input_data,
+                              puni_side = puni_side,
+                              puni_method = puni_method,
+                              puni_alpha = puni_alpha,
+                              puni_controls = puni_controls
+                              )
   # Combine the results into a data frame
   results <- data.frame(
     iv_df = iv_res,
@@ -2816,13 +2820,13 @@ getElliottResultsVerbose <- function(res, ...){
 #' @inheritDotParams Parameters for the extractExoCoefs function.
 #' 
 #' @import maive_master_thesis_cala.R
-getMaiveResults <- function(data, script_path, method = 3, weight = 0, instrument = 1, studylevel = 2, verbose = T, ...){
+getMaiveResults <- function(input_data, script_path, method = 3, weight = 0, instrument = 1, studylevel = 2, verbose = T, ...){
   # Read the source file
   source(script_path)
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
-    all(required_cols %in% names(data)),
+    all(required_cols %in% names(input_data)),
     is.character(script_path),
     method %in% c(1,2,3,4),
     weight %in% c(0,1,2),
@@ -2831,10 +2835,10 @@ getMaiveResults <- function(data, script_path, method = 3, weight = 0, instrumen
     is.logical(verbose)
   )
   # Subset data and rename columns
-  data <- data[,c("effect", "se", "n_obs", "study_id")]
-  colnames(data) <- c('bs', 'sebs', 'Ns', 'studyid')
+  input_data <- input_data[,c("effect", "se", "n_obs", "study_id")]
+  colnames(input_data) <- c('bs', 'sebs', 'Ns', 'studyid')
   # Run the estimation
-  MAIVE <- maive(dat=data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
+  MAIVE <- maive(dat=input_data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
   # Extract (and print) the output
   object<-c("MAIVE coefficient","MAIVE standard error","F-test of first step in IV",
             "Hausman-type test (use with caution)","Critical Value of Chi2(1)")
@@ -3842,6 +3846,64 @@ getEconomicSignificanceVerbose <- function(res,...){
     cat("\n\n")
   }
 }
+
+######################### ROBUST BAYESIAN MODEL AVERAGING #########################
+
+getRoBMA <- function(input_data, verbose, ...){
+  # Validate input
+  stopifnot(
+    is.data.frame(input_data),
+    is.logical(verbose)
+  )
+  # Handle arguments
+  fixed_params <- list(
+      y = input_data$effect,
+      se = input_data$se,
+      study_names = input_data$study_name,
+      priors_effect  = prior(
+        distribution = "cauchy",
+        parameters = list(location = 0, scale = 1/sqrt(2)),
+        truncation = list(0, Inf)),
+      priors_heterogeneity = prior(
+        distribution = "invgamma",
+        parameters = list(shape = 1, scale = 0.15))
+  )
+  all_params <- c(fixed_params, ...) # Vector of lists for the do.call
+  # Estimation
+  robma_est <- do.call(
+    RoBMA, # Function
+    all_params # Parameters
+  )
+  robma_out <- list(
+    summary(robma_est)$components,
+    summary(robma_est)$estimates
+  )
+  names(robma_out) <- c("Components","Estimates")
+  # Return the output
+  if (verbose) {
+    getRoBMAVerbose(robma_out, verbose = verbose)
+  }
+  return(robma_out)
+}
+
+#' Verbose output for the getRoBMA function
+getRoBMAVerbose <- function(res,...){
+  args <- list(...)
+  verbose_on <- args$verbose
+  robma_components <- res$Components
+  robma_estimates <- res$Estimates
+  # Print verbose output
+  if (verbose_on){
+    print("Robust Bayesian Model Averaging results:")
+    cat("\n")
+    print(robma_components)
+    cat("\n")
+    print(robma_estimates)
+    cat("\n\n")
+  }
+}
+
+
 ######################### CACHE HANDLING #########################
 
 #' Cache a function using the memoise package if so desired
