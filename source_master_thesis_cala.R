@@ -629,7 +629,28 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   }
   
   # Validate that all perc variables sum up to 1
-  # TO-DO
+  perc_groups <- unique(as.vector(unlist(input_var_list[input_var_list$data_type == "perc", "group_category"])))
+  for (group in perc_groups){
+    group_var_names <- as.vector(unlist(input_var_list[input_var_list$group_category == group, "var_name"]))
+    data_to_validate <- input_data[,group_var_names] # Only columns of the relevant percentage group
+    row_sums <- rowSums(data_to_validate)
+    # Check if all sums are equal to 1
+    rows_equal_to_1 <- abs(row_sums - 1) < .Machine$double.eps^0.5 + 0.001 # Marginal error allowed
+    if (!all(rows_equal_to_1)){
+      problematic_rows <- which(!rows_equal_to_1)
+      message("All percentage groups must some up to 1.")
+      message("These variables do not fulfill that:")
+      message(paste(group_var_names, "\n"))
+      message("at rows:")
+      message(paste(head(problematic_rows), "\n"))
+      if (length(problematic_rows) > 6){
+        message(paste("and",length(problematic_rows) - 6,"other rows."))
+      }
+      message("One of the following values is generated during interpolation, and one is the actually faulty data point:")
+      message(paste(as.character(unique(row_sums)), "\n"))
+      stop("Incorrect percentage group values")
+    }
+  }
   
   ### Data type validation
   for (row in 1:nrow(input_var_list)) {

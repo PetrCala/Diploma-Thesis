@@ -22,8 +22,8 @@ if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi'
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
     "box_plot" = F,
     "funnel_plot" = F,
     "t_stat_histogram" = F,
@@ -35,7 +35,7 @@ user_params <- list(
     "fma" = F, # Executable only after running BMA
     "ma_variables_description_table" = F, # Executable only after running BMA
     "bpe" = F, # Executable only after running BMA
-    "robma" = T # Computationally expensive
+    "robma" = F # Computationally expensive
   ),
   
   # CUSTOMIZABLE FILE NAMES

@@ -177,11 +177,14 @@ data <- runCachedFunction(
 )
 
 # Validate the data types, correct values, etc. VERY restrictive. No missing values allowed until explicitly set.
-data <- runCachedFunction(
-  validateData, user_params,
-  verbose_function = validateDataVerbose,
+data <- validateData(
   data, var_list
-)
+  )
+# data <- runCachedFunction(
+#   validateData, user_params,
+#   verbose_function = validateDataVerbose,
+#   data, var_list
+# )
 
 # Rename source columns to fit the script expected colnames
 renamed_list <- runCachedFunction(
