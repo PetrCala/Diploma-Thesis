@@ -1,6 +1,6 @@
 run_this:
-  variable_summary_stats: no
-  effect_summary_stats: no
+  variable_summary_stats: yes
+  effect_summary_stats: yes
   box_plot: no
   funnel_plot: no
   t_stat_histogram: no
@@ -12,7 +12,7 @@ run_this:
   fma: no
   ma_variables_description_table: no
   bpe: no
-  robma: yes
+  robma: no
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
