@@ -1961,7 +1961,7 @@ getLinearTestsVerbose <- function(res, ...){
 #' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
 #'  standard errors as strings wrapped in parentheses. Defaults to T.
 #' @return [vector] - Vector of len 4, with the coefficients
-extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbose_coefs=T){
+extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbose_coefs=T, ...){
   # Extract coefficients
   effect_coef <- round(as.numeric(nonlinear_object[1,1]), 3)
   effect_se <- round(as.numeric(nonlinear_object[1,2]), 3)
@@ -2127,9 +2127,18 @@ getSelectionResults <- function(data, script_path, cutoffs = c(1.960),
   # Extract winsorized estimates, standard errors
   sel_X <- data$effect # Effect - Winsorized
   sel_sigma <- data$se # SE - Winsorized
-  
-  # Estimation
-  estimates <- metastudies_estimation(sel_X, sel_sigma, cutoffs, symmetric, model = modelmu)
+  # Handle argument
+  all_params <- list(
+    X = sel_X,
+    sigma = sel_sigma,
+    cutoffs = cutoffs,
+    symmetric = symmetric,
+    model = modelmu
+  )
+  estimates <- do.call(
+    metastudies_estimation,
+    all_params
+  )
   # Extract coefficients
   estimates_psi <- estimates$Psihat
   estimates_se <- estimates$SE
@@ -2195,7 +2204,7 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @param script_paths List of paths to all source scripts.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
-getNonlinearTests <- function(input_data, script_paths) {
+getNonlinearTests <- function(input_data, script_paths, selection_params = NULL) {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -2209,12 +2218,21 @@ getNonlinearTests <- function(input_data, script_paths) {
   stem_script_path <- script_paths$stem
   selection_script_path <- script_paths$selection
   endo_script_path <- script_paths$endo
+  # Get parameters
+  all_selection_params <- c(
+    list(
+      data = input_data,
+      script_path = selection_script_path
+    ),
+    selection_params,
+    list(pub_bias_present = T, verbose_coefs = T)
+  )
   # Get coefficients
   waap_res <- getWaapResults(input_data, pub_bias_present = F, verbose_coefs = T)
   top10_res <- getTop10Results(input_data, pub_bias_present = F, verbose_coefs = T)
   stem_res <- getStemResults(input_data, stem_script_path, pub_bias_present = F, verbose_coefs = T)
   hier_res <- getHierResults(input_data, pub_bias_present = T, verbose_coefs = T)
-  sel_res <- getSelectionResults(input_data, selection_script_path, pub_bias_present = T, verbose_coefs = T)
+  sel_res <- do.call(getSelectionResults, all_selection_params)
   endo_kink_res <- getEndoKinkResults(input_data, endo_script_path, pub_bias_present = T, verbose_coefs = T)
   
   # Combine the results into a data frame
@@ -2485,18 +2503,9 @@ getMedians <- function(input_data, med_col){
 #' \item{Effect Standard Error}{A character string indicating the standard error of the effect beyond bias estimate.}
 #' }
 getPUniResults <- function(data, ...){
-  # Unlist arguments
-  args <- list(...)
-  puni_side <- args$puni_side
-  puni_method <- args$puni_method
-  puni_alpha <- args$puni_alpha
-  puni_controls <- args$puni_controls
   # Validation
   stopifnot(
-    is.data.frame(data),
-    is.character(puni_side),
-    puni_method %in% c("ML", "P"), # Max likelihood, Moments
-    is.numeric(puni_alpha)
+    is.data.frame(data)
   )
   # Calculate medians for all studies
   med_yi <- getMedians(data, "effect")
@@ -2504,16 +2513,20 @@ getPUniResults <- function(data, ...){
   med_ses <- getMedians(data, "se")
   med_sample_sizes <- getMedians(data, "n_obs")
   med_sdi <- med_ses * sqrt(med_sample_sizes) # SD = SE * sqrt(sample_size)
-  #Estimation
-  quiet(
-    est_main <- puni_star(
+  # Get parameters
+  all_params <- c(
+    list(
       yi = med_yi,
       vi = med_sdi^2, # Squared sd
-      ni = med_ni,
-      alpha = puni_alpha,
-      side = puni_side,
-      method = puni_method,
-      control = puni_controls
+      ni = med_ni
+    ),
+    list(...)
+  )
+  #Estimation
+  quiet(
+    est_main <- do.call(
+      puni_star,
+      all_params
     )
   )
   # Extract and save coefficients - using a custom format for this method
@@ -2538,6 +2551,7 @@ getPUniResults <- function(data, ...){
 #'
 #' @param input_data [data.frame] A data frame containing the necessary columns: "effect", "se", "study_id", "study_size", and "precision".
 #' @param puni_method [character] Method to be used for p-uniform calculation. One of "ML", "P". Defaults to "ML".
+#' @param puni_params [list] Aruments to be used in p-uniform.
 #' @return A data frame with the results of the three tests for publication bias and exogeneity in IV analyses using clustered data.
 #'
 #' @details This function first validates that the necessary columns are present in the input data frame.
@@ -2545,22 +2559,23 @@ getPUniResults <- function(data, ...){
 #' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
 #' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
 #' The results are then printed into the console and returned invisibly.
-getExoTests <- function(input_data, puni_side = "right", puni_method = "ML",
-                        puni_alpha = 0.05, puni_controls = NA) {
+getExoTests <- function(input_data, puni_params) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     all(required_cols %in% names(input_data))
   )
+  # Get arguments
+  all_puni_params <- c(
+    list(
+      data = input_data
+    ),
+    puni_params
+  )
   # Get coefficients
   iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
-  p_uni_res <- getPUniResults(input_data,
-                              puni_side = puni_side,
-                              puni_method = puni_method,
-                              puni_alpha = puni_alpha,
-                              puni_controls = puni_controls
-                              )
+  p_uni_res <- do.call(getPUniResults, all_puni_params)
   # Combine the results into a data frame
   results <- data.frame(
     iv_df = iv_res,
@@ -3170,11 +3185,11 @@ getBMAData <- function(input_data, input_var_list, variable_info, from_vector = 
 #' return the BMA model without printing any results.
 #' 
 #' @param bma_data [data.frame] The data for BMA. "effect" must be in the first column.
-#' @inheritDotParams Parameters to be used inside the "bms" function. These are:
+#' @param bma_params [list] Parameters to be used inside the "bms" function. These are:
 #' burn, iter, g, mprior, nmodel, mcmc
 #' For more info see the "bms" function documentation.
 #' @return The bma model
-runBMA <- function(bma_data, ...){
+runBMA <- function(bma_data, bma_params){
   # Input validation
   stopifnot(
     is.data.frame(bma_data),
@@ -3182,10 +3197,17 @@ runBMA <- function(bma_data, ...){
     all(sapply(bma_data,is.numeric)), # Only numeric obs
     colnames(bma_data[,1]) == "effect"
   )
+  # Get parameters
+  all_bma_params <- c(
+    list(
+      bma_data
+    ),
+    bma_params
+  )
   # Actual estimation with inhereted parameters
   runBMAVerbose()
   quiet(
-    bma_model <- bms(bma_data, ...)
+    bma_model <- do.call(bms, all_bma_params)
   )
   return(bma_model)
 }
