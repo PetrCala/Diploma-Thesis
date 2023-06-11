@@ -12,6 +12,7 @@ run_this:
   fma: yes
   ma_variables_description_table: yes
   bpe: yes
+  robma: no
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
@@ -24,7 +25,7 @@ required_cols:
   t_stat: t_stat
   n_obs: n_obs
   study_size: study_size
-  reg_df: .na
+  reg_df: reg_df
   precision: .na
 adjustable_parameters:
   effect_name: years of schooling on wage
@@ -32,7 +33,7 @@ adjustable_parameters:
   data_subset_condition_1: .na
   data_subset_condition_2: ability_uncontrolled == 1
   data_winsorization_level: 0.01
-  data_precision_type: DoF
+  data_precision_type: 1/SE
   winsorize_precision: yes
   allowed_missing_ratio: 0.7
   effect_summary_stats_conf_level: 0.95
@@ -45,7 +46,23 @@ adjustable_parameters:
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
   t_hist_upper_cutoff: 120.0
-  puni_method: ML
+  non_linear_param_selection_cutoffs: 1.96
+  non_linear_param_selection_symmetric: no
+  non_linear_param_selection_modelmu: normal
+  puni_param_side: right
+  puni_param_method: ML
+  puni_param_alpha: 0.05
+  puni_param_control:
+    max.iter: 1000.0
+    tol: 0.1
+    reps: 10000.0
+    int:
+    - -5.0
+    - 25.0
+    est.ci:
+    - -10.0
+    - 10.0
+    verbose: yes
   caliper_thresholds:
   - 1.645
   - 1.96
@@ -64,31 +81,34 @@ adjustable_parameters:
   maive_method: 3.0
   maive_weight: 0.0
   maive_instrument: 1.0
-  maive_studylevel: 2.0
+  maive_studylevel: 0.0
   maive_verbose: yes
   automatic_bma: yes
   bma_verbose: no
-  bma_burn: 10000.0
-  bma_iter: 30000.0
-  bma_g: UIP
-  bma_mprior: dilut
-  bma_nmodel: 20000.0
-  bma_mcmc: bd
   bma_print_results: all
+  bma_param_burn: 10000.0
+  bma_param_iter: 30000.0
+  bma_param_g: UIP
+  bma_param_mprior: dilut
+  bma_param_nmodel: 20000.0
+  bma_param_mcmc: bd
   fma_verbose: no
   ma_results_table: yes
   ma_variables_description_table_verbose: no
   ma_variables_description_table_clip: no
   bpe_studies:
   - 0.0
+  - 1.0
   - 2.0
-  - 112.0
-  - 7.0
+  - 3.0
   bpe_use_ci: yes
   bpe_study_info: yes
   bpe_result_table_verbose: yes
   bpe_econ_sig_large_pip_only: yes
   bpe_econ_sig_verbose: yes
+  robma_verbose: yes
+  robma_param_priors_bias: ~
+  robma_param_parallel: yes
 folder_paths:
   cache_folder: ./_cache/
   data_folder: ./data/
@@ -116,9 +136,11 @@ export_methods:
   ma_variables_description_table: Model averaging description table
   bpe_res: Best practice estimate
   bpe_econ_sig: Economic significance
+  robma_components: RoBMA components
+  robma_estimates: RoBMA estimates
 export_log_file_path: numeric_results.txt
 export_html_graphs: yes
-theme: blue
+theme: green
 use_cache: yes
 cache_age: 3600.0
 development_on: no

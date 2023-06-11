@@ -63,8 +63,7 @@ Furthermore, the existence of all folders will be verified. Note that some do no
 
 ## Prerequisites:
  1. Make sure that your working directory contains all the files visible in the repository. Some temporary folders from the structure above may not exist yet - these will be automatically created during the script run. 
- 2. The scripts are set in a way that recognizes the file names just as they are distributed. However, if you wish to customize the file names, you may do so from within the `script_runner_master_thesis_cala.R`, or by modifying the `user_parameters.yaml` file. Know that every run of the script runner will automatically modify the contents of the user parameters
- file, so I suggest you modify the parameters directly within the script. However, **do not to modify the names of the user parameter file and the script runner**! These are immutable.
+ 2. Open the `script_runner_master_thesis_cala.R` file and find the `user_params` object. Within this object, **without modifying the names of the sub-objects**, change the values as you see fit. Most importantly, find the `CUSOMIZABLE FILE NAMES` section and modify the file names to refer your new files. Make sure to keep the `.csv` suffix. As of the current version, the script recognizes only `.csv` files as valid input. Also make sure, that the rest of the `user_params` values is set in accordance to the requirements outlined in the **Prerequisites** section. Also, parameters used for calling external functions are marked with the "param_" prefix within their name (see parameters for BMA, non-linear tests,...). Make sure to keep this convention when adding new such parameters.
  3. Try to eliminate as many missing values in your data frame as you can.
     The script will automatically use interpolation for missing data, so that model averaging
     can run, but in case of many missing values, the results may be unstable.

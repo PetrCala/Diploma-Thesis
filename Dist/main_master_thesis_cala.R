@@ -320,43 +320,16 @@ if (run_this$nonlinear_tests){
                                  selection=selection_script_path,
                                  endo=endo_script_path)
   # Parameters
-  global_non_lin_res <- T # Set to false if tests should be ran separately
+  selection_params <- getMultipleParams(adj_params, "non_linear_param_selection_",T,T)
   # Estimation
-  if (!global_non_lin_res) {
-    ###### PUBLICATION BIAS - WAAP (Ioannidis et al., 2017) ######
-    waap_results<- getWaapResults(data, pub_bias_present = F, verbose_coefs = T)
-    
-    ###### PUBLICATION BIAS - TOP10 method (Stanley et al., 2010) ######
-    top10_results <- getTop10Results(data, pub_bias_present = F, verbose_coefs= T)
-    
-    ###### PUBLICATION BIAS - Stem-based method in R (Furukawa, 2019) #####
-    stem_results <- getStemResults(data,
-                                   script_path = stem_script_path,
-                                   pub_bias_present = F, verbose_coefs= T)
-    
-    ###### PUBLICATION BIAS - FAT-PET hierarchical in R ######
-    hier_results <- getHierResults(data, pub_bias_present = T, verbose_coefs= T)
-    
-    ###### PUBLICATION BIAS - Selection model (Andrews & Kasy, 2019) ######
-    selection_results <- getSelectionResults(data, 
-                                             script_path = selection_script_path,
-                                             cutoffs = c(1.960), symmetric = F, modelmu = "normal",
-                                             pub_bias_present = T, verbose_coefs = T)
-    
-    ###### PUBLICATION BIAS - Endogenous kink (Bom & Rachinger, 2020) ######
-    endo_kink_results <- getEndoKinkResults(data,
-                                            script_path = endo_script_path,
-                                            pub_bias_present = T, verbose_coefs = T)
-  } else {
-    # Get all results at once without assigning the output to any variables - unparametrizable
-    nonlinear_tests_results <- runCachedFunction(
-      getNonlinearTests, user_params, 
-      verbose_function = getNonlinearTestsVerbose,
-      data, script_paths = nonlinear_script_paths
-    )
-    if (user_params$export_results){
-      exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
-    }
+  nonlinear_tests_results <- runCachedFunction(
+    getNonlinearTests, user_params, 
+    verbose_function = getNonlinearTestsVerbose,
+    data, script_paths = nonlinear_script_paths,
+    selection_params = selection_params
+  )
+  if (user_params$export_results){
+    exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
   }
 }
 
@@ -366,39 +339,21 @@ if (run_this$nonlinear_tests){
 
 if (run_this$exo_tests){
   # Parameters
-  global_exo_tests <- T # Set to false if tests should be ran separately
+  puni_params <- getMultipleParams(adj_params, "puni_param_",T,T)
   # Estimation
-  if (!global_exo_tests) {
-    ###### PUBLICATION BIAS - FAT-PET with IV ######
-    iv_results <- getIVResults(data,
-                               effect_present = T, pub_bias_present = T, verbose_coefs = T)
-    
-    p_uni_results <- getPUniResults(data,
-                                    puni_side = adj_params$puni_side,
-                                    puni_method = adj_params$puni_method,
-                                    puni_alpha = adj_params$puni_alpha,
-                                    puni_controls = adj_params$puni_controls
-                                    )
-    
-  } else{
-    exo_tests_results <- runCachedFunction(
-      getExoTests, user_params,
-      verbose_function = getExoTestsVerbose,
-      data,
-      puni_side = adj_params$puni_side,
-      puni_method = adj_params$puni_method,
-      puni_alpha = adj_params$puni_alpha,
-      puni_controls = adj_params$puni_controls
-    )
-    if (user_params$export_results){
-      exportTable(exo_tests_results, user_params, "exo_tests")
-    }
+  exo_tests_results <- runCachedFunction(
+    getExoTests, user_params,
+    verbose_function = getExoTestsVerbose,
+    data,
+    puni_params
+  )
+  if (user_params$export_results){
+    exportTable(exo_tests_results, user_params, "exo_tests")
   }
 }
 
 
 ######################### P-HACKING TESTS #########################
-
 if (run_this$p_hacking_tests){
   ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
   caliper_results <- runCachedFunction(
@@ -447,6 +402,7 @@ if (run_this$p_hacking_tests){
 ######################### MODEL AVERAGING #########################
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
+
 if (run_this$bma){
   if (adj_params$automatic_bma){
     # Get the optimal BMA formula automatically
@@ -475,16 +431,12 @@ if (run_this$bma){
     verbose_function = nullVerboseFunction, # No verbose output
     data, var_list, bma_vars
   )
+  bma_params <- getMultipleParams(adj_params, "bma_param_",T,T)
   bma_model <- runCachedFunction(
     runBMA, user_params,
     verbose_function = runBMAVerbose,
     bma_data,
-    burn=adj_params$bma_burn,
-    iter=adj_params$bma_iter,
-    g=adj_params$bma_g, # UIP, BRIC, HQ
-    mprior=adj_params$bma_mprior, # uniform, random
-    nmodel=adj_params$bma_nmodel,
-    mcmc=adj_params$bma_mcmc
+    bma_params = bma_params
   )
   # Print out the results
   bma_coefs <- runCachedFunction(
@@ -584,7 +536,7 @@ if (run_this$bpe){
 
 # Source:  https://github.com/FBartos/RoBMA
 if (run_this$robma){
-  robma_params <- getMultipleParams(adj_params, "robma_param_", extract_list = T, drop_prefix = T)
+  robma_params <- getMultipleParams(adj_params, "robma_param_",T,T)
   robma_res <- runCachedFunction(
     getRoBMA, user_params,
     verbose_function = getRoBMAVerbose,

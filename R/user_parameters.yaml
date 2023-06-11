@@ -1,17 +1,17 @@
 run_this:
   variable_summary_stats: yes
   effect_summary_stats: yes
-  box_plot: no
-  funnel_plot: no
-  t_stat_histogram: no
-  linear_tests: no
-  nonlinear_tests: no
-  exo_tests: no
-  p_hacking_tests: no
-  bma: no
-  fma: no
-  ma_variables_description_table: no
-  bpe: no
+  box_plot: yes
+  funnel_plot: yes
+  t_stat_histogram: yes
+  linear_tests: yes
+  nonlinear_tests: yes
+  exo_tests: yes
+  p_hacking_tests: yes
+  bma: yes
+  fma: yes
+  ma_variables_description_table: yes
+  bpe: yes
   robma: no
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
@@ -46,10 +46,13 @@ adjustable_parameters:
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
   t_hist_upper_cutoff: 120.0
-  puni_side: right
-  puni_method: ML
-  puni_alpha: 0.05
-  puni_controls:
+  non_linear_param_selection_cutoffs: 1.96
+  non_linear_param_selection_symmetric: no
+  non_linear_param_selection_modelmu: normal
+  puni_param_side: right
+  puni_param_method: ML
+  puni_param_alpha: 0.05
+  puni_param_control:
     max.iter: 1000.0
     tol: 0.1
     reps: 10000.0
@@ -82,13 +85,13 @@ adjustable_parameters:
   maive_verbose: yes
   automatic_bma: yes
   bma_verbose: no
-  bma_burn: 10000.0
-  bma_iter: 30000.0
-  bma_g: UIP
-  bma_mprior: dilut
-  bma_nmodel: 20000.0
-  bma_mcmc: bd
   bma_print_results: none
+  bma_param_burn: 10000.0
+  bma_param_iter: 30000.0
+  bma_param_g: UIP
+  bma_param_mprior: dilut
+  bma_param_nmodel: 20000.0
+  bma_param_mcmc: bd
   fma_verbose: no
   ma_results_table: yes
   ma_variables_description_table_verbose: no

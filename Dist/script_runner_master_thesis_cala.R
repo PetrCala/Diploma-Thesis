@@ -24,17 +24,17 @@ user_params <- list(
   run_this = list(
     "variable_summary_stats" = T,
     "effect_summary_stats" = T,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
-    "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F, # Executable only after running BMA
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "bpe" = T, # Executable only after running BMA
     "robma" = F # Computationally expensive
   ),
   
@@ -96,11 +96,15 @@ user_params <- list(
     # T-statistic histogram parameters
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
     "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
+    # Nonlinear parameters - only selection model parametrizable
+    "non_linear_param_selection_cutoffs" = c(1.960),
+    "non_linear_param_selection_symmetric" = F,
+    "non_linear_param_selection_modelmu" = "normal",
     # P-uniform paramteres
-    "puni_side" = "right", # puni_star side argument
-    "puni_method" = "ML", # Method used for p-uniform calculation - one of "ML", "P"
-    "puni_alpha" = 0.05, # puni_star alpha argument
-    "puni_controls" = list(max.iter=1000,tol=0.1,reps=10000, int=c(-5,25), est.ci = c(-10,10), verbose=TRUE), # puni_star controls
+    "puni_param_side" = "right", # puni_star side argument
+    "puni_param_method" = "ML", # Method used for p-uniform calculation - one of "ML", "P"
+    "puni_param_alpha" = 0.05, # puni_star alpha argument
+    "puni_param_control" = list(max.iter=1000,tol=0.1,reps=10000, int=c(-5,25), est.ci = c(-10,10), verbose=TRUE), # puni_star controls
     # Caliper test parameters
     "caliper_thresholds" = c(1.645, 1.96, 2.58), # Caliper thresholds - keep as vector
     "caliper_widths" = c(0.05, 0.1, 0.2), # Caliper widths - keep as vector
@@ -121,13 +125,13 @@ user_params <- list(
     # Bayesian Model Averaging parameters
     "automatic_bma" = TRUE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
     "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
-    "bma_burn" = 1e4, # Burn-ins (def 1e5)
-    "bma_iter" = 3e4, # Draws (def 3e5)
-    "bma_g" = "UIP", # g-Prior
-    "bma_mprior" = "dilut", # Model Prior
-    "bma_nmodel" = 20000, # Number of models (def 50000)
-    "bma_mcmc" = "bd", # Markov Chain Monte Carlo
     "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
+    "bma_param_burn" = 1e4, # Burn-ins (def 1e5)
+    "bma_param_iter" = 3e4, # Draws (def 3e5)
+    "bma_param_g" = "UIP", # g-Prior
+    "bma_param_mprior" = "dilut", # Model Prior
+    "bma_param_nmodel" = 20000, # Number of models (def 50000)
+    "bma_param_mcmc" = "bd", # Markov Chain Monte Carlo
     # Frequentist Model Averaging parameters
     "fma_verbose" = FALSE, # If TRUE, print out the raw results of FMA into the console
     # Model averaging parameters
