@@ -84,8 +84,8 @@ adjustable_parameters:
   maive_studylevel: 0.0
   maive_verbose: yes
   automatic_bma: no
-  bma_verbose: yes
-  bma_print_results: all
+  bma_verbose: no
+  bma_print_results: none
   bma_param_burn: 10000.0
   bma_param_iter: 30000.0
   bma_param_g: UIP
