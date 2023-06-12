@@ -243,7 +243,7 @@ if (run_this$box_plot){
       data,
       max_boxes = adj_params$box_plot_max_boxes,
       verbose_on = adj_params$box_plot_verbose,
-      export_html = user_params$export_html_graphs,
+      export_html = user_params$export_graphs,
       output_folder = folder_paths$graphics_folder,
       factor_by = factor_name,
       effect_name = adj_params$effect_name,
@@ -266,7 +266,7 @@ if (run_this$funnel_plot){
         use_study_medians = use_medians,
         theme = user_params$theme,
         verbose = adj_params$funnel_verbose,
-        export_html = user_params$export_html_graphs,
+        export_html = user_params$export_graphs,
         output_path = graph_name
       )
     )
@@ -290,7 +290,7 @@ if (run_this$t_stat_histogram){
     upper_cutoff = adj_params$t_hist_upper_cutoff,
     theme = user_params$theme,
     verbose = TRUE, # Print into console
-    export_html = user_params$export_html_graphs,
+    export_html = user_params$export_graphs,
     output_path = t_hist_path
   )
 }
@@ -312,6 +312,8 @@ if (run_this$linear_tests){
 
 ######################### NON-LINEAR TESTS ######################### 
 
+stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
+stem_res <- getStemResults(data, stem_script_path, print_plot = T, export_plot = T, pub_bias_present = F, verbose_coefs = T)
 if (run_this$nonlinear_tests){
   # Extract source script paths
   stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
@@ -327,7 +329,9 @@ if (run_this$nonlinear_tests){
     getNonlinearTests, user_params, 
     verbose_function = getNonlinearTestsVerbose,
     data, script_paths = nonlinear_script_paths,
-    selection_params = selection_params
+    selection_params = selection_params,
+    export_graphs = user_params$export_graphs,
+    export_path = folder_paths$export_folder
   )
   if (user_params$export_results){
     exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
@@ -441,20 +445,15 @@ if (run_this$bma){
     bma_params = bma_params
   )
   # Print out the results
-  # bma_coefs <- runcachedfunction(
-  #   extractBMAResults, user_params,
-  #   verbose_function = extractbmaresultsverbose,
-  #   bma_model, bma_data,
-  #   print_results = adj_params$bma_print_results,
-  #   export_graphs = user_params$export_html_graphs,
-  #   export_path = user_params$folder_paths$export_folder
-  # )
-}
-bma_coefs <-  extractBMAResults(
+  bma_coefs <- runCachedFunction(
+    extractBMAResults, user_params,
+    verbose_function = extractBMAResultsVerbose,
     bma_model, bma_data,
     print_results = adj_params$bma_print_results,
-    export_graphs = user_params$export_html_graphs
-)
+    export_graphs = user_params$export_graphs,
+    export_path = user_params$folder_paths$export_folder
+  )
+}
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
 

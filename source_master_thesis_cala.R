@@ -2057,6 +2057,9 @@ getTop10Results <- function(data, ...){
 #'
 #' @param data A data frame containing the necessary columns for the STEM-based method
 #' @param script_path Full path to the source script.
+#' @param print_plot If TRUE, print out the STEM plot.
+#' @param export_plot If TRUE, export the STEM plot.
+#' @param export_path Path to the export folder. Deafults to ./graphics.
 #' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
 #' for formatting the output.
 #'
@@ -2064,7 +2067,7 @@ getTop10Results <- function(data, ...){
 #' in the usual format.
 #' 
 #' @import stem_method_master_thesis_cala.R
-getStemResults <- function(data, script_path, ...){
+getStemResults <- function(data, script_path, print_plot = T, export_plot = T, export_path = "./graphics", ...){
   source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
@@ -2072,11 +2075,27 @@ getStemResults <- function(data, script_path, ...){
     10^3 # max_N_count - set maximum number of iteration before termination
   )
   
+  # Estimation
   est_stem <- stem(data$effect, data$se, stem_param)$estimates # Actual esimation
-  
+  # Stem plot
+  funnel_stem_call <- quote(
+    stem_funnel(data$effect, data$se, est_stem)
+  )
+  # Print and export the plot 
+  if (print_plot){
+    eval(funnel_stem_call)
+  }
+  if (export_plot){
+    stopifnot(is.character(export_path), length(export_path) > 0)
+    validateFolderExistence(export_path)
+    stem_path <- paste0(export_path, "/stem.png")
+    png(stem_path)
+    eval(funnel_stem_call)
+    dev.off()
+  }
   # Save results
   stem_coefs <- extractNonlinearCoefs(est_stem, ...)
-  invisible(stem_coefs)
+  return(stem_coefs)
 }
 
 
@@ -2241,8 +2260,11 @@ getEndoKinkResults <- function(data, script_path, ...){
 #'
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @param script_paths List of paths to all source scripts.
+#' @param export_graphs If TRUE, export various graphs into the graphics folder.
+#' @param export_path Path to the export folder. Defaults to ./graphics.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
-getNonlinearTests <- function(input_data, script_paths, selection_params = NULL) {
+getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
+                              export_graphs = T, export_path = './graphics') {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -2265,10 +2287,21 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL)
     selection_params,
     list(pub_bias_present = T, verbose_coefs = T)
   )
+  all_stem_params <- c(
+    list(
+      input_data,
+      stem_script_path,
+      print_plot = T,
+      export_plot = export_graphs,
+      export_path = export_path,
+      pub_bias_present = F,
+      verbose_coefs = T
+    )
+  )
   # Get coefficients
   waap_res <- getWaapResults(input_data, pub_bias_present = F, verbose_coefs = T)
   top10_res <- getTop10Results(input_data, pub_bias_present = F, verbose_coefs = T)
-  stem_res <- getStemResults(input_data, stem_script_path, pub_bias_present = F, verbose_coefs = T)
+  stem_res <- do.call(getStemResults, all_stem_params)
   hier_res <- getHierResults(input_data, pub_bias_present = T, verbose_coefs = T)
   sel_res <- do.call(getSelectionResults, all_selection_params)
   endo_kink_res <- getEndoKinkResults(input_data, endo_script_path, pub_bias_present = T, verbose_coefs = T)
@@ -3347,6 +3380,7 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
   }
   if (export_graphs){
     # Paths
+    validateFolderExistence(export_path)
     main_path <- paste0(export_path, "/bma_main.png")
     dist_path <- paste0(export_path, "/bma_dist.png")
     corrplot_path <- paste0(export_path, "/bma_corrplot.png")
