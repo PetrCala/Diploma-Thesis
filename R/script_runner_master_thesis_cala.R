@@ -195,7 +195,7 @@ user_params <- list(
     "robma_estimates" = "RoBMA estimates"
   ),
   export_log_file_path = "numeric_results.txt", # Console log as a text file
-  export_html_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
+  export_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
   theme = "green", # One of "blue", "yellow", "green", "red"
   
   # CACHE HANDLING

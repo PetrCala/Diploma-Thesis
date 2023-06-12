@@ -139,7 +139,7 @@ export_methods:
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
 export_log_file_path: numeric_results.txt
-export_html_graphs: yes
+export_graphs: yes
 theme: green
 use_cache: yes
 cache_age: 3600.0
