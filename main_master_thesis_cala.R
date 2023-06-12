@@ -415,10 +415,11 @@ if (run_this$bma){
     bma_formula <- bma_formula_list[[1]] # Also verbose information
   } else {
     # From the variable information instead
+    input_vars <- var_list$var_name[var_list$bma]
     bma_formula <- runCachedFunction(
       getBMAFormula, user_params,
       verbose_function = nullVerboseFunction, # No verbose output
-      var_list, input_data
+      input_vars, data
     )
   }
   # Run the Variance Inflation Test
