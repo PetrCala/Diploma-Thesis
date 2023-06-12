@@ -3286,15 +3286,20 @@ runBMAVerbose <- function(...){
 #'  * fast - print only those results that do not take time to print
 #'  * verbose - print all the fast results, plus extra information about the model
 #'  * all - print all results, plots included (takes a long time)
+#' @param export_grphs [logical] If TRUE, export the graphs into the graphics folder. Defaults to TRUE.
+#' @param export_path [character] Path to the export folder. Defaults to ./graphics.
 #'
 #' @return A numeric vector containing only the BMA coefficients.
-extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
+extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
+                              export_graphs = T, export_path = "./graphics"){
   # Validate the input
   stopifnot(
     class(bma_model) == "bma",
     is.data.frame(bma_data),
     is.character(print_results),
-    print_results %in% c("none", "fast", "verbose", "all", "table")
+    print_results %in% c("none", "fast", "verbose", "all", "table"),
+    is.logical(export_graphs),
+    is.character(export_path)
   )
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
@@ -3308,24 +3313,53 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
   } else if (print_results == "fast"){
     print(bma_coefs)
   }
-  # Print out plots (takes time)
-  if (print_results == "all"){
-    # Main BMA plots
-    print("Printing out Bayesian Model Averaging plots. This may take some time...")
-    image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
+  # Create plots for printing/export
+  if (any(print_results == "all", export_graphs == TRUE)){
+    # Main plot
+    main_plot_call <- quote(
+      image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
           do.axis=TRUE, xlab = "", main = "") # Takes time
-    plot(bma_model)
-    # Correlation matrix
+    )
+    # Model distribution
+    bma_dist_call <- quote(
+      plot(bma_model)
+    )
+    # Corrplot
     bma_col<- colorRampPalette(c("red", "white", "blue"))
     bma_matrix <- cor(bma_data)
-    corrplot.mixed(bma_matrix, lower = "number", upper = "circle",
-                   lower.col=bma_col(200), upper.col=bma_col(200),tl.pos = c("lt"),
-                   diag = c("u"), tl.col="black", tl.srt=70, tl.cex=0.55,
-                   number.cex = 0.5,cl.cex=0.8, cl.ratio=0.1) 
+    corrplot_mixed_call <- quote(
+      corrplot.mixed(bma_matrix, lower = "number", upper = "circle",
+                     lower.col=bma_col(200), upper.col=bma_col(200),tl.pos = c("lt"),
+                     diag = c("u"), tl.col="black", tl.srt=70, tl.cex=0.55,
+                     number.cex = 0.5,cl.cex=0.8, cl.ratio=0.1) 
+    )
+  }
+  # Print out plots (takes time)
+  if (print_results == "all"){
+    print("Printing out Bayesian Model Averaging plots. This may take some time...")
+    eval(main_plot_call)
+    eval(bma_dist_call)
+    eval(corrplot_mixed_call)
   }
   # Return coefficients only
   if (!print_results == "none"){
     cat("\n\n")
+  }
+  if (export_graphs){
+    # Paths
+    main_path <- paste0(export_path, "/bma_main.png")
+    dist_path <- paste0(export_path, "/bma_dist.png")
+    corrplot_path <- paste0(export_path, "/bma_corrplot.png")
+    # Main plot
+      # writePNG(eval(main_plot_call), main_path)
+    # Model distribution
+    # png(dist_path, width = 528, height = 506)
+    # eval(bma_dist_call)
+    # dev.off
+    # Corrplot
+    png(corrplot_path, width = 700, height = 669)
+    eval(corrplot_mixed_call)
+    dev.off()
   }
   return(bma_coefs)
 }

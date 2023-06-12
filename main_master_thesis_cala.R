@@ -60,6 +60,7 @@ packages <- c(
   "NlcOptim", # Elliott et al. (2022) - CoxShi
   "plm", # Random Effects, Between Effects
   "plotly", # Interactive plots
+  "png", # PNG plots
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
   "purrr", # Smart tables, study size
   "pracma", # MAIVE Estimator, Elliott et al. (2022)
@@ -440,13 +441,20 @@ if (run_this$bma){
     bma_params = bma_params
   )
   # Print out the results
-  bma_coefs <- runCachedFunction(
-    extractBMAResults, user_params,
-    verbose_function = extractBMAResultsVerbose,
-    bma_model, bma_data,
-    print_results = adj_params$bma_print_results
-  )
+  # bma_coefs <- runcachedfunction(
+  #   extractBMAResults, user_params,
+  #   verbose_function = extractbmaresultsverbose,
+  #   bma_model, bma_data,
+  #   print_results = adj_params$bma_print_results,
+  #   export_graphs = user_params$export_html_graphs,
+  #   export_path = user_params$folder_paths$export_folder
+  # )
 }
+bma_coefs <-  extractBMAResults(
+    bma_model, bma_data,
+    print_results = adj_params$bma_print_results,
+    export_graphs = user_params$export_html_graphs
+)
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
 
