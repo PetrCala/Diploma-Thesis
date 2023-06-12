@@ -581,6 +581,44 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
     message(duplicated_col)
     stop("Duplicate columns.")
   }
+  # Validate that no columns are static
+  constant_columns <- apply(input_data, 2, function(col){length(unique(col)) == 1}) # Boolean vector with names
+  if (any(constant_columns)){
+    message("There are constant columns in your data. Make sure to remove these first.")
+    message("These columns have constant values:")
+    message(paste(colnames(input_data)[constant_columns]), sep = "\n")
+    stop("Constant columns.")
+  }
+  ### Correlation validation
+  cor_matrix <- cor(data[sapply(data, is.numeric)]) # Corr table of numeric columns
+  cor_matrix[lower.tri(cor_matrix, diag = TRUE)] <- NA # Lower triangle to NA
+  cor_matrix[cor_matrix != 1 & cor_matrix != -1] <- NA # Non -1/1 values to NA
+  indices <- which(!is.na(cor_matrix), arr.ind = TRUE) # Only -1/1 values
+  # Extract corresponding variable names
+  correlated_vars <- data.frame(
+    variable_1 = rownames(cor_matrix)[indices[, 1]],
+    variable_2 = colnames(cor_matrix)[indices[, 2]]
+  )
+  if (length(indices) > 0 ){ # Corr %in% c(-1,1) present
+    # Filter out pairs from the same dummy group
+    problematic_pairs <- correlated_vars %>%
+      rowwise() %>%
+      filter({
+        type1 <- input_var_list$data_type[input_var_list$var_name == variable_1]
+        type2 <- input_var_list$data_type[input_var_list$var_name == variable_2]
+        group1 <- input_var_list$group_category[input_var_list$var_name == variable_1]
+        group2 <- input_var_list$group_category[input_var_list$var_name == variable_2]
+        !all(type1 %in% c("dummy","perc"), type2 %in% c("dummy","perc"), type1 == type2, group1 == group2)
+      })
+    if (nrow(problematic_pairs) > 0) {
+      message(
+        "There are variables with perfect correlation in your data (1 or -1). Make sure to treat these variables.\n",
+        "These variables have perfect correlation:\n",
+        paste(capture.output(print(problematic_pairs)), collapse = "\n")
+      )
+      stop("Perfect correlation in data.")
+    }
+  }
   ### Dummy group validation
   # Names of dummy variable columns
   dummy_group_vars <- as.vector(unlist(input_var_list[input_var_list$data_type == "dummy", "var_name"]))
