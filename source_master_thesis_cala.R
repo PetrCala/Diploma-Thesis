@@ -542,7 +542,7 @@ handleMissingDataVerbose <- function(...){
 validateData <- function(input_data, input_var_list, ignore_missing = F){
   ### Static
   ref_prone_types <- c("dummy", "perc") # Data types that always must have a single reference variable
-  ref_forbidden_categories <- c("bma_potential_var", "bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
+  ref_forbidden_categories <- c("bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
   ### End of static
   
   # Validate the input
@@ -2967,7 +2967,7 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
     is.numeric(max_groups_to_remove),
     is.logical(return_variable_vector_instead),
     is.logical(verbose),
-    all(c("bma_potential_var", "var_name", "group_category") %in% colnames(input_var_list))
+    all(c("bma", "var_name", "group_category") %in% colnames(input_var_list))
   )
   # Subset input data to only columns defined in variable list
   input_data <- input_data[,colnames(input_data) %in% input_var_list$var_name]
@@ -2975,7 +2975,7 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
   non_const_cols <- apply(input_data, 2, function(col){length(unique(col)) > 1})
   input_data <- input_data[,non_const_cols]
   # Extract the information from source data
-  bma_potential_vars_bool <- input_var_list$bma_potential_var & non_const_cols # BMA OK and non constant
+  bma_potential_vars_bool <- input_var_list$bma & non_const_cols # BMA OK and non constant
   potential_vars <- input_var_list$var_name[bma_potential_vars_bool]
   var_grouping <- input_var_list$group_category[bma_potential_vars_bool]
   
