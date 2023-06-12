@@ -207,17 +207,11 @@ weighted_mean <- function(beta, se, sigma){
 # New function for calculating partial matrix sums
 compute_submat_sums <- function(mat) {
   # calculate cumulative sums over rows and columns
-  mat_cumsum <- apply(mat, 2, cumsum) # Cumulative sum over columns
-  
-  indices <- 1:nrow(mat_cumsum)
-  rows <- split(mat_cumsum, row(mat_cumsum))  # split the matrix by row
-  
-  # Iterate over rows
-  result <- mapply(function(r, i) {
-    sum(r[1:i])
-  }, r = rows, i = indices)
-  
-  return(as.vector(result))
+  f <- function(x){cumsum(as.numeric(x))}
+  sum1 <- apply(mat, 2, f) # Sum over cols
+  sum2 <- apply(sum1, 1, f) # Sum over rows
+  out <- diag(sum2)
+  return(out)
 }
 
 # New function for weighted mean of squared matrixes
