@@ -243,7 +243,8 @@ if (run_this$box_plot){
       data,
       max_boxes = adj_params$box_plot_max_boxes,
       verbose_on = adj_params$box_plot_verbose,
-      export_html = user_params$export_graphs,
+      export_graphics = user_params$export_graphics,
+      graph_scale = adj_params$box_plot_graph_scale,
       output_folder = folder_paths$graphics_folder,
       factor_by = factor_name,
       effect_name = adj_params$effect_name,
@@ -266,22 +267,23 @@ if (run_this$funnel_plot){
         use_study_medians = use_medians,
         theme = user_params$theme,
         verbose = adj_params$funnel_verbose,
-        export_html = user_params$export_graphs,
-        output_path = graph_name
+        export_graphics = user_params$export_graphics,
+        output_path = graph_name,
+        graph_scale = adj_params$funnel_graph_scale
       )
     )
   }
   # Funnel with all data
-  funnel_all_path <- paste0(folder_paths$graphics_folder, "funnel.html")
+  funnel_all_path <- paste0(folder_paths$graphics_folder, "funnel.png")
   funnel_all <- run_cached_funnel(use_medians = FALSE, graph_name = funnel_all_path)
   # Funnel with medians only
-  funnel_medians_path <- paste0(folder_paths$graphics_folder, "funnel_medians.html")
+  funnel_medians_path <- paste0(folder_paths$graphics_folder, "funnel_medians.png")
   funnel_medians <- run_cached_funnel(use_medians = TRUE, graph_name = funnel_medians_path)
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
 if (run_this$t_stat_histogram){
-  t_hist_path <- paste0(folder_paths$graphics_folder, "t_hist.html")
+  t_hist_path <- paste0(folder_paths$graphics_folder, "t_hist.png")
   t_hist_plot <- runCachedFunction( # Plot only if input changes
     getTstatHist, user_params,
     verbose_function = nullVerboseFunction,
@@ -290,8 +292,9 @@ if (run_this$t_stat_histogram){
     upper_cutoff = adj_params$t_hist_upper_cutoff,
     theme = user_params$theme,
     verbose = TRUE, # Print into console
-    export_html = user_params$export_graphs,
-    output_path = t_hist_path
+    export_graphics = user_params$export_graphics,
+    output_path = t_hist_path,
+    graph_scale = adj_params$t_hist_graph_scale
   )
 }
 
@@ -330,7 +333,7 @@ if (run_this$nonlinear_tests){
     verbose_function = getNonlinearTestsVerbose,
     data, script_paths = nonlinear_script_paths,
     selection_params = selection_params,
-    export_graphs = user_params$export_graphs,
+    export_graphics = user_params$export_graphics,
     export_path = folder_paths$graphics_folder
   )
   if (user_params$export_results){
@@ -450,8 +453,9 @@ if (run_this$bma){
     verbose_function = extractBMAResultsVerbose,
     bma_model, bma_data,
     print_results = adj_params$bma_print_results,
-    export_graphs = user_params$export_graphs,
-    export_path = user_params$folder_paths$graphics_folder
+    export_graphics = user_params$export_graphics,
+    export_path = user_params$folder_paths$graphics_folder,
+    graph_scale = adj_params$bma_graph_scale
   )
 }
 
