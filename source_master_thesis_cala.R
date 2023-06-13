@@ -1422,15 +1422,18 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
 #' @param max_boxes [numeric] Maximum boxes to display in a single plot.
 #' Defaults to 60.
 #' @param verbose_on [logical] If TRUE, print out box plot information and box plots. Defaults to TRUE.
-#' @param export_html [logical] If TRUE, export the plot to an html object into the graphics folder.
+#' @param export_graphics [logical] If TRUE, export the plot to a png object into the graphics folder.
 #'  Defaults to F.
+#' @param graph_scale [numeric] Scale of the graph. Defaults to 3.
 #' @param output_folder [character] Path to a folder where the plots should be stored. Defaults to NA.
 #' @inheritDotParams getBoxPlot Parameters that should be used in the getBoxPlot function
 #' call.
-getLargeBoxPlot <- function(input_data, max_boxes = 60, verbose_on = T, export_html = F, output_folder = NA, ...){
+getLargeBoxPlot <- function(input_data, max_boxes = 60, verbose_on = T,
+                            export_graphics = T, graph_scale = 3, output_folder = NA, ...){
   # Check that the number of studies is traceable, validate input
   stopifnot(
     is.data.frame(input_data),
+    is.numeric(graph_scale),
     "study_id" %in% colnames(input_data)
   )
   # Get the factor information
@@ -1469,7 +1472,7 @@ getLargeBoxPlot <- function(input_data, max_boxes = 60, verbose_on = T, export_h
     }
   }
   # Export to a html object
-  if (export_html){
+  if (export_graphics){
     if (is.na(output_folder)){
       stop("You must specify an output folder path.")
     }
@@ -1479,8 +1482,10 @@ getLargeBoxPlot <- function(input_data, max_boxes = 60, verbose_on = T, export_h
       bp_counter <- ifelse(use_indexing,
                            paste0("_",bp_idx), # _1, _2, ...
                            "") # No indexing for single plots
-      out_path <- paste0(output_folder, "box_plot_",factor_by,bp_counter,".html")
-      exportHtmlGraph(bp, out_path)
+      out_path <- paste0(output_folder, "box_plot_",factor_by,bp_counter,".png")
+      hardRemoveFile(out_path) # Remove if exists
+      ggsave(filename = out_path, plot = bp,
+             width = 800*graph_scale, height = 1100*graph_scale, units = "px")
       bp_idx <- bp_idx + 1
     }
   }
@@ -1658,12 +1663,13 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #'  Defaults to FALSE.
 #' @param theme [character] Theme to use. Defaults to "blue".
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
-#' @param export_html [bool] If TRUE, export the plot to an html object into the graphics folder.
+#' @param export_graphics [bool] If TRUE, export the plot to png object into the graphics folder.
 #'  Defaults to FALSE.
+#' @param graph_scale [numeric] Scale for the output graph. Defaults to 3.
 #' @param output_path [character] Full path to where the plot should be stored. Defaults to NA.
 getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
                           use_study_medians = F, theme = "blue", verbose = T,
-                          export_html = F, output_path = NA){
+                          export_graphics = F, output_path = NA, graph_scale = 3){
   # Check input validity
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -1671,6 +1677,8 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
     is.numeric(effect_proximity),
     is.numeric(maximum_precision),
     is.logical(verbose),
+    is.logical(export_graphics),
+    is.numeric(graph_scale),
     all(required_cols %in% colnames(input_data)),
     effect_proximity <= 1,
     effect_proximity >= 0,
@@ -1729,12 +1737,14 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
   if (verbose){
     suppressWarnings(print(funnel_win))
   }
-  # Export to a html object
-  if (export_html){
+  # Export to a png object
+  if (export_graphics){
     if (is.na(output_path)){
       stop("You must specify an output path.")
     }
-    exportHtmlGraph(funnel_win, output_path)
+    hardRemoveFile(output_path)
+    ggsave(filename = output_path, plot = funnel_win,
+           width = 800*graph_scale, height = 736*graph_scale, units = "px")
   }
   # Return the R plot object
   return(funnel_win)
@@ -1838,13 +1848,14 @@ generateHistTicks <- function(input_vec, theme = "blue") {
 #' @param upper_tstat Similar to lower_tstat
 #' @param theme Theme to use. Defaults to "blue".
 #' @param verbose If TRUE, print out the plot. Defaults to TRUE.
-#' @param export_html If TRUE, export the plot to an html object into the graphics folder. Defaults to FALSE.
+#' @param export_graphics If TRUE, export the plot to a png object into the graphics folder. Defaults to TRUE.
 #' @param output_path Full path to where the plot should be stored. Defaults to NA.
+#' @param graph_scale Numeric, scale the graph by this number. Defaults to 6.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
 getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
                          lower_tstat = -1.96, upper_tstat = 1.96, theme = "blue", verbose = T,
-                         export_html = F, output_path = NA){
+                         export_graphics = T, output_path = NA, graph_scale = 6){
   # Specify a cutoff filter
   t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
   hist_data <- input_data[t_hist_filter,]
@@ -1889,11 +1900,13 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
     suppressWarnings(print(t_hist_plot))
   }
   # Export to a html object
-  if (export_html){
+  if (export_graphics){
     if (is.na(output_path)){
       stop("You must specify an output path.")
     }
-    exportHtmlGraph(t_hist_plot, output_path)
+    hardRemoveFile(output_path)
+    ggsave(filename = output_path, plot = t_hist_plot,
+           width = 403*graph_scale, height = 371*graph_scale, units = "px")
   }
   # Return R object
   return(t_hist_plot)
@@ -2058,7 +2071,7 @@ getTop10Results <- function(data, ...){
 #' @param data A data frame containing the necessary columns for the STEM-based method
 #' @param script_path Full path to the source script.
 #' @param print_plot If TRUE, print out the STEM plot.
-#' @param export_plot If TRUE, export the STEM plot.
+#' @param export_graphics If TRUE, export the STEM plot.
 #' @param export_path Path to the export folder. Deafults to ./graphics.
 #' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
 #' for formatting the output.
@@ -2067,7 +2080,7 @@ getTop10Results <- function(data, ...){
 #' in the usual format.
 #' 
 #' @import stem_method_master_thesis_cala.R
-getStemResults <- function(data, script_path, print_plot = T, export_plot = T, export_path = "./graphics", ...){
+getStemResults <- function(data, script_path, print_plot = T, export_graphics = T, export_path = "./graphics", ...){
   source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
@@ -2085,7 +2098,7 @@ getStemResults <- function(data, script_path, print_plot = T, export_plot = T, e
   if (print_plot){
     eval(funnel_stem_call)
   }
-  if (export_plot){
+  if (export_graphics){
     stopifnot(is.character(export_path), length(export_path) > 0)
     validateFolderExistence(export_path)
     stem_path <- paste0(export_path, "/stem.png")
@@ -2261,11 +2274,11 @@ getEndoKinkResults <- function(data, script_path, ...){
 #'
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @param script_paths List of paths to all source scripts.
-#' @param export_graphs If TRUE, export various graphs into the graphics folder.
+#' @param export_graphics If TRUE, export various graphs into the graphics folder.
 #' @param export_path Path to the export folder. Defaults to ./graphics.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
-                              export_graphs = T, export_path = './graphics') {
+                              export_graphics = T, export_path = './graphics') {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -2293,7 +2306,7 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
       input_data,
       stem_script_path,
       print_plot = T,
-      export_plot = export_graphs,
+      export_graphics = export_graphics,
       export_path = export_path,
       pub_bias_present = F,
       verbose_coefs = T
@@ -3320,20 +3333,22 @@ runBMAVerbose <- function(...){
 #'  * fast - print only those results that do not take time to print
 #'  * verbose - print all the fast results, plus extra information about the model
 #'  * all - print all results, plots included (takes a long time)
-#' @param export_grphs [logical] If TRUE, export the graphs into the graphics folder. Defaults to TRUE.
+#' @param export_graphics [logical] If TRUE, export the graphs into the graphics folder. Defaults to TRUE.
 #' @param export_path [character] Path to the export folder. Defaults to ./graphics.
+#' @param graph_sclae [numeric] Scale the corrplot graph by this number. Defaults to 1.
 #'
 #' @return A numeric vector containing only the BMA coefficients.
 extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
-                              export_graphs = T, export_path = "./graphics"){
+                              export_graphics = T, export_path = "./graphics", graph_scale = 1){
   # Validate the input
   stopifnot(
     class(bma_model) == "bma",
     is.data.frame(bma_data),
     is.character(print_results),
     print_results %in% c("none", "fast", "verbose", "all", "table"),
-    is.logical(export_graphs),
-    is.character(export_path)
+    is.logical(export_graphics),
+    is.character(export_path),
+    is.numeric(graph_scale)
   )
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
@@ -3348,7 +3363,7 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
     print(bma_coefs)
   }
   # Create plots for printing/export
-  if (any(print_results == "all", export_graphs == TRUE)){
+  if (any(print_results == "all", export_graphics == TRUE)){
     # Main plot
     main_plot_call <- quote(
       image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
@@ -3379,7 +3394,7 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
   if (!print_results == "none"){
     cat("\n\n")
   }
-  if (export_graphs){
+  if (export_graphics){
     # Paths
     validateFolderExistence(export_path)
     main_path <- paste0(export_path, "/bma_main.png")
@@ -3390,13 +3405,17 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
       hardRemoveFile(path)
     }
     # Main plot
-      # writePNG(eval(main_plot_call), main_path)
+    png(main_path, width=1400, height=1341, res=150)
+    eval(main_plot_call)
+    dev.off()
     # Model distribution
-    # png(dist_path, width = 528, height = 506)
-    # eval(bma_dist_call)
-    # dev.off
+    png(dist_path, width = 528, height = 506)
+    eval(bma_dist_call)
+    dev.off()
     # Corrplot
-    png(corrplot_path, width = 700, height = 669)
+    png(corrplot_path,
+        width = 700*graph_scale, height = 669*graph_scale, units = "px",
+        res = 90*graph_scale) # pointsize for text size
     eval(corrplot_mixed_call)
     dev.off()
   }

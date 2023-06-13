@@ -23,15 +23,15 @@ if (!require('ddpcr')) install.packages('ddpcr'); library('ddpcr')              
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
-    "box_plot" = T,
-    "funnel_plot" = T,
-    "t_stat_histogram" = T,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
+    "box_plot" = F,
+    "funnel_plot" = F,
+    "t_stat_histogram" = F,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
     "bma" = T,
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
@@ -89,14 +89,17 @@ user_params <- list(
     "box_plot_group_by_factor_2" = "country", # Group by country
     # "box_plot_group_by_factor_X" = X, # Add more factors in this manner - up to 20
     "box_plot_max_boxes" = 60, # Maximum number of boxes to display per single plot - more plots otherwise
+    "box_plot_graph_scale" = 3, # Numeric, scale the graph by this number
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
     "funnel_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
     "funnel_maximum_precision" = 1, # Precision axis maximum value cutoff point (perc)
+    "funnel_graph_scale" = 3, # Numeric, scale the graph by this number
     "funnel_verbose" = TRUE, # If T, print cut outlier information
     # T-statistic histogram parameters
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
     "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
+    "t_hist_graph_scale" = 6, # Numeric, scale the graph by this number
     # Nonlinear parameters - only selection model parametrizable
     "non_linear_param_selection_cutoffs" = c(1.960),
     "non_linear_param_selection_symmetric" = F,
@@ -126,6 +129,7 @@ user_params <- list(
     # Bayesian Model Averaging parameters
     "automatic_bma" = TRUE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
     "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
+    "bma_graph_scale" = 1.5, # Numeric, scale the corrplot graph by this amount
     "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
     "bma_param_burn" = 1e4, # Burn-ins (def 1e5)
     "bma_param_iter" = 3e4, # Draws (def 3e5)
@@ -196,7 +200,7 @@ user_params <- list(
     "robma_estimates" = "RoBMA estimates"
   ),
   export_log_file_path = "numeric_results.txt", # Console log as a text file
-  export_graphs = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
+  export_graphics = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
   theme = "green", # One of "blue", "yellow", "green", "red"
   
   # CACHE HANDLING
