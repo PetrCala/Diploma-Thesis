@@ -330,8 +330,6 @@ if (run_this$linear_tests){
 
 ######################### NON-LINEAR TESTS ######################### 
 
-stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
-stem_res <- getStemResults(data, stem_script_path, print_plot = T, export_plot = T, pub_bias_present = F, verbose_coefs = T)
 if (run_this$nonlinear_tests){
   # Extract source script paths
   stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
@@ -348,8 +346,10 @@ if (run_this$nonlinear_tests){
     verbose_function = getNonlinearTestsVerbose,
     data, script_paths = nonlinear_script_paths,
     selection_params = selection_params,
+    theme = user_params$theme,
     export_graphics = user_params$export_graphics,
-    export_path = folder_paths$graphic_results_folder
+    export_path = folder_paths$graphic_results_folder,
+    graph_scale = adj_params$non_linear_stem_graph_scale
   )
   if (user_params$export_results){
     exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
@@ -467,8 +467,10 @@ if (run_this$bma){
   bma_coefs <- runCachedFunction(
     extractBMAResults, user_params,
     verbose_function = extractBMAResultsVerbose,
-    bma_model, bma_data,
+    bma_model, bma_data, var_list,
     print_results = adj_params$bma_print_results,
+    adjustable_theme = adj_params$bma_adjustable_theme,
+    theme = user_params$theme,
     export_graphics = user_params$export_graphics,
     export_path = user_params$folder_paths$graphic_results_folder,
     graph_scale = adj_params$bma_graph_scale
@@ -485,7 +487,7 @@ if (run_this$fma){
   fma_coefs <- runCachedFunction(
     runFMA, user_params,
     verbose_function = runFMAVerbose,
-    bma_data, bma_model,
+    bma_data, bma_model, var_list,
     verbose = adj_params$fma_verbose
   )
 }

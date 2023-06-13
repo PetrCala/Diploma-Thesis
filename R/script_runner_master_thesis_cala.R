@@ -101,6 +101,7 @@ user_params <- list(
     "t_hist_upper_cutoff" = 120, # Upper cutoff point for t-statistics
     "t_hist_graph_scale" = 6, # Numeric, scale the graph by this number
     # Nonlinear parameters - only selection model parametrizable
+    "non_linear_stem_graph_scale" = 5, # Numeric, scale the graph by this number
     "non_linear_param_selection_cutoffs" = c(1.960),
     "non_linear_param_selection_symmetric" = F,
     "non_linear_param_selection_modelmu" = "normal",
@@ -128,8 +129,9 @@ user_params <- list(
     "maive_verbose" = TRUE,
     # Bayesian Model Averaging parameters
     "automatic_bma" = FALSE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
+    "bma_adjustable_theme" = TRUE, # If TRUE, modify the colors of bma plots to fit the theme
     "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
-    "bma_graph_scale" = 1.5, # Numeric, scale the corrplot graph by this amount
+    "bma_graph_scale" = 2, # Numeric, scale the corrplot graph by this amount
     "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
     "bma_param_burn" = 1e4, # Burn-ins (def 1e5)
     "bma_param_iter" = 3e4, # Draws (def 3e5)
@@ -203,7 +205,7 @@ user_params <- list(
   export_log_file_path = "numeric_results.txt", # Console log as a text file
   export_zip_name = paste0("results_all_", format(Sys.Date(), "%m-%d-%y")), # Zip file with all results
   export_graphics = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
-  theme = "green", # One of "blue", "yellow", "green", "red"
+  theme = "blue", # One of "blue", "yellow", "green", "red", "purple"
   
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly

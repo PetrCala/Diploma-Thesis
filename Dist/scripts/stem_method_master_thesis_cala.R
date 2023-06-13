@@ -273,7 +273,7 @@ se_rescale <- function(se){
   return(Y)
 }
 
-stem_funnel <- function(beta_input, se_input, stem_estimates){
+stem_funnel <- function(beta_input, se_input, stem_estimates, theme){
   #take stem estimates
   b_stem <- stem_estimates[1]
   SE_b_stem <- stem_estimates[2]
@@ -303,35 +303,47 @@ stem_funnel <- function(beta_input, se_input, stem_estimates){
   #--------------
   # plot
   #--------------
+  # Study color, stem based color, augment color
+  color_spectrum <- switch(theme,
+    blue = c("#005CAB", "#e8e813", "#4a19bd"),
+    yellow = c("#AB9800", "#009B0F", "#4dacfa"),
+    green = c("#009B0F", "#AB0000", "#423091"),
+    red = c("#AB0000", "#6A0DAB", "#8cb1fa"),
+    purple = c("#6A0DAB", "#005CAB", "#fa8ce6"),
+    stop("Invalid theme type.")
+  )
   
   plot.new()
   # adjust margin
   par(mar=c(4.1,4.1,1,1), bg = rgb(255, 255, 255, maxColorValue = 255))
   # plot studies
+  study_color <- color_spectrum[1]
   plot(beta_sorted, se_axis, 
-       col=rgb(102, 102, 255, maxColorValue = 255), pch = 1, lwd = 2.5,
+       col=study_color, pch = 1, lwd = 2.5,
        xlim= c(beta_axis_min, beta_axis_max),
        xlab=substitute(paste(name, beta), list(name=labNames[1])),
        ylab=substitute(paste(name, -log(SE)), list(name=labNames[2]))) #@@@@@@ modify this line if rescaling with a different function)     
   #stem (cumulative estimates)
   lines(cumulative_estimates, se_axis, col=rgb(96, 96, 96, maxColorValue = 255), lwd=lineswidth)
   #augment stem
-  points(b_stem, se_axis[n_stem], pch=filled_diamond ,col=rgb(0, 0, 153, maxColorValue = 255), cex = points_size)
-  segments(b_stem, se_axis[1], b_stem, se_axis_min,col=rgb(0, 0, 153, maxColorValue = 255), lwd=lineswidth)
+  augment_color <- color_spectrum[3]
+  points(b_stem, se_axis[n_stem], pch=filled_diamond ,col=augment_color, cex = points_size)
+  segments(b_stem, se_axis[1], b_stem, se_axis_min,col=augment_color, lwd=lineswidth)
   #stem-based estimate
-  points(b_stem, se_axis[1], pch=filled_diamond ,col=rgb(255, 128, 0, maxColorValue = 255), cex = points_size)
-  segments(b_stem-t_stat*SE_b_stem, se_axis[1], b_stem+t_stat*SE_b_stem, se_axis[1],col=rgb(255, 128, 0, maxColorValue = 255), lwd=lineswidth)
+  stem_est_color <- color_spectrum[2] # External color
+  points(b_stem, se_axis[1], pch=filled_diamond ,col=stem_est_color, cex = points_size)
+  segments(b_stem-t_stat*SE_b_stem, se_axis[1], b_stem+t_stat*SE_b_stem, se_axis[1],col=stem_est_color, lwd=lineswidth)
   #zero line
   abline(v=0, col=rgb(192, 192, 192, maxColorValue = 255), lty=2, lwd=lineswidth)
   
   #legend
   legend("topleft", #@@@@@@ modify this line if want to put legend in a different location
          legend = c("stem-based estimate","95 confidence interval","cumulative estimate", "minimal precision", "study") , 
-         col = c(rgb(255, 128, 0, maxColorValue = 255) , 
-                 rgb(255, 128, 0, maxColorValue = 255) ,
+         col = c(stem_est_color, 
+                 stem_est_color,
                  rgb(96, 96, 96, maxColorValue = 255) ,
-                 rgb(0, 0, 153, maxColorValue = 255) ,  
-                 rgb(102, 102, 255, maxColorValue = 255)) , 
+                 augment_color,  
+                 study_color) , 
          bty = "n", 
          lty = c(NA, 1, 1, NA, NA), lwd = c(NA, 2, 2, NA, 2.5),
          pch= c(18, NA, NA, 18, 1), 
