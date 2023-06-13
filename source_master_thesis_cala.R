@@ -43,7 +43,7 @@ validateFolderExistence <- function(folder_name, require_existence = FALSE){
     if (require_existence){
       stop(paste("The folder", folder_name, "must exist in the working directory."))
     }
-    dir.create(folder_name)
+    dir.create(folder_name, recursive = TRUE)
   }
 }
 
@@ -75,6 +75,7 @@ readExcelAndWriteCsv <- function(xlsx_path, sheet_names, csv_suffix = "master_th
       # Remove .
       df_xlsx[df_xlsx == '.'] <- NA
       # Overwrite the CSV file
+      hardRemoveFile(new_data_path)
       write_csv(df_xlsx, new_data_path)
       return(df_xlsx)
     })
@@ -542,7 +543,7 @@ handleMissingDataVerbose <- function(...){
 validateData <- function(input_data, input_var_list, ignore_missing = F){
   ### Static
   ref_prone_types <- c("dummy", "perc") # Data types that always must have a single reference variable
-  ref_forbidden_categories <- c("bma_potential_var", "bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
+  ref_forbidden_categories <- c("bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
   ### End of static
   
   # Validate the input
@@ -580,6 +581,44 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
     message("Modify the names of these columns:")
     message(duplicated_col)
     stop("Duplicate columns.")
+  }
+  # Validate that no columns are static
+  constant_columns <- apply(input_data, 2, function(col){length(unique(col)) == 1}) # Boolean vector with names
+  if (any(constant_columns)){
+    message("There are constant columns in your data. Make sure to remove these first.")
+    message("These columns have constant values:")
+    message(paste(colnames(input_data)[constant_columns]), sep = "\n")
+    stop("Constant columns.")
+  }
+  ### Correlation validation
+  cor_matrix <- cor(data[sapply(data, is.numeric)]) # Corr table of numeric columns
+  cor_matrix[lower.tri(cor_matrix, diag = TRUE)] <- NA # Lower triangle to NA
+  cor_matrix[cor_matrix != 1 & cor_matrix != -1] <- NA # Non -1/1 values to NA
+  indices <- which(!is.na(cor_matrix), arr.ind = TRUE) # Only -1/1 values
+  # Extract corresponding variable names
+  correlated_vars <- data.frame(
+    variable_1 = rownames(cor_matrix)[indices[, 1]],
+    variable_2 = colnames(cor_matrix)[indices[, 2]]
+  )
+  if (length(indices) > 0 ){ # Corr %in% c(-1,1) present
+    # Filter out pairs from the same dummy group
+    problematic_pairs <- correlated_vars %>%
+      rowwise() %>%
+      filter({
+        type1 <- input_var_list$data_type[input_var_list$var_name == variable_1]
+        type2 <- input_var_list$data_type[input_var_list$var_name == variable_2]
+        group1 <- input_var_list$group_category[input_var_list$var_name == variable_1]
+        group2 <- input_var_list$group_category[input_var_list$var_name == variable_2]
+        !all(type1 %in% c("dummy","perc"), type2 %in% c("dummy","perc"), type1 == type2, group1 == group2)
+      })
+    if (nrow(problematic_pairs) > 0) {
+      message(
+        "There are variables with perfect correlation in your data (1 or -1). Make sure to treat these variables.\n",
+        "These variables have perfect correlation:\n",
+        paste(capture.output(print(problematic_pairs)), collapse = "\n")
+      )
+      stop("Perfect correlation in data.")
+    }
   }
   ### Dummy group validation
   # Names of dummy variable columns
@@ -1384,15 +1423,18 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
 #' @param max_boxes [numeric] Maximum boxes to display in a single plot.
 #' Defaults to 60.
 #' @param verbose_on [logical] If TRUE, print out box plot information and box plots. Defaults to TRUE.
-#' @param export_html [logical] If TRUE, export the plot to an html object into the graphics folder.
+#' @param export_graphics [logical] If TRUE, export the plot to a png object into the graphics folder.
 #'  Defaults to F.
+#' @param graph_scale [numeric] Scale of the graph. Defaults to 3.
 #' @param output_folder [character] Path to a folder where the plots should be stored. Defaults to NA.
 #' @inheritDotParams getBoxPlot Parameters that should be used in the getBoxPlot function
 #' call.
-getLargeBoxPlot <- function(input_data, max_boxes = 60, verbose_on = T, export_html = F, output_folder = NA, ...){
+getLargeBoxPlot <- function(input_data, max_boxes = 60, verbose_on = T,
+                            export_graphics = T, graph_scale = 3, output_folder = NA, ...){
   # Check that the number of studies is traceable, validate input
   stopifnot(
     is.data.frame(input_data),
+    is.numeric(graph_scale),
     "study_id" %in% colnames(input_data)
   )
   # Get the factor information
@@ -1431,7 +1473,7 @@ getLargeBoxPlot <- function(input_data, max_boxes = 60, verbose_on = T, export_h
     }
   }
   # Export to a html object
-  if (export_html){
+  if (export_graphics){
     if (is.na(output_folder)){
       stop("You must specify an output folder path.")
     }
@@ -1441,8 +1483,10 @@ getLargeBoxPlot <- function(input_data, max_boxes = 60, verbose_on = T, export_h
       bp_counter <- ifelse(use_indexing,
                            paste0("_",bp_idx), # _1, _2, ...
                            "") # No indexing for single plots
-      out_path <- paste0(output_folder, "box_plot_",factor_by,bp_counter,".html")
-      exportHtmlGraph(bp, out_path)
+      out_path <- paste0(output_folder, "box_plot_",factor_by,bp_counter,".png")
+      hardRemoveFile(out_path) # Remove if exists
+      ggsave(filename = out_path, plot = bp,
+             width = 800*graph_scale, height = 1100*graph_scale, units = "px")
       bp_idx <- bp_idx + 1
     }
   }
@@ -1620,12 +1664,13 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #'  Defaults to FALSE.
 #' @param theme [character] Theme to use. Defaults to "blue".
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
-#' @param export_html [bool] If TRUE, export the plot to an html object into the graphics folder.
+#' @param export_graphics [bool] If TRUE, export the plot to png object into the graphics folder.
 #'  Defaults to FALSE.
+#' @param graph_scale [numeric] Scale for the output graph. Defaults to 3.
 #' @param output_path [character] Full path to where the plot should be stored. Defaults to NA.
 getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
                           use_study_medians = F, theme = "blue", verbose = T,
-                          export_html = F, output_path = NA){
+                          export_graphics = F, output_path = NA, graph_scale = 3){
   # Check input validity
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -1633,6 +1678,8 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
     is.numeric(effect_proximity),
     is.numeric(maximum_precision),
     is.logical(verbose),
+    is.logical(export_graphics),
+    is.numeric(graph_scale),
     all(required_cols %in% colnames(input_data)),
     effect_proximity <= 1,
     effect_proximity >= 0,
@@ -1691,12 +1738,14 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
   if (verbose){
     suppressWarnings(print(funnel_win))
   }
-  # Export to a html object
-  if (export_html){
+  # Export to a png object
+  if (export_graphics){
     if (is.na(output_path)){
       stop("You must specify an output path.")
     }
-    exportHtmlGraph(funnel_win, output_path)
+    hardRemoveFile(output_path)
+    ggsave(filename = output_path, plot = funnel_win,
+           width = 800*graph_scale, height = 736*graph_scale, units = "px")
   }
   # Return the R plot object
   return(funnel_win)
@@ -1800,13 +1849,14 @@ generateHistTicks <- function(input_vec, theme = "blue") {
 #' @param upper_tstat Similar to lower_tstat
 #' @param theme Theme to use. Defaults to "blue".
 #' @param verbose If TRUE, print out the plot. Defaults to TRUE.
-#' @param export_html If TRUE, export the plot to an html object into the graphics folder. Defaults to FALSE.
+#' @param export_graphics If TRUE, export the plot to a png object into the graphics folder. Defaults to TRUE.
 #' @param output_path Full path to where the plot should be stored. Defaults to NA.
+#' @param graph_scale Numeric, scale the graph by this number. Defaults to 6.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
 getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
                          lower_tstat = -1.96, upper_tstat = 1.96, theme = "blue", verbose = T,
-                         export_html = F, output_path = NA){
+                         export_graphics = T, output_path = NA, graph_scale = 6){
   # Specify a cutoff filter
   t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
   hist_data <- input_data[t_hist_filter,]
@@ -1851,11 +1901,13 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
     suppressWarnings(print(t_hist_plot))
   }
   # Export to a html object
-  if (export_html){
+  if (export_graphics){
     if (is.na(output_path)){
       stop("You must specify an output path.")
     }
-    exportHtmlGraph(t_hist_plot, output_path)
+    hardRemoveFile(output_path)
+    ggsave(filename = output_path, plot = t_hist_plot,
+           width = 403*graph_scale, height = 371*graph_scale, units = "px")
   }
   # Return R object
   return(t_hist_plot)
@@ -2019,6 +2071,9 @@ getTop10Results <- function(data, ...){
 #'
 #' @param data A data frame containing the necessary columns for the STEM-based method
 #' @param script_path Full path to the source script.
+#' @param print_plot If TRUE, print out the STEM plot.
+#' @param export_graphics If TRUE, export the STEM plot.
+#' @param export_path Path to the export folder. Deafults to ./graphics.
 #' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
 #' for formatting the output.
 #'
@@ -2026,7 +2081,7 @@ getTop10Results <- function(data, ...){
 #' in the usual format.
 #' 
 #' @import stem_method_master_thesis_cala.R
-getStemResults <- function(data, script_path, ...){
+getStemResults <- function(data, script_path, print_plot = T, export_graphics = T, export_path = "./graphics", ...){
   source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
@@ -2034,11 +2089,28 @@ getStemResults <- function(data, script_path, ...){
     10^3 # max_N_count - set maximum number of iteration before termination
   )
   
+  # Estimation
   est_stem <- stem(data$effect, data$se, stem_param)$estimates # Actual esimation
-  
+  # Stem plot
+  funnel_stem_call <- quote(
+    stem_funnel(data$effect, data$se, est_stem)
+  )
+  # Print and export the plot 
+  if (print_plot){
+    eval(funnel_stem_call)
+  }
+  if (export_graphics){
+    stopifnot(is.character(export_path), length(export_path) > 0)
+    validateFolderExistence(export_path)
+    stem_path <- paste0(export_path, "/stem.png")
+    hardRemoveFile(stem_path)
+    png(stem_path)
+    eval(funnel_stem_call)
+    dev.off()
+  }
   # Save results
   stem_coefs <- extractNonlinearCoefs(est_stem, ...)
-  invisible(stem_coefs)
+  return(stem_coefs)
 }
 
 
@@ -2203,8 +2275,11 @@ getEndoKinkResults <- function(data, script_path, ...){
 #'
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @param script_paths List of paths to all source scripts.
+#' @param export_graphics If TRUE, export various graphs into the graphics folder.
+#' @param export_path Path to the export folder. Defaults to ./graphics.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
-getNonlinearTests <- function(input_data, script_paths, selection_params = NULL) {
+getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
+                              export_graphics = T, export_path = './graphics') {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -2227,10 +2302,21 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL)
     selection_params,
     list(pub_bias_present = T, verbose_coefs = T)
   )
+  all_stem_params <- c(
+    list(
+      input_data,
+      stem_script_path,
+      print_plot = T,
+      export_graphics = export_graphics,
+      export_path = export_path,
+      pub_bias_present = F,
+      verbose_coefs = T
+    )
+  )
   # Get coefficients
   waap_res <- getWaapResults(input_data, pub_bias_present = F, verbose_coefs = T)
   top10_res <- getTop10Results(input_data, pub_bias_present = F, verbose_coefs = T)
-  stem_res <- getStemResults(input_data, stem_script_path, pub_bias_present = F, verbose_coefs = T)
+  stem_res <- do.call(getStemResults, all_stem_params)
   hier_res <- getHierResults(input_data, pub_bias_present = T, verbose_coefs = T)
   sel_res <- do.call(getSelectionResults, all_selection_params)
   endo_kink_res <- getEndoKinkResults(input_data, endo_script_path, pub_bias_present = T, verbose_coefs = T)
@@ -2929,7 +3015,7 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
     is.numeric(max_groups_to_remove),
     is.logical(return_variable_vector_instead),
     is.logical(verbose),
-    all(c("bma_potential_var", "var_name", "group_category") %in% colnames(input_var_list))
+    all(c("bma", "var_name", "group_category") %in% colnames(input_var_list))
   )
   # Subset input data to only columns defined in variable list
   input_data <- input_data[,colnames(input_data) %in% input_var_list$var_name]
@@ -2937,7 +3023,7 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
   non_const_cols <- apply(input_data, 2, function(col){length(unique(col)) > 1})
   input_data <- input_data[,non_const_cols]
   # Extract the information from source data
-  bma_potential_vars_bool <- input_var_list$bma_potential_var & non_const_cols # BMA OK and non constant
+  bma_potential_vars_bool <- input_var_list$bma & non_const_cols # BMA OK and non constant
   potential_vars <- input_var_list$var_name[bma_potential_vars_bool]
   var_grouping <- input_var_list$group_category[bma_potential_vars_bool]
   
@@ -3248,15 +3334,22 @@ runBMAVerbose <- function(...){
 #'  * fast - print only those results that do not take time to print
 #'  * verbose - print all the fast results, plus extra information about the model
 #'  * all - print all results, plots included (takes a long time)
+#' @param export_graphics [logical] If TRUE, export the graphs into the graphics folder. Defaults to TRUE.
+#' @param export_path [character] Path to the export folder. Defaults to ./graphics.
+#' @param graph_sclae [numeric] Scale the corrplot graph by this number. Defaults to 1.
 #'
 #' @return A numeric vector containing only the BMA coefficients.
-extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
+extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
+                              export_graphics = T, export_path = "./graphics", graph_scale = 1){
   # Validate the input
   stopifnot(
     class(bma_model) == "bma",
     is.data.frame(bma_data),
     is.character(print_results),
-    print_results %in% c("none", "fast", "verbose", "all", "table")
+    print_results %in% c("none", "fast", "verbose", "all", "table"),
+    is.logical(export_graphics),
+    is.character(export_path),
+    is.numeric(graph_scale)
   )
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
@@ -3270,24 +3363,62 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast"){
   } else if (print_results == "fast"){
     print(bma_coefs)
   }
-  # Print out plots (takes time)
-  if (print_results == "all"){
-    # Main BMA plots
-    print("Printing out Bayesian Model Averaging plots. This may take some time...")
-    image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
+  # Create plots for printing/export
+  if (any(print_results == "all", export_graphics == TRUE)){
+    # Main plot
+    main_plot_call <- quote(
+      image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
           do.axis=TRUE, xlab = "", main = "") # Takes time
-    plot(bma_model)
-    # Correlation matrix
+    )
+    # Model distribution
+    bma_dist_call <- quote(
+      plot(bma_model)
+    )
+    # Corrplot
     bma_col<- colorRampPalette(c("red", "white", "blue"))
     bma_matrix <- cor(bma_data)
-    corrplot.mixed(bma_matrix, lower = "number", upper = "circle",
-                   lower.col=bma_col(200), upper.col=bma_col(200),tl.pos = c("lt"),
-                   diag = c("u"), tl.col="black", tl.srt=70, tl.cex=0.55,
-                   number.cex = 0.5,cl.cex=0.8, cl.ratio=0.1) 
+    corrplot_mixed_call <- quote(
+      corrplot.mixed(bma_matrix, lower = "number", upper = "circle",
+                     lower.col=bma_col(200), upper.col=bma_col(200),tl.pos = c("lt"),
+                     diag = c("u"), tl.col="black", tl.srt=70, tl.cex=0.55,
+                     number.cex = 0.5,cl.cex=0.8, cl.ratio=0.1) 
+    )
+  }
+  # Print out plots (takes time)
+  if (print_results == "all"){
+    print("Printing out Bayesian Model Averaging plots. This may take some time...")
+    eval(main_plot_call)
+    eval(bma_dist_call)
+    eval(corrplot_mixed_call)
   }
   # Return coefficients only
   if (!print_results == "none"){
     cat("\n\n")
+  }
+  if (export_graphics){
+    # Paths
+    validateFolderExistence(export_path)
+    main_path <- paste0(export_path, "/bma_main.png")
+    dist_path <- paste0(export_path, "/bma_dist.png")
+    corrplot_path <- paste0(export_path, "/bma_corrplot.png")
+    # Remove existing plots if they exist
+    for (path in list(main_path, dist_path, corrplot_path)){
+      hardRemoveFile(path)
+    }
+    # Main plot
+    png(main_path, width=1400, height=1341, res=150)
+    eval(main_plot_call)
+    dev.off()
+    # Model distribution
+    png(dist_path, width = 528, height = 506)
+    eval(bma_dist_call)
+    dev.off()
+    # Corrplot
+    png(corrplot_path,
+        width = 700*graph_scale, height = 669*graph_scale, units = "px",
+        res = 90*graph_scale) # pointsize for text size
+    eval(corrplot_mixed_call)
+    dev.off()
   }
   return(bma_coefs)
 }
@@ -4043,9 +4174,7 @@ nullVerboseFunction <- function(res,... ){NULL}
 writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_overwrite = FALSE){
   # A temp function for code efficiency
   overwrite <- function(x = object_name, file = file_name, row.names = use_rownames){
-    if (file.exists(file)){
-      file.remove(file)
-    }
+    hardRemoveFile(file) # Remove if exists
     write.csv(x, file, row.names = row.names, fileEncoding = "UTF-8")
   }
   # Force overwrite
@@ -4091,7 +4220,7 @@ writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_over
 #' The file will not export if the same file already exists under the specified path.
 #' 
 #' @param results_table [data.frame] The data frame to be exported as a CSV file.
-#' @param user_params [list] A list of user parameters. It should contain an 'export_folder' item,
+#' @param user_params [list] A list of user parameters. It should contain an 'numeric_results' item,
 #' which specifies the directory to export the file, and an 'export_methods' item, which is a
 #' named list where the names correspond to valid 'method_name' values and the values are used for verbose output.
 #' @param method_name [character] A character string that specifies the export method. 
@@ -4114,9 +4243,9 @@ exportTable <- function(results_table, user_params, method_name){
     method_name %in% names(user_params$export_methods) # Only recognized exports
   )
   # Define the export paths
-  export_folder <- user_params$folder_paths$export_folder # Export folder
-  validateFolderExistence(export_folder) # Create the export folder if not present in the working directory
-  results_path <- paste0(export_folder, method_name, ".csv") # export_folder/export_file.csv
+  numeric_results_folder <- user_params$folder_paths$numeric_results_folder # Export folder
+  validateFolderExistence(numeric_results_folder) # Create the export folder if not present in the working directory
+  results_path <- paste0(numeric_results_folder, method_name, ".csv") # numeric_results_folder/export_file.csv
   
   # Check whether the row names are sequential numbers (1,2,3,...) - do not use rows if they are
   row_names <- rownames(results_table)
@@ -4127,7 +4256,57 @@ exportTable <- function(results_table, user_params, method_name){
   identical_file_exists <- writeIfNotIdentical(results_table, results_path, use_rownames)
   if (!identical_file_exists){
     print(paste("Writing the", tolower(verbose_info), "results into", results_path))
+    cat("\n")
   }
+}
+
+#' Remove a file from the system
+hardRemoveFile <- function(file_path){
+  if (file.exists(file_path)){
+    quiet(system(paste("rm",file_path)))
+  }
+}
+
+#' Zip multiple folders into a single zip file.
+#'
+#' @param zip_name [character] The name of the zip file to be created.
+#' @param dest_folder [character] The absolute path of the destination folder where the zip file will be created.
+#' @param ... [character] Variable length argument, absolute paths of folders to be zipped.
+#' 
+#' @return A success message indicating the location of the created zip file.
+#'
+#' @examples
+#' \dontrun{
+#' zip_folders(zip_name = "my_folders", dest_folder = "/path/to/dest", "/path/to/folder1", "/path/to/folder2")
+#' }
+#' 
+#' @export
+zipFolders <- function(zip_name, dest_folder, ...){
+  # Get arguments and paths
+  folder_names <- as.vector(unlist(list(...))) # Folders to be zipped, character vector
+  zip_file_path <- file.path(paste0(dest_folder, zip_name, ".zip"))
+  if(!dir.exists(dest_folder)){
+    dir.create(dest_folder, recursive = TRUE)
+  }
+  # Handle the .zip file creation
+  hardRemoveFile(zip_file_path) # Remove if exists
+  print("Writing the results into a zip file...")
+  tryCatch({
+    utils::zip(zip_file_path, files=folder_names, extras = "-r") # Create the zip file
+  }, error = function(e){
+    print("An error occured when creating the zip file:")
+    print(e$message)
+    return()
+  }
+  )
+  # Return a message
+  zipFoldersVerbose(zip_file_path)
+  return()
+}
+
+#' Verbose function for the zipFolders function
+zipFoldersVerbose <- function(zip_file_path){
+  print(paste0("Successfully zipped results into: ", zip_file_path))
 }
 
 ######################### GRAPHICS #########################

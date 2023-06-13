@@ -60,6 +60,7 @@ packages <- c(
   "NlcOptim", # Elliott et al. (2022) - CoxShi
   "plm", # Random Effects, Between Effects
   "plotly", # Interactive plots
+  "png", # PNG plots
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
   "purrr", # Smart tables, study size
   "pracma", # MAIVE Estimator, Elliott et al. (2022)
@@ -110,9 +111,10 @@ folder_paths <- user_params$folder_paths # Paths to various folders
 # Validate folder existence
 validateFolderExistence(folder_paths$cache_folder)
 validateFolderExistence(folder_paths$data_folder, require_existence = T) # No overwriting
-validateFolderExistence(folder_paths$graphics_folder)
-validateFolderExistence(folder_paths$export_folder)
+validateFolderExistence(folder_paths$graphic_results_folder)
+validateFolderExistence(folder_paths$numeric_results_folder)
 validateFolderExistence(folder_paths$ext_package_folder, require_existence = T) # No overwriting
+validateFolderExistence(folder_paths$all_results_folder)
 
 # Load external packages
 loadExternalPackages(folder_paths$ext_package_folder)
@@ -242,8 +244,9 @@ if (run_this$box_plot){
       data,
       max_boxes = adj_params$box_plot_max_boxes,
       verbose_on = adj_params$box_plot_verbose,
-      export_html = user_params$export_html_graphs,
-      output_folder = folder_paths$graphics_folder,
+      export_graphics = user_params$export_graphics,
+      graph_scale = adj_params$box_plot_graph_scale,
+      output_folder = folder_paths$graphic_results_folder,
       factor_by = factor_name,
       effect_name = adj_params$effect_name,
       theme = user_params$theme,
@@ -265,22 +268,23 @@ if (run_this$funnel_plot){
         use_study_medians = use_medians,
         theme = user_params$theme,
         verbose = adj_params$funnel_verbose,
-        export_html = user_params$export_html_graphs,
-        output_path = graph_name
+        export_graphics = user_params$export_graphics,
+        output_path = graph_name,
+        graph_scale = adj_params$funnel_graph_scale
       )
     )
   }
   # Funnel with all data
-  funnel_all_path <- paste0(folder_paths$graphics_folder, "funnel.html")
+  funnel_all_path <- paste0(folder_paths$graphic_results_folder, "funnel.png")
   funnel_all <- run_cached_funnel(use_medians = FALSE, graph_name = funnel_all_path)
   # Funnel with medians only
-  funnel_medians_path <- paste0(folder_paths$graphics_folder, "funnel_medians.html")
+  funnel_medians_path <- paste0(folder_paths$graphic_results_folder, "funnel_medians.png")
   funnel_medians <- run_cached_funnel(use_medians = TRUE, graph_name = funnel_medians_path)
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
 if (run_this$t_stat_histogram){
-  t_hist_path <- paste0(folder_paths$graphics_folder, "t_hist.html")
+  t_hist_path <- paste0(folder_paths$graphic_results_folder, "t_hist.png")
   t_hist_plot <- runCachedFunction( # Plot only if input changes
     getTstatHist, user_params,
     verbose_function = nullVerboseFunction,
@@ -289,8 +293,9 @@ if (run_this$t_stat_histogram){
     upper_cutoff = adj_params$t_hist_upper_cutoff,
     theme = user_params$theme,
     verbose = TRUE, # Print into console
-    export_html = user_params$export_html_graphs,
-    output_path = t_hist_path
+    export_graphics = user_params$export_graphics,
+    output_path = t_hist_path,
+    graph_scale = adj_params$t_hist_graph_scale
   )
 }
 
@@ -311,6 +316,8 @@ if (run_this$linear_tests){
 
 ######################### NON-LINEAR TESTS ######################### 
 
+stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
+stem_res <- getStemResults(data, stem_script_path, print_plot = T, export_plot = T, pub_bias_present = F, verbose_coefs = T)
 if (run_this$nonlinear_tests){
   # Extract source script paths
   stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
@@ -326,7 +333,9 @@ if (run_this$nonlinear_tests){
     getNonlinearTests, user_params, 
     verbose_function = getNonlinearTestsVerbose,
     data, script_paths = nonlinear_script_paths,
-    selection_params = selection_params
+    selection_params = selection_params,
+    export_graphics = user_params$export_graphics,
+    export_path = folder_paths$graphic_results_folder
   )
   if (user_params$export_results){
     exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
@@ -415,10 +424,11 @@ if (run_this$bma){
     bma_formula <- bma_formula_list[[1]] # Also verbose information
   } else {
     # From the variable information instead
+    input_vars <- var_list$var_name[var_list$bma]
     bma_formula <- runCachedFunction(
       getBMAFormula, user_params,
       verbose_function = nullVerboseFunction, # No verbose output
-      var_list, input_data
+      input_vars, data
     )
   }
   # Run the Variance Inflation Test
@@ -443,7 +453,10 @@ if (run_this$bma){
     extractBMAResults, user_params,
     verbose_function = extractBMAResultsVerbose,
     bma_model, bma_data,
-    print_results = adj_params$bma_print_results
+    print_results = adj_params$bma_print_results,
+    export_graphics = user_params$export_graphics,
+    export_path = user_params$folder_paths$graphic_results_folder,
+    graph_scale = adj_params$bma_graph_scale
   )
 }
 
@@ -549,4 +562,17 @@ if (run_this$robma){
      exportTable(robma_res$Components, user_params, "robma_components")
      exportTable(robma_res$Estimates, user_params, "robma_estimates")
   }
+}
+
+### EXPORT ###
+
+# Zip the results
+if (user_params$export_results){
+  zipFolders(
+    zip_name = user_params$export_zip_name,
+    dest_folder = folder_paths$all_results_folder,
+    folder_paths$data_folder,
+    folder_paths$graphic_results_folder,
+    folder_paths$numeric_results_folder
+  )
 }
