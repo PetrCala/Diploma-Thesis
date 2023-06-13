@@ -277,6 +277,7 @@ if (run_this$funnel_plot){
         getFunnelPlot, user_params,
         verbose_function = nullVerboseFunction,
         funnel_data,
+        precision_to_log = adj_params$funnel_precision_to_log,
         effect_proximity = adj_params$funnel_effect_proximity,
         maximum_precision = adj_params$funnel_maximum_precision,
         use_study_medians = use_medians,
