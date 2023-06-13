@@ -47,6 +47,16 @@ validateFolderExistence <- function(folder_name, require_existence = FALSE){
   }
 }
 
+#' Clean a folder of all files by destroying and recreating it
+cleanFolder <- function(folder_name){
+  files <- list.files(path = folder_name)
+  files <- paste0(folder_name, "/", files)
+  # Remove all files
+  for (file in files){
+    quiet(system(paste("rm", file)))
+  }
+}
+
 #' Function to read multiple sheets from an Excel file and write them as CSV files
 #' Used in development mode for .csv file creation from a source .xlsx file.
 #' @param xlsx_path Path to the Excel file
@@ -2073,7 +2083,7 @@ getTop10Results <- function(data, ...){
 #' @param script_path Full path to the source script.
 #' @param print_plot If TRUE, print out the STEM plot.
 #' @param export_graphics If TRUE, export the STEM plot.
-#' @param export_path Path to the export folder. Deafults to ./graphics.
+#' @param export_path Path to the export folder. Deafults to ./results/graphic.
 #' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
 #' for formatting the output.
 #'
@@ -2081,7 +2091,7 @@ getTop10Results <- function(data, ...){
 #' in the usual format.
 #' 
 #' @import stem_method_master_thesis_cala.R
-getStemResults <- function(data, script_path, print_plot = T, export_graphics = T, export_path = "./graphics", ...){
+getStemResults <- function(data, script_path, print_plot = T, export_graphics = T, export_path = "./results/graphic", ...){
   source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
@@ -2276,10 +2286,10 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @param script_paths List of paths to all source scripts.
 #' @param export_graphics If TRUE, export various graphs into the graphics folder.
-#' @param export_path Path to the export folder. Defaults to ./graphics.
+#' @param export_path Path to the export folder. Defaults to ./results/graphic.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
-                              export_graphics = T, export_path = './graphics') {
+                              export_graphics = T, export_path = './results/graphic') {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -3335,12 +3345,12 @@ runBMAVerbose <- function(...){
 #'  * verbose - print all the fast results, plus extra information about the model
 #'  * all - print all results, plots included (takes a long time)
 #' @param export_graphics [logical] If TRUE, export the graphs into the graphics folder. Defaults to TRUE.
-#' @param export_path [character] Path to the export folder. Defaults to ./graphics.
+#' @param export_path [character] Path to the export folder. Defaults to ./results/graphic.
 #' @param graph_sclae [numeric] Scale the corrplot graph by this number. Defaults to 1.
 #'
 #' @return A numeric vector containing only the BMA coefficients.
 extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
-                              export_graphics = T, export_path = "./graphics", graph_scale = 1){
+                              export_graphics = T, export_path = "./results/graphic", graph_scale = 1){
   # Validate the input
   stopifnot(
     class(bma_model) == "bma",
