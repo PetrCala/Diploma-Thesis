@@ -507,11 +507,6 @@ handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio 
       stop(paste("The column", column_name, "does not exist in the input_data."))
     }
     
-    # Do not interpolate or validate missing values for this variable
-    if (handling_method == "allow"){
-      next
-    }
-    
     column_data <- input_data[[column_name]]
     na_count <- sum(is.na(column_data))
     total_count <- length(column_data)
@@ -531,6 +526,22 @@ handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio 
       input_data[[column_name]][is.na(column_data)] <- mean(column_data, na.rm = TRUE)
     } else if (handling_method == "median") {
       input_data[[column_name]][is.na(column_data)] <- median(column_data, na.rm = TRUE)
+    } else if (handling_method == "foo") {
+      column_type <- input_var_list$data_type[i]
+      calculate_foo <- function(type, col_data) {
+        interpolation_method <- switch(
+          type,
+          "float" = median(col_data, na.rm = TRUE),
+          "int" = median(col_data, na.rm = TRUE),
+          "dummy" = median(col_data, na.rm = TRUE),
+          "perc" = mean(col_data, na.rm = TRUE),
+          "category" = "missing",
+          # return a default value or warning when the type does not match any cases
+          {warning("Invalid type."); NULL}
+        )
+        return(interpolation_method)
+      }
+      input_data[[column_name]][is.na(column_data)] <- calculate_foo(column_type, column_data)
     } else {
       stop(paste("Invalid handling method for column", column_name, ": ", handling_method))
     }
