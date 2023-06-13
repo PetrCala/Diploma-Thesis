@@ -40,12 +40,15 @@ adjustable_parameters:
   box_plot_group_by_factor_1: study_name
   box_plot_group_by_factor_2: country
   box_plot_max_boxes: 60.0
+  box_plot_graph_scale: 3.0
   box_plot_verbose: yes
   funnel_effect_proximity: 1.0
   funnel_maximum_precision: 1.0
+  funnel_graph_scale: 3.0
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
   t_hist_upper_cutoff: 120.0
+  t_hist_graph_scale: 6.0
   non_linear_param_selection_cutoffs: 1.96
   non_linear_param_selection_symmetric: no
   non_linear_param_selection_modelmu: normal
@@ -85,7 +88,8 @@ adjustable_parameters:
   maive_verbose: yes
   automatic_bma: yes
   bma_verbose: no
-  bma_print_results: all
+  bma_graph_scale: 1.5
+  bma_print_results: none
   bma_param_burn: 10000.0
   bma_param_iter: 30000.0
   bma_param_g: UIP
@@ -139,7 +143,7 @@ export_methods:
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
 export_log_file_path: numeric_results.txt
-export_html_graphs: yes
+export_graphics: yes
 theme: green
 use_cache: yes
 cache_age: 3600.0
