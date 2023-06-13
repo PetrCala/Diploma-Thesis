@@ -17,6 +17,7 @@ rm(list = ls())
 # Load packages
 if (!require('yaml')) install.packages('yaml'); library('yaml')                   # yaml - handle params
 if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi') # Working directory
+if (!require('ddpcr')) install.packages('ddpcr'); library('ddpcr')                # Quiet output
 
 # Define the initial parameters
 user_params <- list(
@@ -124,7 +125,7 @@ user_params <- list(
     "maive_verbose" = TRUE,
     # Bayesian Model Averaging parameters
     "automatic_bma" = TRUE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
-    "bma_verbose" = TRUE, # If TRUE, print suggested formulas, VIF, etc.
+    "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
     "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
     "bma_param_burn" = 1e4, # Burn-ins (def 1e5)
     "bma_param_iter" = 3e4, # Draws (def 3e5)
