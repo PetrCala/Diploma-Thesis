@@ -23,15 +23,15 @@ if (!require('ddpcr')) install.packages('ddpcr'); library('ddpcr')              
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
-    "p_hacking_tests" = F,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
+    "p_hacking_tests" = T,
     "bma" = T,
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
@@ -166,10 +166,11 @@ user_params <- list(
   folder_paths = list(
     cache_folder = './_cache/', # Store cache files here
     data_folder = './data/', # Store data files here
-    export_folder = './results/', # Store results here
+    numeric_results_folder = './results/numeric/', # Store results here
     ext_package_folder = './pckg/', # Store external packages here
-    graphics_folder = './graphics/', # Store graphical output here
-    scripts_folder = './scripts/' # Store R scripts here
+    graphic_results_folder = './results/graphic/', # Store graphical output here
+    scripts_folder = './scripts/', # Store R scripts here
+    all_results_folder = "./results/" # Store the zip files with all results here
   ),
   
   # SCRIPT FILE NAMES
@@ -200,6 +201,7 @@ user_params <- list(
     "robma_estimates" = "RoBMA estimates"
   ),
   export_log_file_path = "numeric_results.txt", # Console log as a text file
+  export_zip_name = paste0("results_all_", format(Sys.Date(), "%m-%d-%y")), # Zip file with all results
   export_graphics = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
   theme = "green", # One of "blue", "yellow", "green", "red"
   
@@ -230,14 +232,14 @@ user_param_file <- 'user_parameters.yaml'
 # Save the user parameters into the working directory
 yaml::write_yaml(user_params, user_param_file)
 
-# Create a folder for export (must be done here explicitly)
-export_folder_path <- user_params$folder_path$export_folder
-if (!file.exists(export_folder_path)){
-  dir.create(export_folder_path)
+# Create a folder for numeric results export (must be done here explicitly)
+numeric_results_folder_path <- user_params$folder_path$numeric_results_folder
+if (!file.exists(numeric_results_folder_path)){
+  dir.create(numeric_results_folder_path, recursive = TRUE)
 }
 
 # Save the console output to a log file in the results folder
-log_file_path <- paste0(export_folder_path, user_params$export_log_file)
+log_file_path <- paste0(numeric_results_folder_path, user_params$export_log_file)
 if (file.exists(log_file_path)){quiet(system(paste("rm", log_file_path)))} # Clean output file
 quiet(sink()) # Empty the sink
 sink(log_file_path, append = FALSE, split = TRUE) # Capture console output

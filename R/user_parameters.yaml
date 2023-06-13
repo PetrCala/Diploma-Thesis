@@ -1,13 +1,13 @@
 run_this:
-  variable_summary_stats: no
-  effect_summary_stats: no
-  box_plot: no
-  funnel_plot: no
-  t_stat_histogram: no
-  linear_tests: no
-  nonlinear_tests: no
-  exo_tests: no
-  p_hacking_tests: no
+  variable_summary_stats: yes
+  effect_summary_stats: yes
+  box_plot: yes
+  funnel_plot: yes
+  t_stat_histogram: yes
+  linear_tests: yes
+  nonlinear_tests: yes
+  exo_tests: yes
+  p_hacking_tests: yes
   bma: yes
   fma: yes
   ma_variables_description_table: yes
@@ -116,10 +116,11 @@ adjustable_parameters:
 folder_paths:
   cache_folder: ./_cache/
   data_folder: ./data/
-  export_folder: ./results/
+  numeric_results_folder: ./results/numeric/
   ext_package_folder: ./pckg/
-  graphics_folder: ./graphics/
+  graphic_results_folder: ./results/graphic/
   scripts_folder: ./scripts/
+  all_results_folder: ./results/
 script_files:
   endo_kink_source: endo_kink_master_thesis_cala.R
   elliott_source: elliott_master_thesis_cala.R
@@ -143,6 +144,7 @@ export_methods:
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
 export_log_file_path: numeric_results.txt
+export_zip_name: results_all_06-13-23
 export_graphics: yes
 theme: green
 use_cache: yes
