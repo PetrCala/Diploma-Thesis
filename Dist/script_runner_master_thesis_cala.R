@@ -36,7 +36,7 @@ user_params <- list(
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
     "bpe" = T, # Executable only after running BMA
-    "robma" = F # Computationally expensive
+    "robma" = T # Computationally expensive
   ),
   
   # CUSTOMIZABLE FILE NAMES

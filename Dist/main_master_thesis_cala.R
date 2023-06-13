@@ -568,9 +568,7 @@ if (run_this$robma){
 
 # Zip the results
 if (user_params$export_results){
-  runCachedFunction(
-    zipFolders, user_params,
-    verbose_function = zipFoldersVerbose,
+  zipFolders(
     zip_name = user_params$export_zip_name,
     dest_folder = folder_paths$all_results_folder,
     folder_paths$data_folder,
