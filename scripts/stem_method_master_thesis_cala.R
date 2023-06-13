@@ -293,8 +293,8 @@ stem_funnel <- function(beta_input, se_input, stem_estimates, theme){
   filled_diamond <- 18
   points_size <-2
   se_axis_min <- 0
-  beta_axis_min <- -0.41  #change these two to optimize the bounds for the grapgh #-0.38,0.51
-  beta_axis_max <- 0.54
+  beta_axis_min <- min(beta_input) - min(beta_input) / 15
+  beta_axis_max <- max(beta_input) + max(beta_input) / 15
   labNames <- c('Coefficient ','Precision ')
   
   # rescale SE for ease of visual interpretation
