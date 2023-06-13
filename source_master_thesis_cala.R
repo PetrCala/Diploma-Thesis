@@ -50,10 +50,17 @@ validateFolderExistence <- function(folder_name, require_existence = FALSE){
 #' Clean a folder of all files by destroying and recreating it
 cleanFolder <- function(folder_name){
   files <- list.files(path = folder_name)
-  files <- paste0(folder_name, "/", files)
+  files <- paste0(folder_name, files)
   # Remove all files
   for (file in files){
-    quiet(system(paste("rm", file)))
+    tryCatch({
+      quiet(system(paste("rm", file)))
+    }, warning = function(wrn){
+      cat("Warning:")
+    }, error = function(err){
+      cat("error")
+    }
+    )
   }
 }
 
@@ -1394,6 +1401,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
      yellow = list("#AB9800","#FFF5CC","#D1B00D"),
      green = list("#009B0F","#CCF3D1","#0DD146"),
      red = list("#AB0000","#FFCCCC","#D10D0D"),
+     purple = list("#6A0DAB","#EAD6F5","#900DAB"),
     stop("Invalid theme type")
   )
   plot_outlier_color <- plot_colors[[1]]
@@ -1713,7 +1721,7 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
     colnames(funnel_data) <- c("study_id", "effect", "precision")
   }
   
-  # Get visual bounds and tick colorshttp://127.0.0.1:45381/graphics/plot_zoom_png?width=1200&height=900
+  # Get visual bounds and tick colors
   funnel_x_lbound <- min(funnel_data$effect)
   funnel_x_ubound <- max(funnel_data$effect)
   mean_x_tick <- mean(funnel_data$effect)
@@ -1726,9 +1734,10 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
   current_theme <- getTheme(theme, x_axis_tick_text = funnel_tick_text)
   point_color <- switch(theme,
     blue = "#1261ff",
-    yellow =  "#FFD700",
+    yellow =  "#D1B00D",
     green =  "#00FF00",
     red =  "#FF0000",
+    purple = "#800080",
     stop("Invalid theme type")
   )
   vline_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
@@ -1891,6 +1900,7 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
     yellow =  "#FFD700",
     green =  "#00FF00",
     red =  "#FF0000",
+    purple = "#800080",
     stop("Invalid theme type")
   )
   mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
@@ -2082,8 +2092,10 @@ getTop10Results <- function(data, ...){
 #' @param data A data frame containing the necessary columns for the STEM-based method
 #' @param script_path Full path to the source script.
 #' @param print_plot If TRUE, print out the STEM plot.
+#' @param theme Theme for the graphics. Defaults to "blue".
 #' @param export_graphics If TRUE, export the STEM plot.
 #' @param export_path Path to the export folder. Deafults to ./results/graphic.
+#' @param graph_scale Numeric, scale the graph by this number. Defaults to 5.
 #' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
 #' for formatting the output.
 #'
@@ -2091,7 +2103,9 @@ getTop10Results <- function(data, ...){
 #' in the usual format.
 #' 
 #' @import stem_method_master_thesis_cala.R
-getStemResults <- function(data, script_path, print_plot = T, export_graphics = T, export_path = "./results/graphic", ...){
+getStemResults <- function(data, script_path, print_plot = T, theme = "blue", 
+                           export_graphics = T, export_path = "./results/graphic",
+                           graph_scale = 5, ...){
   source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
@@ -2102,8 +2116,8 @@ getStemResults <- function(data, script_path, print_plot = T, export_graphics = 
   # Estimation
   est_stem <- stem(data$effect, data$se, stem_param)$estimates # Actual esimation
   # Stem plot
-  funnel_stem_call <- quote(
-    stem_funnel(data$effect, data$se, est_stem)
+  funnel_stem_call <- bquote(
+    stem_funnel(data$effect, data$se, est_stem, theme = .(theme))
   )
   # Print and export the plot 
   if (print_plot){
@@ -2114,7 +2128,7 @@ getStemResults <- function(data, script_path, print_plot = T, export_graphics = 
     validateFolderExistence(export_path)
     stem_path <- paste0(export_path, "/stem.png")
     hardRemoveFile(stem_path)
-    png(stem_path)
+    png(stem_path, width = 403*graph_scale, height = 371*graph_scale, res = 250)
     eval(funnel_stem_call)
     dev.off()
   }
@@ -2285,11 +2299,14 @@ getEndoKinkResults <- function(data, script_path, ...){
 #'
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @param script_paths List of paths to all source scripts.
+#' @param theme Theme for the graphics. Defaults to "blue".
 #' @param export_graphics If TRUE, export various graphs into the graphics folder.
 #' @param export_path Path to the export folder. Defaults to ./results/graphic.
+#' @param graph_scale Numeric, scale the graph by this number. Defaults to 5.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
-getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
-                              export_graphics = T, export_path = './results/graphic') {
+getNonlinearTests <- function(input_data, script_paths, selection_params = NULL, theme = "blue",
+                              export_graphics = T, export_path = './results/graphic',
+                              graph_scale = 5) {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -2317,8 +2334,10 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
       input_data,
       stem_script_path,
       print_plot = T,
+      theme = theme,
       export_graphics = export_graphics,
       export_path = export_path,
+      graph_scale = graph_scale,
       pub_bias_present = F,
       verbose_coefs = T
     )
@@ -3346,29 +3365,44 @@ runBMAVerbose <- function(...){
 #' 
 #' @param bma_model [bma] An object of class bma containing the BMA regression model.
 #' @param bma_data [data.frame] A data frame containing the data used to fit the BMA model.
+#' @param input_var_list [data.frame] A data frame with the variable information.
 #' @param print_results [character] A character value indicating the level of result printing desired.
 #'  Can be one of:
 #'  * none - print nothing
 #'  * fast - print only those results that do not take time to print
 #'  * verbose - print all the fast results, plus extra information about the model
 #'  * all - print all results, plots included (takes a long time)
+#' @param adjustable_theme [logical] If TRUE, modify the plot colors to fit the theme. Defaults to FALSE.
+#' @param theme [character] Theme for the two plots.
 #' @param export_graphics [logical] If TRUE, export the graphs into the graphics folder. Defaults to TRUE.
 #' @param export_path [character] Path to the export folder. Defaults to ./results/graphic.
-#' @param graph_sclae [numeric] Scale the corrplot graph by this number. Defaults to 1.
+#' @param graph_scale [numeric] Scale the corrplot graph by this number. Defaults to 1.
 #'
 #' @return A numeric vector containing only the BMA coefficients.
-extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
-                              export_graphics = T, export_path = "./results/graphic", graph_scale = 1){
+extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results = "fast", adjustable_theme = F,
+                              theme = "blue", export_graphics = T, export_path = "./results/graphic", graph_scale = 1){
   # Validate the input
   stopifnot(
     class(bma_model) == "bma",
     is.data.frame(bma_data),
+    is.data.frame(input_var_list),
     is.character(print_results),
+    is.logical(adjustable_theme),
+    is.character(theme),
     print_results %in% c("none", "fast", "verbose", "all", "table"),
     is.logical(export_graphics),
     is.character(export_path),
     is.numeric(graph_scale)
   )
+  # Rename the variables to verbose form
+  bma_names <- bma_model$reg.names
+  idx <- match(bma_names, input_var_list$var_name)
+  bma_names[!is.na(idx)] <- input_var_list$var_name_verbose[na.omit(idx)]
+  bma_names[is.na(idx)] <- "Intercept"
+  bma_model$reg.names <- bma_names
+  # Get verbose names for the bma correlation matirx too
+  effect_verbose <- input_var_list$var_name_verbose[match("effect",input_var_list$var_name)]
+  bma_matrix_names <- c(effect_verbose, bma_names)
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
   # Print out coefficient and model statistics
@@ -3383,19 +3417,34 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
   }
   # Create plots for printing/export
   if (any(print_results == "all", export_graphics == TRUE)){
+    # Get the plot theme
+    if (adjustable_theme){
+      color_spectrum <- switch(theme,
+        blue = c("#005CAB", "white", "#844ec7"),
+        yellow = c("#AB9800", "white", "#009B0F"),
+        green = c("#009B0F", "white", "#AB0000"),
+        red = c("#AB0000", "white", "#6A0DAB"),
+        purple = c("#6A0DAB", "white", "#005CAB"),
+        stop("Invalid theme type.")
+      )
+    } else {
+      color_spectrum <- c("red", "white", "blue") # Default
+    }
     # Main plot
-    main_plot_call <- quote(
-      image(bma_model, yprop2pip=FALSE,order.by.pip=TRUE, do.par=TRUE, do.grid=TRUE,
-          do.axis=TRUE, xlab = "", main = "") # Takes time
+    main_plot_call <- bquote( # Evaluate the color spectrum directly because RRRR
+      image(bma_model, col = .(color_spectrum), yprop2pip=FALSE,order.by.pip=TRUE,
+          do.par=TRUE, do.grid=TRUE, do.axis=TRUE, xlab = "", main = "") # Takes time
     )
     # Model distribution
-    bma_dist_call <- quote(
-      plot(bma_model)
+    dist_color_spectrum <- color_spectrum[color_spectrum != "white"] # Pop white
+    bma_dist_call <- bquote(
+      base::plot(bma_model, col = .(dist_color_spectrum))
     )
     # Corrplot
-    bma_col<- colorRampPalette(c("red", "white", "blue"))
     bma_matrix <- cor(bma_data)
-    corrplot_mixed_call <- quote(
+    dimnames(bma_matrix) <- lapply(dimnames(bma_matrix),function(x){bma_matrix_names}) # Rename
+    bma_col<- colorRampPalette(color_spectrum) # Color palette
+    corrplot_mixed_call <- quote( # Simple eval, works for some reason
       corrplot.mixed(bma_matrix, lower = "number", upper = "circle",
                      lower.col=bma_col(200), upper.col=bma_col(200),tl.pos = c("lt"),
                      diag = c("u"), tl.col="black", tl.srt=70, tl.cex=0.55,
@@ -3405,9 +3454,9 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
   # Print out plots (takes time)
   if (print_results == "all"){
     print("Printing out Bayesian Model Averaging plots. This may take some time...")
-    eval(main_plot_call)
-    eval(bma_dist_call)
-    eval(corrplot_mixed_call)
+    eval(main_plot_call, envir = environment())
+    eval(bma_dist_call, envir = environment())
+    eval(corrplot_mixed_call, envir = environment())
   }
   # Return coefficients only
   if (!print_results == "none"){
@@ -3424,18 +3473,20 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
       hardRemoveFile(path)
     }
     # Main plot
-    png(main_path, width=1400, height=1341, res=150)
-    eval(main_plot_call)
+    png(main_path, width=933*graph_scale, height=894*graph_scale, units = "px",
+        res=70*graph_scale)
+    eval(main_plot_call, envir = environment())
     dev.off()
     # Model distribution
-    png(dist_path, width = 528, height = 506)
-    eval(bma_dist_call)
+    png(dist_path, width = 528*graph_scale, height = 506*graph_scale, units = "px",
+        res = 90*graph_scale)
+    eval(bma_dist_call, envir = environment())
     dev.off()
     # Corrplot
     png(corrplot_path,
         width = 700*graph_scale, height = 669*graph_scale, units = "px",
         res = 90*graph_scale) # pointsize for text size
-    eval(corrplot_mixed_call)
+    eval(corrplot_mixed_call, envir = environment())
     dev.off()
   }
   return(bma_coefs)
@@ -3551,10 +3602,11 @@ lowRankQPCopy <- function(Vmat,dvec,Amat,bvec,uvec,method="PFCF",verbose=FALSE,n
 #'
 #' This function uses the lowRankQPCopy function, a copy of the LowRankQP function from the
 #' LowRankQP package, which is not available anymore.
-runFMA <- function(bma_data, bma_model, verbose = T){
+runFMA <- function(bma_data, bma_model, input_var_list, verbose = T){
   # Validate input
   stopifnot(
     is.data.frame(bma_data),
+    is.data.frame(input_var_list),
     class(bma_model) == "bma",
     names(bma_data[,1]) == "effect" # Restrictive, but extra safe
   )
@@ -3633,9 +3685,15 @@ runFMA <- function(bma_data, bma_model, verbose = T){
   names <- c(names,"const_")
   MMA.fls <- MMA.fls[match(names, MMA.fls$names),]
   MMA.fls$names <- NULL
-  
   # Extract results
   fma_res <- MMA.fls[-1,]
+  # Rename the columns to their verbose form
+  fma_names <- rownames(fma_res)
+  idx <- match(fma_names, input_var_list$var_name)
+  fma_names[!is.na(idx)] <- input_var_list$var_name_verbose[na.omit(idx)]
+  fma_names[is.na(idx)] <- "Intercept"
+  rownames(fma_res) <- fma_names
+  # Print results
   if (verbose){
     runFMAVerbose(fma_res, verbose = verbose)
   }
@@ -3671,16 +3729,6 @@ getMATable <- function(bma_coefs, fma_coefs, input_var_list){
   res_df <- round(res_df, 3)
   # Change column names
   colnames(res_df) <- c("BMA P.Mean", "BMA SD", "BMA PIP", "FMA Coef", "FMA SE", "FMA p-val")
-  # Change row names
-  match_positions <- match(rownames(res_df), input_var_list$var_name) # Positions of row names in var info DF
-  verbose_rownames <- input_var_list$var_name_verbose[match_positions] # Verbose name of variables
-  if (sum(is.na(verbose_rownames)) > 1){
-    stop("Unspecified verbose variable names in the model averaging result table.")
-  } else if (sum(is.na(verbose_rownames)) == 1){
-    # Intercept unspecified
-    verbose_rownames[is.na(verbose_rownames)] <- "Intercept"
-  }
-  rownames(res_df) <- verbose_rownames
   # Move intercept to the top
   res_df <- rbind(res_df[nrow(res_df),], res_df[-nrow(res_df),]) # Last row to first
   # Return the result
@@ -4334,7 +4382,7 @@ zipFoldersVerbose <- function(zip_file_path){
 #' Available choices - main, yellow, green, red
 getTheme <- function(theme_type, x_axis_tick_text = "black"){
   # Validate the theme type
-  available_themes <- c("blue", "yellow", "green", "red")
+  available_themes <- c("blue", "yellow", "green", "red", "purple")
   if (!theme_type %in% available_themes){ # Loaded from source
     message(paste(theme_type, "is not a valid theme."))
     message("You must choose one of the following themes:")
@@ -4347,6 +4395,7 @@ getTheme <- function(theme_type, x_axis_tick_text = "black"){
     yellow = "#FFFFD1",
     green = "#D1FFD1",
     red = "#FFD1D1",
+    purple = "#E6D1FF",
     stop("Invalid theme type.")
   )
   # Construct and return the theme
