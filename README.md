@@ -104,7 +104,7 @@ Furthermore, the existence of all folders will be verified. Note that some do no
      - *stop* - Do not allow missing values. Throw an error in case there is a missing value.
      - *mean* - Interpolate with the mean of the existing data.
      - *median* - Interpolate with the median of the existing data.
-     - *allow* - Should **NOT** be used. Your data frame should not contain any missing observations that can not be interpolated (filled in automatically with a numeric value). If such a column exists in your data frame, consider omitting this column from the analysis.
+     - *foo* - Interpolate with random values. These columns should not be used for further analysis (BMA,...).
    * **variable_summary** - Boolean. If `TRUE`, this variable will appear in the summary statistics table.
    * **effect_sum_stats** - Boolean. If `TRUE`, this variable will appear in the effect summary statistics table.
    * **equal** - Float. If set to any value, the effect summary statistics table will print out the statistics
