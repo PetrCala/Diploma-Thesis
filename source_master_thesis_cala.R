@@ -2089,6 +2089,7 @@ getStemResults <- function(data, script_path, print_plot = T, export_plot = T, e
     stopifnot(is.character(export_path), length(export_path) > 0)
     validateFolderExistence(export_path)
     stem_path <- paste0(export_path, "/stem.png")
+    hardRemoveFile(stem_path)
     png(stem_path)
     eval(funnel_stem_call)
     dev.off()
@@ -3384,6 +3385,10 @@ extractBMAResults <- function(bma_model, bma_data, print_results = "fast",
     main_path <- paste0(export_path, "/bma_main.png")
     dist_path <- paste0(export_path, "/bma_dist.png")
     corrplot_path <- paste0(export_path, "/bma_corrplot.png")
+    # Remove existing plots if they exist
+    for (path in list(main_path, dist_path, corrplot_path)){
+      hardRemoveFile(path)
+    }
     # Main plot
       # writePNG(eval(main_plot_call), main_path)
     # Model distribution
@@ -4149,9 +4154,7 @@ nullVerboseFunction <- function(res,... ){NULL}
 writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_overwrite = FALSE){
   # A temp function for code efficiency
   overwrite <- function(x = object_name, file = file_name, row.names = use_rownames){
-    if (file.exists(file)){
-      file.remove(file)
-    }
+    hardRemoveFile(file) # Remove if exists
     write.csv(x, file, row.names = row.names, fileEncoding = "UTF-8")
   }
   # Force overwrite
@@ -4233,6 +4236,13 @@ exportTable <- function(results_table, user_params, method_name){
   identical_file_exists <- writeIfNotIdentical(results_table, results_path, use_rownames)
   if (!identical_file_exists){
     print(paste("Writing the", tolower(verbose_info), "results into", results_path))
+  }
+}
+
+#' Remove a file from the system
+hardRemoveFile <- function(file_path){
+  if (file.exists(file_path)){
+    quiet(system(paste("rm",file_path)))
   }
 }
 

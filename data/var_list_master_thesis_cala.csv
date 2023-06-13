@@ -34,7 +34,7 @@ data_type_survey,Survey Data,=1 if the study uses data from a survey.,dummy,19,s
 data_type_national_register,National Register Data,=1 if the study uses data from a national register (reference category).,dummy,19,stop,TRUE,TRUE,1,NA,FALSE,TRUE,FALSE,stop
 data_cross_section,Cross-sectional Data,=1 if the study uses cross-sectional data.,dummy,20,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
 data_panel,Panel Data,=1 if the study uses panel data (reference category).,dummy,20,stop,TRUE,TRUE,1,NA,FALSE,TRUE,FALSE,stop
-data_avgyear,Data Year,The logarithm of the average year of the study's time span,float,21,median,TRUE,TRUE,NA,median,TRUE,FALSE,TRUE,mean
+data_avgyear,Data Year,The logarithm of the average year of the study's time span,float,21,median,TRUE,TRUE,NA,median,TRUE,FALSE,FALSE,mean
 no_ed,No Education,The percentage of subjects that attained no education (reference category).,perc,22,mean,TRUE,FALSE,NA,NA,FALSE,TRUE,FALSE,stop
 prim_ed,Primary Education,The percentage of subjects that attained only primary education.,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,FALSE,FALSE,mean
 sec_ed,Secondary Education,The percentage of subjects that attained only secondary education.,perc,22,mean,TRUE,FALSE,NA,NA,TRUE,FALSE,FALSE,mean
@@ -64,13 +64,12 @@ med_exp,Median Expenditure,The logarithm of the median expenditure in the countr
 min_wage,Minimum Wage,The logarithm of the minimum wage in the country in a given year.,float,33,median,TRUE,TRUE,NA,median,TRUE,FALSE,TRUE,mean
 freedom_index,Academic Freedom Index,The academic freedom index reported for the country in a given year.,float,34,median,TRUE,TRUE,NA,median,TRUE,FALSE,FALSE,mean
 mean_age,Mean Age,The logarithm of the average age of the subjects.,float,35,median,TRUE,TRUE,NA,median,TRUE,FALSE,TRUE,mean
-method_ols,Method: OLS,=1 if the authors use Ordinary least squares.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
-method_cohort,Method: Cohort,=1 if the authors use Cohort-type estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
-method_fe,Method: FE,=1 if the authors use Fixed-effects estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
+method_ols,Method: OLS,=1 if the authors use Ordinary least squares.,dummy,36,stop,TRUE,TRUE,1,NA,FALSE,TRUE,FALSE,stop
+method_cohort_fe,Method: Cohort/FE,=1 if the authors use Cohort-type or Fixed-effects estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
 method_2sls,Method: 2SLS,=1 if the authors use Two-Stage least squares estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
 method_heckman,Method: Heckman,"=1 if the authors use Two-step estimation (Heckman and Polachek, 1974).",dummy,36,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
 method_probit,Method: Probit,=1 if the authors use Probit estimation.,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
-method_IV,Method: IV,=1 if the authors use Instrumental variables estimation (reference category).,dummy,36,stop,TRUE,TRUE,1,NA,FALSE,TRUE,FALSE,stop
+method_IV,Method: IV,=1 if the authors use Instrumental variables estimation (reference category).,dummy,36,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
 ability_direct,Ability: Direct,=1 if the authors include a direct measure of ability in their study.,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
 ability_proxy,Ability: Proxied,=1 if the authors use a proxy for ability in their study.,dummy,37,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
 ability_uncontrolled,Ability: Uncontrolled,"=1 if the authors acknowledge, but do not control for ability in any way in their study.",dummy,37,stop,TRUE,TRUE,1,NA,TRUE,FALSE,FALSE,mean
