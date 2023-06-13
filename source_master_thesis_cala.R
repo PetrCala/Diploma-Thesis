@@ -43,7 +43,7 @@ validateFolderExistence <- function(folder_name, require_existence = FALSE){
     if (require_existence){
       stop(paste("The folder", folder_name, "must exist in the working directory."))
     }
-    dir.create(folder_name)
+    dir.create(folder_name, recursive = TRUE)
   }
 }
 
@@ -75,6 +75,7 @@ readExcelAndWriteCsv <- function(xlsx_path, sheet_names, csv_suffix = "master_th
       # Remove .
       df_xlsx[df_xlsx == '.'] <- NA
       # Overwrite the CSV file
+      hardRemoveFile(new_data_path)
       write_csv(df_xlsx, new_data_path)
       return(df_xlsx)
     })
@@ -4219,7 +4220,7 @@ writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_over
 #' The file will not export if the same file already exists under the specified path.
 #' 
 #' @param results_table [data.frame] The data frame to be exported as a CSV file.
-#' @param user_params [list] A list of user parameters. It should contain an 'export_folder' item,
+#' @param user_params [list] A list of user parameters. It should contain an 'numeric_results' item,
 #' which specifies the directory to export the file, and an 'export_methods' item, which is a
 #' named list where the names correspond to valid 'method_name' values and the values are used for verbose output.
 #' @param method_name [character] A character string that specifies the export method. 
@@ -4242,9 +4243,9 @@ exportTable <- function(results_table, user_params, method_name){
     method_name %in% names(user_params$export_methods) # Only recognized exports
   )
   # Define the export paths
-  export_folder <- user_params$folder_paths$export_folder # Export folder
-  validateFolderExistence(export_folder) # Create the export folder if not present in the working directory
-  results_path <- paste0(export_folder, method_name, ".csv") # export_folder/export_file.csv
+  numeric_results_folder <- user_params$folder_paths$numeric_results_folder # Export folder
+  validateFolderExistence(numeric_results_folder) # Create the export folder if not present in the working directory
+  results_path <- paste0(numeric_results_folder, method_name, ".csv") # numeric_results_folder/export_file.csv
   
   # Check whether the row names are sequential numbers (1,2,3,...) - do not use rows if they are
   row_names <- rownames(results_table)
@@ -4263,6 +4264,47 @@ hardRemoveFile <- function(file_path){
   if (file.exists(file_path)){
     quiet(system(paste("rm",file_path)))
   }
+}
+
+#' Zip multiple folders into a single zip file.
+#'
+#' @param zip_name [character] The name of the zip file to be created.
+#' @param dest_folder [character] The absolute path of the destination folder where the zip file will be created.
+#' @param ... [character] Variable length argument, absolute paths of folders to be zipped.
+#' 
+#' @return A success message indicating the location of the created zip file.
+#'
+#' @examples
+#' \dontrun{
+#' zip_folders(zip_name = "my_folders", dest_folder = "/path/to/dest", "/path/to/folder1", "/path/to/folder2")
+#' }
+#' 
+#' @export
+zipFolders <- function(zip_name, dest_folder, ...){
+  # Get arguments and paths
+  folder_names <- as.vector(unlist(list(...))) # Folders to be zipped, character vector
+  zip_file_path <- file.path(paste0(dest_folder, zip_name, ".zip"))
+  if(!dir.exists(dest_folder)){
+    dir.create(dest_folder, recursive = TRUE)
+  }
+  # Handle the .zip file creation
+  hardRemoveFile(zip_file_path) # Remove if exists
+  tryCatch({
+    utils::zip(zip_file_path, files=folder_names, extras = "-r") # Create the zip file
+  }, error = function(e){
+    print("An error occured when creating the zip file:")
+    print(e$message)
+    return()
+  }
+  )
+  # Return a message
+  zipFoldersVerbose(zip_file_path)
+  return()
+}
+
+#' Verbose function for the zipFolders function
+zipFoldersVerbose <- function(zip_file_path){
+  print(paste0("Successfully zipped results into: ", zip_file_path))
 }
 
 ######################### GRAPHICS #########################
