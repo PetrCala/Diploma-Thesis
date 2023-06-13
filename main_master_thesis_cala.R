@@ -567,20 +567,14 @@ if (run_this$robma){
 ### EXPORT ###
 
 # Zip the results
-runCachedFunction(
-  zipFolders, user_params,
-  verbose_function = zipFoldersVerbose,
-  zip_name = user_params$export_zip_name,
-  dest_folder = folder_paths$all_results_folder,
-  folder_paths$data_folder,
-  folder_paths$graphic_results_folder,
-  folder_paths$numeric_results_folder
-)
-
-# zipFolders(
-#   zip_name = user_params$export_zip_name,
-#   dest_folder = folder_paths$all_results_folder,
-#   folder_paths$data_folder,
-#   folder_paths$graphic_results_folder,
-#   folder_paths$numeric_results_folder
-# )
+if (user_params$export_results){
+  runCachedFunction(
+    zipFolders, user_params,
+    verbose_function = zipFoldersVerbose,
+    zip_name = user_params$export_zip_name,
+    dest_folder = folder_paths$all_results_folder,
+    folder_paths$data_folder,
+    folder_paths$graphic_results_folder,
+    folder_paths$numeric_results_folder
+  )
+}

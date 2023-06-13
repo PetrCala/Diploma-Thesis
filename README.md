@@ -19,10 +19,11 @@ The folder is structured as follows:
 ├── data
 │   ├── data_set_master_thesis_cala.csv
 │   └── var_list_master_thesis_cala.csv
-├── graphics
 ├── pckg
 │   └── LowRankQP
 ├── results
+│   ├── graphic
+│   └── numeric
 ├── scripts
 │   ├── elliott_master_thesis_cala.R
 │   ├── endo_kink_master_thesis_cala.R
@@ -40,9 +41,10 @@ The folder is structured as follows:
 * `data/` -> Store your `.csv` data files here. I include two files for inspiration of how the files should look like.
   - `data_set_master_thesis_cala.csv` -> Main data frame. Contains data of 115 studies with over 40 variables. All numeric results are derived from this file.
   - `var_list_master_thesis_cala.csv` -> Data frame with information about individual variables. The scripts rely on this data frame to identify variable types, their usage in various parts of the analysis, etc.
-* `graphics/` -> All graphical results will be automatically stored here.
 * `pckg/` -> Folder with external packages that are not available online anymore, such as `LowRankQP`.
-* `reults/` -> All numerical/text-based results will be automatically stored here.
+* `results/` -> Folder with all results. A `.zip` file with all results will be automatically created here.
+  - graphic/ -> All graphic results will be automatically stored here.
+  - numeric/ -> All numeric results will be automatically stored here.
 * `scripts/` -> Source scripts for various external methods.
   - `elliott_master_thesis_cala.R` -> Source code for the p-hacking tests developed by Elliott et al. (2022).
   - `endo_kink_master_thesis_cala.R` -> Source code for the Endogenous Kink method (Bom & Rachinger, 2019).
