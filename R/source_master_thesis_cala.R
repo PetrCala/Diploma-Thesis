@@ -2509,7 +2509,8 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 #' @param data a data frame containing the data for the IV regression
 #' @inheritDotParams ... additional arguments to be passed to extractExoCoefs
 #'
-#' @return a numeric vector containing the extracted coefficients from the IV regression
+#' @return A list with a numeric vector containing the extracted coefficients from the IV regression
+#' and the name of the instrument used.
 #'
 #' @details The function defines a list of instruments to use, and finds the best instrument
 #' by running a function called findBestInstrument. If multiple best instruments are identified,
@@ -2552,7 +2553,7 @@ getIVResults <- function(data, ...){
   iv_coefs_mat <- matrix(IV_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
   # Extract the coefficients and return as a vector
   iv_coefs_out <- extractExoCoefs(iv_coefs_mat, ...) 
-  return(iv_coefs_out)
+  return(list(iv_coefs_out, best_instrument))
 }
 
 ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
@@ -2648,7 +2649,6 @@ getPUniResults <- function(data, ...){
 #' @param input_data [data.frame] A data frame containing the necessary columns: "effect", "se", "study_id", "study_size", and "precision".
 #' @param puni_method [character] Method to be used for p-uniform calculation. One of "ML", "P". Defaults to "ML".
 #' @param puni_params [list] Aruments to be used in p-uniform.
-#' @return A data frame with the results of the three tests for publication bias and exogeneity in IV analyses using clustered data.
 #'
 #' @details This function first validates that the necessary columns are present in the input data frame.
 #' If the validation is successful, it performs three tests for publication bias and exogeneity in instrumental variable (IV)
@@ -2670,7 +2670,9 @@ getExoTests <- function(input_data, puni_params) {
     puni_params
   )
   # Get coefficients
-  iv_res <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  iv_res_list <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  iv_res <- iv_res_list[[1]] # Coefficients
+  iv_best_instrument <- iv_res_list[[2]]
   p_uni_res <- do.call(getPUniResults, all_puni_params)
   # Combine the results into a data frame
   results <- data.frame(
@@ -2680,12 +2682,18 @@ getExoTests <- function(input_data, puni_params) {
   rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
   colnames(results) <- c("IV", "p-Uniform")
   # Print the results into the console and return
-  getExoTestsVerbose(results)
-  return(results) 
+  out_list <- list(results, iv_best_instrument)
+  getExoTestsVerbose(out_list)
+  return(out_list) 
 }
 
 #' Verbose output for the getExoTests function
-getExoTestsVerbose <- function(res, ...){
+getExoTestsVerbose <- function(result_list, ...){
+  # Unlist
+  res <- result_list[[1]]
+  best_instrument <- result_list[[2]]
+  # Print out info
+  print(paste("Instrument used in the IV regression:", best_instrument))
   print("Results of the tests relaxing exogeneity, clustered by study:")
   print(res)
   cat("\n\n")

@@ -364,12 +364,13 @@ if (run_this$exo_tests){
   # Parameters
   puni_params <- getMultipleParams(adj_params, "puni_param_",T,T)
   # Estimation
-  exo_tests_results <- runCachedFunction(
+  exo_tests_results_list <- runCachedFunction(
     getExoTests, user_params,
     verbose_function = getExoTestsVerbose,
     data,
     puni_params
   )
+  exo_tests_results <- exo_tests_results_list[[1]]
   if (user_params$export_results){
     exportTable(exo_tests_results, user_params, "exo_tests")
   }
