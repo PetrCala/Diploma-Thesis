@@ -4256,6 +4256,7 @@ exportTable <- function(results_table, user_params, method_name){
   identical_file_exists <- writeIfNotIdentical(results_table, results_path, use_rownames)
   if (!identical_file_exists){
     print(paste("Writing the", tolower(verbose_info), "results into", results_path))
+    cat("\n")
   }
 }
 
@@ -4289,6 +4290,7 @@ zipFolders <- function(zip_name, dest_folder, ...){
   }
   # Handle the .zip file creation
   hardRemoveFile(zip_file_path) # Remove if exists
+  print("Writing the results into a zip file...")
   tryCatch({
     utils::zip(zip_file_path, files=folder_names, extras = "-r") # Create the zip file
   }, error = function(e){
