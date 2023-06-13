@@ -1687,6 +1687,7 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #'  isntead of 1/SE as a measure of precision, to account for study size.
 #'  
 #' @param input_data [data.frame] Main data frame. Must contain cols 'effect', 'precision'
+#' @param precision_to_log [logical] If TRUE, use log of precision. Defaults to FALSE.
 #' @param effect_proximity [float] Cutoff point for the effect. See getOutliers() for more.
 #' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
 #' @param use_study_medians [bool] If TRUE, plot medians of studies instead of all observations.
@@ -1697,13 +1698,14 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #'  Defaults to FALSE.
 #' @param graph_scale [numeric] Scale for the output graph. Defaults to 3.
 #' @param output_path [character] Full path to where the plot should be stored. Defaults to NA.
-getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
+getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2, maximum_precision=0.2,
                           use_study_medians = F, theme = "blue", verbose = T,
                           export_graphics = F, output_path = NA, graph_scale = 3){
   # Check input validity
   required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
+    is.logical(precision_to_log),
     is.numeric(effect_proximity),
     is.numeric(maximum_precision),
     is.logical(verbose),
@@ -1752,6 +1754,11 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
     stop("Invalid theme type")
   )
   vline_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
+  
+  # Precision to log if necessary
+  if (precision_to_log){
+    funnel_data$precision <- log(funnel_data$precision)
+  }
   
   # Plot the plot
   x_title <- ifelse(use_study_medians, "study median values", "all observations")

@@ -26,10 +26,10 @@ user_params <- list(
     "variable_summary_stats" = F,
     "effect_summary_stats" = F,
     "box_plot" = F,
-    "funnel_plot" = F,
+    "funnel_plot" = T,
     "t_stat_histogram" = F,
     "linear_tests" = F,
-    "nonlinear_tests" = T,
+    "nonlinear_tests" = F,
     "exo_tests" = F,
     "p_hacking_tests" = F,
     "bma" = F,
@@ -92,6 +92,7 @@ user_params <- list(
     "box_plot_graph_scale" = 3, # Numeric, scale the graph by this number
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
+    "funnel_precision_to_log" = TRUE, # If T, use log of precision as y axis (default: precision)
     "funnel_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
     "funnel_maximum_precision" = 1, # Precision axis maximum value cutoff point (perc)
     "funnel_graph_scale" = 3, # Numeric, scale the graph by this number
