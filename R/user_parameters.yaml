@@ -14,28 +14,28 @@ run_this:
   bpe: yes
   robma: no
 data_files:
-  master_data_set_source: data_set_vany.csv
-  var_list_source: var_list_vany.csv
+  master_data_set_source: data_set_master_thesis_cala.csv
+  var_list_source: var_list_master_thesis_cala.csv
 required_cols:
   obs_id: obs_n
   study_id: study_id
   study_name: study_name
   effect: effect
-  se: standard_error
+  se: se
   t_stat: t_stat
   n_obs: n_obs
   study_size: study_size
   reg_df: reg_df
   precision: .na
 adjustable_parameters:
-  effect_name: individual ability on wage
+  effect_name: years of schooling on wage
   formal_output_on: yes
   data_subset_condition_1: .na
   data_subset_condition_2: ability_uncontrolled == 1
   data_winsorization_level: 0.01
   data_precision_type: 1/SE
   winsorize_precision: yes
-  allowed_missing_ratio: 0.9
+  allowed_missing_ratio: 0.7
   effect_summary_stats_conf_level: 0.95
   box_plot_group_by_factor_1: study_name
   box_plot_group_by_factor_2: country
@@ -45,7 +45,7 @@ adjustable_parameters:
   funnel_maximum_precision: 1.0
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
-  t_hist_upper_cutoff: 27.0
+  t_hist_upper_cutoff: 120.0
   non_linear_param_selection_cutoffs: 1.96
   non_linear_param_selection_symmetric: no
   non_linear_param_selection_modelmu: normal
@@ -83,8 +83,8 @@ adjustable_parameters:
   maive_instrument: 1.0
   maive_studylevel: 0.0
   maive_verbose: yes
-  automatic_bma: no
-  bma_verbose: no
+  automatic_bma: yes
+  bma_verbose: yes
   bma_print_results: none
   bma_param_burn: 10000.0
   bma_param_iter: 30000.0
@@ -98,9 +98,9 @@ adjustable_parameters:
   ma_variables_description_table_clip: no
   bpe_studies:
   - 0.0
-  - 1.0
   - 2.0
-  - 3.0
+  - 112.0
+  - 7.0
   bpe_use_ci: yes
   bpe_study_info: yes
   bpe_result_table_verbose: yes
@@ -145,9 +145,9 @@ use_cache: yes
 cache_age: 3600.0
 development_on: yes
 development_params:
-  csv_suffix: vany
-  xlsx_data_folder: ../Data/AdditionalData/
-  xlsx_data_name: data-set_bachelor-thesis_Nguyenova.xlsx
+  csv_suffix: master_thesis_cala
+  xlsx_data_folder: ../Data/
+  xlsx_data_name: data_set_master_thesis_cala.xlsm
   xlsx_sheet_names:
   - data_set
   - var_list

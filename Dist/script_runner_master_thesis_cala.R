@@ -124,7 +124,7 @@ user_params <- list(
     "maive_verbose" = TRUE,
     # Bayesian Model Averaging parameters
     "automatic_bma" = TRUE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
-    "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
+    "bma_verbose" = TRUE, # If TRUE, print suggested formulas, VIF, etc.
     "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
     "bma_param_burn" = 1e4, # Burn-ins (def 1e5)
     "bma_param_iter" = 3e4, # Draws (def 3e5)
@@ -233,6 +233,8 @@ if (!file.exists(export_folder_path)){
 
 # Save the console output to a log file in the results folder
 log_file_path <- paste0(export_folder_path, user_params$export_log_file)
+if (file.exists(log_file_path)){quiet(system(paste("rm", log_file_path)))} # Clean output file
+quiet(sink()) # Empty the sink
 sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 
 # Time the script run

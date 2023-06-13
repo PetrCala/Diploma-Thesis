@@ -331,7 +331,7 @@ if (run_this$nonlinear_tests){
     data, script_paths = nonlinear_script_paths,
     selection_params = selection_params,
     export_graphs = user_params$export_graphs,
-    export_path = folder_paths$export_folder
+    export_path = folder_paths$graphics_folder
   )
   if (user_params$export_results){
     exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
@@ -451,7 +451,7 @@ if (run_this$bma){
     bma_model, bma_data,
     print_results = adj_params$bma_print_results,
     export_graphs = user_params$export_graphs,
-    export_path = user_params$folder_paths$export_folder
+    export_path = user_params$folder_paths$graphics_folder
   )
 }
 
