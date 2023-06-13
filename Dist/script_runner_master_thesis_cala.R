@@ -36,7 +36,7 @@ user_params <- list(
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
     "bpe" = T, # Executable only after running BMA
-    "robma" = T # Computationally expensive
+    "robma" = F # Computationally expensive
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -127,7 +127,7 @@ user_params <- list(
     "maive_studylevel" = 0, # 0 = No study-level correlation
     "maive_verbose" = TRUE,
     # Bayesian Model Averaging parameters
-    "automatic_bma" = TRUE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
+    "automatic_bma" = FALSE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
     "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
     "bma_graph_scale" = 1.5, # Numeric, scale the corrplot graph by this amount
     "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")

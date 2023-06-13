@@ -12,7 +12,7 @@ run_this:
   fma: yes
   ma_variables_description_table: yes
   bpe: yes
-  robma: yes
+  robma: no
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
@@ -86,7 +86,7 @@ adjustable_parameters:
   maive_instrument: 1.0
   maive_studylevel: 0.0
   maive_verbose: yes
-  automatic_bma: yes
+  automatic_bma: no
   bma_verbose: no
   bma_graph_scale: 1.5
   bma_print_results: none

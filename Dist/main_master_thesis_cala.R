@@ -116,6 +116,20 @@ validateFolderExistence(folder_paths$numeric_results_folder)
 validateFolderExistence(folder_paths$ext_package_folder, require_existence = T) # No overwriting
 validateFolderExistence(folder_paths$all_results_folder)
 
+# Clean result folders
+runCachedFunction(
+  cleanFolder, user_params, nullVerboseFunction,
+  folder_paths$data_folder
+)
+runCachedFunction(
+  cleanFolder, user_params, nullVerboseFunction,
+  folder_paths$graphic_results_folder
+)
+runCachedFunction(
+  cleanFolder, user_params, nullVerboseFunction,
+  folder_paths$numeric_results_folder
+)
+
 # Load external packages
 loadExternalPackages(folder_paths$ext_package_folder)
 
@@ -568,8 +582,15 @@ if (run_this$robma){
 
 # Zip the results
 if (user_params$export_results){
+  # Get the name of the .zip file
+  zip_name <- ifelse(
+    user_params$development_on,
+    paste0(user_params$export_zip_name, "_", user_params$development_params$csv_suffix),
+    user_params$export_zip_name
+  )
+  # Create the file
   zipFolders(
-    zip_name = user_params$export_zip_name,
+    zip_name = zip_name,
     dest_folder = folder_paths$all_results_folder,
     folder_paths$data_folder,
     folder_paths$graphic_results_folder,
