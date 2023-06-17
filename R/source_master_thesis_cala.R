@@ -2123,7 +2123,7 @@ getTop10Results <- function(data, ...){
 #' @import stem_method_master_thesis_cala.R
 getStemResults <- function(data, script_path, print_plot = T, theme = "blue", 
                            export_graphics = T, export_path = "./results/graphic",
-                           graph_scale = 5, ...){
+                           graph_scale = 5, legend_pos = "topleft", ...){
   source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
@@ -2135,7 +2135,7 @@ getStemResults <- function(data, script_path, print_plot = T, theme = "blue",
   est_stem <- stem(data$effect, data$se, stem_param)$estimates # Actual esimation
   # Stem plot
   funnel_stem_call <- bquote(
-    stem_funnel(data$effect, data$se, est_stem, theme = .(theme))
+    stem_funnel(data$effect, data$se, est_stem, theme = .(theme), legend_pos = .(legend_pos))
   )
   # Print and export the plot 
   if (print_plot){
@@ -2324,7 +2324,7 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data, script_paths, selection_params = NULL, theme = "blue",
                               export_graphics = T, export_path = './results/graphic',
-                              graph_scale = 5) {
+                              graph_scale = 5, stem_legend_pos = "topleft") {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -2356,6 +2356,7 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
       export_graphics = export_graphics,
       export_path = export_path,
       graph_scale = graph_scale,
+      legend_pos = stem_legend_pos,
       pub_bias_present = F,
       verbose_coefs = T
     )

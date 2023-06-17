@@ -273,7 +273,7 @@ se_rescale <- function(se){
   return(Y)
 }
 
-stem_funnel <- function(beta_input, se_input, stem_estimates, theme){
+stem_funnel <- function(beta_input, se_input, stem_estimates, theme, legend_pos = "topleft"){
   #take stem estimates
   b_stem <- stem_estimates[1]
   SE_b_stem <- stem_estimates[2]
@@ -337,7 +337,7 @@ stem_funnel <- function(beta_input, se_input, stem_estimates, theme){
   abline(v=0, col=rgb(192, 192, 192, maxColorValue = 255), lty=2, lwd=lineswidth)
   
   #legend
-  legend("topleft", #@@@@@@ modify this line if want to put legend in a different location
+  legend(legend_pos, #@@@@@@ modify this line if want to put legend in a different location
          legend = c("stem-based estimate","95 confidence interval","cumulative estimate", "minimal precision", "study") , 
          col = c(stem_est_color, 
                  stem_est_color,

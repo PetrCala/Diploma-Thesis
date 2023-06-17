@@ -350,7 +350,8 @@ if (run_this$nonlinear_tests){
     theme = user_params$theme,
     export_graphics = user_params$export_graphics,
     export_path = folder_paths$graphic_results_folder,
-    graph_scale = adj_params$non_linear_stem_graph_scale
+    graph_scale = adj_params$non_linear_stem_graph_scale,
+    stem_legend_pos = adj_params$non_linear_stem_legend_position
   )
   if (user_params$export_results){
     exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
