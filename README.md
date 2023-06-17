@@ -56,7 +56,7 @@ The folder is structured as follows:
 * `script_runner_master_thesis_cala.R` -> Script for running the code in an aesthetic way. Here you can modify the parameters without having to edit the `.yaml` file. Automatically calls the whole main script, but you can modify which parts of it should run within the parameters. With this, just run the *script runner* script as a whole and witness magic happen (after you handle all the bugs).
 * `README.md` -> This README file.
 * `README.pdf` -> The README file in a presentable format.
-* `user_parameters.yaml` -> Script customizable parameters. Can be modified either directly using a text editor or from within the `script_runner_master_thesis_cala.R` file. Contains parameters with file names, parts of the script to run, and parameters with which those parts should be run.
+* `user_parameters.yaml` -> Script customizable parameters. Created upon running the script runner. Can be modified either directly using a text editor or from within the `script_runner_master_thesis_cala.R` file. Contains parameters with file names, parts of the script to run, and parameters with which those parts should be run.
 
 The script run will also create these temporary folders:
 * `_cache/` -> Temporary cache files will be stored here.
@@ -125,7 +125,7 @@ To run the code, follow these steps:
 3. After modifying any paramters as you see fit, run the script. You may encounter errors caused by mismatching file names, package incompatibility, etc. The script will automatically attempt to install all the necessary packages (if they are not installed on your local machine), but I can not guarantee this will go smoothly.
 4. If all does, however, work, you should see the output in the console, and in the results folders `results/` (for numerical and text-based output) and `graphics/` (for graphical output). Any existing files will be overwritten upon running the script (if not cached), so make sure to save any desired files outside these folders after they are generated.
 5. To display the graphic plots, either double click the `.html` files in the graphics folder (this will open them in an interactive window in your browser), or simply write the object name into the console after running the script (find these names in the `main_master_thesis_cala.R` script under the respective code sections. Calling the objects will automatically plot them in the correct form.
-6. If you wish to see into the code a bit more, or run it only in parts, then open the script `main_master_thesis_cala.R`. The script automatically loads the `user_parameters.yaml` file, so it is assumed you have modified the parameters to your desired form. Afterwards, you can run the script as usual either at once, or by parts.
+6. If you wish to see into the code a bit more, or run it only in parts, then open the script `main_master_thesis_cala.R`. The script automatically creates, modifies, and loads the `user_parameters.yaml` file, so it is assumed you have modified the parameters to your desired form. Afterwards, you can run the script as usual either at once, or by parts.
 7. If you wish to look under the hood of the code, see the file `source_master_thesis_cala.R`, which contains all the technical functions, preprocessing, and validation, that is hidden in the main file.
 
 ## Miscellaneous
