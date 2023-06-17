@@ -1,5 +1,20 @@
-\caption{Significance of key variables}  \label{tab:key}\\
+\caption{Mean statistics across various subsets of data}  \label{tab:sum}\\
 \toprule
- & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
- & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
+   & \multicolumn{3}{c}{Unweighted} &   \multicolumn{3}{c}{Weighted} & \\
+   \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+   & Mean & \multicolumn{2}{c}{95\% conf. int.} & Mean & \multicolumn{2}{c}{95\% conf. int.} & N. obs\\
 \midrule
+\endfirsthead
+\caption{Mean statistics across various subsets of data (continued)}\\
+\toprule
+  & \multicolumn{3}{c}{Unweighted} &   \multicolumn{3}{c}{Weighted} &  \\
+   \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+   & Mean & \multicolumn{2}{c}{95\% conf. int.} & Mean & \multicolumn{2}{c}{95\% conf. int.} & No. of observations \\
+  
+\midrule
+\endhead
+\bottomrule
+\multicolumn{8}{r}{{\scriptsize Continued on next page}} \\
+\endfoot
+
+\endlastfoot

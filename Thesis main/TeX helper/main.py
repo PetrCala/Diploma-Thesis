@@ -2,7 +2,7 @@
 
 import populate_tables_source as populate
 
-SOURCE_PATH = r'C:/Users/hso20/OneDrive/Plocha/IES/Diploma-Thesis/R/results/'
+SOURCE_PATH = r'C:/Users/hso20/OneDrive/Plocha/IES/Diploma-Thesis/R/results/numeric/'
 ALL_PATHS = { # Names of the files in values
     "var_sum_stats": "variable_summary_stats",
     "effect_sum_stats": "effect_summary_stats",

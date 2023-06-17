@@ -9,31 +9,34 @@ l
  & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
  & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
 \midrule
-Effect Standard Error &  0.761 &  10.99\% &  4.186 &  60.45\% \\
- Estimate: Sub-region & -0.340 &  -4.91\% & -1.137 & -16.42\% \\
-     Estimate: Region & -0.677 &  -9.77\% & -1.464 & -21.14\% \\
-     Education: Years &  0.456 &   6.59\% &  0.947 &  13.67\% \\
-     Wage: Log Hourly & -0.685 &  -9.89\% & -1.373 & -19.82\% \\
-      Wage: Log Daily & -0.755 &  -10.9\% & -2.579 & -37.24\% \\
-    Wage: Log Monthly & -0.378 &  -5.46\% & -0.926 & -13.37\% \\
-          Survey Data & -0.492 &  -7.11\% & -0.987 & -14.25\% \\
-  Secondary Education & -0.646 &  -9.32\% & -3.273 & -47.27\% \\
-     Higher Education &  0.531 &   7.66\% &  2.144 &  30.96\% \\
-         Wage Earners &  0.430 &   6.21\% &  5.085 &  73.44\% \\
-         Gender: Male & -0.482 &  -6.96\% & -1.378 & -19.89\% \\
-      Sector: Private &  0.637 &    9.2\% &  3.941 &  56.92\% \\
- Ethnicity: Caucasian & -0.814 & -11.75\% & -1.940 & -28.02\% \\
-          Method: OLS & -1.149 & -16.59\% & -2.430 &  -35.1\% \\
-           Method: FE & -0.652 &  -9.41\% & -4.120 & -59.49\% \\
-         Method: 2SLS & -0.460 &  -6.65\% & -1.569 & -22.65\% \\
-      Method: Heckman & -0.508 &  -7.34\% & -2.113 & -30.51\% \\
-       Method: Probit & -0.438 &  -6.33\% & -2.971 &  -42.9\% \\
-      Ability: Direct & -0.355 &  -5.13\% & -1.040 & -15.02\% \\
-Ability: Uncontrolled &  0.437 &   6.32\% &  0.885 &  12.78\% \\
-         Control: Age & -0.360 &   -5.2\% & -0.758 & -10.95\% \\
-     Control: Age$^2$ &  1.106 &  15.97\% &  2.476 &  35.76\% \\
-        Control: Area &  0.668 &   9.65\% &  1.355 &  19.56\% \\
-     Study: Published & -0.587 &  -8.47\% & -1.381 & -19.95\% \\
+         Standard Error &  0.629 &  9.09\% &  3.369 &  48.65\% \\
+   Estimate: Sub-region & -0.467 & -6.74\% & -1.561 & -22.55\% \\
+       Estimate: Region & -0.469 & -6.77\% & -1.015 & -14.65\% \\
+       Education: Years &  0.894 & 12.91\% &  1.855 &  26.79\% \\
+       Wage: Log Hourly & -0.510 & -7.37\% & -1.022 & -14.76\% \\
+        Wage: Log Daily & -0.508 & -7.33\% & -1.733 & -25.04\% \\
+      Wage: Log Monthly & -0.588 & -8.49\% & -1.441 & -20.81\% \\
+            Survey Data & -0.438 & -6.32\% & -0.877 & -12.67\% \\
+      Primary Education &  0.754 & 10.89\% &  4.991 &  72.08\% \\
+    Secondary Education &  0.562 &  8.12\% &  2.860 &   41.3\% \\
+       Higher Education &  1.945 & 28.09\% &  7.858 & 113.49\% \\
+           Wage Earners &  0.421 &  6.09\% &  2.059 &  29.74\% \\
+           Gender: Male & -0.391 & -5.65\% & -1.119 & -16.16\% \\
+Reg: E. Asia \& Pacific &  1.805 & 26.06\% &  4.409 &  63.68\% \\
+Reg: Europe and C. Asia &  0.642 &  9.28\% &  2.012 &  29.06\% \\
+ Reg: Lat. Am. and Car. &  0.514 &  7.43\% &  8.154 & 117.77\% \\
+Reg: M. East and N. Af. &  0.703 & 10.15\% &  3.474 &  50.18\% \\
+      Reg: South Africa &  2.134 & 30.82\% &  7.539 & 108.88\% \\
+   Reg: Sub Sah. Africa &  1.382 & 19.96\% &  4.488 &  64.81\% \\
+     Median Expenditure &  1.141 & 16.48\% &  3.783 &  54.63\% \\
+           Minimum Wage &  0.358 &  5.17\% &  1.716 &  24.78\% \\
+           Method: 2SLS &  0.570 &  8.23\% &  1.940 &  28.02\% \\
+         Method: Probit & -0.189 & -2.73\% & -1.282 & -18.51\% \\
+             Method: IV &  0.711 & 10.26\% &  2.265 &  32.71\% \\
+       Ability: Proxied &  0.446 &  6.44\% &  1.107 &  15.99\% \\
+  Ability: Uncontrolled &  0.682 &  9.85\% &  1.379 &  19.92\% \\
+       Control: Age$^2$ &  0.482 &  6.96\% &  1.079 &  15.58\% \\
+          Control: Area &  0.755 &  10.9\% &  1.530 &   22.1\% \\
 \bottomrule
 \multicolumn{5}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} This table presents ceteris paribus effect of several key variables on the partial correlation coefficient. Only those variables with \emph{PIP} over 0.5 in the \emph{BMA} model are included. \emph{One SD change} implies how the effect changes when we increase a specific variable by one standard deviation. \emph{Maximum change} represents the change in the effect when the variable is increased from its minimum to its maximum. The reference best-practice value is 6.845. SD = Standard Deviation, BP = Best-Practice. For a detailed explanation of the variables, see table \ref{tab:var}.}
 \end{longtable}
