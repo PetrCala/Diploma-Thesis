@@ -104,8 +104,18 @@ readExcelAndWriteCsv <- function(xlsx_path, sheet_names, csv_suffix = "master_th
 #' Read_csv with parameters to avoid redundancy
 #' 
 #' @param source_path [str] - Path to the .csv file
+# readDataCustom <- function(source_path){
+#   data_out <- read_csv(
+#     source_path,
+#     locale = locale(decimal_mark=".",
+#                     grouping_mark=",",
+#                     tz="UTC"),
+#     show_col_types = FALSE) # Quiet warnings
+#   invisible(data_out)
+# }
+
 readDataCustom <- function(source_path){
-  data_out <- read_csv(
+  data_out <- read_delim(
     source_path,
     locale = locale(decimal_mark=".",
                     grouping_mark=",",
@@ -1298,7 +1308,8 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       var_sd <- round(sd(input_effect_data), 3)
       var_ci_lower <- round(var_mean - var_sd*z, 3)
       var_ci_upper <- round(var_mean + var_sd*z, 3)
-      var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
+      # var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
+      var_weighted_mean <- round(weighted.mean(input_effect_data, w = 1/input_study_size_data),3)
       var_ci_lower_w <- round(var_weighted_mean - var_sd*z, 3)
       var_ci_upper_w <- round(var_weighted_mean + var_sd*z, 3)
       var_median <- round(median(input_effect_data), 3)
