@@ -3,7 +3,8 @@
 \begin{longtable}{@{\hskip\tabcolsep\extracolsep}
 l % Description
 *{6}{c} % Middle columns
-@{}}
+>{\centering\arraybackslash}p{1cm} % Last column with fixed width
+@{}}rrrr}
 \caption{Mean statistics across various subsets of data}  \label{tab:sum}\\
 \toprule
    & \multicolumn{3}{c}{Unweighted} &   \multicolumn{3}{c}{Weighted} & \\

@@ -9,34 +9,34 @@ l
  & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
  & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
 \midrule
-         Standard Error &  0.629 &  9.09\% &  3.369 &  48.65\% \\
-   Estimate: Sub-region & -0.467 & -6.74\% & -1.561 & -22.55\% \\
-       Estimate: Region & -0.469 & -6.77\% & -1.015 & -14.65\% \\
-       Education: Years &  0.894 & 12.91\% &  1.855 &  26.79\% \\
-       Wage: Log Hourly & -0.510 & -7.37\% & -1.022 & -14.76\% \\
-        Wage: Log Daily & -0.508 & -7.33\% & -1.733 & -25.04\% \\
-      Wage: Log Monthly & -0.588 & -8.49\% & -1.441 & -20.81\% \\
-            Survey Data & -0.438 & -6.32\% & -0.877 & -12.67\% \\
-      Primary Education &  0.754 & 10.89\% &  4.991 &  72.08\% \\
-    Secondary Education &  0.562 &  8.12\% &  2.860 &   41.3\% \\
-       Higher Education &  1.945 & 28.09\% &  7.858 & 113.49\% \\
-           Wage Earners &  0.421 &  6.09\% &  2.059 &  29.74\% \\
-           Gender: Male & -0.391 & -5.65\% & -1.119 & -16.16\% \\
-Reg: E. Asia \& Pacific &  1.805 & 26.06\% &  4.409 &  63.68\% \\
-Reg: Europe and C. Asia &  0.642 &  9.28\% &  2.012 &  29.06\% \\
- Reg: Lat. Am. and Car. &  0.514 &  7.43\% &  8.154 & 117.77\% \\
-Reg: M. East and N. Af. &  0.703 & 10.15\% &  3.474 &  50.18\% \\
-      Reg: South Africa &  2.134 & 30.82\% &  7.539 & 108.88\% \\
-   Reg: Sub Sah. Africa &  1.382 & 19.96\% &  4.488 &  64.81\% \\
-     Median Expenditure &  1.141 & 16.48\% &  3.783 &  54.63\% \\
-           Minimum Wage &  0.358 &  5.17\% &  1.716 &  24.78\% \\
-           Method: 2SLS &  0.570 &  8.23\% &  1.940 &  28.02\% \\
-         Method: Probit & -0.189 & -2.73\% & -1.282 & -18.51\% \\
-             Method: IV &  0.711 & 10.26\% &  2.265 &  32.71\% \\
-       Ability: Proxied &  0.446 &  6.44\% &  1.107 &  15.99\% \\
-  Ability: Uncontrolled &  0.682 &  9.85\% &  1.379 &  19.92\% \\
-       Control: Age$^2$ &  0.482 &  6.96\% &  1.079 &  15.58\% \\
-          Control: Area &  0.755 &  10.9\% &  1.530 &   22.1\% \\
+         Standard Error &  0.634 &  9.13\% &  3.393 &  48.88\% \\
+   Estimate: Sub-region & -0.462 & -6.66\% & -1.546 & -22.28\% \\
+       Estimate: Region & -0.459 & -6.61\% & -0.993 &  -14.3\% \\
+       Education: Years &  0.899 & 12.96\% &  1.867 &  26.89\% \\
+       Wage: Log Hourly & -0.457 & -6.59\% & -0.916 & -13.19\% \\
+        Wage: Log Daily & -0.453 & -6.52\% & -1.546 & -22.27\% \\
+      Wage: Log Monthly & -0.539 & -7.76\% & -1.320 & -19.01\% \\
+            Survey Data & -0.438 & -6.31\% & -0.878 & -12.65\% \\
+      Primary Education &  0.776 & 11.19\% &  5.138 &  74.02\% \\
+    Secondary Education &  0.579 &  8.35\% &  2.949 &  42.49\% \\
+       Higher Education &  1.982 & 28.56\% &  8.010 & 115.41\% \\
+           Wage Earners &  0.417 &     6\% &  2.036 &  29.33\% \\
+           Gender: Male & -0.397 & -5.72\% & -1.135 & -16.35\% \\
+Reg: E. Asia \& Pacific &  1.814 & 26.14\% &  4.432 &  63.86\% \\
+Reg: Europe and C. Asia &  0.648 &  9.34\% &  2.030 &  29.24\% \\
+ Reg: Lat. Am. and Car. &  0.522 &  7.53\% &  8.282 & 119.33\% \\
+Reg: M. East and N. Af. &  0.708 &  10.2\% &  3.499 &  50.41\% \\
+      Reg: South Africa &  2.128 & 30.65\% &  7.516 & 108.28\% \\
+   Reg: Sub Sah. Africa &  1.401 & 20.18\% &  4.548 &  65.52\% \\
+     Median Expenditure &  1.129 & 16.26\% &  3.742 &  53.91\% \\
+           Minimum Wage &  0.383 &  5.52\% &  1.839 &  26.49\% \\
+           Method: 2SLS &  0.561 &  8.08\% &  1.910 &  27.51\% \\
+         Method: Probit & -0.170 & -2.44\% & -1.151 & -16.58\% \\
+             Method: IV &  0.706 & 10.17\% &  2.250 &  32.42\% \\
+       Ability: Proxied &  0.473 &  6.81\% &  1.174 &  16.91\% \\
+  Ability: Uncontrolled &  0.715 &  10.3\% &  1.446 &  20.83\% \\
+       Control: Age$^2$ &  0.438 &  6.31\% &  0.980 &  14.12\% \\
+          Control: Area &  0.768 & 11.06\% &  1.557 &  22.42\% \\
 \bottomrule
 \multicolumn{5}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} This table presents ceteris paribus effect of several key variables on the partial correlation coefficient. Only those variables with \emph{PIP} over 0.5 in the \emph{BMA} model are included. \emph{One SD change} implies how the effect changes when we increase a specific variable by one standard deviation. \emph{Maximum change} represents the change in the effect when the variable is increased from its minimum to its maximum. The reference best-practice value is 6.845. SD = Standard Deviation, BP = Best-Practice. For a detailed explanation of the variables, see table \ref{tab:var}.}
 \end{longtable}
