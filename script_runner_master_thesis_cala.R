@@ -29,14 +29,14 @@ user_params <- list(
     "funnel_plot" = T,
     "t_stat_histogram" = T,
     "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
-    "bma" = T,
-    "fma" = T, # Executable only after running BMA
-    "ma_variables_description_table" = T, # Executable only after running BMA
-    "bpe" = T, # Executable only after running BMA
-    "robma" = T # Computationally expensive
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
+    "bma" = F,
+    "fma" = F, # Executable only after running BMA
+    "ma_variables_description_table" = F, # Executable only after running BMA
+    "bpe" = F, # Executable only after running BMA
+    "robma" = F # Computationally expensive
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -236,18 +236,6 @@ user_param_file <- 'user_parameters.yaml'
 # Save the user parameters into the working directory
 yaml::write_yaml(user_params, user_param_file)
 
-# Create a folder for numeric results export (must be done here explicitly)
-numeric_results_folder_path <- user_params$folder_path$numeric_results_folder
-if (!file.exists(numeric_results_folder_path)){
-  dir.create(numeric_results_folder_path, recursive = TRUE)
-}
-
-# Save the console output to a log file in the results folder
-log_file_path <- paste0(numeric_results_folder_path, user_params$export_log_file)
-if (file.exists(log_file_path)){quiet(system(paste("rm", log_file_path)))} # Clean output file
-quiet(sink()) # Empty the sink
-sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
-
 # Time the script run
 # start_time <- Sys.time()
 # source("main_master_thesis_cala.R")
@@ -257,6 +245,3 @@ sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
  
 # Run the main file
 source("main_master_thesis_cala.R")
-
-# Close the connection to the file
-sink()

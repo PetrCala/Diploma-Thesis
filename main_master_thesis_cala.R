@@ -156,6 +156,12 @@ if (user_params$development_on) {
 # Validate all the necessary files
 validateFiles(all_source_files)
 
+# Save the console output to a log file in the results folder
+log_file_path <- paste0(folder_paths$numeric_results_folder, user_params$export_log_file)
+if (file.exists(log_file_path)){quiet(system(paste("rm", log_file_path)))} # Clean output file
+quiet(sink()) # Empty the sink
+sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
+
 ######################### DATA PREPROCESSING #########################
 
 # Read all the source .csv files
@@ -602,3 +608,6 @@ if (user_params$export_results){
     folder_paths$numeric_results_folder
   )
 }
+
+# Close the connection to the file
+sink()
