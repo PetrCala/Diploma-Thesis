@@ -15,7 +15,7 @@ run_this:
   robma: no
 source_file_params:
   csv_suffix: master_thesis_cala
-  data_folder: ../Data/
+  data_folder: ./data/source/
   file_name: data_set_master_thesis_cala
   file_suffix: .xlsm
   data_sheet_name: data_set
