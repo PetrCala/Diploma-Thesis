@@ -12,6 +12,7 @@ Data/AdditionalData/
 Dist/
 R/
 Thesis main/
+Results/
 
 # R output files and cache
 _cache/*
