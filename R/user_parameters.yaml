@@ -12,7 +12,7 @@ run_this:
   fma: yes
   ma_variables_description_table: yes
   bpe: yes
-  robma: no
+  robma: yes
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
@@ -54,7 +54,7 @@ adjustable_parameters:
   non_linear_stem_legend_position: topright
   non_linear_param_selection_cutoffs: 1.96
   non_linear_param_selection_symmetric: no
-  non_linear_param_selection_modelmu: normal
+  non_linear_param_selection_modelmu: t
   puni_param_side: right
   puni_param_method: ML
   puni_param_alpha: 0.05
@@ -148,7 +148,7 @@ export_methods:
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
 export_log_file_path: numeric_results.txt
-export_zip_name: results_all_06-19-23
+export_zip_name: results_all_06-20-23
 export_graphics: yes
 theme: blue
 use_cache: yes

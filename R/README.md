@@ -64,12 +64,22 @@ The script run will also create these temporary folders:
 Furthermore, the existence of all folders will be verified. Note that some do not appear in the repository, as there is nothing to distribute within these folders. All results (along with the folders) will be created and updated automatically.
 
 ## Prerequisites:
- 1. Make sure that your working directory contains all the files visible in the repository. Some temporary folders from the structure above may not exist yet - these will be automatically created during the script run. 
- 2. Open the `script_runner_master_thesis_cala.R` file and find the `user_params` object. Within this object, **without modifying the names of the sub-objects**, change the values as you see fit. Most importantly, find the `CUSOMIZABLE FILE NAMES` section and modify the file names to refer your new files. Make sure to keep the `.csv` suffix. As of the current version, the script recognizes only `.csv` files as valid input. Also make sure, that the rest of the `user_params` values is set in accordance to the requirements outlined in the **Prerequisites** section. Also, parameters used for calling external functions are marked with the "param_" prefix within their name (see parameters for BMA, non-linear tests,...). Make sure to keep this convention when adding new such parameters.
- 3. Try to eliminate as many missing values in your data frame as you can.
+ 1. Install the newest version of [Rtools](https://cran.r-project.org/bin/windows/Rtools/). This is important to enable external package handling.
+ 2. Clone the repository:
+	```
+	git clone https://github.com/PetrCala/Diploma-Thesis
+	```
+ 3. Change into the directory:
+	```
+	cd Diploma-Thesis
+	```
+ 4. In case you wish to only test the functionality of the script using placeholder data within the data folder, skip to the `How to run` section below. If you wish, on the other hand, to run your own analysis, make sure to follow the next steps as well.
+ 5. If you wish to customize the source file names (such as scripts, result folders, etc.), you may do so from within the `script_runner_master_thesis_cala.R`, or by modifying the `user_parameters.yaml` file. Know that every run of the script runner will automatically modify the contents of the user parameters
+    file, so I suggest you modify the parameters directly within the script if this is your preferred way of running the project. However, **do not to modify the names of the user parameter file and the script runner**! These are immutable.
+ 5. Try to eliminate as many missing values in your data frame as you can.
     The script will automatically use interpolation for missing data, so that model averaging
     can run, but in case of many missing values, the results may be unstable.
- 4. The data frame must contain several columns, the names of which can be modified to fit your data frame. This can be done the same way you would modify the script names (described in step 2). In the `user_parameter.yaml` file or in the script runner, navigate to the section `required_cols`, where you can modify the names of the necessary columns to fit the column names in your data frame. For the columns that are marked as optional, you can set the value to `NA` if this column is not present in your data frame. The column will then be created automatically during the script run. Required columns must then appear within your data frame. Here is the list of the expected columns:
+ 6. The data frame must contain several columns, the names of which can be modified to fit your data frame. This can be done the same way you would modify the script names (described in step 2). In the `user_parameter.yaml` file or in the script runner, navigate to the section `required_cols`, where you can modify the names of the necessary columns to fit the column names in your data frame. For the columns that are marked as optional, you can set the value to `NA` if this column is not present in your data frame. The column will then be created automatically during the script run. Required columns must then appear within your data frame. Here is the list of the expected columns:
    * Required columns:
       - **obs_id** - Unique ID of the observation.
       - **study_name** - Name of the study, such as *Einstein et al. (1935)*.
@@ -83,7 +93,7 @@ Furthermore, the existence of all folders will be verified. Note that some do no
      - **precision** - Precision of the effect. If set to `NA`, calculated automatically if omitted using the `precision_type` parameter within the `adjustable_parameters` list of the `user_parameters.yaml` file. Defaults to *1/Standard_Error*.
       - **study_size** - Number of estimates reported per study. If set to `NA`, calculated automatically if omitted.
       - **reg_df** - Number of degrees of freedom associated with the regression. If set to `NA`, the number of observations associated with the estimate will be used instead.
- 5. In the file `var_list_master_thesis_cala.csv` (or your renamed version), input the list of variables you are using in your data frame,
+ 7. In the file `var_list_master_thesis_cala.csv` (or your renamed version), input the list of variables you are using in your data frame,
    along with these parameters:
    * **var_name** - Name of the variable exactly as it appears in the data frame columns. Must not include
      spaces and various special characters. Underscores are allowed. Example: *n_obs*.
@@ -120,12 +130,20 @@ Furthermore, the existence of all folders will be verified. Note that some do no
 
 ## How to Run
 To run the code, follow these steps:
-1. Put your `.csv` data files into the `data/` folder. You do not need to delete the distributed example files, but you **must change the expected names in the user parameters** for the script to recognize these new files. 
-2. Open the `script_runner_master_thesis_cala.R` file and find the `user_params` object. Within this object, **without modifying the names of the sub-objects**, change the values as you see fit. Most importantly, find the `CUSOMIZABLE FILE NAMES` section and modify the file names to refer your new files. Make sure to keep the `.csv` suffix. As of the current version, the script recognizes only `.csv` files as valid input. Also make sure, that the rest of the `user_params` values is set in accordance to the requirements outlined in the **Prerequisites** section.
-3. After modifying any paramters as you see fit, run the script. You may encounter errors caused by mismatching file names, package incompatibility, etc. The script will automatically attempt to install all the necessary packages (if they are not installed on your local machine), but I can not guarantee this will go smoothly.
-4. If all does, however, work, you should see the output in the console, and in the results folders `results/` (for numerical and text-based output) and `graphics/` (for graphical output). Any existing files will be overwritten upon running the script (if not cached), so make sure to save any desired files outside these folders after they are generated.
-5. To display the graphic plots, either double click the `.html` files in the graphics folder (this will open them in an interactive window in your browser), or simply write the object name into the console after running the script (find these names in the `main_master_thesis_cala.R` script under the respective code sections. Calling the objects will automatically plot them in the correct form.
-6. If you wish to see into the code a bit more, or run it only in parts, then open the script `main_master_thesis_cala.R`. The script automatically creates, modifies, and loads the `user_parameters.yaml` file, so it is assumed you have modified the parameters to your desired form. Afterwards, you can run the script as usual either at once, or by parts.
+1. There are two options of running the script with modifiable parameters:
+  * Use a script runner - You can run the code and modify the customizable parameters from within a single R script - `script_runner_master_thesis_cala.R`.
+	Open the file and find the `user_params` object. Within this object, **without modifying the names of the sub-objects**, change the values as you see fit, but within the guidelines described in step 2.
+  * User a `.yaml` file - You can also run the main code by directly calling the `main_master_thesis_cala.R` file. This assumes that there exists a `user_params.yaml` file within the root of the folder and that you have modified the parameters to your liking.
+	When modifying the parameters, you may do so from directly within the `.yaml` file, but make sure to follow the guidelines in step 2 while doing so.
+2. Guidelines for parameter modification:
+  * Do not change the names of any of the parameters, unless told explicitly. Change only the values. For the explanation of each of the parameters, see the script runner.
+  * Parameters used for calling external functions are marked with the `param_` prefix within their name (see parameters for BMA, non-linear tests,...). Make sure to keep this convention when adding new such parameters.
+  * Make sure to keep the object types, unless told explicitly. For example, if a value of a parameter is a vector, make sure it is still a vector after the modifications.
+3. If you want to run the code using your own data and not the placeholder data provided within the distributed files, put your `.csv` data files into the `data/` folder. You do not need to delete the distributed placeholder files, but you **must change the expected names in the user parameters** for the script to recognize these new files (parameters `master_data_set_source` and `var_list_source`). The elements of the `data_files` list parameter must be changed to reflect the names of your `.csv` data files. If you do not modify these, the script will read the placeholder data files from the `data/` folder instead. ake sure to keep the `.csv` suffix. As of the current version, the script recognizes only `.csv` files as valid input.
+4. After modifying any paramters as you see fit, run either the script runner or the main script. Note that running the script runner will automatically overwrite the `user_params.yaml` file with parameters defined within the script runner, so if you opt for the second approach from step 1, be careful with the script runner use.
+5. You may encounter errors caused by mismatching file names, package incompatibility, etc. The script will automatically attempt to install all the necessary packages (if they are not installed on your local machine), so in case there are any conflicts, make sure to check that you have fulfilled all prerequisites from the prerequisites section.
+5. If all goes well, you should see the output in the console, and in the results folders `results/` (for numerical and text-based output) and `graphics/` (for graphical output). Any existing files will be overwritten upon running the script (if not cached), so make sure to save any desired files outside these folders after they are generated.
+6. To display the graphic plots, either double click the `.html` files in the graphics folder (this will open them in an interactive window in your browser), or simply write the object name into the console after running the script (find these names in the `main_master_thesis_cala.R` script under the respective code sections. Calling the objects will automatically plot them in the correct form.
 7. If you wish to look under the hood of the code, see the file `source_master_thesis_cala.R`, which contains all the technical functions, preprocessing, and validation, that is hidden in the main file.
 
 ## Miscellaneous
