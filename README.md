@@ -76,7 +76,7 @@ Furthermore, the existence of all folders will be verified. Note that some do no
 	```
 	cd Diploma-Thesis
 	```
- 5. In case you wish to only test the functionality of the script using placeholder data within the data folder, skip to the `How to run` section below. If you wish, on the other hand, to run your own analysis, make sure to follow the next steps as well.
+ 5. In case you wish to only test the functionality of the script using placeholder data within the data folder, skip to the **How to run** section below. If you wish, on the other hand, to run your own analysis, make sure to follow the next steps as well.
  6. If you wish to customize the source file names (such as scripts, result folders, etc.), you may do so from within the `script_runner_master_thesis_cala.R`, or by modifying the `user_parameters.yaml` file. Know that every run of the script runner will automatically modify the contents of the user parameters
     file, so I suggest you modify the parameters directly within the script if this is your preferred way of running the project. However, **do not to modify the names of the user parameter file and the script runner**! These are immutable.
  7. Try to eliminate as many missing values in your data frame as you can.
@@ -134,9 +134,9 @@ Furthermore, the existence of all folders will be verified. Note that some do no
 ## How to Run
 To run the code, follow these steps:
 1. There are two options of running the script:
-  * Use a script runner - You can run the code and modify the customizable parameters from within a single R script - `script_runner_master_thesis_cala.R`.
+  * **Use a script runner** - You can run the code and modify the customizable parameters from within a single R script - `script_runner_master_thesis_cala.R`.
 	Open the file and find the `user_params` object. Within this object, **without modifying the names of the sub-objects**, change the values as you see fit, but within the guidelines described in step 2.
-  * Using the main script in combination with the `user_params.yaml` file - You can also run the main code by directly calling the `main_master_thesis_cala.R` file. This assumes that there exists a `user_params.yaml` file within the root of the folder and that you have modified the parameters to your liking.
+  * **Use the main script in combination with the `user_params.yaml` file** - You can also run the main code by directly calling the `main_master_thesis_cala.R` file. This assumes that there exists a `user_params.yaml` file within the root of the folder and that you have modified the parameters to your liking.
 	When modifying the parameters, you may do so from directly within the `.yaml` file, but make sure to follow the guidelines in step 2 while doing so.
 2. Guidelines for parameter modification:
   * Do not change the names of any of the parameters, unless told explicitly. Change only the values. For the explanation of each of the parameters, see the script runner.

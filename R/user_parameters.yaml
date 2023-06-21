@@ -13,9 +13,13 @@ run_this:
   ma_variables_description_table: no
   bpe: no
   robma: no
-data_files:
-  master_data_set_source: data_set_master_thesis_cala.csv
-  var_list_source: var_list_master_thesis_cala.csv
+source_file_params:
+  csv_suffix: master_thesis_cala
+  data_folder: ../Data/
+  file_name: data_set_master_thesis_cala
+  file_suffix: .xlsm
+  data_sheet_name: data_set
+  var_list_sheet_name: var_list
 required_cols:
   obs_id: obs_n
   study_id: study_id
@@ -153,11 +157,3 @@ export_graphics: yes
 theme: blue
 use_cache: yes
 cache_age: 3600.0
-development_on: yes
-development_params:
-  csv_suffix: master_thesis_cala
-  xlsx_data_folder: ../Data/
-  xlsx_data_name: data_set_master_thesis_cala.xlsm
-  xlsx_sheet_names:
-  - data_set
-  - var_list

@@ -141,17 +141,23 @@ all_source_files <- c(
   script_files_full_paths
 )
 
-# In development, create the .csv data files from a source .xlsx/.xlsm file
-if (user_params$development_on) {
-  dev_params <- user_params$development_params
-  xlsx_folder <- dev_params$xlsx_data_folder # Folder
-  xlsx_file <- dev_params$xlsx_data_name # File
-  xlsx_path <- paste0(xlsx_folder, xlsx_file) # Full path
-  sheet_names <- dev_params$xlsx_sheet_names
-  csv_suffix <- dev_params$csv_suffix
-  # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files)
-  readExcelAndWriteCsv(xlsx_path, sheet_names, csv_suffix, data_folder_path = folder_paths$data_folder)
-}
+# Create the .csv data files from a source .xlsx/.xlsm file
+file_params <- user_params$source_file_params
+csv_suffix <- file_params$csv_suffix # File suffix
+source_data_path <- paste0(
+  file_params$data_folder, # Folder
+  file_params$file_name,   # File
+  file_params$file_suffix  # Suffix
+)
+data_sheet_name <- file_params$data_sheet_name # Name of sheet with data
+var_list_sheet_name <- file_params$var_list_sheet_name # Name of sheet with variable info
+source_sheets <- c(
+  data_sheet_name,
+  var_list_sheet_name
+)
+
+# Read multiple sheets from the master data set and write them as CSV files (overwriting existing files)
+readExcelAndWriteCsv(source_data_path, source_sheets, csv_suffix, data_folder_path = folder_paths$data_folder)
 
 # Validate all the necessary files
 validateFiles(all_source_files)
@@ -165,8 +171,8 @@ sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 ######################### DATA PREPROCESSING #########################
 
 # Read all the source .csv files
-data <- readDataCustom(paste0(folder_paths$data_folder, data_files$master_data_set_source))
-var_list <- readDataCustom(paste0(folder_paths$data_folder, data_files$var_list_source))
+data <- readDataCustom(paste0(folder_paths$data_folder, data_sheet_name, '_', csv_suffix, '.csv'))
+var_list <- readDataCustom(paste0(folder_paths$data_folder, var_list_sheet_name, '_', csv_suffix, '.csv'))
 
 # Validate the input variable list
 validateInputVarList(var_list)
@@ -593,15 +599,9 @@ if (run_this$robma){
 
 # Zip the results
 if (user_params$export_results){
-  # Get the name of the .zip file
-  zip_name <- ifelse(
-    user_params$development_on,
-    paste0(user_params$export_zip_name, "_", user_params$development_params$csv_suffix),
-    user_params$export_zip_name
-  )
   # Create the file
   zipFolders(
-    zip_name = zip_name,
+    zip_name = user_params$export_zip_name,
     dest_folder = folder_paths$all_results_folder,
     folder_paths$data_folder,
     folder_paths$graphic_results_folder,
