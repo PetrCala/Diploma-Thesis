@@ -27,7 +27,7 @@ cp -r "../R/pckg/" .
 cp -r "../R/scripts/" .
 
 # Create empty folders for results storing
-new_folders=("data" "graphics" "results")
+new_folders=("data" "graphics" "results" "data/source" "data/temp")
 
 # Loop through the list of characters
 for folder in "${new_folders[@]}"; do
@@ -51,6 +51,9 @@ if ! test -f "$f" || ! cmp -s "$source_file" "$f"; then
   # If the file contains "data", save to data folder instead
   if [[ $source_file == *"data"* ]]; then
     out_folder="./data/"
+    if [[ $source_file == *"source"* ]]; then
+	out_folder="./data/source/"
+    fi
   else
     out_folder="."
   fi
