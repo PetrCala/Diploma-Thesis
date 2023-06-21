@@ -10,15 +10,18 @@
 
 Clone this repository onto your computer using `git clone https://github.com/PetrCala/Diploma-Thesis.git`, or download it directly using the `<> Code` button above.' Refer to the `Prerequisites` and `How To Run` sections for more detail.
 
-### Project Structure
+### Project structure
 
-The folder is structured as follows:
+All necessary files for result reproduction can be found within the `Dist/` folder of the `master` branch, or within the contents `Dist` branch. To easily clone this folder onto your computer, simply download the folder using third party tools such as [download-directory](https://download-directory.github.io/) and inputting [this link](https://github.com/PetrCala/Diploma-Thesis/tree/master/Dist), or by manually downloading each individual file. I advise for the former approach.
+
+The distribution folder is structured as follows:
 
 ```
 .
 ├── data
-│   ├── data_set_master_thesis_cala.csv
-│   └── var_list_master_thesis_cala.csv
+│   ├── source
+│   │   ├── data_set_master_thesis_cala.xlsm
+│   └── temp
 ├── pckg
 │   └── LowRankQP
 ├── results
@@ -38,9 +41,9 @@ The folder is structured as follows:
 └── user_parameters.yaml
 ```
 
-* `data/` -> Store your `.csv` data files here. I include two files for inspiration of how the files should look like.
-  - `data_set_master_thesis_cala.csv` -> Main data frame. Contains data of 115 studies with over 40 variables. All numeric results are derived from this file.
-  - `var_list_master_thesis_cala.csv` -> Data frame with information about individual variables. The scripts rely on this data frame to identify variable types, their usage in various parts of the analysis, etc.
+* `data/` -> Folder for storing data. The folder is further split into two sub-folders:
+  - `source/` -> Put your `.xlsx` or `.xlsm` source data file here. In the distributed folder, there is a placeholder file called `data_set_master_thesis_cala.xlsm`.
+  - `temp/` - > This folder will automatically get created upon script run. Here will be the `.csv` files created from the sheets of your data set. This allows reproducibility and consistency within the script.
 * `pckg/` -> Folder with external packages that are not available online anymore, such as `LowRankQP`.
 * `results/` -> Folder with all results. A `.zip` file with all results will be automatically created here.
   - graphic/ -> All graphic results will be automatically stored here.
