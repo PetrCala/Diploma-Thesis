@@ -5,14 +5,14 @@ run_this:
   funnel_plot: yes
   t_stat_histogram: yes
   linear_tests: yes
-  nonlinear_tests: no
-  exo_tests: no
-  p_hacking_tests: no
-  bma: no
-  fma: no
-  ma_variables_description_table: no
-  bpe: no
-  robma: no
+  yesnlinear_tests: yes
+  exo_tests: yes
+  p_hacking_tests: yes
+  bma: yes
+  fma: yes
+  ma_variables_description_table: yes
+  bpe: yes
+  robma: yes
 data_files:
   master_data_set_source: data_set_master_thesis_cala.csv
   var_list_source: var_list_master_thesis_cala.csv
@@ -51,7 +51,7 @@ adjustable_parameters:
   t_hist_upper_cutoff: 120.0
   t_hist_graph_scale: 6.0
   non_linear_stem_graph_scale: 5.0
-  non_linear_stem_legend_position: topright
+  non_linear_stem_legend_position: topleft
   non_linear_param_selection_cutoffs: 1.96
   non_linear_param_selection_symmetric: no
   non_linear_param_selection_modelmu: t
@@ -106,9 +106,9 @@ adjustable_parameters:
   ma_variables_description_table_clip: no
   bpe_studies:
   - 0.0
+  - 1.0
   - 2.0
-  - 112.0
-  - 7.0
+  - 3.0
   bpe_use_ci: yes
   bpe_study_info: yes
   bpe_result_table_verbose: yes
@@ -148,12 +148,12 @@ export_methods:
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
 export_log_file_path: numeric_results.txt
-export_zip_name: results_all_06-21-23
+export_zip_name: results_all_today
 export_graphics: yes
 theme: blue
 use_cache: yes
 cache_age: 3600.0
-development_on: yes
+development_on: no
 development_params:
   csv_suffix: master_thesis_cala
   xlsx_data_folder: ../Data/
