@@ -36,7 +36,7 @@ user_params <- list(
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
     "bpe" = T, # Executable only after running BMA
-    "robma" = F # Computationally expensive
+    "robma" = T # Computationally expensive
   ),
   
   # CUSTOMIZABLE FILE NAMES
@@ -106,7 +106,7 @@ user_params <- list(
     "non_linear_stem_legend_position" = "topright", # Position of the STEM plot legend
     "non_linear_param_selection_cutoffs" = c(1.960),
     "non_linear_param_selection_symmetric" = F,
-    "non_linear_param_selection_modelmu" = "normal",
+    "non_linear_param_selection_modelmu" = "t", # Can be one of "normal", "t"
     # P-uniform paramteres
     "puni_param_side" = "right", # puni_star side argument
     "puni_param_method" = "ML", # Method used for p-uniform calculation - one of "ML", "P"
