@@ -67,11 +67,11 @@ cleanFolder <- function(folder_name){
 #' Function to read multiple sheets from an Excel file and write them as CSV files
 #' Used in development mode for .csv file creation from a source .xlsx file.
 #' @param xlsx_path Path to the Excel file
-#' @param sheet_names A vector of sheet names to read
+#' @param source_sheets A vector of sheet names to read
 #' @param csv_suffix Suffix of the created .csv files. Defaults to "master_thesis_cala".
 #' @param new_csv_path Data folder path. Defaults to './data/'.
 #' @return A list of data frames
-readExcelAndWriteCsv <- function(xlsx_path, sheet_names, csv_suffix = "master_thesis_cala",
+readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_thesis_cala",
                                  data_folder_path = './_data/') {
   # Validate input
   stopifnot(
@@ -84,7 +84,7 @@ readExcelAndWriteCsv <- function(xlsx_path, sheet_names, csv_suffix = "master_th
   }
   # Read each sheet and write it as a CSV file in the working directory
   quiet(
-    dfs <- lapply(sheet_names, function(sheet_name) {
+    dfs <- lapply(source_sheets, function(sheet_name) {
       csv_path <- paste0(sheet_name, "_", csv_suffix, ".csv")
       new_data_path <- paste0(data_folder_path, csv_path) # Store in data folder
       # Read the source file

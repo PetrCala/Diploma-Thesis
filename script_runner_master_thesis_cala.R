@@ -39,10 +39,14 @@ user_params <- list(
     "robma" = F # Computationally expensive
   ),
   
-  # CUSTOMIZABLE FILE NAMES
-  data_files = list(
-    master_data_set_source = "data_set_master_thesis_cala.csv", # Master data frame
-    var_list_source = "var_list_master_thesis_cala.csv" # Variable information file
+  # CUSTOMIZABLE SOURCE FILE PATH
+  source_file_params = list(
+    csv_suffix = "master_thesis_cala", # Suffix of the .csv files
+    data_folder = "../Data/", # Folder with the source data frame
+    file_name = "data_set_master_thesis_cala", # Name of the data frame
+    file_suffix = '.xlsm',
+    data_sheet_name = "data_set",
+    var_list_sheet_name = "var_list"
   ),
 
   # CUSTOMIZABLE COLUMN NAMES - set value to NA if not present in your data set
@@ -212,16 +216,7 @@ user_params <- list(
   # CACHE HANDLING
   # I recommend you use caches only after you are certain the functions run correctly
   use_cache = TRUE, # Store intermediate output in a cache in the /_cache/ folder.
-  cache_age = 3600, # In seconds - an hour
-  
-  # Development information
-  development_on = TRUE, # Keep FALSE at all times
-  development_params = list(
-    csv_suffix = "master_thesis_cala", # Suffix of the .csv files
-    xlsx_data_folder = "../Data/", # Folder with the .xlsx data frame
-    xlsx_data_name = "data_set_master_thesis_cala.xlsm", # Name of the .xlsx data frame
-    xlsx_sheet_names = c("data_set", "var_list") # Sheet names to read
-  )
+  cache_age = 3600 # In seconds - an hour
 )
 
 # Working directory
