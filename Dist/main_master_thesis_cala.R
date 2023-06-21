@@ -171,8 +171,8 @@ sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 ######################### DATA PREPROCESSING #########################
 
 # Read all the source .csv files
-data <- readDataCustom(paste0(folder_paths$data_folder, data_sheet_name, '_', csv_suffix, '.csv'))
-var_list <- readDataCustom(paste0(folder_paths$data_folder, var_list_sheet_name, '_', csv_suffix, '.csv'))
+data <- readDataCustom(paste0(folder_paths$data_folder, 'temp/', data_sheet_name, '_', csv_suffix, '.csv'))
+var_list <- readDataCustom(paste0(folder_paths$data_folder, 'temp/', var_list_sheet_name, '_', csv_suffix, '.csv'))
 
 # Validate the input variable list
 validateInputVarList(var_list)
