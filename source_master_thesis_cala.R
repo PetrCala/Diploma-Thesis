@@ -104,8 +104,18 @@ readExcelAndWriteCsv <- function(xlsx_path, sheet_names, csv_suffix = "master_th
 #' Read_csv with parameters to avoid redundancy
 #' 
 #' @param source_path [str] - Path to the .csv file
+# readDataCustom <- function(source_path){
+#   data_out <- read_csv(
+#     source_path,
+#     locale = locale(decimal_mark=".",
+#                     grouping_mark=",",
+#                     tz="UTC"),
+#     show_col_types = FALSE) # Quiet warnings
+#   invisible(data_out)
+# }
+
 readDataCustom <- function(source_path){
-  data_out <- read_csv(
+  data_out <- read_delim(
     source_path,
     locale = locale(decimal_mark=".",
                     grouping_mark=",",
@@ -507,11 +517,6 @@ handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio 
       stop(paste("The column", column_name, "does not exist in the input_data."))
     }
     
-    # Do not interpolate or validate missing values for this variable
-    if (handling_method == "allow"){
-      next
-    }
-    
     column_data <- input_data[[column_name]]
     na_count <- sum(is.na(column_data))
     total_count <- length(column_data)
@@ -531,6 +536,22 @@ handleMissingData <- function(input_data, input_var_list, allowed_missing_ratio 
       input_data[[column_name]][is.na(column_data)] <- mean(column_data, na.rm = TRUE)
     } else if (handling_method == "median") {
       input_data[[column_name]][is.na(column_data)] <- median(column_data, na.rm = TRUE)
+    } else if (handling_method == "foo") {
+      column_type <- input_var_list$data_type[i]
+      calculate_foo <- function(type, col_data) {
+        interpolation_method <- switch(
+          type,
+          "float" = median(col_data, na.rm = TRUE),
+          "int" = median(col_data, na.rm = TRUE),
+          "dummy" = median(col_data, na.rm = TRUE),
+          "perc" = mean(col_data, na.rm = TRUE),
+          "category" = "missing",
+          # return a default value or warning when the type does not match any cases
+          {warning("Invalid type."); NULL}
+        )
+        return(interpolation_method)
+      }
+      input_data[[column_name]][is.na(column_data)] <- calculate_foo(column_type, column_data)
     } else {
       stop(paste("Invalid handling method for column", column_name, ": ", handling_method))
     }
@@ -1287,7 +1308,8 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       var_sd <- round(sd(input_effect_data), 3)
       var_ci_lower <- round(var_mean - var_sd*z, 3)
       var_ci_upper <- round(var_mean + var_sd*z, 3)
-      var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
+      # var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
+      var_weighted_mean <- round(weighted.mean(input_effect_data, w = 1/input_study_size_data),3)
       var_ci_lower_w <- round(var_weighted_mean - var_sd*z, 3)
       var_ci_upper_w <- round(var_weighted_mean + var_sd*z, 3)
       var_median <- round(median(input_effect_data), 3)
@@ -1676,6 +1698,7 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #'  isntead of 1/SE as a measure of precision, to account for study size.
 #'  
 #' @param input_data [data.frame] Main data frame. Must contain cols 'effect', 'precision'
+#' @param precision_to_log [logical] If TRUE, use log of precision. Defaults to FALSE.
 #' @param effect_proximity [float] Cutoff point for the effect. See getOutliers() for more.
 #' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
 #' @param use_study_medians [bool] If TRUE, plot medians of studies instead of all observations.
@@ -1686,13 +1709,14 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #'  Defaults to FALSE.
 #' @param graph_scale [numeric] Scale for the output graph. Defaults to 3.
 #' @param output_path [character] Full path to where the plot should be stored. Defaults to NA.
-getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.2,
+getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2, maximum_precision=0.2,
                           use_study_medians = F, theme = "blue", verbose = T,
                           export_graphics = F, output_path = NA, graph_scale = 3){
   # Check input validity
   required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
+    is.logical(precision_to_log),
     is.numeric(effect_proximity),
     is.numeric(maximum_precision),
     is.logical(verbose),
@@ -1741,6 +1765,11 @@ getFunnelPlot <- function(input_data, effect_proximity=0.2, maximum_precision=0.
     stop("Invalid theme type")
   )
   vline_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
+  
+  # Precision to log if necessary
+  if (precision_to_log){
+    funnel_data$precision <- log(funnel_data$precision)
+  }
   
   # Plot the plot
   x_title <- ifelse(use_study_medians, "study median values", "all observations")
@@ -2105,7 +2134,7 @@ getTop10Results <- function(data, ...){
 #' @import stem_method_master_thesis_cala.R
 getStemResults <- function(data, script_path, print_plot = T, theme = "blue", 
                            export_graphics = T, export_path = "./results/graphic",
-                           graph_scale = 5, ...){
+                           graph_scale = 5, legend_pos = "topleft", ...){
   source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
@@ -2117,7 +2146,7 @@ getStemResults <- function(data, script_path, print_plot = T, theme = "blue",
   est_stem <- stem(data$effect, data$se, stem_param)$estimates # Actual esimation
   # Stem plot
   funnel_stem_call <- bquote(
-    stem_funnel(data$effect, data$se, est_stem, theme = .(theme))
+    stem_funnel(data$effect, data$se, est_stem, theme = .(theme), legend_pos = .(legend_pos))
   )
   # Print and export the plot 
   if (print_plot){
@@ -2306,7 +2335,7 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data, script_paths, selection_params = NULL, theme = "blue",
                               export_graphics = T, export_path = './results/graphic',
-                              graph_scale = 5) {
+                              graph_scale = 5, stem_legend_pos = "topleft") {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -2338,6 +2367,7 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
       export_graphics = export_graphics,
       export_path = export_path,
       graph_scale = graph_scale,
+      legend_pos = stem_legend_pos,
       pub_bias_present = F,
       verbose_coefs = T
     )

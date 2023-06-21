@@ -23,13 +23,13 @@ if (!require('ddpcr')) install.packages('ddpcr'); library('ddpcr')              
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = F,
-    "effect_summary_stats" = F,
-    "box_plot" = F,
-    "funnel_plot" = F,
-    "t_stat_histogram" = F,
-    "linear_tests" = F,
-    "nonlinear_tests" = T,
+    "variable_summary_stats" = T,
+    "effect_summary_stats" = T,
+    "box_plot" = T,
+    "funnel_plot" = T,
+    "t_stat_histogram" = T,
+    "linear_tests" = T,
+    "nonlinear_tests" = F,
     "exo_tests" = F,
     "p_hacking_tests" = F,
     "bma" = F,
@@ -92,9 +92,10 @@ user_params <- list(
     "box_plot_graph_scale" = 3, # Numeric, scale the graph by this number
     "box_plot_verbose" = TRUE, # Get information about the plots being printed
     # Funnel plot parameters
+    "funnel_precision_to_log" = FALSE, # If T, use log of precision as y axis (default: precision)
     "funnel_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
     "funnel_maximum_precision" = 1, # Precision axis maximum value cutoff point (perc)
-    "funnel_graph_scale" = 3, # Numeric, scale the graph by this number
+    "funnel_graph_scale" = 2.5, # Numeric, scale the graph by this number
     "funnel_verbose" = TRUE, # If T, print cut outlier information
     # T-statistic histogram parameters
     "t_hist_lower_cutoff" = -120, # Lower cutoff point for t-statistics
@@ -102,9 +103,10 @@ user_params <- list(
     "t_hist_graph_scale" = 6, # Numeric, scale the graph by this number
     # Nonlinear parameters - only selection model parametrizable
     "non_linear_stem_graph_scale" = 5, # Numeric, scale the graph by this number
+    "non_linear_stem_legend_position" = "topright", # Position of the STEM plot legend
     "non_linear_param_selection_cutoffs" = c(1.960),
     "non_linear_param_selection_symmetric" = F,
-    "non_linear_param_selection_modelmu" = "normal",
+    "non_linear_param_selection_modelmu" = "t", # Can be one of "normal", "t"
     # P-uniform paramteres
     "puni_param_side" = "right", # puni_star side argument
     "puni_param_method" = "ML", # Method used for p-uniform calculation - one of "ML", "P"
@@ -128,9 +130,9 @@ user_params <- list(
     "maive_studylevel" = 0, # 0 = No study-level correlation
     "maive_verbose" = TRUE,
     # Bayesian Model Averaging parameters
-    "automatic_bma" = FALSE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
+    "automatic_bma" = TRUE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
     "bma_adjustable_theme" = TRUE, # If TRUE, modify the colors of bma plots to fit the theme
-    "bma_verbose" = FALSE, # If TRUE, print suggested formulas, VIF, etc.
+    "bma_verbose" = TRUE, # If TRUE, print suggested formulas, VIF, etc.
     "bma_graph_scale" = 2, # Numeric, scale the corrplot graph by this amount
     "bma_print_results" = "none", # Print raw results - one of c("none", "fast", "verbose", "all")
     "bma_param_burn" = 1e4, # Burn-ins (def 1e5)
@@ -234,18 +236,6 @@ user_param_file <- 'user_parameters.yaml'
 # Save the user parameters into the working directory
 yaml::write_yaml(user_params, user_param_file)
 
-# Create a folder for numeric results export (must be done here explicitly)
-numeric_results_folder_path <- user_params$folder_path$numeric_results_folder
-if (!file.exists(numeric_results_folder_path)){
-  dir.create(numeric_results_folder_path, recursive = TRUE)
-}
-
-# Save the console output to a log file in the results folder
-log_file_path <- paste0(numeric_results_folder_path, user_params$export_log_file)
-if (file.exists(log_file_path)){quiet(system(paste("rm", log_file_path)))} # Clean output file
-quiet(sink()) # Empty the sink
-sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
-
 # Time the script run
 # start_time <- Sys.time()
 # source("main_master_thesis_cala.R")
@@ -255,6 +245,3 @@ sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
  
 # Run the main file
 source("main_master_thesis_cala.R")
-
-# Close the connection to the file
-sink()

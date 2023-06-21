@@ -156,6 +156,12 @@ if (user_params$development_on) {
 # Validate all the necessary files
 validateFiles(all_source_files)
 
+# Save the console output to a log file in the results folder
+log_file_path <- paste0(folder_paths$numeric_results_folder, user_params$export_log_file)
+if (file.exists(log_file_path)){quiet(system(paste("rm", log_file_path)))} # Clean output file
+quiet(sink()) # Empty the sink
+sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
+
 ######################### DATA PREPROCESSING #########################
 
 # Read all the source .csv files
@@ -277,6 +283,7 @@ if (run_this$funnel_plot){
         getFunnelPlot, user_params,
         verbose_function = nullVerboseFunction,
         funnel_data,
+        precision_to_log = adj_params$funnel_precision_to_log,
         effect_proximity = adj_params$funnel_effect_proximity,
         maximum_precision = adj_params$funnel_maximum_precision,
         use_study_medians = use_medians,
@@ -349,7 +356,8 @@ if (run_this$nonlinear_tests){
     theme = user_params$theme,
     export_graphics = user_params$export_graphics,
     export_path = folder_paths$graphic_results_folder,
-    graph_scale = adj_params$non_linear_stem_graph_scale
+    graph_scale = adj_params$non_linear_stem_graph_scale,
+    stem_legend_pos = adj_params$non_linear_stem_legend_position
   )
   if (user_params$export_results){
     exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
@@ -600,3 +608,6 @@ if (user_params$export_results){
     folder_paths$numeric_results_folder
   )
 }
+
+# Close the connection to the file
+sink()
