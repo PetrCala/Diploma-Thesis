@@ -80,7 +80,8 @@ Furthermore, the existence of all folders will be verified. Note that some do no
  7. Try to eliminate as many missing values in your data frame as you can.
     The script will automatically use interpolation for missing data, so that model averaging
     can run, but in case of many missing values, the results may be unstable.
- 8. The data frame must contain several columns, the names of which can be modified to fit your data frame. This can be done the same way you would modify the script names (described in step 2). In the `user_parameter.yaml` file or in the script runner, navigate to the section `required_cols`, where you can modify the names of the necessary columns to fit the column names in your data frame. For the columns that are marked as optional, you can set the value to `NA` if this column is not present in your data frame. The column will then be created automatically during the script run. Required columns must then appear within your data frame. Here is the list of the expected columns:
+ 8. The file with data must contain two sheets - `data_set` and `var_list` (these are modifiable within the user parameter file or from within the script runner). The former should contain all your data that satisfies the conditions described in step 9, while the latter should contain information about variables of the dataset, as described in step 10.
+ 9. The data frame must contain several columns, labelel **required columns**, and there are also several columns that are optional **optional columns**. These are:
    * Required columns:
       - **obs_id** - Unique ID of the observation.
       - **study_name** - Name of the study, such as *Einstein et al. (1935)*.
@@ -94,8 +95,8 @@ Furthermore, the existence of all folders will be verified. Note that some do no
      - **precision** - Precision of the effect. If set to `NA`, calculated automatically if omitted using the `precision_type` parameter within the `adjustable_parameters` list of the `user_parameters.yaml` file. Defaults to *1/Standard_Error*.
       - **study_size** - Number of estimates reported per study. If set to `NA`, calculated automatically if omitted.
       - **reg_df** - Number of degrees of freedom associated with the regression. If set to `NA`, the number of observations associated with the estimate will be used instead.
- 9. In the file `var_list_master_thesis_cala.csv` (or your renamed version), input the list of variables you are using in your data frame,
-   along with these parameters:
+ 10. The sheet (labeled by default as `var_list`), contains the information about the nature and usage of all columns/variables that appear in the main data frame. Note that these must be listed exactly in the order in which they appear in the main data frame. For inspiration, see the placeholder file `data_set_master_thesis_cala.xlsm`.
+   The sheet should contain the following columns:
    * **var_name** - Name of the variable exactly as it appears in the data frame columns. Must not include
      spaces and various special characters. Underscores are allowed. Example: *n_obs*.
    * **var_name_verbose** - A verbose name for the variable. Needs not to limit to any subset of characters. Example: *Number of Observations*.
@@ -137,6 +138,7 @@ To run the code, follow these steps:
   * **Use the main script in combination with the `user_params.yaml` file** - You can also run the main code by directly calling the `main_master_thesis_cala.R` file. This assumes that there exists a `user_params.yaml` file within the root of the folder and that you have modified the parameters to your liking.
 	When modifying the parameters, you may do so from directly within the `.yaml` file, but make sure to follow the guidelines in step 2 while doing so.
 2. Guidelines for parameter modification:
+  * Follow the `User parameter guide` for explicit information about allowed values and meaning of all parameters.
   * Do not change the names of any of the parameters, unless told explicitly. Change only the values. For the explanation of each of the parameters, see the script runner.
   * Parameters used for calling external functions are marked with the `param_` prefix within their name (see parameters for BMA, non-linear tests,...). Make sure to keep this convention when adding new such parameters.
   * Make sure to keep the object types, unless told explicitly. For example, if a value of a parameter is a vector, make sure it is still a vector after the modifications.

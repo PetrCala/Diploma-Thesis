@@ -86,7 +86,7 @@ readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_
   quiet(
     dfs <- lapply(source_sheets, function(sheet_name) {
       csv_path <- paste0(sheet_name, "_", csv_suffix, ".csv")
-      new_data_path <- paste0(data_folder_path, csv_path) # Store in data folder
+      new_data_path <- paste0(data_folder_path, 'temp/', csv_path) # Store in data folder under temp folder
       # Read the source file
       df_xlsx <- read_excel(xlsx_path, sheet = sheet_name)
       # Remove .
