@@ -5,8 +5,8 @@ run_this:
   funnel_plot: yes
   t_stat_histogram: yes
   linear_tests: yes
-  nonlinear_tests: no
-  exo_tests: no
+  nonlinear_tests: yes
+  exo_tests: yes
   p_hacking_tests: no
   bma: no
   fma: no
@@ -152,7 +152,7 @@ export_methods:
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
 export_log_file_path: numeric_results.txt
-export_zip_name: results_all_06-21-23
+export_zip_name: results_all_06-27-23
 export_graphics: yes
 theme: blue
 use_cache: yes

@@ -29,8 +29,8 @@ user_params <- list(
     "funnel_plot" = T,
     "t_stat_histogram" = T,
     "linear_tests" = T,
-    "nonlinear_tests" = F,
-    "exo_tests" = F,
+    "nonlinear_tests" = T,
+    "exo_tests" = T,
     "p_hacking_tests" = F,
     "bma" = F,
     "fma" = F, # Executable only after running BMA
