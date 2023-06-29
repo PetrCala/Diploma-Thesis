@@ -409,7 +409,7 @@ if (run_this$p_hacking_tests){
     verbose_function = getElliottResultsVerbose,
     data,
     script_path = paste0(folder_paths$scripts_folder, script_files$elliott_source),
-    temp_data_path = folder_paths$data_folder, # Store temp files here
+    temp_data_path = paste0(folder_paths$data_folder, '/temp/'), # Store temp files here
     data_subsets = adj_params$elliott_data_subsets,
     p_min = adj_params$elliott_p_min,
     p_max = adj_params$elliott_p_max,
@@ -459,16 +459,17 @@ if (run_this$bma){
       verbose_function = nullVerboseFunction, # No verbose output
       input_vars, data
     )
+    # Run the Variance Inflation Test
+    vif_coefs <- runVifTest(bma_formula, data,
+                            print_all_coefs = adj_params$bma_verbose, verbose = T)
   }
-  # Run the Variance Inflation Test
-  vif_coefs <- runVifTest(bma_formula, data,
-                          print_all_coefs = adj_params$bma_verbose, verbose = F)
   # BMA estimation
   bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
   bma_data <- runCachedFunction(
     getBMAData, user_params,
     verbose_function = nullVerboseFunction, # No verbose output
-    data, var_list, bma_vars
+    data, var_list, bma_vars,
+    scale_data = adj_params$bma_scale_data
   )
   bma_params <- getMultipleParams(adj_params, "bma_param_",T,T)
   bma_model <- runCachedFunction(
@@ -489,6 +490,11 @@ if (run_this$bma){
     export_path = user_params$folder_paths$graphic_results_folder,
     graph_scale = adj_params$bma_graph_scale
   )
+  # Store the bma data in the temporary data folder
+  if (user_params$export_bma_data){
+    bma_data_path <- paste0(folder_paths$data_folder, 'temp/bma_data', '_', csv_suffix, '.csv')
+    write_csv(bma_data, bma_data_path)
+  }
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
@@ -528,6 +534,7 @@ if (run_this$ma_variables_description_table){
     verbose_function = nullVerboseFunction, # No verbose output
     data, var_list,
     var_list,
+    scale_data = F, # Display original values
     from_vector = F,
     include_reference_groups = T
   )
@@ -543,6 +550,41 @@ if (run_this$ma_variables_description_table){
 }
 
 ######################### BEST-PRACTICE ESTIMATE #########################
+
+#debug(getBPE)
+#bpe_temp <- getBPE(bpe_data, var_list, bma_model, bma_formula, bma_data, 0,
+#                     include_intercept = TRUE,
+#                     study_info_verbose = T, # Information about study names
+#                     verbose_output = FALSE) # Individual study outcomes into console - keep FALSE
+#unscaled_bma_data <- runCachedFunction(
+#  getBMAData, user_params,
+#  verbose_function = nullVerboseFunction, # No verbose output
+#  data, var_list, bma_vars,
+#  scale_data = F
+#)
+## Extract the coefficients
+#bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
+#orig_sds <- sapply(unscaled_bma_data, sd)
+#orig_intercept <- bma_coefs["(Intercept)","Post Mean"] - sum(bma_coefs[,'Post Mean'] * sapply(unscaled_bma_data, mean)/ orig_sds)
+#bma_coefs[,'Post Mean'] <- bma_coefs[,'Post Mean']/orig_sds
+#bma_coefs['(Intercept)','Post Mean'] <- orig_intercept
+#  
+## Get the BPE estimate
+## Get formula as a string - ((intercept) + coefs * values)
+#bpe_formula_est <- constructBPEFormula(data, var_list, unscaled_bma_data, bma_coefs,
+#                                   0, T, get_se = FALSE)
+#bpe_est <- eval(parse(text = bpe_formula_est)) # Evaluate the formula
+#bpe_est
+#
+## Get the BPE Standard error
+## Get formula as a string ((intercept) + coefs * variable_names = 0)
+#bpe_formula_se <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
+#                                   study_id, include_intercept, get_se = TRUE)
+#bpe_ols <- lm(formula = bma_formula, data = bma_data) # Constructing an OLS model
+#bpe_glht <- glht(bpe_ols, linfct = c(bpe_formula_se), # GLHT
+#                 vcov = vcovHC(bpe_ols, type = "HC0", cluster = c(input_data$study_id)))
+#bpe_se <- as.numeric(summary(bpe_glht)$test$sigma) # Extract output
+
 
 if (run_this$bpe){
   if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
