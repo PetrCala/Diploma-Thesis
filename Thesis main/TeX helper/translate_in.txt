@@ -1,20 +1,14 @@
-\caption{Mean statistics across various subsets of data}  \label{tab:sum}\\
+\caption{Definition and summary statistics of regression variables}  \label{tab:var}\\
 \toprule
-   & \multicolumn{3}{c}{Unweighted} &   \multicolumn{3}{c}{Weighted} & \\
-   \cmidrule(lr){2-4} \cmidrule(lr){5-7}
-   & Mean & \multicolumn{2}{c}{95\% conf. int.} & Mean & \multicolumn{2}{c}{95\% conf. int.} & N. obs\\
+  \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
 \midrule
 \endfirsthead
-\caption{Mean statistics across various subsets of data (continued)}\\
+\caption[]{Definition and summary statistics of regression variables (continued)}\\
 \toprule
-  & \multicolumn{3}{c}{Unweighted} &   \multicolumn{3}{c}{Weighted} &  \\
-   \cmidrule(lr){2-4} \cmidrule(lr){5-7}
-   & Mean & \multicolumn{2}{c}{95\% conf. int.} & Mean & \multicolumn{2}{c}{95\% conf. int.} & No. of observations \\
-  
+  \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
 \midrule
 \endhead
 \bottomrule
-\multicolumn{8}{r}{{\scriptsize Continued on next page}} \\
+\multicolumn{4}{r}{{\scriptsize Continued on next page}} \\
 \endfoot
-
 \endlastfoot

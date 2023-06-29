@@ -94,6 +94,7 @@ adjustable_parameters:
   maive_studylevel: 0.0
   maive_verbose: yes
   automatic_bma: yes
+  bma_scale_data: yes
   bma_adjustable_theme: yes
   bma_verbose: yes
   bma_graph_scale: 2.0
@@ -154,6 +155,7 @@ export_methods:
 export_log_file_path: numeric_results.txt
 export_zip_name: results_all_today
 export_graphics: yes
+export_bma_data: no
 theme: blue
 use_cache: yes
 cache_age: 3600.0

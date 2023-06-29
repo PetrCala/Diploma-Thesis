@@ -1171,7 +1171,7 @@ getMAVariablesDescriptionTable <- function(bma_data, input_var_list, verbose = T
   colnames(desc_df) <- c("Variable", "Description", "Mean", "SD")
   # Return the output
   if (verbose){
-    getMAVariablesDescriptionTable(res, verbose = verbose)
+    getMAVariablesDescriptionTableVerbose(desc_df, verbose = verbose)
   }
   return(desc_df)
 }
@@ -3278,6 +3278,7 @@ runVifTest <- function(input_var, input_data, print_all_coefs = F, verbose = T){
 #' @param input_var_list [data.frame] A data frame containing the variable information.
 #' @param variable_info [data.frame | vector] Either a data frame containing the variable information,
 #'  or a vector of variables. In the latter case, the "from_vector" variable must be set to T.
+#' @param scale_data [logical] If TRUE, scale the data onto the same scale. Defaults to T.
 #' @param from_vector [logical] If True, the "variable_info" must be specified as a vector, otherwise
 #'  as a data frame. Defaults to FALSE.
 #' @param include_reference_groups [logical] If TRUE, add the reference groups to the data. Be very
@@ -3286,7 +3287,7 @@ runVifTest <- function(input_var, input_data, print_all_coefs = F, verbose = T){
 #' @note When transforming/subsetting the data, there is a need to convert the data into a
 #' data.frame object, otherwise the plot functions will not recognize the data types correctly
 #' later on. The "bms" function works well even with a tibble, but the plots do not. RRRRRRR
-getBMAData <- function(input_data, input_var_list, variable_info, from_vector = T,
+getBMAData <- function(input_data, input_var_list, variable_info, scale_data = T, from_vector = T,
                        include_reference_groups = F){
   # Input validation
   stopifnot(
@@ -3327,6 +3328,21 @@ getBMAData <- function(input_data, input_var_list, variable_info, from_vector = 
       bma_data[is.infinite(bma_data[,column]),column] <- 0 # Replace infinite values with 0
     }
   }
+  
+  # Standardize non-binary data onto similar and directly comparable scale
+  if (scale_data){
+    # Store source column names
+    source_colnames <- colnames(bma_data)
+    # Check whether the variables are binary or not
+    is_binary <- function(x) {
+      length(unique(x)) == 2
+    }
+    binary_cols <- sapply(bma_data, is_binary) # Boolean where TRUE if col is binary
+    bma_data[, !binary_cols] <- lapply(bma_data[, !binary_cols], function(x){as.numeric(scale(x))}) # Scale non-binary cols
+    # Restore column names
+    colnames(bma_data) <- source_colnames
+  }
+  
   return(bma_data)
 }
 
@@ -3872,6 +3888,24 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
     bpe_est_string <- paste(bpe_est_string, "= 0")
   }
   return(bpe_est_string)
+}
+
+#' Get data for the Best practice estimate
+#' 
+#' Replace the raw data in the main data frame with the data used in BMA so that the
+#' BMA coefficients are directly reproducible in the BPE form construction
+getBPEData <- function(input_data, bma_data){
+  stopifnot(
+    all(sapply(bma_data, is.numeric))
+  )
+  # Keep source colnames
+  source_colnames <- colnames(input_data)
+  # Replace the columns of the input data with columns of bma data
+  cols_to_replace <- colnames(input_data) %in% colnames(bma_data)
+  input_data[,cols_to_replace] <- lapply(bma_data, function(x){as.numeric(x)})
+  # Restore column names
+  colnames(input_data) <- source_colnames
+  return(input_data)
 }
 
 

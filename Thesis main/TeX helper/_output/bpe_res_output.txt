@@ -9,10 +9,10 @@ l
     Study & Estimate & 95\% Confidence Interval \\
 \endfirsthead
 \midrule
-               Author & 6.941 & (6.179; 7.703) \\
-Bartolj et al. (2013) & 8.270 &   (7.67; 8.87) \\
-Staiger et al. (1997) & 7.801 & (6.731; 8.871) \\
-       Webbink (2004) & 8.212 & (6.495; 9.929) \\
+               Author & 6.171 & (5.448; 6.894) \\
+Bartolj et al. (2013) & 6.932 &  (6.32; 7.544) \\
+Staiger et al. (1997) & 8.266 &  (7.182; 9.35) \\
+       Webbink (2004) & 7.080 & (5.536; 8.624) \\
 \bottomrule
 \multicolumn{3}{>{\scriptsize}p{0.6\linewidth}}{\emph{Note:} The table reports estimates of the best-practice estimate according to three different studies and the author's subjective best-practice. 95\% confidence interval bounds are constructed as an approximate using OLS with study level clustered standard errors.}
 \end{longtable}

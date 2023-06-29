@@ -7,12 +7,12 @@ run_this:
   linear_tests: yes
   nonlinear_tests: yes
   exo_tests: yes
-  p_hacking_tests: no
-  bma: no
-  fma: no
-  ma_variables_description_table: no
-  bpe: no
-  robma: no
+  p_hacking_tests: yes
+  bma: yes
+  fma: yes
+  ma_variables_description_table: yes
+  bpe: yes
+  robma: yes
 source_file_params:
   csv_suffix: master_thesis_cala
   data_folder: ./data/source/
@@ -93,7 +93,8 @@ adjustable_parameters:
   maive_instrument: 1.0
   maive_studylevel: 0.0
   maive_verbose: yes
-  automatic_bma: yes
+  automatic_bma: no
+  bma_scale_data: no
   bma_adjustable_theme: yes
   bma_verbose: yes
   bma_graph_scale: 2.0
@@ -152,8 +153,9 @@ export_methods:
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
 export_log_file_path: numeric_results.txt
-export_zip_name: results_all_06-27-23
+export_zip_name: results_all_06-29-23
 export_graphics: yes
+export_bma_data: yes
 theme: blue
 use_cache: yes
 cache_age: 3600.0

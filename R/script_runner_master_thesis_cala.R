@@ -31,12 +31,12 @@ user_params <- list(
     "linear_tests" = T,
     "nonlinear_tests" = T,
     "exo_tests" = T,
-    "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
-    "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F, # Executable only after running BMA
-    "robma" = F # Computationally expensive
+    "p_hacking_tests" = T,
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "bpe" = T, # Executable only after running BMA
+    "robma" = T # Computationally expensive
   ),
   
   # CUSTOMIZABLE SOURCE FILE PATH
@@ -134,7 +134,8 @@ user_params <- list(
     "maive_studylevel" = 0, # 0 = No study-level correlation
     "maive_verbose" = TRUE,
     # Bayesian Model Averaging parameters
-    "automatic_bma" = TRUE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
+    "automatic_bma" = FALSE, # If TRUE, automatically generate a formula for BMA with all VIF < 10
+    "bma_scale_data" = FALSE, # If TRUE, standardize all variables onto the same scale automatically - UNSTABLE
     "bma_adjustable_theme" = TRUE, # If TRUE, modify the colors of bma plots to fit the theme
     "bma_verbose" = TRUE, # If TRUE, print suggested formulas, VIF, etc.
     "bma_graph_scale" = 2, # Numeric, scale the corrplot graph by this amount
@@ -211,6 +212,7 @@ user_params <- list(
   export_log_file_path = "numeric_results.txt", # Console log as a text file
   export_zip_name = paste0("results_all_", format(Sys.Date(), "%m-%d-%y")), # Zip file with all results
   export_graphics = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
+  export_bma_data = TRUE, # If TRUE, export the data used for BMA into the temporary data folder
   theme = "blue", # One of "blue", "yellow", "green", "red", "purple"
   
   # CACHE HANDLING
