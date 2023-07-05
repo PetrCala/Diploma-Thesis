@@ -1660,20 +1660,29 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
 #' vector, where the "red" color corresponds to the position of the mean value.
 #'
 #' @param input_vec [numeric(3)] A numeric vector of length 3, containing the lower bound, upper bound, and mean value.
+#' @param add_zero [logical] If TRUE, always add 0 to the ticks
 #' @param theme [character] Theme to use for the ticks
 #' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values and the mean value,
 #'         and "x_axis_tick_text", a character vector of the same length as "output_vec", 
 #'         with "red" indicating the position of the mean value and "black" for all other positions.
-generateFunnelTicks <- function(input_vec, theme = "blue"){
+generateFunnelTicks <- function(input_vec, add_zero = T, theme = "blue"){
   lower_bound <- input_vec[1]
   upper_bound <- input_vec[2]
   mean_value <- input_vec[3]
   
-  ticks <- c(lower_bound, upper_bound)
+  ticks <- c(lower_bound, upper_bound) # Base ticks
+  if (add_zero &&
+      !0 %in% ticks &&
+      0 > lower_bound &&
+      0 < upper_bound) {
+    ticks <- sort(c(ticks, 0))
+  }
   current_tick <- ceiling(lower_bound / 10) * 10 # Closest number divisible by 10 higher than lower bound
   
   while (current_tick < upper_bound) {
-    if (abs(current_tick - lower_bound) >= 2 && abs(current_tick - upper_bound) >= 2) {
+    if (abs(current_tick - lower_bound) >= 2 &&
+        abs(current_tick - upper_bound) >= 2 &&
+        !current_tick %in% ticks) {
       ticks <- c(ticks, round(current_tick, 2))
     }
     current_tick <- current_tick + 10
@@ -1705,6 +1714,7 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
 #' @param use_study_medians [bool] If TRUE, plot medians of studies instead of all observations.
 #'  Defaults to FALSE.
+#' @param add_zero [bool] If T, always add zero to the graph. Defaults to T.
 #' @param theme [character] Theme to use. Defaults to "blue".
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
 #' @param export_graphics [bool] If TRUE, export the plot to png object into the graphics folder.
@@ -1712,7 +1722,7 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #' @param graph_scale [numeric] Scale for the output graph. Defaults to 3.
 #' @param output_path [character] Full path to where the plot should be stored. Defaults to NA.
 getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2, maximum_precision=0.2,
-                          use_study_medians = F, theme = "blue", verbose = T,
+                          use_study_medians = F, add_zero = T, theme = "blue", verbose = T,
                           export_graphics = F, output_path = NA, graph_scale = 3){
   # Check input validity
   required_cols <- getDefaultColumns()
@@ -1721,6 +1731,7 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
     is.logical(precision_to_log),
     is.numeric(effect_proximity),
     is.numeric(maximum_precision),
+    is.logical(add_zero),
     is.logical(verbose),
     is.logical(export_graphics),
     is.numeric(graph_scale),
@@ -1753,7 +1764,7 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
   mean_x_tick <- mean(funnel_data$effect)
   # Generate and extract the info
   base_funnel_ticks <- c(funnel_x_lbound, funnel_x_ubound, mean_x_tick) # c(lbound, ubound, mean)
-  funnel_visual_info <- generateFunnelTicks(base_funnel_ticks, theme = theme)
+  funnel_visual_info <- generateFunnelTicks(base_funnel_ticks, add_zero = add_zero, theme = theme)
   funnel_ticks <- funnel_visual_info$funnel_ticks
   funnel_tick_text <- funnel_visual_info$x_axis_tick_text
   # Get the theme to use

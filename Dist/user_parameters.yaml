@@ -49,6 +49,7 @@ adjustable_parameters:
   funnel_precision_to_log: no
   funnel_effect_proximity: 1.0
   funnel_maximum_precision: 1.0
+  add_zero: yes
   funnel_graph_scale: 2.5
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
