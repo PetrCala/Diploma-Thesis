@@ -14,7 +14,7 @@
 ##################### ENVIRONMENT PREPARATION ########################
 
 # Clean the environment - DO NOT CHANGE THIS
-rm(list = ls()) 
+rm(list = ls())
 options(scipen=999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
  
@@ -102,6 +102,7 @@ loadPackages(packages)
 
 # Load user parameters and unlist for easier fetching
 user_params <- yaml::read_yaml(user_param_file) 
+source_file_params <- user_params$source_file_params # Parameters of the source data file
 run_this <- user_params$run_this # Which parts of the scipt to run
 adj_params <- user_params$adjustable_parameters # Various parameters
 data_files <- user_params$data_files # Data files (only files names)
@@ -109,26 +110,27 @@ script_files <- user_params$script_files # Script files (only file names)
 folder_paths <- user_params$folder_paths # Paths to various folders
 
 # Validate folder existence
-validateFolderExistence(folder_paths$cache_folder)
-validateFolderExistence(folder_paths$data_folder, require_existence = T) # No overwriting
-validateFolderExistence(folder_paths$graphic_results_folder)
-validateFolderExistence(folder_paths$numeric_results_folder)
-validateFolderExistence(folder_paths$ext_package_folder, require_existence = T) # No overwriting
-validateFolderExistence(folder_paths$all_results_folder)
+modifiable_folders <- c(
+  folder_paths$cache_folder,
+  folder_paths$temp_data_folder,
+  folder_paths$graphic_results_folder,
+  folder_paths$numeric_results_folder,
+  folder_paths$all_results_folder
+)
+unmodifiable_folders <- c(
+  source_file_params$source_data_folder,
+  folder_paths$ext_package_folder
+)
+invisible(sapply(modifiable_folders, validateFolderExistence))
+invisible(sapply(unmodifiable_folders, validateFolderExistence, require_existence = TRUE)) # No overwriting
 
 # Clean result folders
-runCachedFunction(
-  cleanFolder, user_params, nullVerboseFunction,
-  folder_paths$data_folder
-)
-runCachedFunction(
-  cleanFolder, user_params, nullVerboseFunction,
-  folder_paths$graphic_results_folder
-)
-runCachedFunction(
-  cleanFolder, user_params, nullVerboseFunction,
+folders_to_clean <- c(
+  folder_paths$temp_data_folder,
+  folder_paths$graphic_results_folder,
   folder_paths$numeric_results_folder
 )
+invisible(sapply(folders_to_clean, cleanFolder))
 
 # Load external packages
 loadExternalPackages(folder_paths$ext_package_folder)
@@ -142,22 +144,21 @@ all_source_files <- c(
 )
 
 # Create the .csv data files from a source .xlsx/.xlsm file
-file_params <- user_params$source_file_params
-csv_suffix <- file_params$csv_suffix # File suffix
+csv_suffix <- source_file_params$csv_suffix # File suffix
 source_data_path <- paste0(
-  file_params$data_folder, # Folder
-  file_params$file_name,   # File
-  file_params$file_suffix  # Suffix
+  source_file_params$source_data_folder, # Folder
+  source_file_params$file_name,   # File
+  source_file_params$file_suffix  # Suffix
 )
-data_sheet_name <- file_params$data_sheet_name # Name of sheet with data
-var_list_sheet_name <- file_params$var_list_sheet_name # Name of sheet with variable info
+data_sheet_name <- source_file_params$data_sheet_name # Name of sheet with data
+var_list_sheet_name <- source_file_params$var_list_sheet_name # Name of sheet with variable info
 source_sheets <- c(
   data_sheet_name,
   var_list_sheet_name
 )
 
 # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files)
-readExcelAndWriteCsv(source_data_path, source_sheets, csv_suffix, data_folder_path = folder_paths$data_folder)
+readExcelAndWriteCsv(source_data_path, source_sheets, csv_suffix, temp_data_folder_path = folder_paths$temp_data_folder)
 
 # Validate all the necessary files
 validateFiles(all_source_files)
@@ -171,8 +172,8 @@ sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 ######################### DATA PREPROCESSING #########################
 
 # Read all the source .csv files
-data <- readDataCustom(paste0(folder_paths$data_folder, 'temp/', data_sheet_name, '_', csv_suffix, '.csv'))
-var_list <- readDataCustom(paste0(folder_paths$data_folder, 'temp/', var_list_sheet_name, '_', csv_suffix, '.csv'))
+data <- readDataCustom(paste0(folder_paths$temp_data_folder, data_sheet_name, '_', csv_suffix, '.csv'))
+var_list <- readDataCustom(paste0(folder_paths$temp_data_folder, var_list_sheet_name, '_', csv_suffix, '.csv'))
 
 # Validate the input variable list
 validateInputVarList(var_list)
@@ -551,41 +552,6 @@ if (run_this$ma_variables_description_table){
 
 ######################### BEST-PRACTICE ESTIMATE #########################
 
-#debug(getBPE)
-#bpe_temp <- getBPE(bpe_data, var_list, bma_model, bma_formula, bma_data, 0,
-#                     include_intercept = TRUE,
-#                     study_info_verbose = T, # Information about study names
-#                     verbose_output = FALSE) # Individual study outcomes into console - keep FALSE
-#unscaled_bma_data <- runCachedFunction(
-#  getBMAData, user_params,
-#  verbose_function = nullVerboseFunction, # No verbose output
-#  data, var_list, bma_vars,
-#  scale_data = F
-#)
-## Extract the coefficients
-#bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
-#orig_sds <- sapply(unscaled_bma_data, sd)
-#orig_intercept <- bma_coefs["(Intercept)","Post Mean"] - sum(bma_coefs[,'Post Mean'] * sapply(unscaled_bma_data, mean)/ orig_sds)
-#bma_coefs[,'Post Mean'] <- bma_coefs[,'Post Mean']/orig_sds
-#bma_coefs['(Intercept)','Post Mean'] <- orig_intercept
-#  
-## Get the BPE estimate
-## Get formula as a string - ((intercept) + coefs * values)
-#bpe_formula_est <- constructBPEFormula(data, var_list, unscaled_bma_data, bma_coefs,
-#                                   0, T, get_se = FALSE)
-#bpe_est <- eval(parse(text = bpe_formula_est)) # Evaluate the formula
-#bpe_est
-#
-## Get the BPE Standard error
-## Get formula as a string ((intercept) + coefs * variable_names = 0)
-#bpe_formula_se <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
-#                                   study_id, include_intercept, get_se = TRUE)
-#bpe_ols <- lm(formula = bma_formula, data = bma_data) # Constructing an OLS model
-#bpe_glht <- glht(bpe_ols, linfct = c(bpe_formula_se), # GLHT
-#                 vcov = vcovHC(bpe_ols, type = "HC0", cluster = c(input_data$study_id)))
-#bpe_se <- as.numeric(summary(bpe_glht)$test$sigma) # Extract output
-
-
 if (run_this$bpe){
   if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
     stop("You must create these three objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
@@ -645,7 +611,7 @@ if (user_params$export_results){
   zipFolders(
     zip_name = user_params$export_zip_name,
     dest_folder = folder_paths$all_results_folder,
-    folder_paths$data_folder,
+    folder_paths$temp_data_folder,
     folder_paths$graphic_results_folder,
     folder_paths$numeric_results_folder
   )

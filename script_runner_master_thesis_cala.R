@@ -42,7 +42,7 @@ user_params <- list(
   # CUSTOMIZABLE SOURCE FILE PATH
   source_file_params = list(
     csv_suffix = "master_thesis_cala", # Suffix of the .csv files
-    data_folder = "./data/source/", # Folder with the source data frame
+    source_data_folder = "./data/source/", # Folder with the source data frame
     file_name = "data_set_master_thesis_cala", # Name of the data frame
     file_suffix = '.xlsm',
     data_sheet_name = "data_set",
@@ -174,7 +174,7 @@ user_params <- list(
   # FOLDER PATHS
   folder_paths = list(
     cache_folder = './_cache/', # Store cache files here
-    data_folder = './data/', # Store data files here
+    temp_data_folder = './data/temp/', # A folder for temporary data fiels storage
     numeric_results_folder = './results/numeric/', # Store results here
     ext_package_folder = './pckg/', # Store external packages here
     graphic_results_folder = './results/graphic/', # Store graphical output here
@@ -212,7 +212,7 @@ user_params <- list(
   export_log_file_path = "numeric_results.txt", # Console log as a text file
   export_zip_name = paste0("results_all_", format(Sys.Date(), "%m-%d-%y")), # Zip file with all results
   export_graphics = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
-  export_bma_data = TRUE, # If TRUE, export the data used for BMA into the temporary data folder
+  export_bma_data = FALSE, # If TRUE, export the data used for BMA into the temporary data folder
   theme = "blue", # One of "blue", "yellow", "green", "red", "purple"
   
   # CACHE HANDLING
