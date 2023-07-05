@@ -14,10 +14,10 @@ run_this:
   bpe: no
   robma: no
 source_file_params:
-  csv_suffix: vany
+  csv_suffix: master_thesis_cala
   source_data_folder: ./data/source/
-  file_name: data-set_bachelor-thesis_Nguyenova
-  file_suffix: .xlsx
+  file_name: data_set_master_thesis_cala
+  file_suffix: .xlsm
   data_sheet_name: data_set
   var_list_sheet_name: var_list
 required_cols:
@@ -25,21 +25,21 @@ required_cols:
   study_id: study_id
   study_name: study_name
   effect: effect
-  se: standard_error
+  se: se
   t_stat: t_stat
   n_obs: n_obs
   study_size: study_size
   reg_df: reg_df
   precision: .na
 adjustable_parameters:
-  effect_name: individual ability on wage
+  effect_name: years of schooling on wage
   formal_output_on: yes
   data_subset_condition_1: .na
   data_subset_condition_2: ability_uncontrolled == 1
   data_winsorization_level: 0.01
   data_precision_type: 1/SE
   winsorize_precision: yes
-  allowed_missing_ratio: 0.9
+  allowed_missing_ratio: 0.7
   effect_summary_stats_conf_level: 0.95
   box_plot_group_by_factor_1: study_name
   box_plot_group_by_factor_2: country
@@ -49,16 +49,17 @@ adjustable_parameters:
   funnel_precision_to_log: no
   funnel_effect_proximity: 1.0
   funnel_maximum_precision: 1.0
-  funnel_graph_scale: 3.0
+  funnel_add_zero: yes
+  funnel_graph_scale: 2.5
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
-  t_hist_upper_cutoff: 27.0
+  t_hist_upper_cutoff: 120.0
   t_hist_graph_scale: 6.0
   non_linear_stem_graph_scale: 5.0
-  non_linear_stem_legend_position: topleft
+  non_linear_stem_legend_position: topright
   non_linear_param_selection_cutoffs: 1.96
   non_linear_param_selection_symmetric: no
-  non_linear_param_selection_modelmu: normal
+  non_linear_param_selection_modelmu: t
   puni_param_side: right
   puni_param_method: ML
   puni_param_alpha: 0.05
@@ -93,11 +94,11 @@ adjustable_parameters:
   maive_instrument: 1.0
   maive_studylevel: 0.0
   maive_verbose: yes
-  automatic_bma: yes
+  automatic_bma: no
   bma_scale_data: no
   bma_adjustable_theme: yes
   bma_verbose: yes
-  bma_graph_scale: 1.5
+  bma_graph_scale: 2.0
   bma_print_results: none
   bma_param_burn: 10000.0
   bma_param_iter: 30000.0
@@ -111,9 +112,9 @@ adjustable_parameters:
   ma_variables_description_table_clip: no
   bpe_studies:
   - 0.0
-  - 1.0
   - 2.0
-  - 3.0
+  - 112.0
+  - 7.0
   bpe_use_ci: yes
   bpe_study_info: yes
   bpe_result_table_verbose: yes
@@ -152,7 +153,7 @@ export_methods:
   bpe_econ_sig: Economic significance
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
-export_log_file_path: numeric_results.txt
+export_log_file_path: main_results.txt
 export_zip_name: results_all_07-05-23
 export_graphics: yes
 export_bma_data: no

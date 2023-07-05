@@ -210,7 +210,7 @@ user_params <- list(
     "robma_components" = "RoBMA components",
     "robma_estimates" = "RoBMA estimates"
   ),
-  export_log_file_path = "numeric_results.txt", # Console log as a text file
+  export_log_file_path = "main_results.txt", # Console log as a text file
   export_zip_name = paste0("results_all_", format(Sys.Date(), "%m-%d-%y")), # Zip file with all results
   export_graphics = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
   export_bma_data = FALSE, # If TRUE, export the data used for BMA into the temporary data folder
