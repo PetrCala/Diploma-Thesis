@@ -294,6 +294,7 @@ if (run_this$funnel_plot){
         effect_proximity = adj_params$funnel_effect_proximity,
         maximum_precision = adj_params$funnel_maximum_precision,
         use_study_medians = use_medians,
+        add_zero = adj_params$funnel_add_zero,
         theme = user_params$theme,
         verbose = adj_params$funnel_verbose,
         export_graphics = user_params$export_graphics,

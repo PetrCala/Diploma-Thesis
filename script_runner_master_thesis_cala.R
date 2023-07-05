@@ -23,20 +23,20 @@ if (!require('ddpcr')) install.packages('ddpcr'); library('ddpcr')              
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
-    "box_plot" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
+    "box_plot" = F,
     "funnel_plot" = T,
-    "t_stat_histogram" = T,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
-    "bma" = T,
-    "fma" = T, # Executable only after running BMA
-    "ma_variables_description_table" = T, # Executable only after running BMA
-    "bpe" = T, # Executable only after running BMA
-    "robma" = T # Computationally expensive
+    "t_stat_histogram" = F,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
+    "bma" = F,
+    "fma" = F, # Executable only after running BMA
+    "ma_variables_description_table" = F, # Executable only after running BMA
+    "bpe" = F, # Executable only after running BMA
+    "robma" = F # Computationally expensive
   ),
   
   # CUSTOMIZABLE SOURCE FILE PATH
@@ -99,6 +99,7 @@ user_params <- list(
     "funnel_precision_to_log" = FALSE, # If T, use log of precision as y axis (default: precision)
     "funnel_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
     "funnel_maximum_precision" = 1, # Precision axis maximum value cutoff point (perc)
+    "funnel_add_zero" = TRUE, # If T, always add a zero tick into the plot
     "funnel_graph_scale" = 2.5, # Numeric, scale the graph by this number
     "funnel_verbose" = TRUE, # If T, print cut outlier information
     # T-statistic histogram parameters
