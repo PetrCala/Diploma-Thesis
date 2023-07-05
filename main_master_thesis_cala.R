@@ -14,7 +14,7 @@
 ##################### ENVIRONMENT PREPARATION ########################
 
 # Clean the environment - DO NOT CHANGE THIS
-rm(list = ls()) 
+rm(list = ls())
 options(scipen=999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
  
@@ -102,6 +102,7 @@ loadPackages(packages)
 
 # Load user parameters and unlist for easier fetching
 user_params <- yaml::read_yaml(user_param_file) 
+source_file_params <- user_params$source_file_params # Parameters of the source data file
 run_this <- user_params$run_this # Which parts of the scipt to run
 adj_params <- user_params$adjustable_parameters # Various parameters
 data_files <- user_params$data_files # Data files (only files names)
@@ -109,26 +110,27 @@ script_files <- user_params$script_files # Script files (only file names)
 folder_paths <- user_params$folder_paths # Paths to various folders
 
 # Validate folder existence
-validateFolderExistence(folder_paths$cache_folder)
-validateFolderExistence(folder_paths$data_folder, require_existence = T) # No overwriting
-validateFolderExistence(folder_paths$graphic_results_folder)
-validateFolderExistence(folder_paths$numeric_results_folder)
-validateFolderExistence(folder_paths$ext_package_folder, require_existence = T) # No overwriting
-validateFolderExistence(folder_paths$all_results_folder)
+modifiable_folders <- c(
+  folder_paths$cache_folder,
+  folder_paths$temp_data_folder,
+  folder_paths$graphic_results_folder,
+  folder_paths$numeric_results_folder,
+  folder_paths$all_results_folder
+)
+unmodifiable_folders <- c(
+  source_file_params$source_data_folder,
+  folder_paths$ext_package_folder
+)
+invisible(sapply(modifiable_folders, validateFolderExistence))
+invisible(sapply(unmodifiable_folders, validateFolderExistence, require_existence = TRUE)) # No overwriting
 
 # Clean result folders
-runCachedFunction(
-  cleanFolder, user_params, nullVerboseFunction,
-  folder_paths$data_folder
-)
-runCachedFunction(
-  cleanFolder, user_params, nullVerboseFunction,
-  folder_paths$graphic_results_folder
-)
-runCachedFunction(
-  cleanFolder, user_params, nullVerboseFunction,
+folders_to_clean <- c(
+  folder_paths$temp_data_folder,
+  folder_paths$graphic_results_folder,
   folder_paths$numeric_results_folder
 )
+invisible(sapply(folders_to_clean, cleanFolder))
 
 # Load external packages
 loadExternalPackages(folder_paths$ext_package_folder)
@@ -142,22 +144,21 @@ all_source_files <- c(
 )
 
 # Create the .csv data files from a source .xlsx/.xlsm file
-file_params <- user_params$source_file_params
-csv_suffix <- file_params$csv_suffix # File suffix
+csv_suffix <- source_file_params$csv_suffix # File suffix
 source_data_path <- paste0(
-  file_params$data_folder, # Folder
-  file_params$file_name,   # File
-  file_params$file_suffix  # Suffix
+  source_file_params$source_data_folder, # Folder
+  source_file_params$file_name,   # File
+  source_file_params$file_suffix  # Suffix
 )
-data_sheet_name <- file_params$data_sheet_name # Name of sheet with data
-var_list_sheet_name <- file_params$var_list_sheet_name # Name of sheet with variable info
+data_sheet_name <- source_file_params$data_sheet_name # Name of sheet with data
+var_list_sheet_name <- source_file_params$var_list_sheet_name # Name of sheet with variable info
 source_sheets <- c(
   data_sheet_name,
   var_list_sheet_name
 )
 
 # Read multiple sheets from the master data set and write them as CSV files (overwriting existing files)
-readExcelAndWriteCsv(source_data_path, source_sheets, csv_suffix, data_folder_path = folder_paths$data_folder)
+readExcelAndWriteCsv(source_data_path, source_sheets, csv_suffix, temp_data_folder_path = folder_paths$temp_data_folder)
 
 # Validate all the necessary files
 validateFiles(all_source_files)
@@ -171,8 +172,8 @@ sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 ######################### DATA PREPROCESSING #########################
 
 # Read all the source .csv files
-data <- readDataCustom(paste0(folder_paths$data_folder, 'temp/', data_sheet_name, '_', csv_suffix, '.csv'))
-var_list <- readDataCustom(paste0(folder_paths$data_folder, 'temp/', var_list_sheet_name, '_', csv_suffix, '.csv'))
+data <- readDataCustom(paste0(folder_paths$temp_data_folder, data_sheet_name, '_', csv_suffix, '.csv'))
+var_list <- readDataCustom(paste0(folder_paths$temp_data_folder, var_list_sheet_name, '_', csv_suffix, '.csv'))
 
 # Validate the input variable list
 validateInputVarList(var_list)
@@ -409,7 +410,7 @@ if (run_this$p_hacking_tests){
     verbose_function = getElliottResultsVerbose,
     data,
     script_path = paste0(folder_paths$scripts_folder, script_files$elliott_source),
-    temp_data_path = folder_paths$data_folder, # Store temp files here
+    temp_data_path = paste0(folder_paths$data_folder, '/temp/'), # Store temp files here
     data_subsets = adj_params$elliott_data_subsets,
     p_min = adj_params$elliott_p_min,
     p_max = adj_params$elliott_p_max,
@@ -459,16 +460,17 @@ if (run_this$bma){
       verbose_function = nullVerboseFunction, # No verbose output
       input_vars, data
     )
+    # Run the Variance Inflation Test
+    vif_coefs <- runVifTest(bma_formula, data,
+                            print_all_coefs = adj_params$bma_verbose, verbose = T)
   }
-  # Run the Variance Inflation Test
-  vif_coefs <- runVifTest(bma_formula, data,
-                          print_all_coefs = adj_params$bma_verbose, verbose = F)
   # BMA estimation
   bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
   bma_data <- runCachedFunction(
     getBMAData, user_params,
     verbose_function = nullVerboseFunction, # No verbose output
-    data, var_list, bma_vars
+    data, var_list, bma_vars,
+    scale_data = adj_params$bma_scale_data
   )
   bma_params <- getMultipleParams(adj_params, "bma_param_",T,T)
   bma_model <- runCachedFunction(
@@ -489,6 +491,11 @@ if (run_this$bma){
     export_path = user_params$folder_paths$graphic_results_folder,
     graph_scale = adj_params$bma_graph_scale
   )
+  # Store the bma data in the temporary data folder
+  if (user_params$export_bma_data){
+    bma_data_path <- paste0(folder_paths$data_folder, 'temp/bma_data', '_', csv_suffix, '.csv')
+    write_csv(bma_data, bma_data_path)
+  }
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
@@ -528,6 +535,7 @@ if (run_this$ma_variables_description_table){
     verbose_function = nullVerboseFunction, # No verbose output
     data, var_list,
     var_list,
+    scale_data = F, # Display original values
     from_vector = F,
     include_reference_groups = T
   )
@@ -603,7 +611,7 @@ if (user_params$export_results){
   zipFolders(
     zip_name = user_params$export_zip_name,
     dest_folder = folder_paths$all_results_folder,
-    folder_paths$data_folder,
+    folder_paths$temp_data_folder,
     folder_paths$graphic_results_folder,
     folder_paths$numeric_results_folder
   )
