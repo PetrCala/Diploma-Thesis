@@ -12,9 +12,7 @@ Clone this repository onto your computer using `git clone https://github.com/Pet
 
 ### Project structure
 
-All necessary files for result reproduction can be found within the `Dist/` folder of the `master` branch, or within the contents `Dist` branch. To easily clone this folder onto your computer, simply download the folder using third party tools such as [download-directory](https://download-directory.github.io/) and inputting [this link](https://github.com/PetrCala/Diploma-Thesis/tree/master/Dist), or by manually downloading each individual file. I advise for the former approach.
-
-The distribution folder is structured as follows:
+The project is structured as follows:
 
 ```
 .
