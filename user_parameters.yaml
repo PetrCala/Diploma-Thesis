@@ -49,7 +49,7 @@ adjustable_parameters:
   funnel_precision_to_log: no
   funnel_effect_proximity: 1.0
   funnel_maximum_precision: 1.0
-  add_zero: yes
+  funnel_add_zero: yes
   funnel_graph_scale: 2.5
   funnel_verbose: yes
   t_hist_lower_cutoff: -120.0
@@ -153,8 +153,8 @@ export_methods:
   bpe_econ_sig: Economic significance
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
-export_log_file_path: numeric_results.txt
-export_zip_name: results_all_today
+export_log_file_path: main_results.txt
+export_zip_name: results_all
 export_graphics: yes
 export_bma_data: no
 theme: blue

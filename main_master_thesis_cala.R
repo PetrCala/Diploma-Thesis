@@ -164,7 +164,7 @@ readExcelAndWriteCsv(source_data_path, source_sheets, csv_suffix, temp_data_fold
 validateFiles(all_source_files)
 
 # Save the console output to a log file in the results folder
-log_file_path <- paste0(folder_paths$numeric_results_folder, user_params$export_log_file)
+log_file_path <- paste0(folder_paths$all_results_folder, user_params$export_log_file)
 if (file.exists(log_file_path)){quiet(system(paste("rm", log_file_path)))} # Clean output file
 quiet(sink()) # Empty the sink
 sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
