@@ -15,7 +15,7 @@ run_this:
   robma: yes
 source_file_params:
   csv_suffix: master_thesis_cala
-  data_folder: ../Data/
+  source_data_folder: ./data/source/
   file_name: data_set_master_thesis_cala
   file_suffix: .xlsm
   data_sheet_name: data_set
@@ -124,7 +124,7 @@ adjustable_parameters:
   robma_param_parallel: yes
 folder_paths:
   cache_folder: ./_cache/
-  data_folder: ./data/
+  temp_data_folder: ./data/temp/
   numeric_results_folder: ./results/numeric/
   ext_package_folder: ./pckg/
   graphic_results_folder: ./results/graphic/

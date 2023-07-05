@@ -50,15 +50,17 @@ validateFolderExistence <- function(folder_name, require_existence = FALSE){
 #' Clean a folder of all files by destroying and recreating it
 cleanFolder <- function(folder_name){
   files <- list.files(path = folder_name)
-  files <- paste0(folder_name, files)
+  files <- file.path(folder_name, files)  # use file.path() to ensure the correct path
   # Remove all files
   for (file in files){
     tryCatch({
-      quiet(system(paste("rm", file)))
+      system(paste("rm", file), ignore.stdout = TRUE, ignore.stderr = TRUE)
     }, warning = function(wrn){
-      cat("Warning:")
+      cat("Warning:\n")
+      print(wrn)
     }, error = function(err){
-      cat("error")
+      cat("Error:\n")
+      print(err)
     }
     )
   }
@@ -69,10 +71,10 @@ cleanFolder <- function(folder_name){
 #' @param xlsx_path Path to the Excel file
 #' @param source_sheets A vector of sheet names to read
 #' @param csv_suffix Suffix of the created .csv files. Defaults to "master_thesis_cala".
-#' @param new_csv_path Data folder path. Defaults to './data/'.
+#' @param temp_data_folder_path Folder path with the temporary data. Defaults to './data/temp/'.
 #' @return A list of data frames
 readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_thesis_cala",
-                                 data_folder_path = './_data/') {
+                                 temp_data_folder_path = './data/temp/') {
   # Validate input
   stopifnot(
     is.character(xlsx_path),
@@ -85,8 +87,8 @@ readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_
   # Read each sheet and write it as a CSV file in the working directory
   quiet(
     dfs <- lapply(source_sheets, function(sheet_name) {
-      csv_path <- paste0(sheet_name, "_", csv_suffix, ".csv")
-      new_data_path <- paste0(data_folder_path, 'temp/', csv_path) # Store in data folder under temp folder
+      file_csv_path <- paste0(sheet_name, "_", csv_suffix, ".csv")
+      new_data_path <- paste0(temp_data_folder_path, file_csv_path) # Store in data folder under temp folder
       # Read the source file
       df_xlsx <- read_excel(xlsx_path, sheet = sheet_name)
       # Remove .

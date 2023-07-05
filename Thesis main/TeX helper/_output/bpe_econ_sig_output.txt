@@ -9,27 +9,25 @@ l
  & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
  & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
 \midrule
-      Standard Error &  0.703 &  11.39\% &  3.765 &  61.01\% \\
-Estimate: Sub-region & -0.567 &  -9.19\% & -1.897 & -30.73\% \\
-    Estimate: Region & -0.569 &  -9.23\% & -1.232 & -19.96\% \\
-   Yrs. of Schooling &  0.304 &   4.93\% &  1.670 &  27.06\% \\
-    Education: Years &  0.445 &   7.22\% &  0.924 &  14.97\% \\
-    Wage: Log Hourly & -0.602 &  -9.75\% & -1.205 & -19.53\% \\
-     Wage: Log Daily & -0.581 &  -9.41\% & -1.983 & -32.13\% \\
-   Wage: Log Monthly & -0.737 & -11.95\% & -1.807 & -29.28\% \\
-          Micro Data &  0.560 &   9.07\% &  1.465 &  23.75\% \\
-           Data Year &  0.321 &   5.21\% &  2.027 &  32.84\% \\
-        Wage Earners &  0.439 &   7.11\% &  2.143 &  34.73\% \\
-        Gender: Male & -0.373 &  -6.05\% & -1.067 & -17.29\% \\
-Ethnicity: Caucasian & -0.430 &  -6.96\% & -1.025 &  -16.6\% \\
-        Method: 2SLS &  0.459 &   7.43\% &  1.562 &  25.31\% \\
-          Method: IV &  0.764 &  12.38\% &  2.435 &  39.46\% \\
-     Ability: Direct & -0.467 &  -7.57\% & -1.369 & -22.18\% \\
-        Control: Age & -1.032 & -16.72\% & -2.170 & -35.17\% \\
-    Control: Age$^2$ &  1.526 &  24.74\% &  3.418 &  55.39\% \\
-       Control: Area &  0.803 &  13.01\% &  1.627 &  26.36\% \\
-       Impact Factor & -0.502 &  -8.14\% & -2.288 & -37.08\% \\
-    Study: Published & -0.575 &  -9.32\% & -1.354 & -21.94\% \\
+       Standard Error &  0.638 &   9.76\% &  3.418 &  52.25\% \\
+ Estimate: Sub-region & -0.432 &   -6.6\% & -1.444 & -22.07\% \\
+     Estimate: Region & -0.620 &  -9.47\% & -1.341 & -20.49\% \\
+     Education: Years &  0.563 &   8.61\% &  1.169 &  17.86\% \\
+      Wage: Log Daily & -0.418 &  -6.39\% & -1.428 & -21.83\% \\
+           Micro Data &  0.529 &   8.08\% &  1.384 &  21.15\% \\
+    Primary Education &  0.536 &    8.2\% &  3.549 &  54.25\% \\
+     Higher Education &  1.371 &  20.95\% &  5.539 &  84.67\% \\
+         Gender: Male & -0.421 &  -6.44\% & -1.205 & -18.41\% \\
+ Ethnicity: Caucasian & -0.613 &  -9.38\% & -1.463 & -22.36\% \\
+         Method: 2SLS &  0.440 &   6.72\% &  1.497 &  22.89\% \\
+           Method: IV &  0.828 &  12.65\% &  2.638 &  40.32\% \\
+      Ability: Direct & -0.402 &  -6.14\% & -1.177 & -17.99\% \\
+Ability: Uncontrolled &  0.259 &   3.96\% &  0.524 &   8.01\% \\
+         Control: Age & -0.899 & -13.74\% & -1.892 & -28.92\% \\
+     Control: Age$^2$ &  1.322 &  20.21\% &  2.962 &  45.27\% \\
+        Control: Area &  0.876 &  13.38\% &  1.775 &  27.13\% \\
+        Impact Factor & -0.294 &  -4.49\% & -1.339 & -20.46\% \\
+     Study: Published & -0.444 &  -6.79\% & -1.046 & -15.99\% \\
 \bottomrule
 \multicolumn{5}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} This table presents ceteris paribus effect of several key variables on the partial correlation coefficient. Only those variables with \emph{PIP} over 0.5 in the \emph{BMA} model are included. \emph{One SD change} implies how the effect changes when we increase a specific variable by one standard deviation. \emph{Maximum change} represents the change in the effect when the variable is increased from its minimum to its maximum. The reference best-practice value is 6.845. SD = Standard Deviation, BP = Best-Practice. For a detailed explanation of the variables, see table \ref{tab:var}.}
 \end{longtable}
