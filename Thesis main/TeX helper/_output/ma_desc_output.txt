@@ -20,77 +20,76 @@ cc
 \multicolumn{4}{r}{{\scriptsize Continued on next page}} \\
 \endfoot
 \endlastfoot
-                 Effect &                                                                                              The effect of an additional year of schooling on logarithmic wage. &  7.476 & 4.439 \\
-         Standard Error &                                                                                                                          The standard error of the main effect. &  1.284 & 1.693 \\
-              Short Run &                                                                                                               =1 if the data span a period shorter than a year. &  0.552 & 0.497 \\
-               Long Run &                                                                                           =1 if the data span a period longer than a year (reference category). &  0.448 & 0.497 \\
-         Estimate: City &                                                                                         =1 if the estimates within the study can be aggregated on a city level. &  0.119 & 0.323 \\
-   Estimate: Sub-region &                                                                                  =1 if the estimates within the study can be aggregated on a subregional level. &  0.099 & 0.299 \\
-       Estimate: Region &                                                                                     =1 if the estimates within the study can be aggregated on a regional level. &  0.309 & 0.462 \\
-      Estimate: Country &                                                                                      =1 if the estimates within the study can be aggregated on a country level. &  0.395 & 0.489 \\
-    Estimate: Continent &                                                  =1 if the estimates within the study can not be aggregated on a country level or smaller (reference category). &  0.079 & 0.269 \\
-             Study Size &                                                                                              The logarithm of the number of estimates collected from the study. &  2.942 & 0.637 \\
-      Yrs. of Schooling &                                                                             The logarithm of the average number of years of schooling attained by the subjects. & 11.116 & 3.461 \\
-     Yrs. of Experience &                                                                            The logarithm of the average number of years of experience attained by the subjects. & 18.351 & 7.450 \\
-       Education: Years &                                                                                                                        =1 if authors report schooling in years. &  0.634 & 0.482 \\
-      Education: Levels &                                                              =1 if the authors report schooling in levels (e.g., attained college degree) (reference category). &  0.366 & 0.482 \\
-       Wage: Log Hourly &                                                                                              =1 if the dependent variable in the regression is log hourly wage. &  0.531 & 0.499 \\
-        Wage: Log Daily &                                                                                     =1 if the dependent variable in the regression is log daily or weekly wage. &  0.095 & 0.293 \\
-      Wage: Log Monthly &                                                                                             =1 if the dependent variable in the regression is log monthly wage. &  0.211 & 0.408 \\
-  Wage: Annual Earnings &                                                             =1 if the dependent variable in the regression is log of mean annual earnings (reference category). &  0.162 & 0.369 \\
-             Micro Data &                                                                                                                                =1 if the study uses micro data. &  0.177 & 0.382 \\
-            Survey Data &                                                                                                                        =1 if the study uses data from a survey. &  0.534 & 0.499 \\
- National Register Data &                                                                                        =1 if the study uses data from a national register (reference category). &  0.289 & 0.453 \\
-   Cross-sectional Data &                                                                                                                      =1 if the study uses cross-sectional data. &  0.361 & 0.481 \\
-             Panel Data &                                                                                                           =1 if the study uses panel data (reference category). &  0.639 & 0.481 \\
-              Data Year &                                                                                                      The logarithm of the average year of the study's time span &  7.599 & 0.006 \\
-           No Education &                                                                                     The percentage of subjects that attained no education (reference category). &  0.126 & 0.148 \\
-      Primary Education &                                                                                                The percentage of subjects that attained only primary education. &  0.177 & 0.151 \\
-    Secondary Education &                                                                                              The percentage of subjects that attained only secondary education. &  0.388 & 0.196 \\
-       Higher Education &                                                                                          The percentage of subjects that attained any form of higher education. &  0.309 & 0.247 \\
-           Wage Earners &                                                   The ratio of wage earners to self-employed subjects in the study ( = 1 if wage earner, = 0 if self-employed). &  0.837 & 0.205 \\
-          Self-Employed &                              The ratio of self-employed to wage earners subjects in the study ( = 1 if self-employed, = 0 if wage earner) (reference category). &  0.163 & 0.205 \\
-           Gender: Male &                                                                                The ratio of male to female subjects in the study ( = 1 if male, = 0 if female). &  0.650 & 0.350 \\
-         Gender: Female &                                                           The ratio of female to male subjects in the study ( = 1 if female, = 0 if male) (reference category). &  0.350 & 0.350 \\
-        Sector: Private &                                                                   The ratio of private to public sector workers ( = 1 if private sector worker, = 0 if public). &  0.596 & 0.163 \\
-         Sector: Public &                                              The ratio of public to private sector workers ( = 1 if public sector worker, = 0 if private) (reference category). &  0.404 & 0.163 \\
-   Ethnicity: Caucasian &                                                                  The ratio of Caucasian to non-Caucasian subjects in the study ( = 1 if Caucasian, = 0 if not). &  0.227 & 0.419 \\
-       Ethnicity: Other &                                   The ratio of non-Caucasian to Caucasian subjects in the study ( = 1 if non-Caucasian, = 0 if Caucasian) (reference category). &  0.773 & 0.419 \\
-          Sector: Rural &                                                                                       The ratio of rural to urban workers ( = 1 if rural worker, = 0 if urban). &  0.297 & 0.191 \\
-          Sector: Urban &                                                                  The ratio of urban to rural workers ( = 1 if urban worker, = 0 if rural) (reference category). &  0.703 & 0.191 \\
-    Reg: Advanced Econ. &                                                                             =1 if the study was conducted in a country with advanced economy. (reference group) &  0.498 & 0.500 \\
-           Income: High &                                                                                     =1 if the study was conducted in a high income country (reference category) &  0.507 & 0.500 \\
-     Median Expenditure &                                                                                         The logarithm of the median expenditure in the country in a given year. &  8.584 & 1.420 \\
-           Minimum Wage &                                                                                               The logarithm of the minimum wage in the country in a given year. &  5.853 & 1.536 \\
- Academic Freedom Index &                                                                                            The academic freedom index reported for the country in a given year. &  0.712 & 0.266 \\
-               Mean Age &                                                                                                               The logarithm of the average age of the subjects. &  3.575 & 0.200 \\
-            Method: OLS &                                                                                                                   =1 if the authors use Ordinary least squares. &  0.664 & 0.473 \\
-      Method: Cohort/FE &                                                                                                  =1 if the authors use Cohort-type or Fixed-effects estimation. &  0.058 & 0.234 \\
-           Method: 2SLS &                                                                                                       =1 if the authors use Two-Stage least squares estimation. &  0.095 & 0.294 \\
-        Method: Heckman &                                                                                         =1 if the authors use Two-step estimation (Heckman and Polachek, 1974). &  0.062 & 0.240 \\
-         Method: Probit &                                                                                                                        =1 if the authors use Probit estimation. &  0.022 & 0.147 \\
-             Method: IV &                                                                                   =1 if the authors use Instrumental variables estimation (reference category). &  0.111 & 0.314 \\
-        Ability: Direct &                                                                                           =1 if the authors include a direct measure of ability in their study. &  0.135 & 0.341 \\
-       Ability: Proxied &                                                                                                       =1 if the authors use a proxy for ability in their study. &  0.204 & 0.403 \\
-  Ability: Uncontrolled &                                                                        =1 if the authors acknowledge, but do not control for ability in any way in their study. &  0.425 & 0.494 \\
-   Ability: Unmentioned &                                                                          =1 if the authors do not mention ability anywhere in their study (reference category). &  0.223 & 0.417 \\
-           Control: Age &                                                                                                            =1 if the authors control for age in the regression. &  0.344 & 0.475 \\
-       Control: Age$^2$ &                                                                                          =1 if the authors control for age in quadratic form in the regression. &  0.275 & 0.447 \\
-    Control: Experience &                                                                                                     =1 if the authors control for experience in the regression. &  0.607 & 0.489 \\
-Control: Experience$^2$ &                                                                                   =1 if the authors control for experience in quadratic form in the regression. &  0.512 & 0.500 \\
-     Control: Ethnicity &                                                                                                      =1 if the authors control for ethnicity in the regression. &  0.251 & 0.434 \\
-        Control: Health &                                                                                                         =1 if the authors control for health in the regression. &  0.135 & 0.342 \\
-        Control: Gender &                                                                                                         =1 if the authors control for gender in the regression. &  0.367 & 0.482 \\
-      Control: Marriage &                                                                                                       =1 if the authors control for marriage in the regression. &  0.361 & 0.480 \\
-    Control: Occupation &                                                                                     =1 if the authors control for occupation of the subjects in the regression. &  0.142 & 0.349 \\
-    Control: Firm Char. &                                                                                           =1 if the authors control for firm characteristics in the regression. &  0.149 & 0.357 \\
-          Control: Area &                                                                                 =1 if the authors control for area type in the regression (e.g., urban, rural). &  0.418 & 0.493 \\
-    Control: Macro Var. &                                                                                        =1 if the authors control for macroeconomic variables in the regression. &  0.347 & 0.476 \\
-          Impact Factor &                                   The logarithm of the Journal Citations Report impact factor of the study (as of January 2023; = 0 in case of no publication). & -0.906 & 1.533 \\
-              Citations &        The logarithm of the mean number of Google Scholar citations received per year since the appearance of the study in Google Scholar (as of January 2023). &  4.029 & 2.177 \\
-       Study: Published &                                                                                                                     =1 if the study was published in a journal. &  0.764 & 0.425 \\
-     Study: Unpublished &                                                                                            =1 if the study was not published in a journal (reference category). &  0.236 & 0.425 \\
-       Publication Year & The logarithm of the number of years between the publication (or issuing) of this study and the publication year of the earliest published study in the sample. &  3.332 & 0.339 \\
+\midrule
+Effect & The effect of an additional year of schooling on logarithmic wage. & 7.476000 & 4.439000 \\
+Standard Error & The standard error of the main effect. & 1.284000 & 1.693000 \\
+Estimate: City & =1 if the estimates within the study can be aggregated on a city level. & 0.119000 & 0.323000 \\
+Estimate: Sub-region & =1 if the estimates within the study can be aggregated on a subregional level. & 0.099000 & 0.299000 \\
+Estimate: Region & =1 if the estimates within the study can be aggregated on a regional level. & 0.309000 & 0.462000 \\
+Estimate: Country & =1 if the estimates within the study can be aggregated on a country level. & 0.395000 & 0.489000 \\
+Estimate: Continent & =1 if the estimates within the study can not be aggregated on a country level or smaller (reference category). & 0.079000 & 0.269000 \\
+Study Size & The logarithm of the number of estimates collected from the study. & 2.942000 & 0.637000 \\
+Yrs. of Schooling & The average number of years of schooling attained by the subjects. & 11.116000 & 3.461000 \\
+Yrs. of Experience & The average number of years of experience attained by the subjects. & 18.351000 & 7.450000 \\
+Education: Years & =1 if authors report schooling in years. & 0.634000 & 0.482000 \\
+Education: Levels & =1 if the authors report schooling in levels (e.g., attained college degree) (reference category). & 0.366000 & 0.482000 \\
+Wage: Log Hourly & =1 if the dependent variable in the regression is log hourly wage. & 0.531000 & 0.499000 \\
+Wage: Log Daily & =1 if the dependent variable in the regression is log daily or weekly wage. & 0.095000 & 0.293000 \\
+Wage: Log Monthly & =1 if the dependent variable in the regression is log monthly wage. & 0.211000 & 0.408000 \\
+Wage: Annual Earnings & =1 if the dependent variable in the regression is log of mean annual earnings (reference category). & 0.162000 & 0.369000 \\
+Micro Data & =1 if the study uses micro data. & 0.177000 & 0.382000 \\
+Survey Data & =1 if the study uses data from a survey. & 0.534000 & 0.499000 \\
+National Register Data & =1 if the study uses data from a national register (reference category). & 0.289000 & 0.453000 \\
+Cross-sectional Data & =1 if the study uses cross-sectional data. & 0.361000 & 0.481000 \\
+Panel Data & =1 if the study uses panel data (reference category). & 0.639000 & 0.481000 \\
+Data Year & The logarithm of the average year of the study's time span & 7.599000 & 0.006000 \\
+No Education & The percentage of subjects that attained no education (reference category). & 0.126000 & 0.148000 \\
+Primary Education & The percentage of subjects that attained only primary education. & 0.177000 & 0.151000 \\
+Secondary Education & The percentage of subjects that attained only secondary education. & 0.388000 & 0.196000 \\
+Higher Education & The percentage of subjects that attained any form of higher education. & 0.309000 & 0.247000 \\
+Wage Earners & The ratio of wage earners to self-employed subjects in the study ( = 1 if wage earner, = 0 if self-employed). & 0.837000 & 0.205000 \\
+Self-Employed & The ratio of self-employed to wage earners subjects in the study ( = 1 if self-employed, = 0 if wage earner) (reference category). & 0.163000 & 0.205000 \\
+Gender: Male & The ratio of male to female subjects in the study ( = 1 if male, = 0 if female). & 0.650000 & 0.350000 \\
+Gender: Female & The ratio of female to male subjects in the study ( = 1 if female, = 0 if male) (reference category). & 0.350000 & 0.350000 \\
+Sector: Private & The ratio of private to public sector workers ( = 1 if private sector worker, = 0 if public). & 0.596000 & 0.163000 \\
+Sector: Public & The ratio of public to private sector workers ( = 1 if public sector worker, = 0 if private) (reference category). & 0.404000 & 0.163000 \\
+Ethnicity: Caucasian & The ratio of Caucasian to non-Caucasian subjects in the study ( = 1 if Caucasian, = 0 if not). & 0.227000 & 0.419000 \\
+Ethnicity: Other & The ratio of non-Caucasian to Caucasian subjects in the study ( = 1 if non-Caucasian, = 0 if Caucasian) (reference category). & 0.773000 & 0.419000 \\
+Sector: Rural & The ratio of rural to urban workers ( = 1 if rural worker, = 0 if urban). & 0.297000 & 0.191000 \\
+Sector: Urban & The ratio of urban to rural workers ( = 1 if urban worker, = 0 if rural) (reference category). & 0.703000 & 0.191000 \\
+Reg: Advanced Econ. & =1 if the study was conducted in a country with advanced economy. (reference group) & 0.498000 & 0.500000 \\
+Income: High & =1 if the study was conducted in a high income country (reference category) & 0.507000 & 0.500000 \\
+Median Expenditure & The logarithm of the median expenditure in the country in a given year. & 8.584000 & 1.420000 \\
+Minimum Wage & The logarithm of the minimum wage in the country in a given year. & 5.853000 & 1.536000 \\
+Academic Freedom Index & The academic freedom index reported for the country in a given year. & 0.712000 & 0.266000 \\
+Mean Age & The logarithm of the average age of the subjects. & 3.575000 & 0.200000 \\
+Method: OLS & =1 if the authors use Ordinary least squares. & 0.664000 & 0.473000 \\
+Method: Cohort/FE & =1 if the authors use Cohort-type or Fixed-effects estimation. & 0.058000 & 0.234000 \\
+Method: 2SLS & =1 if the authors use Two-Stage least squares estimation. & 0.095000 & 0.294000 \\
+Method: Heckman & =1 if the authors use Two-step estimation (Heckman and Polachek, 1974). & 0.062000 & 0.240000 \\
+Method: Probit & =1 if the authors use Probit estimation. & 0.022000 & 0.147000 \\
+Method: IV & =1 if the authors use Instrumental variables estimation (reference category). & 0.111000 & 0.314000 \\
+Ability: Direct & =1 if the authors include a direct measure of ability in their study. & 0.135000 & 0.341000 \\
+Ability: Proxied & =1 if the authors use a proxy for ability in their study. & 0.204000 & 0.403000 \\
+Ability: Uncontrolled & =1 if the authors acknowledge, but do not control for ability in any way in their study. & 0.425000 & 0.494000 \\
+Ability: Unmentioned & =1 if the authors do not mention ability anywhere in their study (reference category). & 0.223000 & 0.417000 \\
+Control: Age & =1 if the authors control for age in the regression. & 0.344000 & 0.475000 \\
+Control: Age$^2$ & =1 if the authors control for age in quadratic form in the regression. & 0.275000 & 0.447000 \\
+Control: Experience & =1 if the authors control for experience in the regression. & 0.607000 & 0.489000 \\
+Control: Experience$^2$ & =1 if the authors control for experience in quadratic form in the regression. & 0.512000 & 0.500000 \\
+Control: Ethnicity & =1 if the authors control for ethnicity in the regression. & 0.251000 & 0.434000 \\
+Control: Health & =1 if the authors control for health in the regression. & 0.135000 & 0.342000 \\
+Control: Gender & =1 if the authors control for gender in the regression. & 0.367000 & 0.482000 \\
+Control: Marriage & =1 if the authors control for marriage in the regression. & 0.361000 & 0.480000 \\
+Control: Occupation & =1 if the authors control for occupation of the subjects in the regression. & 0.142000 & 0.349000 \\
+Control: Firm Char. & =1 if the authors control for firm characteristics in the regression. & 0.149000 & 0.357000 \\
+Control: Area & =1 if the authors control for area type in the regression (e.g., urban, rural). & 0.418000 & 0.493000 \\
+Control: Macro Var. & =1 if the authors control for macroeconomic variables in the regression. & 0.347000 & 0.476000 \\
+Impact Factor & The logarithm of the Journal Citations Report impact factor of the study (as of January 2023; = 0 in case of no publication). & -0.906000 & 1.533000 \\
+Citations & The logarithm of the mean number of Google Scholar citations received per year since the appearance of the study in Google Scholar (as of January 2023). & 4.029000 & 2.177000 \\
+Study: Published & =1 if the study was published in a journal. & 0.764000 & 0.425000 \\
+Study: Unpublished & =1 if the study was not published in a journal (reference category). & 0.236000 & 0.425000 \\
+Publication Year & The logarithm of the number of years between the publication (or issuing) of this study and the publication year of the earliest published study in the sample. & 3.332000 & 0.339000 \\
 \bottomrule
    
  \multicolumn{4}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the summary statistics and descriptions for each of the various study characteristics. SD = standard deviation, FE = Fixed Effects, 2SLS = 2 Stage Least Squares.}
