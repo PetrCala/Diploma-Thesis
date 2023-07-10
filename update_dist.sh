@@ -65,3 +65,6 @@ done
 
 # Modify the development option of the .yaml file
 # sed -i 's/development_on: yes/development_on: no/g' "user_parameters.yaml"
+
+# Change the file suffix in the distributed script runner
+sed -i "s/file_suffix = '.xlsm'/file_suffix = '.xlsx'/g" "script_runner_master_thesis_cala.R"
