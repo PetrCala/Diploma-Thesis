@@ -438,14 +438,38 @@ preprocessData <- function(input_data, input_var_list){
   # Variable name validity check
   varnames <- colnames(input_data)
   expected_varnames <- input_var_list$var_name
-  if(!all(varnames == expected_varnames)){ # A strong, restrictive assumption
+  # Check if all columns of the first vector are in the second one and vice versa
+  if(!all(varnames %in% expected_varnames) || !all(expected_varnames %in% varnames)){
     missing_from_var_list <- varnames[!varnames %in% expected_varnames]
     missing_from_data <- expected_varnames[!expected_varnames %in% varnames]
-    message("These variables are not a part of the variable list var_name column.")
-    message(paste(missing_from_var_list, "\n"))
-    message("These variables are not a part of the main data frame columns.")
-    message(paste(missing_from_data, "\n"))
+    message(
+      paste(
+        "Mismatching variable names. \n",
+        "These variables are not a part of the variable list: ", 
+        paste(missing_from_var_list, collapse = ", "), "\n",
+        "These variables are not a part of the main data frame columns: ",
+        paste(missing_from_data, collapse = ", "), "\n"
+      )
+    )
     stop("Mismatching variable names")
+  }
+  # Check for correct ordering
+  if(!identical(varnames, expected_varnames)){
+    problematic_indexes <- which(varnames != expected_varnames)
+    message(
+      paste(
+        "The order of some columns in the data frame and the expected variable list is different. \n",
+        paste("Problematic indexes and their column names: \n"),
+        paste(
+          problematic_indexes, 
+          ": Data frame has '", varnames[problematic_indexes], 
+          "' but expected variable list has '", 
+          expected_varnames[problematic_indexes], "'.", 
+          collapse = "\n"
+        )
+      )
+    )
+    stop("Ordering of some columns is not matching")
   }
   
   # Remove redundant rows
@@ -716,17 +740,21 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
     # Check if all sums are equal to 1
     rows_equal_to_1 <- abs(row_sums - 1) < .Machine$double.eps^0.5 + 0.001 # Marginal error allowed
     if (!all(rows_equal_to_1)){
-      problematic_rows <- which(!rows_equal_to_1)
-      message("All percentage groups must some up to 1.")
-      message("These variables do not fulfill that:")
-      message(paste(group_var_names, "\n"))
-      message("at rows:")
-      message(paste(head(problematic_rows), "\n"))
+      problematic_rows <- which(!(rows_equal_to_1) & abs(row_sums - 1) > 0.005) # Eliminate marginal errors from interpolation
       if (length(problematic_rows) > 6){
-        message(paste("and",length(problematic_rows) - 6,"other rows."))
+        other_rows <- paste("and",length(problematic_rows) - 6,"other rows.")
+      } else {
+        other_rows <- ""
       }
-      message("One of the following values is generated during interpolation, and one is the actually faulty data point:")
-      message(paste(as.character(unique(row_sums)), "\n"))
+      message(paste("All percentage groups must sum up to 1.\n",
+                    "These variables do not fulfill that:\n",
+                    paste(group_var_names, collapse="\n"), "\n",
+                    "at rows:\n",
+                    paste(head(problematic_rows), collapse="\n"), "\n",
+                    other_rows, "\n",
+                    "These are all unique row sums for this variable category. One or more, but perhaps not all of them are the faulty rows.",
+                    paste(as.character(unique(row_sums)), collapse="\n"), "\n", 
+                    sep=""))
       stop("Incorrect percentage group values")
     }
   }
