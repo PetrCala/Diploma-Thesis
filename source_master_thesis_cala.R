@@ -3890,7 +3890,7 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
     if (!bma_var %in% c("(Intercept)","se")){
       # Use a study
       if (study_id != 0){
-        coef <- median(bma_data[input_data$study_id==study_id,bma_var])
+        coef <- median(bma_data[input_data$study_id==study_id,bma_var]) # Actual data from the study - use median in case of varying data
       } else {
       # Use author's BPE - variable list information
         coef <- input_var_list$bpe[input_var_list$var_name == bma_var] # Automatically coerced to character - RRRRRR
@@ -3911,10 +3911,18 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
         coef <- round(coef, 3)
       } else { # char
       # Handle character coefficients
-        stopifnot(
-          is.character(coef),
-          coef %in% allowed_characters
+        stopifnot(is.character(coef)) # Should never occur (non-numeric values autoamtically read as characters)
+        if (!coef %in% allowed_characters){
+          # Invalid bpe specification for this varaiable
+          message(paste0(
+            "Invalid BPE specification for the variable '", bma_var, "'. \n",
+            "Current specification: '", coef,"'.\n",
+            "Must be one of the following: ", 
+            paste(allowed_characters, collapse = ", "), "."
+            )
           )
+          stop("Invalid BPE specification.")
+        }
         func <- get(coef) # Get the function to evaluate the value with - mean, median,...
         coef <- func(bma_data[[bma_var]], na.rm=TRUE) # Evaluate on BMA data column of this variable
         coef <- as.character(round(coef, 3)) # Back to character
