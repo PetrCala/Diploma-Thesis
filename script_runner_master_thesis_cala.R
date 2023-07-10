@@ -26,16 +26,16 @@ user_params <- list(
     "variable_summary_stats" = F,
     "effect_summary_stats" = F,
     "box_plot" = F,
-    "funnel_plot" = T,
+    "funnel_plot" = F,
     "t_stat_histogram" = F,
     "linear_tests" = F,
     "nonlinear_tests" = F,
     "exo_tests" = F,
     "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
-    "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F, # Executable only after running BMA
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "bpe" = T, # Executable only after running BMA
     "robma" = F # Computationally expensive
   ),
   
@@ -163,7 +163,7 @@ user_params <- list(
     ),
     "bpe_use_ci" = TRUE, # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
     "bpe_study_info" = TRUE, # If TRUE, print out information about individual studies being estimated
-    "bpe_result_table_verbose" = TRUE, # If TRUE, print out the table into the console
+    "bpe_result_table_verbose" = TRUE, # If TRUE, print out the table into the console along with the functional BPE form
     "bpe_econ_sig_large_pip_only" = TRUE, # If TRUE, display econ. significance for variables with PIP >= 0.5
     "bpe_econ_sig_verbose" = TRUE, # If TRUE, print out the economic significance table into the console
     # Robust Bayesian Model Averaging parameters - do not pass nested lists, priors etc.
