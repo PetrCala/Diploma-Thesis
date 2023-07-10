@@ -8,7 +8,7 @@
 
 ### The reason for having a GitHub repository
 
-The reason for keeping this repository is to allow for easier version tracking, and portable work. The repository is *not meant for direct cloning*. I may clean up the structure in the future to allow for this, but the main idea is to distribute the `Dist/` folder (`Dist` branch) that contains all the files important for the analysis (files listed below). You can download the folder itself using steps described below. The rest of the repository (`master` branch) is intended purely for my own research.
+The reason for keeping this repository is to allow for easier version tracking, and portable work. Although the repository is meant to be cloned, `Dist` is the default branch. This branch serves only to keep extra files that help me work from anywhere. For purposes of reproducing the analysis, you should work purely with the `Dist` branch.
 
 ### Project structure
 
