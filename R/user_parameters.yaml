@@ -8,14 +8,14 @@ run_this:
   funnel_plot: false
   t_stat_histogram: false
   linear_tests: false
-  nonlinear_tests: false
-  exo_tests: false
-  p_hacking_tests: false
-  bma: true
-  fma: true 					
-  ma_variables_description_table: true 	
-  bpe: true 					
-  robma: true 	# Computationally expensive
+  nonlinear_tests: true
+  exo_tests: true
+  p_hacking_tests: true
+  bma: false
+  fma: false 					
+  ma_variables_description_table: false 	
+  bpe: false 					
+  robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
