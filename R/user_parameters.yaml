@@ -37,7 +37,7 @@ required_cols:
   n_obs: "n_obs" 		# Number of observations associated with the estimate
   study_size: "study_size" 	# Number of estimates reported per study (optional)
   reg_df: "reg_df" 		# Degrees of Freedom in the regression (optional)
-  precision: .na 		# A measure of precision (optional) - handle during winsorizationadjustable_parameters:
+  precision: .na 		# A measure of precision (optional) - handle during winsorization
 
 # ADJUSTABLE PARAMETERS - modify the values of these as you see fit
 adjustable_parameters:
@@ -53,7 +53,7 @@ adjustable_parameters:
   # "data_subset_condition_X" = X 		# Add more conditions in this manner - up to 20
   # Data winsorization characteristics
   data_winsorization_level: 0.01 		# Between 0 and 1 (excluding)
-  data_precision_type: "1/SE" 		# Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
+  data_precision_type: "1/SE" 			# Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
   winsorize_precision: true 			# If TRUE, winsorize precision (for different precision types)
   #   Note: The precision will be used only in case you do not provide a column with precision yourself
   # Handle missing data - only in development
@@ -70,10 +70,10 @@ adjustable_parameters:
   # Funnel plot parameters
   funnel_precision_to_log: false 	# If T, use log of precision as y axis (default: precision)
   funnel_effect_proximity: 1 		# Effect axis cutoff point (perc) on either side of mean
-  funnel_maximum_precision: 1 	# Precision axis maximum value cutoff point (perc)
+  funnel_maximum_precision: 1 		# Precision axis maximum value cutoff point (perc)
   funnel_add_zero: true 		# If T, always add a zero tick into the plot
   funnel_graph_scale: 2.5 		# Numeric, scale the graph by this number
-  funnel_verbose: true 		# If T, print cut outlier information
+  funnel_verbose: true 			# If T, print cut outlier information
   # T-statistic histogram parameters
   t_hist_lower_cutoff: -120 		# Lower cutoff point for t-statistics
   t_hist_upper_cutoff: 120 		# Upper cutoff point for t-statistics
@@ -109,11 +109,11 @@ adjustable_parameters:
   # MAIVE parameters - for explanation, see MAIVE instructions (Irsova et al., 2023)
   maive_method: 3 		# 3 = PET-PEESE
   maive_weight: 0 		# 0 = no weights
-  maive_instrument: 1 	# 1 = Yes (instrument SEs)
-  maive_studylevel: 0 	# 0 = No study-level correlation
+  maive_instrument: 1 		# 1 = Yes (instrument SEs)
+  maive_studylevel: 0 		# 0 = No study-level correlation
   maive_verbose: true
   # Bayesian Model Averaging parameters
-  automatic_bma: false 		# If TRUE, automatically generate a formula for BMA with all VIF < 10
+  automatic_bma: false 			# If TRUE, automatically generate a formula for BMA with all VIF < 10
   bma_scale_data: false 		# If TRUE, standardize all variables onto the same scale automatically - UNSTABLE
   bma_adjustable_theme: true 		# If TRUE, modify the colors of bma plots to fit the theme
   bma_verbose: true 			# If TRUE, print suggested formulas, VIF, etc.
@@ -124,13 +124,13 @@ adjustable_parameters:
   bma_param_g: "UIP" 			# g-Prior
   bma_param_mprior: "dilut" 		# Model Prior
   bma_param_nmodel: 20000 		# Number of models (def 50000)
-  bma_param_mcmc: "bd" 		# Markov Chain Monte Carlo
+  bma_param_mcmc: "bd" 			# Markov Chain Monte Carlo
   # Frequentist Model Averaging parameters
   fma_verbose: false 				# If TRUE, print out the raw results of FMA into the console
   # Model averaging parameters
-  ma_results_table: true # If TRUE, print out results of model averaging into a pretty table
+  ma_results_table: true 				# If TRUE, print out results of model averaging into a pretty table
   ma_variables_description_table_verbose: false 	# If TRUE, print out the BMA variable desc table into console
-  ma_variables_description_table_clip: false  	# If TRUE, copy the table toa clipboard
+  ma_variables_description_table_clip: false  		# If TRUE, copy the table toa clipboard
   # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
   bpe_studies: 
     # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, use "all".
@@ -139,7 +139,7 @@ adjustable_parameters:
     - 112 	# Staiger et al. (1997) - Most citations
     - 7 	# Webbink (2004) - Random, unpublished, uncited work
   bpe_use_ci: true 				# If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
-  bpe_study_info: true 			# If TRUE, print out information about individual studies being estimated
+  bpe_study_info: true 				# If TRUE, print out information about individual studies being estimated
   bpe_result_table_verbose: true 		# If TRUE, print out the table into the console along with the functional BPE form
   bpe_econ_sig_large_pip_only: true 		# If TRUE, display econ. significance for variables with PIP >= 0.5
   bpe_econ_sig_verbose: true 			# If TRUE, print out the economic significance table into the console
