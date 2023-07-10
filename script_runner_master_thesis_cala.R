@@ -43,7 +43,7 @@ user_params <- list(
   source_file_params = list(
     source_data_folder = "./data/source/", # Folder with the source data frame
     file_name = "data_set_master_thesis_cala", # Name of the data frame
-    file_suffix = '.xlsm',
+    file_suffix = '.xlsx',
     data_sheet_name = "data_set",
     var_list_sheet_name = "var_list",
 	csv_suffix = "master_thesis_cala" # Suffix of the .csv files
