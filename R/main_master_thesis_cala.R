@@ -125,13 +125,16 @@ unmodifiable_folders <- c(
 invisible(sapply(modifiable_folders, validateFolderExistence))
 invisible(sapply(unmodifiable_folders, validateFolderExistence, require_existence = TRUE)) # No overwriting
 
-# Clean result folders
-folders_to_clean <- c(
-  folder_paths$temp_data_folder,
+# Clean result and data folders
+folders_to_clean_forcefully <- c(
   folder_paths$graphic_results_folder,
   folder_paths$numeric_results_folder
 )
-invisible(sapply(folders_to_clean, cleanFolder))
+folders_to_clean_old_files_only <- c(
+  folder_paths$temp_data_folder
+)
+invisible(sapply(folders_to_clean_forcefully, cleanFolder, force = T)) # Clean all files
+invisible(sapply(folders_to_clean_old_files_only, cleanFolder)) # Clean only files older than 1 hour
 
 # Load external packages
 loadExternalPackages(folder_paths$ext_package_folder)

@@ -47,22 +47,33 @@ validateFolderExistence <- function(folder_name, require_existence = FALSE){
   }
 }
 
-#' Clean a folder of all files by destroying and recreating it
-cleanFolder <- function(folder_name){
+#' Clean a folder of all files by destroying and recreating it.
+#' If force == F, only old files will get deleted.=
+cleanFolder <- function(folder_name, force = F, time_threshold = 1){
+  current_time <- Sys.time()
   files <- list.files(path = folder_name)
   files <- file.path(folder_name, files)  # use file.path() to ensure the correct path
   # Remove all files
   for (file in files){
-    tryCatch({
-      system(paste("rm", file), ignore.stdout = TRUE, ignore.stderr = TRUE)
-    }, warning = function(wrn){
-      cat("Warning:\n")
-      print(wrn)
-    }, error = function(err){
-      cat("Error:\n")
-      print(err)
+    # Always remove files if force == T, otherwise depending on time
+    if(force){
+      delete_file <- TRUE
+    } else {
+      file_mod_time <- file.info(file)$mtime  # get file modification time
+      time_diff <- difftime(current_time, file_mod_time, units = "hours")  # calculate time difference in hours
+      delete_file <- time_diff > time_threshold
     }
-    )
+    if (delete_file){
+      tryCatch({
+        system(paste("rm", file), ignore.stdout = TRUE, ignore.stderr = TRUE)
+      }, warning = function(wrn){
+        cat("Warning:\n")
+        print(wrn)
+      }, error = function(err){
+        cat("Error:\n")
+        print(err)
+      })
+    }
   }
 }
 
