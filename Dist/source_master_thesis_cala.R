@@ -4359,8 +4359,12 @@ runCachedFunction <- function(f, user_params, verbose_function, ...){
     is.function(verbose_function),
     !all(c("is_cache_on", "cache_path") %in% names(user_params))
   )
+  # Save the parameters for cleaner code
+  use_cache <- user_params$cache_handling$use_cache
+  cache_folder <- user_params$folder_paths$cache_folder
+  cache_age <- user_params$cache_handling$cache_age
   # Define the function to call based on cache information
-  f <- cacheIfNeeded(f, user_params$use_cache, user_params$folder_paths$cache_folder, user_params$cache_age)
+  f <- cacheIfNeeded(f, use_cache, cache_folder, cache_age)
   # Capture verbose output to print in case it gets silenced
   verbose_output <- captureOutput(
     # Call the function with parameters
@@ -4451,7 +4455,7 @@ writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_over
 #' which specifies the directory to export the file, and an 'export_methods' item, which is a
 #' named list where the names correspond to valid 'method_name' values and the values are used for verbose output.
 #' @param method_name [character] A character string that specifies the export method. 
-#' It should be present in the names of 'user_params$export_methods' and is used to construct the filename
+#' It should be present in the names of 'user_params$export_options$export_methods' and is used to construct the filename
 #' of the exported CSV file.
 #' 
 #' @return No explicit return value. The function writes a CSV file to the file system.
@@ -4467,7 +4471,7 @@ exportTable <- function(results_table, user_params, method_name){
     is.data.frame(results_table),
     is.list(user_params),
     is.character(method_name),
-    method_name %in% names(user_params$export_methods) # Only recognized exports
+    method_name %in% names(user_params$export_options$export_methods) # Only recognized exports
   )
   # Define the export paths
   numeric_results_folder <- user_params$folder_paths$numeric_results_folder # Export folder
@@ -4479,7 +4483,7 @@ exportTable <- function(results_table, user_params, method_name){
   n <- nrow(results_table)
   use_rownames <- !all(1:n == row_names) # Rows are sequential integers
   # Export the table if it does not exist
-  verbose_info <- user_params$export_methods[[method_name]] # Verbose name for the message
+  verbose_info <- user_params$export_options$export_methods[[method_name]] # Verbose name for the message
   identical_file_exists <- writeIfNotIdentical(results_table, results_path, use_rownames)
   if (!identical_file_exists){
     print(paste("Writing the", tolower(verbose_info), "results into", results_path))
