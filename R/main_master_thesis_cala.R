@@ -569,8 +569,9 @@ if (run_this$bpe){
     study_info_verbose = adj_params$bpe_study_info,
     verbose_output = adj_params$bpe_result_table_verbose
   )
+  bpe_df <- bpe_res$bpe_df
   # Economic significance table
-  bpe_est <- bpe_res[1,1] # BPE estimate of the first row - usually Author's BPE
+  bpe_est <- bpe_df[1,1] # BPE estimate of the first row - usually Author's BPE
   bpe_econ_sig <- runCachedFunction(
     getEconomicSignificance, user_params,
     verbose_function = getEconomicSignificanceVerbose,
@@ -580,7 +581,7 @@ if (run_this$bpe){
   )
   # Export
   if (user_params$export_results){
-     exportTable(bpe_res, user_params, "bpe_res")
+     exportTable(bpe_df, user_params, "bpe_res")
      exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
   }
 }

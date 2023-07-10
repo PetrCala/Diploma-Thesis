@@ -4049,11 +4049,16 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     row.names(temp_df) <- study_name
     res_df <- rbind(res_df, temp_df)
   }
+  # Get an arbitrary formula to print out in case of verbose output
+  bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) 
+  bpe_formula <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
+                                     study_ids[1], include_intercept = TRUE, get_se = TRUE)
   # Return the output
+  res <- list(bpe_df = res_df, bpe_formula = bpe_formula)
   if (verbose_output) {
-    generateBPEResultTableVerbose(res_df, verbose_output = verbose_output)
+    generateBPEResultTableVerbose(res, verbose_output = verbose_output)
   }
-  return(res_df)
+  return(res)
 }
 
 
@@ -4063,8 +4068,12 @@ generateBPEResultTableVerbose <- function(res,...){
   verbose_on <- args$verbose_output
   # Print verbose output
   if (verbose_on){
+    cat('\n')
+    print("The best practice formula used:")
+    print(res$bpe_formula)
+    cat('\n')
     print("Best practice estimate results:")
-    print(res)
+    print(res$bpe_df)
     cat("\n\n")
   }
 }

@@ -2,16 +2,16 @@ run_this:
   variable_summary_stats: no
   effect_summary_stats: no
   box_plot: no
-  funnel_plot: yes
+  funnel_plot: no
   t_stat_histogram: no
   linear_tests: no
   nonlinear_tests: no
   exo_tests: no
   p_hacking_tests: no
-  bma: no
-  fma: no
-  ma_variables_description_table: no
-  bpe: no
+  bma: yes
+  fma: yes
+  ma_variables_description_table: yes
+  bpe: yes
   robma: no
 source_file_params:
   source_data_folder: ./data/source/
@@ -154,7 +154,7 @@ export_methods:
   robma_components: RoBMA components
   robma_estimates: RoBMA estimates
 export_log_file_path: main_results.txt
-export_zip_name: results_all_07-05-23
+export_zip_name: results_all_07-10-23
 export_graphics: yes
 export_bma_data: no
 theme: blue
