@@ -15,7 +15,7 @@ run_this:
   fma: true 					
   ma_variables_description_table: true 	
   bpe: true 					
-  robma: false 	# Computationally expensive
+  robma: true 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
@@ -145,7 +145,7 @@ adjustable_parameters:
   bpe_econ_sig_verbose: true 			# If TRUE, print out the economic significance table into the console
   # Robust Bayesian Model Averaging parameters - do not pass nested lists, priors etc.
   robma_verbose: true
-  robma_param_priors_bias: .na
+  robma_param_priors_bias: null
   robma_param_parallel: true
 
 folder_paths:
