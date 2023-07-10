@@ -30,7 +30,7 @@ def populateVarStatsTable(df:pd.DataFrame, expected_cols = 9, verbose = False):
     df = df.apply(handleSpecial)
 
     # convert DataFrame to LaTeX tabular format
-    latex = df.to_latex(index=False, escape=False, header = False)
+    latex = df.to_latex(index=False, escape=False, header = False, float_format = '%.3f')
 
         # insert LaTeX table formatting
     latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')
@@ -60,7 +60,7 @@ def populateEffectStatsTable(df:pd.DataFrame, expected_cols = 8, verbose = False
     df = df.apply(handleSpecial)
 
     # convert DataFrame to LaTeX tabular format
-    latex = df.to_latex(index=False, escape=False, header = False)
+    latex = df.to_latex(index=False, escape=False, header = False, float_format = '%.3f')
 
     # insert LaTeX table formatting
     latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')
@@ -107,7 +107,7 @@ def populateBMATable(df:pd.DataFrame, expected_cols = 7, verbose = False):
     df = df.apply(handleSpecial) # Exponents to mathematic notation
 
     # convert DataFrame to LaTeX tabular format
-    latex = df.to_latex(index=False, escape=False, header = False)
+    latex = df.to_latex(index=False, escape=False, header = False, float_format = '%.3f')
 
     # insert LaTeX table formatting
     latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')
@@ -136,7 +136,7 @@ def populateMaDescTable(df:pd.DataFrame, expected_cols = 4,verbose = False):
     df = df.apply(handleSpecial)
 
     # convert DataFrame to LaTeX tabular format
-    latex = df.to_latex(index=False, escape=False, header = False)
+    latex = df.to_latex(index=False, escape=False, header = False, float_format = '%.3f')
 
     # insert LaTeX table formatting
     latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')
@@ -169,7 +169,7 @@ def populateBpeResTable(df:pd.DataFrame, expected_cols = 4, verbose = False):
     df = df.apply(handleSpecial)
 
     # convert DataFrame to LaTeX tabular format
-    latex = df.to_latex(index=False, escape=False, header=False)
+    latex = df.to_latex(index=False, escape=False, header=False, float_format = '%.3f')
 
     # insert LaTeX table formatting
     latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')
@@ -178,7 +178,7 @@ def populateBpeResTable(df:pd.DataFrame, expected_cols = 4, verbose = False):
     # insert LaTeX table headers, footers and caption
     latex = latex.replace('\\bottomrule', '\\bottomrule\n\\multicolumn{3}{>{\\scriptsize}p{0.6\\linewidth}}{\\emph{Note:} The table reports estimates of the best-practice estimate according to three different studies and the author\'s subjective best-practice. 95\\% confidence interval bounds are constructed as an approximate using OLS with study level clustered standard errors.}')
 
-    latex = latex.replace('\\toprule', '\\caption{Implied best-practice}  \\label{tab:BPE}\\\\\n\\toprule\n    Study & Estimate & 95\\% Confidence Interval \\\\\n\\endfirsthead\n\\midrule')
+    latex = latex.replace('\\toprule', '\\caption{Implied best-practice}  \\label{tab:BPE}\\\\\n\\toprule\n    Study & Estimate & 95\\% Confidence Interval \\\\\n\\endfirsthead\n')
 
 
     # print the LaTeX string
@@ -197,7 +197,7 @@ def populateBpeEconSigTable(df:pd.DataFrame, expected_cols = 5, verbose = False)
     df = df.apply(handleSpecial)
 
     # convert DataFrame to LaTeX tabular format
-    latex = df.to_latex(index=False, escape=False, header=False)
+    latex = df.to_latex(index=False, escape=False, header=False, float_format = '%.3f')
 
     # insert LaTeX table formatting
     latex = latex.replace('\\begin{tabular}', '\\begin{singlespace}\n\\begin{scriptsize}\n\\begin{longtable}')

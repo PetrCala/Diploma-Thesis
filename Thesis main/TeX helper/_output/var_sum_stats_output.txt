@@ -22,86 +22,86 @@ cc
 \endfoot
 \endlastfoot
 \midrule
-Effect & float & 7.514000 & 4.948000 \\
-Standard Error & float & 1.395000 & 3.333000 \\
-T-Statistic & float & 23.518000 & 42.923000 \\
-Partial Correlation Coefficient & float & 0.173000 & 0.151000 \\
-Precision of the PCC & float & 170.756000 & 271.473000 \\
-Estimate: City & dummy & 0.119000 & 0.323000 \\
-Estimate: Sub-region & dummy & 0.099000 & 0.299000 \\
-Estimate: Region & dummy & 0.309000 & 0.462000 \\
-Estimate: Country & dummy & 0.395000 & 0.489000 \\
-Estimate: Continent & dummy & 0.079000 & 0.269000 \\
-Observations & int & 100433.496000 & 656408.609000 \\
-Study Size & int & 22.944000 & 14.319000 \\
-Yrs. of Schooling & float & 11.116000 & 3.465000 \\
-Yrs. of Experience & float & 18.348000 & 7.460000 \\
-Education: Years & dummy & 0.634000 & 0.482000 \\
-Education: Levels & dummy & 0.366000 & 0.482000 \\
-Wage: Log Hourly & dummy & 0.531000 & 0.499000 \\
-Wage: Log Daily & dummy & 0.095000 & 0.293000 \\
-Wage: Log Monthly & dummy & 0.211000 & 0.408000 \\
-Wage: Annual Earnings & dummy & 0.162000 & 0.369000 \\
-Micro Data & dummy & 0.177000 & 0.382000 \\
-Survey Data & dummy & 0.534000 & 0.499000 \\
-National Register Data & dummy & 0.289000 & 0.453000 \\
-Cross-sectional Data & dummy & 0.361000 & 0.481000 \\
-Panel Data & dummy & 0.639000 & 0.481000 \\
-Data Year & float & 1995.803000 & 12.206000 \\
-No Education & perc & 0.126000 & 0.163000 \\
-Primary Education & perc & 0.177000 & 0.167000 \\
-Secondary Education & perc & 0.388000 & 0.217000 \\
-Higher Education & perc & 0.309000 & 0.274000 \\
-Wage Earners & perc & 0.837000 & 0.249000 \\
-Gender: Male & perc & 0.650000 & 0.359000 \\
-Sector: Private & perc & 0.596000 & 0.259000 \\
-Ethnicity: Caucasian & perc & 0.227000 & 0.419000 \\
-Sector: Rural & perc & 0.297000 & 0.280000 \\
-Sector: Urban & perc & 0.703000 & 0.280000 \\
-Reg: Advanced Econ. & dummy & 0.498000 & 0.500000 \\
-Reg: E. Asia \& Pacific & dummy & 0.213000 & 0.409000 \\
-Reg: Europe and C. Asia & dummy & 0.115000 & 0.319000 \\
-Reg: Lat. Am. and Car. & dummy & 0.004000 & 0.063000 \\
-Reg: M. East and N. Af. & dummy & 0.043000 & 0.202000 \\
-Reg: South Africa & dummy & 0.088000 & 0.283000 \\
-Reg: Sub Sah. Africa & dummy & 0.106000 & 0.308000 \\
-Income: High & dummy & 0.507000 & 0.500000 \\
-Income: Middle & dummy & 0.434000 & 0.496000 \\
-Income: Low & dummy & 0.059000 & 0.236000 \\
-Median Expenditure & float & 11285.576000 & 10492.019000 \\
-Minimum Wage & float & 789.407000 & 735.057000 \\
-Academic Freedom Index & float & 0.711000 & 0.266000 \\
-Mean Age & float & 36.352000 & 6.568000 \\
-Method: OLS & dummy & 0.664000 & 0.473000 \\
-Method: Cohort/FE & dummy & 0.058000 & 0.234000 \\
-Method: 2SLS & dummy & 0.095000 & 0.294000 \\
-Method: Heckman & dummy & 0.062000 & 0.240000 \\
-Method: Probit & dummy & 0.022000 & 0.147000 \\
-Method: IV & dummy & 0.111000 & 0.314000 \\
-Ability: Direct & dummy & 0.135000 & 0.341000 \\
-Ability: Proxied & dummy & 0.204000 & 0.403000 \\
-Ability: Uncontrolled & dummy & 0.425000 & 0.494000 \\
-Ability: Unmentioned & dummy & 0.223000 & 0.417000 \\
-Instrument: Parents Education & int & 0.074000 & 0.262000 \\
-Instrument: Distance to School & int & 0.015000 & 0.123000 \\
-Instument: Other & int & 0.107000 & 0.309000 \\
-Control: Age & int & 0.344000 & 0.475000 \\
-Control: Age$^2$ & int & 0.275000 & 0.447000 \\
-Control: Experience & int & 0.607000 & 0.489000 \\
-Control: Experience$^2$ & int & 0.512000 & 0.500000 \\
-Control: Ethnicity & int & 0.251000 & 0.434000 \\
-Control: Health & int & 0.135000 & 0.342000 \\
-Control: Gender & int & 0.367000 & 0.482000 \\
-Control: Marriage & int & 0.361000 & 0.480000 \\
-Control: Occupation & int & 0.142000 & 0.349000 \\
-Control: Firm Char. & int & 0.149000 & 0.357000 \\
-Control: Area & int & 0.418000 & 0.493000 \\
-Control: Macro Var. & int & 0.347000 & 0.476000 \\
-Impact Factor & float & 0.706000 & 1.134000 \\
-Citations & int & 416.452000 & 1259.054000 \\
-Study: Published & dummy & 0.764000 & 0.425000 \\
-Study: Unpublished & dummy & 0.236000 & 0.425000 \\
-Publication Year & int & 29.285000 & 7.667000 \\
+Effect & float & 7.514 & 4.948 \\
+Standard Error & float & 1.395 & 3.333 \\
+T-Statistic & float & 23.518 & 42.923 \\
+Partial Correlation Coefficient & float & 0.173 & 0.151 \\
+Precision of the PCC & float & 170.756 & 271.473 \\
+Estimate: City & dummy & 0.119 & 0.323 \\
+Estimate: Sub-region & dummy & 0.099 & 0.299 \\
+Estimate: Region & dummy & 0.309 & 0.462 \\
+Estimate: Country & dummy & 0.395 & 0.489 \\
+Estimate: Continent & dummy & 0.079 & 0.269 \\
+Observations & int & 100433.496 & 656408.609 \\
+Study Size & int & 22.944 & 14.319 \\
+Yrs. of Schooling & float & 11.116 & 3.465 \\
+Yrs. of Experience & float & 18.348 & 7.460 \\
+Education: Years & dummy & 0.634 & 0.482 \\
+Education: Levels & dummy & 0.366 & 0.482 \\
+Wage: Log Hourly & dummy & 0.531 & 0.499 \\
+Wage: Log Daily & dummy & 0.095 & 0.293 \\
+Wage: Log Monthly & dummy & 0.211 & 0.408 \\
+Wage: Annual Earnings & dummy & 0.162 & 0.369 \\
+Micro Data & dummy & 0.177 & 0.382 \\
+Survey Data & dummy & 0.534 & 0.499 \\
+National Register Data & dummy & 0.289 & 0.453 \\
+Cross-sectional Data & dummy & 0.361 & 0.481 \\
+Panel Data & dummy & 0.639 & 0.481 \\
+Data Year & float & 1995.803 & 12.206 \\
+No Education & perc & 0.126 & 0.163 \\
+Primary Education & perc & 0.177 & 0.167 \\
+Secondary Education & perc & 0.388 & 0.217 \\
+Higher Education & perc & 0.309 & 0.274 \\
+Wage Earners & perc & 0.837 & 0.249 \\
+Gender: Male & perc & 0.650 & 0.359 \\
+Sector: Private & perc & 0.596 & 0.259 \\
+Ethnicity: Caucasian & perc & 0.227 & 0.419 \\
+Sector: Rural & perc & 0.297 & 0.280 \\
+Sector: Urban & perc & 0.703 & 0.280 \\
+Reg: Advanced Econ. & dummy & 0.498 & 0.500 \\
+Reg: E. Asia \& Pacific & dummy & 0.213 & 0.409 \\
+Reg: Europe and C. Asia & dummy & 0.115 & 0.319 \\
+Reg: Lat. Am. and Car. & dummy & 0.004 & 0.063 \\
+Reg: M. East and N. Af. & dummy & 0.043 & 0.202 \\
+Reg: South Africa & dummy & 0.088 & 0.283 \\
+Reg: Sub Sah. Africa & dummy & 0.106 & 0.308 \\
+Income: High & dummy & 0.507 & 0.500 \\
+Income: Middle & dummy & 0.434 & 0.496 \\
+Income: Low & dummy & 0.059 & 0.236 \\
+Median Expenditure & float & 11285.576 & 10492.019 \\
+Minimum Wage & float & 789.407 & 735.057 \\
+Academic Freedom Index & float & 0.711 & 0.266 \\
+Mean Age & float & 36.352 & 6.568 \\
+Method: OLS & dummy & 0.664 & 0.473 \\
+Method: Cohort/FE & dummy & 0.058 & 0.234 \\
+Method: 2SLS & dummy & 0.095 & 0.294 \\
+Method: Heckman & dummy & 0.062 & 0.240 \\
+Method: Probit & dummy & 0.022 & 0.147 \\
+Method: IV & dummy & 0.111 & 0.314 \\
+Ability: Direct & dummy & 0.135 & 0.341 \\
+Ability: Proxied & dummy & 0.204 & 0.403 \\
+Ability: Uncontrolled & dummy & 0.425 & 0.494 \\
+Ability: Unmentioned & dummy & 0.223 & 0.417 \\
+Instrument: Parents Education & int & 0.074 & 0.262 \\
+Instrument: Distance to School & int & 0.015 & 0.123 \\
+Instument: Other & int & 0.107 & 0.309 \\
+Control: Age & int & 0.344 & 0.475 \\
+Control: Age$^2$ & int & 0.275 & 0.447 \\
+Control: Experience & int & 0.607 & 0.489 \\
+Control: Experience$^2$ & int & 0.512 & 0.500 \\
+Control: Ethnicity & int & 0.251 & 0.434 \\
+Control: Health & int & 0.135 & 0.342 \\
+Control: Gender & int & 0.367 & 0.482 \\
+Control: Marriage & int & 0.361 & 0.480 \\
+Control: Occupation & int & 0.142 & 0.349 \\
+Control: Firm Char. & int & 0.149 & 0.357 \\
+Control: Area & int & 0.418 & 0.493 \\
+Control: Macro Var. & int & 0.347 & 0.476 \\
+Impact Factor & float & 0.706 & 1.134 \\
+Citations & int & 416.452 & 1259.054 \\
+Study: Published & dummy & 0.764 & 0.425 \\
+Study: Unpublished & dummy & 0.236 & 0.425 \\
+Publication Year & int & 29.285 & 7.667 \\
 \bottomrule
    
  \multicolumn{4}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the summary statistics and descriptions for each of the various study characteristics. SD = standard deviation, FE = Fixed Effects, 2SLS = 2 Stage Least Squares.}
