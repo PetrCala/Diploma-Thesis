@@ -6,9 +6,9 @@
 
 ## About
 
-### The reason for having a GitHub repository
+### You branched off too far
 
-The reason for keeping this repository is to allow for easier version tracking, and portable work. Although the repository is meant to be cloned, `Dist` is the default branch. This branch serves only to keep extra files that help me work from anywhere. For purposes of reproducing the analysis, you should work purely with the `Dist` branch.
+This branch is meant for my personal use only. It allows me to do version tracking and keep the work portable. If you wish to conduct your own analysis using the provided files, switch to the `Dist` branch, and go through the README there.
 
 ### Project structure
 
