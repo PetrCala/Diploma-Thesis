@@ -108,6 +108,7 @@ adj_params <- user_params$adjustable_parameters # Various parameters
 data_files <- user_params$data_files # Data files (only files names)
 script_files <- user_params$script_files # Script files (only file names)
 folder_paths <- user_params$folder_paths # Paths to various folders
+export_options <- user_params$export_options # Various export options
 
 # Validate folder existence
 modifiable_folders <- c(
@@ -164,7 +165,7 @@ readExcelAndWriteCsv(source_data_path, source_sheets, csv_suffix, temp_data_fold
 validateFiles(all_source_files)
 
 # Save the console output to a log file in the results folder
-log_file_path <- paste0(folder_paths$all_results_folder, user_params$export_log_file)
+log_file_path <- paste0(folder_paths$all_results_folder, export_options$export_log_file)
 quiet(sink()) # Empty the sink
 sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 
@@ -192,7 +193,7 @@ if (run_this$variable_summary_stats){
     data, var_list
   )
   variable_sum_stats <- variable_sum_stats_list[[1]] # Also missing data information
-  if (user_params$export_results){
+  if (export_options$export_results){
     exportTable(variable_sum_stats, user_params, "variable_summary_stats")
   }
 }
@@ -252,7 +253,7 @@ if (run_this$effect_summary_stats){
     formal_output = adj_params$formal_output_on
   )
   effect_sum_stats <- effect_sum_stats_list[[1]] # Also missing variable info
-  if (user_params$export_results){
+  if (export_options$export_results){
     exportTable(effect_sum_stats, user_params, "effect_summary_stats")
   }
 }
@@ -270,12 +271,12 @@ if (run_this$box_plot){
       data,
       max_boxes = adj_params$box_plot_max_boxes,
       verbose_on = adj_params$box_plot_verbose,
-      export_graphics = user_params$export_graphics,
+      export_graphics = export_options$export_graphics,
       graph_scale = adj_params$box_plot_graph_scale,
       output_folder = folder_paths$graphic_results_folder,
       factor_by = factor_name,
       effect_name = adj_params$effect_name,
-      theme = user_params$theme,
+      theme = export_options$theme,
       verbose = F # Internal function parameter - no doubling
     )
   }
@@ -294,9 +295,9 @@ if (run_this$funnel_plot){
         maximum_precision = adj_params$funnel_maximum_precision,
         use_study_medians = use_medians,
         add_zero = adj_params$funnel_add_zero,
-        theme = user_params$theme,
+        theme = export_options$theme,
         verbose = adj_params$funnel_verbose,
-        export_graphics = user_params$export_graphics,
+        export_graphics = export_options$export_graphics,
         output_path = graph_name,
         graph_scale = adj_params$funnel_graph_scale
       )
@@ -319,9 +320,9 @@ if (run_this$t_stat_histogram){
     data,
     lower_cutoff = adj_params$t_hist_lower_cutoff,
     upper_cutoff = adj_params$t_hist_upper_cutoff,
-    theme = user_params$theme,
+    theme = export_options$theme,
     verbose = TRUE, # Print into console
-    export_graphics = user_params$export_graphics,
+    export_graphics = export_options$export_graphics,
     output_path = t_hist_path,
     graph_scale = adj_params$t_hist_graph_scale
   )
@@ -337,7 +338,7 @@ if (run_this$linear_tests){
     verbose_function = getLinearTestsVerbose,
     data
   )
-  if (user_params$export_results){
+  if (export_options$export_results){
     exportTable(linear_tests_results, user_params, "linear_tests")
   }
 }
@@ -360,13 +361,13 @@ if (run_this$nonlinear_tests){
     verbose_function = getNonlinearTestsVerbose,
     data, script_paths = nonlinear_script_paths,
     selection_params = selection_params,
-    theme = user_params$theme,
-    export_graphics = user_params$export_graphics,
+    theme = export_options$theme,
+    export_graphics = export_options$export_graphics,
     export_path = folder_paths$graphic_results_folder,
     graph_scale = adj_params$non_linear_stem_graph_scale,
     stem_legend_pos = adj_params$non_linear_stem_legend_position
   )
-  if (user_params$export_results){
+  if (export_options$export_results){
     exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
   }
 }
@@ -386,7 +387,7 @@ if (run_this$exo_tests){
     puni_params
   )
   exo_tests_results <- exo_tests_results_list[[1]]
-  if (user_params$export_results){
+  if (export_options$export_results){
     exportTable(exo_tests_results, user_params, "exo_tests")
   }
 }
@@ -431,7 +432,7 @@ if (run_this$p_hacking_tests){
     studylevel=adj_params$maive_studylevel,
     verbose=adj_params$maive_verbose
   )
-  if (user_params$export_results){
+  if (export_options$export_results){
      exportTable(caliper_results, user_params, "p_hacking_tests_caliper")
      exportTable(elliott_results, user_params, "p_hacking_tests_elliott")
      exportTable(maive_results, user_params, "p_hacking_tests_maive")
@@ -486,13 +487,13 @@ if (run_this$bma){
     bma_model, bma_data, var_list,
     print_results = adj_params$bma_print_results,
     adjustable_theme = adj_params$bma_adjustable_theme,
-    theme = user_params$theme,
-    export_graphics = user_params$export_graphics,
+    theme = export_options$theme,
+    export_graphics = export_options$export_graphics,
     export_path = user_params$folder_paths$graphic_results_folder,
     graph_scale = adj_params$bma_graph_scale
   )
   # Store the bma data in the temporary data folder
-  if (user_params$export_bma_data){
+  if (export_options$export_bma_data){
     bma_data_path <- paste0(folder_paths$data_folder, 'temp/bma_data', '_', csv_suffix, '.csv')
     write_csv(bma_data, bma_data_path)
   }
@@ -522,7 +523,7 @@ if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs"))
     verbose_function = getMATableVerbose,
     bma_coefs, fma_coefs, var_list
   )
-  if (user_params$export_results){
+  if (export_options$export_results){
      exportTable(ma_res_table, user_params, "ma")
    }
 }
@@ -545,7 +546,7 @@ if (run_this$ma_variables_description_table){
     desc_table_data, var_list,
     verbose = adj_params$ma_variables_description_table_verbose # Use View(...) for best viewing experience
   )
-  if (user_params$export_results){
+  if (export_options$export_results){
      exportTable(ma_var_desc_table, user_params, "ma_variables_description_table")
    }
 }
@@ -579,7 +580,7 @@ if (run_this$bpe){
     verbose_output = adj_params$bpe_econ_sig_verbose
   )
   # Export
-  if (user_params$export_results){
+  if (export_options$export_results){
      exportTable(bpe_df, user_params, "bpe_res")
      exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
   }
@@ -598,7 +599,7 @@ if (run_this$robma){
     robma_params
   )
   # Export
-  if (user_params$export_results){
+  if (export_options$export_results){
      exportTable(robma_res$Components, user_params, "robma_components")
      exportTable(robma_res$Estimates, user_params, "robma_estimates")
   }
@@ -607,10 +608,10 @@ if (run_this$robma){
 ### EXPORT ###
 
 # Zip the results
-if (user_params$export_results){
+if (export_options$export_results){
   # Create the file
   zipFolders(
-    zip_name = user_params$export_zip_name,
+    zip_name = export_options$export_zip_name,
     dest_folder = folder_paths$all_results_folder,
     folder_paths$temp_data_folder,
     folder_paths$graphic_results_folder,

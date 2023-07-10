@@ -36,7 +36,6 @@ The project is structured as follows:
 ├── script_runner_master_thesis_cala.R
 ├── source_master_thesis_cala.R
 ├── README.md
-├── README.pdf
 └── user_parameters.yaml
 ```
 
@@ -54,14 +53,13 @@ The project is structured as follows:
   - `maive_master_thesis_cala.r` -> Source code for the MAIVE estimator method (Irsova et al., 2023).
   - `selection_model_master_thesis_cala.R` -> Source code for the Selection model (Andrew & Kasy, 2019). Rewritten from STATA, should be quite robust.
   - `stem_method_master_thesis_cala.R` -> Source code for the STEM method (Furukawa, 2019).
-* `main_master_thesis_cala.R` -> Main script. Using the `user_parameters.yaml` file, call the desired methods with the specified parameters. Automatically handle package installation, working directory handling, temporary file creation.
-* `source_master_thesis_cala.R` -> Source script with all the functions. Virtaully any function called from the main script is located here. Every function (hopefully) has a docstring explaining its *functionality* (pun intended). Navigate the script using function names.
-* `script_runner_master_thesis_cala.R` -> Script for running the code in an aesthetic way. Here you can modify the parameters without having to edit the `.yaml` file. Automatically calls the whole main script, but you can modify which parts of it should run within the parameters. With this, just run the *script runner* script as a whole and witness magic happen (after you handle all the bugs).
+* `main_master_thesis_cala.R` -> Main script. Call the desired methods with the specified user parameters. Automatically handle package installation, working directory handling, temporary file creation.
+* `source_master_thesis_cala.R` -> Source script with all the functions. This script is not meant to be ran. Virtaully any function called from the main script is located here. Every function (hopefully) has a docstring explaining its *functionality* (pun intended). Navigate the script using function names.
+* `script_runner_master_thesis_cala.R` -> Script for running the code in an aesthetic way. Calls the main script using the `source` command, which omits redundant code. This script is most useful when working with RStudio. When working with a terminal, calling this script is exactly the same as calling the main script.
 * `README.md` -> This README file.
-* `README.pdf` -> The README file in a presentable format.
-* `user_parameters.yaml` -> Script customizable parameters. Created upon running the script runner. Can be modified either directly using a text editor or from within the `script_runner_master_thesis_cala.R` file. Contains parameters with file names, parts of the script to run, and parameters with which those parts should be run.
+* `user_parameters.yaml` -> Script customizable parameters. Modify this file by opening it using any text editor, such as `Notepad`. Alternatively, you may want to edit this file using fancier text editors, such as [Sublime Text](https://www.sublimetext.com/docs/vintage.html), or [VIM](https://www.vim.org/).
 
-The script run will also create these temporary folders:
+Running the main script (directly or using the script runner) will also create these temporary folders:
 * `_cache/` -> Temporary cache files will be stored here.
 
 Furthermore, the existence of all folders will be verified. Note that some do not appear in the repository, as there is nothing to distribute within these folders. All results (along with the folders) will be created and updated automatically.
@@ -78,13 +76,10 @@ Furthermore, the existence of all folders will be verified. Note that some do no
 	cd Diploma-Thesis
 	```
  5. In case you wish to only test the functionality of the script using placeholder data within the data folder, skip to the **How to run** section below. If you wish, on the other hand, to run your own analysis, make sure to follow the next steps as well.
- 6. If you wish to customize the source file names (such as scripts, result folders, etc.), you may do so from within the `script_runner_master_thesis_cala.R`, or by modifying the `user_parameters.yaml` file. Know that every run of the script runner will automatically modify the contents of the user parameters
-    file, so I suggest you modify the parameters directly within the script if this is your preferred way of running the project. However, **do not to modify the names of the user parameter file and the script runner**! These are immutable.
- 7. Try to eliminate as many missing values in your data frame as you can.
-    The script will automatically use interpolation for missing data, so that model averaging
-    can run, but in case of many missing values, the results may be unstable.
- 8. The file with data must contain two sheets - `data_set` and `var_list` (these are modifiable within the user parameter file or from within the script runner). The former should contain all your data that satisfies the conditions described in step 9, while the latter should contain information about variables of the dataset, as described in step 10.
- 9. The data frame must contain several columns, labelel **required columns**, and there are also several columns that are optional **optional columns**. These are:
+ 6. If you wish to customize the source file names (such as scripts, result folders, etc.), you may do so by modifying the `user_parameters.yaml` file. **Do not to modify the names of the user parameters themselves, as these are immutable!** Modify only the values.
+ 7. Place your data file into the `data/source/` folder, right next to the placeholder data file. In case you modified the path to this folder, make sure to place the data file into that folder instead. You may delete the placeholder file in case you do not need it.
+ 8. The file with data must contain two sheets - `data_set` and `var_list` (these are modifiable within the user parameter file). The former should contain all your data that satisfies the conditions described in step 9, while the latter should contain information about variables of the dataset, as described in step 10.
+ 9. The data frame must contain several specific columns, named **Required columns**, and there are also several columns that are optional - **Optional Columns**. If your dataset does not contain the required columns, make sure to add them. If it does contain them, but they are named differently in your data, simply change their names in the `required_cols` section of the `user_parameters.yaml` file. This is the list of the required and optional columns:
    * Required columns:
       - **obs_id** - Unique ID of the observation.
       - **study_name** - Name of the study, such as *Einstein et al. (1935)*.
@@ -98,11 +93,11 @@ Furthermore, the existence of all folders will be verified. Note that some do no
      - **precision** - Precision of the effect. If set to `NA`, calculated automatically if omitted using the `precision_type` parameter within the `adjustable_parameters` list of the `user_parameters.yaml` file. Defaults to *1/Standard_Error*.
       - **study_size** - Number of estimates reported per study. If set to `NA`, calculated automatically if omitted.
       - **reg_df** - Number of degrees of freedom associated with the regression. If set to `NA`, the number of observations associated with the estimate will be used instead.
- 10. The sheet (labeled by default as `var_list`), contains the information about the nature and usage of all columns/variables that appear in the main data frame. Note that these must be listed exactly in the order in which they appear in the main data frame. For inspiration, see the placeholder file `data_set_master_thesis_cala.xlsm`.
+ 10. The sheet labeled as `var_list` (referred to as *variable information*) contains the information about the nature and usage of all columns/variables that appear in the main data frame. You must create this sheet and fill it with information about your dataset in accordance to the following specifications. In doing so, you may use the placeholder dataset for inspiration. If the sheet is not provided, the script will not run. Note that the columns of the variable information sheet must be listed exactly in the order in which they appear in the main data frame. There may be no special characters, and only the explicitly stated values are permitted. 
    The sheet should contain the following columns:
    * **var_name** - Name of the variable exactly as it appears in the data frame columns. Must not include
-     spaces and various special characters. Underscores are allowed. Example: *n_obs*.
-   * **var_name_verbose** - A verbose name for the variable. Needs not to limit to any subset of characters. Example: *Number of Observations*.
+     spaces and various special characters. Underscores are allowed, but the name should never begin with an underscore. Example: *n_obs*.
+   * **var_name_verbose** - A verbose name for the variable. Can be any subset of characters, even special ones. Example: *Number of Observations*.
    * **var_name_description** - A lengthy description of the variable. Example: *Number of observations used in the study.*
    * **data_type** - Type of the data this variable holds. Can be only one type. Can be one of:
      - *int* - Integer. Any integer.
@@ -116,7 +111,7 @@ Furthermore, the existence of all folders will be verified. Note that some do no
      - *stop* - Do not allow missing values. Throw an error in case there is a missing value.
      - *mean* - Interpolate with the mean of the existing data.
      - *median* - Interpolate with the median of the existing data.
-     - *foo* - Interpolate with random values. These columns should not be used for further analysis (BMA,...).
+     - *foo* - Interpolate with random values. These columns should not be used for further analysis (BMA,...), as their values will be random, and thus incorrect.
    * **variable_summary** - Boolean. If `TRUE`, this variable will appear in the summary statistics table.
    * **effect_sum_stats** - Boolean. If `TRUE`, this variable will appear in the effect summary statistics table.
    * **equal** - Float. If set to any value, the effect summary statistics table will print out the statistics
@@ -124,7 +119,7 @@ Furthermore, the existence of all folders will be verified. Note that some do no
      If set to any value, can not set the `gtlt` column value.
    * **gtlt** - One of "*median*", "*mean*", float. Similar to "equal", but if set to *median*/*mean*, will print out the statistics
      for the effect of the data when subsetted to values above/below the median value of this variable.
-     If set to float, the subsetting breakpoint will be that value instead.
+     If set to float (meaning any number), the subsetting breakpoint will be that value instead.
    * **bma** - Boolean. If `TRUE`, this variable will be used in the Bayesian model averaging. Do NOT set all
      values of one variable group to `TRUE`. This would create a dummy trap.
    * **bma_reference_var** - Boolean. If `TRUE`, this variable is the reference variable for the **dummy**/**perc** group. Exactly one variable must be a reference variable
@@ -136,21 +131,24 @@ Furthermore, the existence of all folders will be verified. Note that some do no
 ## How to Run
 To run the code, follow these steps:
 1. There are two options of running the script:
-  * **Use a script runner** - You can run the code and modify the customizable parameters from within a single R script - `script_runner_master_thesis_cala.R`.
-	Open the file and find the `user_params` object. Within this object, **without modifying the names of the sub-objects**, change the values as you see fit, but within the guidelines described in step 2.
-  * **Use the main script in combination with the `user_params.yaml` file** - You can also run the main code by directly calling the `main_master_thesis_cala.R` file. This assumes that there exists a `user_params.yaml` file within the root of the folder and that you have modified the parameters to your liking.
-	When modifying the parameters, you may do so from directly within the `.yaml` file, but make sure to follow the guidelines in step 2 while doing so.
+  * **Use a script runner** - You can run the code in an aesthetic way using the R script `script_runner_master_thesis_cala.R`.
+	First, modify the parameters within the `user_parameters.yaml` file as you see fit, but in line with the guidelines from the next step. Then, simply run the code.
+  * **Use the main script** - You can also run the main code by directly calling the `main_master_thesis_cala.R` file. The disadvantage of this approach (when working with RStudio) is that unnecessary code will be printed into the console. If you are calling this file from the terminal, things will work as intended.
+	As with the script runner, make sure to modify the within the parameters `user_parameters.yaml` file as you see fit, and in doing so follow the guidelines from step 2.
 2. Guidelines for parameter modification:
-  * Follow the `User parameter guide` for explicit information about allowed values and meaning of all parameters.
-  * Do not change the names of any of the parameters, unless told explicitly. Change only the values. For the explanation of each of the parameters, see the script runner.
+  * Do not change the names of any of the parameters, unless told explicitly. Change only the values.
   * Parameters used for calling external functions are marked with the `param_` prefix within their name (see parameters for BMA, non-linear tests,...). Make sure to keep this convention when adding new such parameters.
   * Make sure to keep the object types, unless told explicitly. For example, if a value of a parameter is a vector, make sure it is still a vector after the modifications.
-3. If you want to run the code using your own data and not the placeholder data provided within the distributed files, put your `.csv` data files into the `data/` folder. You do not need to delete the distributed placeholder files, but you **must change the expected names in the user parameters** for the script to recognize these new files (parameters `master_data_set_source` and `var_list_source`). The elements of the `data_files` list parameter must be changed to reflect the names of your `.csv` data files. If you do not modify these, the script will read the placeholder data files from the `data/` folder instead. ake sure to keep the `.csv` suffix. As of the current version, the script recognizes only `.csv` files as valid input.
-4. After modifying any paramters as you see fit, run either the script runner or the main script. Note that running the script runner will automatically overwrite the `user_params.yaml` file with parameters defined within the script runner, so if you opt for the second approach from step 1, be careful with the script runner use.
-5. You may encounter errors caused by mismatching file names, package incompatibility, etc. The script will automatically attempt to install all the necessary packages (if they are not installed on your local machine), so in case there are any conflicts, make sure to check that you have fulfilled all prerequisites from the prerequisites section.
-5. If all goes well, you should see the output in the console, and in the results folders `results/` (for numerical and text-based output) and `graphics/` (for graphical output). Any existing files will be overwritten upon running the script (if not cached), so make sure to save any desired files outside these folders after they are generated.
-6. To display the graphic plots, either double click the `.html` files in the graphics folder (this will open them in an interactive window in your browser), or simply write the object name into the console after running the script (find these names in the `main_master_thesis_cala.R` script under the respective code sections. Calling the objects will automatically plot them in the correct form.
-7. If you wish to look under the hood of the code, see the file `source_master_thesis_cala.R`, which contains all the technical functions, preprocessing, and validation, that is hidden in the main file.
+  * `NA` values should be denoted as `.na`. Boolean values should be denoted using `true` or `false`.
+3. If you want to run the code using your own data and not the placeholder data provided within the distributed files, put your `.xlsx` data file into the `data/source/` folder. You do not need to delete the distributed placeholder file, but you **must change the expected source file name in the user parameters** for the script to recognize these new files (parameters under the category `source_file_params`).
+	Furthermore, modify any other source file parameters so that they fit your data. These include the file name, sheet names, file suffix, and the suffix you wish to attach to the created `.csv` files. If you do not modify these, your data may be read incorrectly.
+4. After modifying any paramters as you see fit, run either the script runner or the main script. Note that running the script runner executes virtuall the same job as running the main script, only less redundant code will be printed into the console, so I personally recommend this approach.
+5. You may encounter errors caused by mismatching file names, package incompatibility, etc. The script will automatically attempt to install all the necessary packages (if they are not installed on your local machine), so in case there are any conflicts, make sure to check that you have fulfilled all prerequisites from the prerequisites section. If you, however, wish to run the code line by line, working with the main script may prove more suitable.
+5. If all goes well, you should see the output in the console, and in the results folder. In the folder `results/numeric/`, you will find for numerical and text-based output, while the folder and `results/graphics/` holds graphical output. Furthermore, a file called `main_results.txt`, containing the console log with numerous clean and formatted results, will be created in the `results/` folder. Any existing files within these folders will likely be overwritten upon running the script, so make sure to save any desired files outside these folders after they are generated.
+6. If you wish to look under the hood of the code, see the file `source_master_thesis_cala.R`, which contains all the technical functions, preprocessing, and validation, that is hidden in the main file.
 
 ## Miscellaneous
-I can not guarantee the code will run perfectly in case you attempt a replication using a different data set. In case you use the data sets provided, the only caveat might be package installation, otherwise the code should run smoothly. In case of using a custom data set, various combinations of data might break some methods. As such, use the project with caution, and I hope it will be useful in any way possible.
+* I can not guarantee the code will run perfectly in case you attempt a replication using a different data set. In case you use the data sets provided, the only caveat might be package installation, otherwise the code should run smoothly. In case of using a custom data set, various combinations of data might break some methods. As such, use the project with caution, and I hope it will be useful in any way possible.
+* Try to eliminate as many missing values in your data frame as you can.
+    The script will automatically use interpolation for missing data, so that model averaging
+    can run, but in case of many missing values, the results may be unstable.
