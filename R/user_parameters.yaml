@@ -1,6 +1,6 @@
 run_this:
-  variable_summary_stats: yes
-  effect_summary_stats: yes
+  variable_summary_stats: no
+  effect_summary_stats: no
   box_plot: no
   funnel_plot: no
   t_stat_histogram: no
@@ -8,10 +8,10 @@ run_this:
   nonlinear_tests: no
   exo_tests: no
   p_hacking_tests: no
-  bma: no
-  fma: no
-  ma_variables_description_table: no
-  bpe: no
+  bma: yes
+  fma: yes
+  ma_variables_description_table: yes
+  bpe: yes
   robma: no
 source_file_params:
   source_data_folder: ./data/source/

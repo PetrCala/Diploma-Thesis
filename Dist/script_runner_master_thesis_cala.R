@@ -23,8 +23,8 @@ if (!require('ddpcr')) install.packages('ddpcr'); library('ddpcr')              
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
     "box_plot" = F,
     "funnel_plot" = F,
     "t_stat_histogram" = F,
@@ -32,10 +32,10 @@ user_params <- list(
     "nonlinear_tests" = F,
     "exo_tests" = F,
     "p_hacking_tests" = F,
-    "bma" = F,
-    "fma" = F, # Executable only after running BMA
-    "ma_variables_description_table" = F, # Executable only after running BMA
-    "bpe" = F, # Executable only after running BMA
+    "bma" = T,
+    "fma" = T, # Executable only after running BMA
+    "ma_variables_description_table" = T, # Executable only after running BMA
+    "bpe" = T, # Executable only after running BMA
     "robma" = F # Computationally expensive
   ),
   
