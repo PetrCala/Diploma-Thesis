@@ -41,12 +41,12 @@ user_params <- list(
   
   # CUSTOMIZABLE SOURCE FILE PATH
   source_file_params = list(
-    csv_suffix = "master_thesis_cala", # Suffix of the .csv files
     source_data_folder = "./data/source/", # Folder with the source data frame
     file_name = "data_set_master_thesis_cala", # Name of the data frame
     file_suffix = '.xlsm',
     data_sheet_name = "data_set",
-    var_list_sheet_name = "var_list"
+    var_list_sheet_name = "var_list",
+	csv_suffix = "master_thesis_cala" # Suffix of the .csv files
   ),
 
   # CUSTOMIZABLE COLUMN NAMES - set value to NA if not present in your data set
