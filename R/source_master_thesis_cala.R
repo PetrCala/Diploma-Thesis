@@ -103,26 +103,65 @@ readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_
   # invisible(dfs) # Return if need be
 }
 
-#' Read_csv with parameters to avoid redundancy
-#' 
-#' @param source_path [str] - Path to the .csv file
-# readDataCustom <- function(source_path){
-#   data_out <- read_csv(
-#     source_path,
-#     locale = locale(decimal_mark=".",
-#                     grouping_mark=",",
-#                     tz="UTC"),
-#     show_col_types = FALSE) # Quiet warnings
-#   invisible(data_out)
-# }
-
+#' readDataCustom function
+#'
+#' This function reads data from a given source path, infers the decimal mark and grouping mark,
+#' and checks if the data is read correctly. It specifically designed for files where data 
+#' begins after several non-data lines. It assumes the first non-empty line as the header line.
+#' The function then identifies the first line containing numeric values after the header line
+#' to infer the decimal and grouping marks. Finally, it reads the data, verifies its integrity,
+#' and returns it.
+#'
+#' @param source_path [character] A string that is the path of the file to be read.
+#'
+#' @return Returns a data frame if the data is read successfully, otherwise it stops 
+#'         execution with an error message. 
+#'
+#' @examples
+#' \dontrun{
+#'   # To read a file, just pass the path of the file
+#'   data <- readDataCustom("/path/to/your/data.txt")
+#'   print(data)
+#' }
+#'
+#' @seealso
+#' \code{\link[utils]{read.delim}}, \code{\link[utils]{readLines}}
+#'
+#' @export
 readDataCustom <- function(source_path){
+  # Read the first few lines of the data frame
+  first_few_lines <- readLines(source_path, n = 20)
+  # Identify header line (assuming it is the first non-empty line)
+  header_line <- first_few_lines[which(nchar(trimws(first_few_lines)) > 0)][1]
+  remaining_lines <- first_few_lines[first_few_lines != header_line]
+  # Identify the first line after header that contains digits
+  first_data_line <- ""
+  for(line in remaining_lines) {
+    if(all(grepl("\\D", strsplit(line, "")[[1]])) | nchar(trimws(line)) == 0) next
+    else {
+      first_data_line <- line
+      break
+    }
+    stop("No rows with numeric values identified in the data. Error in reading data.")
+  }
+  # Infer decimal mark and grouping mark
+  decimal_mark <- ifelse(grepl("\\.", first_data_line), ".", ",")
+  grouping_mark <- ifelse(grepl(",", first_data_line), ",", ".")
+  # Read data
   data_out <- read_delim(
     source_path,
-    locale = locale(decimal_mark=".",
-                    grouping_mark=",",
-                    tz="UTC"),
-    show_col_types = FALSE) # Quiet warnings
+    locale = locale(decimal_mark = decimal_mark,
+                    grouping_mark = grouping_mark,
+                    tz = "UTC"),
+    show_col_types = FALSE # Quiet warnings
+  )
+  # Check if data is read correctly
+  if (is.data.frame(data_out) && length(dim(data_out)) == 2) {
+    print(paste("Data loaded successfully from the following source:", source_path))
+  } else {
+    stop("Error in reading data.")
+  }
+  # Return the data
   invisible(data_out)
 }
 
