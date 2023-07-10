@@ -18,7 +18,7 @@ The project is structured as follows:
 .
 ├── data/
 │   ├── source/
-│   │   ├── data_set_master_thesis_cala.xlsm
+│   │   ├── data_set_master_thesis_cala.xlsx
 │   └── temp/
 ├── pckg/
 │   └── LowRankQP/
