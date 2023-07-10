@@ -164,8 +164,7 @@ readExcelAndWriteCsv(source_data_path, source_sheets, csv_suffix, temp_data_fold
 validateFiles(all_source_files)
 
 # Save the console output to a log file in the results folder
-log_file_path <- paste0(folder_paths$numeric_results_folder, user_params$export_log_file)
-if (file.exists(log_file_path)){quiet(system(paste("rm", log_file_path)))} # Clean output file
+log_file_path <- paste0(folder_paths$all_results_folder, user_params$export_log_file)
 quiet(sink()) # Empty the sink
 sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 
@@ -294,6 +293,7 @@ if (run_this$funnel_plot){
         effect_proximity = adj_params$funnel_effect_proximity,
         maximum_precision = adj_params$funnel_maximum_precision,
         use_study_medians = use_medians,
+        add_zero = adj_params$funnel_add_zero,
         theme = user_params$theme,
         verbose = adj_params$funnel_verbose,
         export_graphics = user_params$export_graphics,
@@ -568,8 +568,9 @@ if (run_this$bpe){
     study_info_verbose = adj_params$bpe_study_info,
     verbose_output = adj_params$bpe_result_table_verbose
   )
+  bpe_df <- bpe_res$bpe_df
   # Economic significance table
-  bpe_est <- bpe_res[1,1] # BPE estimate of the first row - usually Author's BPE
+  bpe_est <- bpe_df[1,1] # BPE estimate of the first row - usually Author's BPE
   bpe_econ_sig <- runCachedFunction(
     getEconomicSignificance, user_params,
     verbose_function = getEconomicSignificanceVerbose,
@@ -579,7 +580,7 @@ if (run_this$bpe){
   )
   # Export
   if (user_params$export_results){
-     exportTable(bpe_res, user_params, "bpe_res")
+     exportTable(bpe_df, user_params, "bpe_res")
      exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
   }
 }

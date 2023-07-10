@@ -23,30 +23,30 @@ if (!require('ddpcr')) install.packages('ddpcr'); library('ddpcr')              
 user_params <- list(
   # RUN THESE PARTS OF THE MAIN SCRIPT
   run_this = list(
-    "variable_summary_stats" = T,
-    "effect_summary_stats" = T,
-    "box_plot" = T,
-    "funnel_plot" = T,
-    "t_stat_histogram" = T,
-    "linear_tests" = T,
-    "nonlinear_tests" = T,
-    "exo_tests" = T,
-    "p_hacking_tests" = T,
+    "variable_summary_stats" = F,
+    "effect_summary_stats" = F,
+    "box_plot" = F,
+    "funnel_plot" = F,
+    "t_stat_histogram" = F,
+    "linear_tests" = F,
+    "nonlinear_tests" = F,
+    "exo_tests" = F,
+    "p_hacking_tests" = F,
     "bma" = T,
     "fma" = T, # Executable only after running BMA
     "ma_variables_description_table" = T, # Executable only after running BMA
     "bpe" = T, # Executable only after running BMA
-    "robma" = T # Computationally expensive
+    "robma" = F # Computationally expensive
   ),
   
   # CUSTOMIZABLE SOURCE FILE PATH
   source_file_params = list(
-    csv_suffix = "master_thesis_cala", # Suffix of the .csv files
     source_data_folder = "./data/source/", # Folder with the source data frame
     file_name = "data_set_master_thesis_cala", # Name of the data frame
-    file_suffix = '.xlsm',
+    file_suffix = '.xlsx',
     data_sheet_name = "data_set",
-    var_list_sheet_name = "var_list"
+    var_list_sheet_name = "var_list",
+	csv_suffix = "master_thesis_cala" # Suffix of the .csv files
   ),
 
   # CUSTOMIZABLE COLUMN NAMES - set value to NA if not present in your data set
@@ -99,6 +99,7 @@ user_params <- list(
     "funnel_precision_to_log" = FALSE, # If T, use log of precision as y axis (default: precision)
     "funnel_effect_proximity" = 1, # Effect axis cutoff point (perc) on either side of mean
     "funnel_maximum_precision" = 1, # Precision axis maximum value cutoff point (perc)
+    "funnel_add_zero" = TRUE, # If T, always add a zero tick into the plot
     "funnel_graph_scale" = 2.5, # Numeric, scale the graph by this number
     "funnel_verbose" = TRUE, # If T, print cut outlier information
     # T-statistic histogram parameters
@@ -162,7 +163,7 @@ user_params <- list(
     ),
     "bpe_use_ci" = TRUE, # If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
     "bpe_study_info" = TRUE, # If TRUE, print out information about individual studies being estimated
-    "bpe_result_table_verbose" = TRUE, # If TRUE, print out the table into the console
+    "bpe_result_table_verbose" = TRUE, # If TRUE, print out the table into the console along with the functional BPE form
     "bpe_econ_sig_large_pip_only" = TRUE, # If TRUE, display econ. significance for variables with PIP >= 0.5
     "bpe_econ_sig_verbose" = TRUE, # If TRUE, print out the economic significance table into the console
     # Robust Bayesian Model Averaging parameters - do not pass nested lists, priors etc.
@@ -209,7 +210,7 @@ user_params <- list(
     "robma_components" = "RoBMA components",
     "robma_estimates" = "RoBMA estimates"
   ),
-  export_log_file_path = "numeric_results.txt", # Console log as a text file
+  export_log_file_path = "main_results.txt", # Console log as a text file
   export_zip_name = paste0("results_all_", format(Sys.Date(), "%m-%d-%y")), # Zip file with all results
   export_graphics = TRUE, # If TRUE, save the graphs into the graphics folder as HTML files
   export_bma_data = FALSE, # If TRUE, export the data used for BMA into the temporary data folder

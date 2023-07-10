@@ -103,26 +103,65 @@ readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_
   # invisible(dfs) # Return if need be
 }
 
-#' Read_csv with parameters to avoid redundancy
-#' 
-#' @param source_path [str] - Path to the .csv file
-# readDataCustom <- function(source_path){
-#   data_out <- read_csv(
-#     source_path,
-#     locale = locale(decimal_mark=".",
-#                     grouping_mark=",",
-#                     tz="UTC"),
-#     show_col_types = FALSE) # Quiet warnings
-#   invisible(data_out)
-# }
-
+#' readDataCustom function
+#'
+#' This function reads data from a given source path, infers the decimal mark and grouping mark,
+#' and checks if the data is read correctly. It specifically designed for files where data 
+#' begins after several non-data lines. It assumes the first non-empty line as the header line.
+#' The function then identifies the first line containing numeric values after the header line
+#' to infer the decimal and grouping marks. Finally, it reads the data, verifies its integrity,
+#' and returns it.
+#'
+#' @param source_path [character] A string that is the path of the file to be read.
+#'
+#' @return Returns a data frame if the data is read successfully, otherwise it stops 
+#'         execution with an error message. 
+#'
+#' @examples
+#' \dontrun{
+#'   # To read a file, just pass the path of the file
+#'   data <- readDataCustom("/path/to/your/data.txt")
+#'   print(data)
+#' }
+#'
+#' @seealso
+#' \code{\link[utils]{read.delim}}, \code{\link[utils]{readLines}}
+#'
+#' @export
 readDataCustom <- function(source_path){
+  # Read the first few lines of the data frame
+  first_few_lines <- readLines(source_path, n = 20)
+  # Identify header line (assuming it is the first non-empty line)
+  header_line <- first_few_lines[which(nchar(trimws(first_few_lines)) > 0)][1]
+  remaining_lines <- first_few_lines[first_few_lines != header_line]
+  # Identify the first line after header that contains digits
+  first_data_line <- ""
+  for(line in remaining_lines) {
+    if(all(grepl("\\D", strsplit(line, "")[[1]])) | nchar(trimws(line)) == 0) next
+    else {
+      first_data_line <- line
+      break
+    }
+    stop("No rows with numeric values identified in the data. Error in reading data.")
+  }
+  # Infer decimal mark and grouping mark
+  decimal_mark <- ifelse(grepl("\\.", first_data_line), ".", ",")
+  grouping_mark <- ifelse(grepl(",", first_data_line), ",", ".")
+  # Read data
   data_out <- read_delim(
     source_path,
-    locale = locale(decimal_mark=".",
-                    grouping_mark=",",
-                    tz="UTC"),
-    show_col_types = FALSE) # Quiet warnings
+    locale = locale(decimal_mark = decimal_mark,
+                    grouping_mark = grouping_mark,
+                    tz = "UTC"),
+    show_col_types = FALSE # Quiet warnings
+  )
+  # Check if data is read correctly
+  if (is.data.frame(data_out) && length(dim(data_out)) == 2) {
+    print(paste("Data loaded successfully from the following source:", source_path))
+  } else {
+    stop("Error in reading data.")
+  }
+  # Return the data
   invisible(data_out)
 }
 
@@ -438,14 +477,38 @@ preprocessData <- function(input_data, input_var_list){
   # Variable name validity check
   varnames <- colnames(input_data)
   expected_varnames <- input_var_list$var_name
-  if(!all(varnames == expected_varnames)){ # A strong, restrictive assumption
+  # Check if all columns of the first vector are in the second one and vice versa
+  if(!all(varnames %in% expected_varnames) || !all(expected_varnames %in% varnames)){
     missing_from_var_list <- varnames[!varnames %in% expected_varnames]
     missing_from_data <- expected_varnames[!expected_varnames %in% varnames]
-    message("These variables are not a part of the variable list var_name column.")
-    message(paste(missing_from_var_list, "\n"))
-    message("These variables are not a part of the main data frame columns.")
-    message(paste(missing_from_data, "\n"))
+    message(
+      paste(
+        "Mismatching variable names. \n",
+        "These variables are not a part of the variable list: ", 
+        paste(missing_from_var_list, collapse = ", "), "\n",
+        "These variables are not a part of the main data frame columns: ",
+        paste(missing_from_data, collapse = ", "), "\n"
+      )
+    )
     stop("Mismatching variable names")
+  }
+  # Check for correct ordering
+  if(!identical(varnames, expected_varnames)){
+    problematic_indexes <- which(varnames != expected_varnames)
+    message(
+      paste(
+        "The order of some columns in the data frame and the expected variable list is different. \n",
+        paste("Problematic indexes and their column names: \n"),
+        paste(
+          problematic_indexes, 
+          ": Data frame has '", varnames[problematic_indexes], 
+          "' but expected variable list has '", 
+          expected_varnames[problematic_indexes], "'.", 
+          collapse = "\n"
+        )
+      )
+    )
+    stop("Ordering of some columns is not matching")
   }
   
   # Remove redundant rows
@@ -716,17 +779,21 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
     # Check if all sums are equal to 1
     rows_equal_to_1 <- abs(row_sums - 1) < .Machine$double.eps^0.5 + 0.001 # Marginal error allowed
     if (!all(rows_equal_to_1)){
-      problematic_rows <- which(!rows_equal_to_1)
-      message("All percentage groups must some up to 1.")
-      message("These variables do not fulfill that:")
-      message(paste(group_var_names, "\n"))
-      message("at rows:")
-      message(paste(head(problematic_rows), "\n"))
+      problematic_rows <- which(!(rows_equal_to_1) & abs(row_sums - 1) > 0.005) # Eliminate marginal errors from interpolation
       if (length(problematic_rows) > 6){
-        message(paste("and",length(problematic_rows) - 6,"other rows."))
+        other_rows <- paste("and",length(problematic_rows) - 6,"other rows.")
+      } else {
+        other_rows <- ""
       }
-      message("One of the following values is generated during interpolation, and one is the actually faulty data point:")
-      message(paste(as.character(unique(row_sums)), "\n"))
+      message(paste("All percentage groups must sum up to 1.\n",
+                    "These variables do not fulfill that:\n",
+                    paste(group_var_names, collapse="\n"), "\n",
+                    "at rows:\n",
+                    paste(head(problematic_rows), collapse="\n"), "\n",
+                    other_rows, "\n",
+                    "These are all unique row sums for this variable category. One or more, but perhaps not all of them are the faulty rows.",
+                    paste(as.character(unique(row_sums)), collapse="\n"), "\n", 
+                    sep=""))
       stop("Incorrect percentage group values")
     }
   }
@@ -1660,20 +1727,29 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
 #' vector, where the "red" color corresponds to the position of the mean value.
 #'
 #' @param input_vec [numeric(3)] A numeric vector of length 3, containing the lower bound, upper bound, and mean value.
+#' @param add_zero [logical] If TRUE, always add 0 to the ticks
 #' @param theme [character] Theme to use for the ticks
 #' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values and the mean value,
 #'         and "x_axis_tick_text", a character vector of the same length as "output_vec", 
 #'         with "red" indicating the position of the mean value and "black" for all other positions.
-generateFunnelTicks <- function(input_vec, theme = "blue"){
+generateFunnelTicks <- function(input_vec, add_zero = T, theme = "blue"){
   lower_bound <- input_vec[1]
   upper_bound <- input_vec[2]
   mean_value <- input_vec[3]
   
-  ticks <- c(lower_bound, upper_bound)
+  ticks <- c(lower_bound, upper_bound) # Base ticks
+  if (add_zero &&
+      !0 %in% ticks &&
+      0 > lower_bound &&
+      0 < upper_bound) {
+    ticks <- sort(c(ticks, 0))
+  }
   current_tick <- ceiling(lower_bound / 10) * 10 # Closest number divisible by 10 higher than lower bound
   
   while (current_tick < upper_bound) {
-    if (abs(current_tick - lower_bound) >= 2 && abs(current_tick - upper_bound) >= 2) {
+    if (abs(current_tick - lower_bound) >= 2 &&
+        abs(current_tick - upper_bound) >= 2 &&
+        !current_tick %in% ticks) {
       ticks <- c(ticks, round(current_tick, 2))
     }
     current_tick <- current_tick + 10
@@ -1705,6 +1781,7 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #' @param maximum_precision [float] Cutoff point for precision. See getOutliers() for more.
 #' @param use_study_medians [bool] If TRUE, plot medians of studies instead of all observations.
 #'  Defaults to FALSE.
+#' @param add_zero [bool] If T, always add zero to the graph. Defaults to T.
 #' @param theme [character] Theme to use. Defaults to "blue".
 #' @param verbose [bool] If T, print out outlier information. Defaults to T.
 #' @param export_graphics [bool] If TRUE, export the plot to png object into the graphics folder.
@@ -1712,7 +1789,7 @@ generateFunnelTicks <- function(input_vec, theme = "blue"){
 #' @param graph_scale [numeric] Scale for the output graph. Defaults to 3.
 #' @param output_path [character] Full path to where the plot should be stored. Defaults to NA.
 getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2, maximum_precision=0.2,
-                          use_study_medians = F, theme = "blue", verbose = T,
+                          use_study_medians = F, add_zero = T, theme = "blue", verbose = T,
                           export_graphics = F, output_path = NA, graph_scale = 3){
   # Check input validity
   required_cols <- getDefaultColumns()
@@ -1721,6 +1798,7 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
     is.logical(precision_to_log),
     is.numeric(effect_proximity),
     is.numeric(maximum_precision),
+    is.logical(add_zero),
     is.logical(verbose),
     is.logical(export_graphics),
     is.numeric(graph_scale),
@@ -1753,7 +1831,7 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
   mean_x_tick <- mean(funnel_data$effect)
   # Generate and extract the info
   base_funnel_ticks <- c(funnel_x_lbound, funnel_x_ubound, mean_x_tick) # c(lbound, ubound, mean)
-  funnel_visual_info <- generateFunnelTicks(base_funnel_ticks, theme = theme)
+  funnel_visual_info <- generateFunnelTicks(base_funnel_ticks, add_zero = add_zero, theme = theme)
   funnel_ticks <- funnel_visual_info$funnel_ticks
   funnel_tick_text <- funnel_visual_info$x_axis_tick_text
   # Get the theme to use
@@ -3851,7 +3929,7 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
     if (!bma_var %in% c("(Intercept)","se")){
       # Use a study
       if (study_id != 0){
-        coef <- median(bma_data[input_data$study_id==study_id,bma_var])
+        coef <- median(bma_data[input_data$study_id==study_id,bma_var]) # Actual data from the study - use median in case of varying data
       } else {
       # Use author's BPE - variable list information
         coef <- input_var_list$bpe[input_var_list$var_name == bma_var] # Automatically coerced to character - RRRRRR
@@ -3872,10 +3950,18 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
         coef <- round(coef, 3)
       } else { # char
       # Handle character coefficients
-        stopifnot(
-          is.character(coef),
-          coef %in% allowed_characters
+        stopifnot(is.character(coef)) # Should never occur (non-numeric values autoamtically read as characters)
+        if (!coef %in% allowed_characters){
+          # Invalid bpe specification for this varaiable
+          message(paste0(
+            "Invalid BPE specification for the variable '", bma_var, "'. \n",
+            "Current specification: '", coef,"'.\n",
+            "Must be one of the following: ", 
+            paste(allowed_characters, collapse = ", "), "."
+            )
           )
+          stop("Invalid BPE specification.")
+        }
         func <- get(coef) # Get the function to evaluate the value with - mean, median,...
         coef <- func(bma_data[[bma_var]], na.rm=TRUE) # Evaluate on BMA data column of this variable
         coef <- as.character(round(coef, 3)) # Back to character
@@ -4038,11 +4124,16 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     row.names(temp_df) <- study_name
     res_df <- rbind(res_df, temp_df)
   }
+  # Get an arbitrary formula to print out in case of verbose output
+  bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) 
+  bpe_formula <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
+                                     study_ids[1], include_intercept = TRUE, get_se = TRUE)
   # Return the output
+  res <- list(bpe_df = res_df, bpe_formula = bpe_formula)
   if (verbose_output) {
-    generateBPEResultTableVerbose(res_df, verbose_output = verbose_output)
+    generateBPEResultTableVerbose(res, verbose_output = verbose_output)
   }
-  return(res_df)
+  return(res)
 }
 
 
@@ -4052,8 +4143,12 @@ generateBPEResultTableVerbose <- function(res,...){
   verbose_on <- args$verbose_output
   # Print verbose output
   if (verbose_on){
+    cat('\n')
+    print("The best practice formula used:")
+    print(res$bpe_formula)
+    cat('\n')
     print("Best practice estimate results:")
-    print(res)
+    print(res$bpe_df)
     cat("\n\n")
   }
 }

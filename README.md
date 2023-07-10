@@ -16,16 +16,17 @@ The project is structured as follows:
 
 ```
 .
-├── data
-│   ├── source
-│   │   ├── data_set_master_thesis_cala.xlsm
-│   └── temp
-├── pckg
-│   └── LowRankQP
-├── results
-│   ├── graphic
-│   └── numeric
-├── scripts
+├── data/
+│   ├── source/
+│   │   ├── data_set_master_thesis_cala.xlsx
+│   └── temp/
+├── pckg/
+│   └── LowRankQP/
+├── results/
+│   ├── graphic/
+│   ├── numeric/
+│   └── main_results.txt
+├── scripts/
 │   ├── elliott_master_thesis_cala.R
 │   ├── endo_kink_master_thesis_cala.R
 │   ├── maive_master_thesis_cala.R
@@ -44,8 +45,9 @@ The project is structured as follows:
   - `temp/` - > This folder will automatically get created upon script run. Here will be the `.csv` files created from the sheets of your data set. This allows reproducibility and consistency within the script.
 * `pckg/` -> Folder with external packages that are not available online anymore, such as `LowRankQP`.
 * `results/` -> Folder with all results. A `.zip` file with all results will be automatically created here.
-  - graphic/ -> All graphic results will be automatically stored here.
-  - numeric/ -> All numeric results will be automatically stored here.
+  - `graphic/` -> All graphic results will be automatically stored here.
+  - `numeric/` -> All numeric results will be automatically stored here as `.csv` files.
+  - `main_results.txt` -> An R console log file where all numeric/tabular results are stored in a presentable form.
 * `scripts/` -> Source scripts for various external methods.
   - `elliott_master_thesis_cala.R` -> Source code for the p-hacking tests developed by Elliott et al. (2022).
   - `endo_kink_master_thesis_cala.R` -> Source code for the Endogenous Kink method (Bom & Rachinger, 2019).
