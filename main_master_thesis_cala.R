@@ -414,7 +414,7 @@ if (run_this$p_hacking_tests){
     verbose_function = getElliottResultsVerbose,
     data,
     script_path = paste0(folder_paths$scripts_folder, script_files$elliott_source),
-    temp_data_path = paste0(folder_paths$data_folder, '/temp/'), # Store temp files here
+    temp_data_path = paste0(folder_paths$temp_data_folder),
     data_subsets = adj_params$elliott_data_subsets,
     p_min = adj_params$elliott_p_min,
     p_max = adj_params$elliott_p_max,
@@ -497,7 +497,7 @@ if (run_this$bma){
   )
   # Store the bma data in the temporary data folder
   if (export_options$export_bma_data){
-    bma_data_path <- paste0(folder_paths$data_folder, 'temp/bma_data', '_', csv_suffix, '.csv')
+    bma_data_path <- paste0(folder_paths$temp_data_folder, 'bma_data', '_', csv_suffix, '.csv')
     write_csv(bma_data, bma_data_path)
   }
 }
