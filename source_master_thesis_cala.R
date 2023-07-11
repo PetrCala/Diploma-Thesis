@@ -3911,7 +3911,7 @@ getBMACoefValue <- function(coef_name, bma_coefs, value_type = "Post Mean"){
 #' @param include_intercept [logical] If TRUE, include intercept in the BPE.
 #'   Defaults to TRUE.
 #' @param get_se [logical] If TRUE, return the formula for SE evaluation instead (for
-#'   explanation see the getBPE function). Defaults to FALSE.
+#'   explanation see the runBPE function). Defaults to FALSE.
 #' @return [character] The formula as a string.
 constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
                                 study_id = 0, include_intercept = TRUE, get_se = FALSE) {
@@ -3935,32 +3935,31 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
   # Initialize the bpe_est_string with (Intercept), or its value in case of BPE est
   bpe_string_base <- ifelse(get_se, "(Intercept)", getBMACoefValue("(Intercept)", bma_coefs)) # Value for estimate
   bpe_est_string <- ifelse(include_intercept, bpe_string_base, "") # Empty for no intercept
-  # Iterate over the bma_vars and add the corresponding coefficients from input_var_list
-  for (bma_var in bma_vars) {
+  # Create a helper function to get coefficients
+  get_coef <- function(bma_var) {
     if (!bma_var %in% c("(Intercept)","se")){
       # Use a study
       if (study_id != 0){
         coef <- median(bma_data[input_data$study_id==study_id,bma_var]) # Actual data from the study - use median in case of varying data
       } else {
-      # Use author's BPE - variable list information
+        # Use author's BPE - variable list information
         coef <- input_var_list$bpe[input_var_list$var_name == bma_var] # Automatically coerced to character - RRRRRR
       }
+      
       # Handle unassigned variables
       if (coef == "stop"){
         stop("Make sure to assign values to all variables that appear in the BMA model.")
       }
-      # Handle numeric coefficients
-      quiet(
-        numeric_var <- !is.na(as.numeric(coef)) # Recognize numeric values based on lack of error - not ideal
-      )
+      
+      numeric_var <- !is.na(as.numeric(coef))
       if(numeric_var){
         coef <- as.numeric(coef) # To numeric
         if (coef == 0){ # Do not add to the formula
-          next
+          return("")
         }
         coef <- round(coef, 3)
       } else { # char
-      # Handle character coefficients
+        # Handle character coefficients
         stopifnot(is.character(coef)) # Should never occur (non-numeric values autoamtically read as characters)
         if (!coef %in% allowed_characters){
           # Invalid bpe specification for this varaiable
@@ -3969,19 +3968,26 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
             "Current specification: '", coef,"'.\n",
             "Must be one of the following: ", 
             paste(allowed_characters, collapse = ", "), "."
-            )
-          )
+          ))
           stop("Invalid BPE specification.")
         }
         func <- get(coef) # Get the function to evaluate the value with - mean, median,...
         coef <- func(bma_data[[bma_var]], na.rm=TRUE) # Evaluate on BMA data column of this variable
         coef <- as.character(round(coef, 3)) # Back to character
       }
-      # Handle output different than static numbers
+      
       output_var_name <- ifelse(get_se, bma_var, getBMACoefValue(bma_var, bma_coefs)) # Var name for SE, value for EST
-      bpe_est_string <- paste0(bpe_est_string, " + ", coef, "*", output_var_name)
+      return(paste0(" + ", coef, "*", output_var_name))
     }
+    return("")
   }
+  
+  # Apply the helper function to bma_vars
+  formula_parts <- purrr::map_chr(bma_vars, get_coef)
+  
+  # Concatenate all parts together
+  bpe_est_string <- paste(c(bpe_est_string, formula_parts), collapse = "")
+  
   # Append =0 to finish the formula in case of SE
   if (get_se){
     bpe_est_string <- paste(bpe_est_string, "= 0")
@@ -4027,7 +4033,7 @@ getBPEData <- function(input_data, bma_data){
 #' Defaults to TRUE.
 #' @param verbose_output [logical] If TRUE, print out the output information into the console.
 #' Defaults to TRUE.
-getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
+runBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
                    study_id = 0, include_intercept = TRUE, study_info_verbose = TRUE, verbose_output = TRUE){
   # Check input
   stopifnot(
@@ -4050,6 +4056,7 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
   # Input preprocessing
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) # Extract the coefficients
   bma_vars <- rownames(bma_coefs) # Variables used in the BMA
+   
   
   # Get the BPE estimate
   # Get formula as a string - ((intercept) + coefs * values)
@@ -4113,7 +4120,7 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
                          "Author",
                          as.character(input_data$study_name[input_data$study_id == study_id][1]))
     # BPE estimation
-    bpe_result <- getBPE(input_data, input_var_list, bma_model, bma_formula, bma_data, study_id,
+    bpe_result <- runBPE(input_data, input_var_list, bma_model, bma_formula, bma_data, study_id,
                          include_intercept = TRUE,
                          study_info_verbose = study_info_verbose, # Information about study names
                          verbose_output = FALSE) # Individual study outcomes into console - keep FALSE
