@@ -48,3 +48,6 @@ chromedriver
 
 # Shortcuts
 *.lnk
+
+# Vim temp files
+*.yaml.swp
