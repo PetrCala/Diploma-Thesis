@@ -3935,8 +3935,8 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
   # Initialize the bpe_est_string with (Intercept), or its value in case of BPE est
   bpe_string_base <- ifelse(get_se, "(Intercept)", getBMACoefValue("(Intercept)", bma_coefs)) # Value for estimate
   bpe_est_string <- ifelse(include_intercept, bpe_string_base, "") # Empty for no intercept
-  # Create a helper function to get coefficients
-  get_coef <- function(bma_var) {
+  # Iterate over the bma_vars and add the corresponding coefficients from input_var_list
+  for (bma_var in bma_vars) {
     if (!bma_var %in% c("(Intercept)","se")){
       # Use a study
       if (study_id != 0){
@@ -3945,17 +3945,18 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
         # Use author's BPE - variable list information
         coef <- input_var_list$bpe[input_var_list$var_name == bma_var] # Automatically coerced to character - RRRRRR
       }
-      
       # Handle unassigned variables
       if (coef == "stop"){
         stop("Make sure to assign values to all variables that appear in the BMA model.")
       }
-      
-      numeric_var <- !is.na(as.numeric(coef))
+      # Handle numeric coefficients
+      quiet(
+        numeric_var <- !is.na(as.numeric(coef)) # Recognize numeric values based on lack of error - not ideal
+      )
       if(numeric_var){
         coef <- as.numeric(coef) # To numeric
         if (coef == 0){ # Do not add to the formula
-          return("")
+          next
         }
         coef <- round(coef, 3)
       } else { # char
@@ -3968,26 +3969,19 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
             "Current specification: '", coef,"'.\n",
             "Must be one of the following: ", 
             paste(allowed_characters, collapse = ", "), "."
-          ))
+          )
+          )
           stop("Invalid BPE specification.")
         }
         func <- get(coef) # Get the function to evaluate the value with - mean, median,...
         coef <- func(bma_data[[bma_var]], na.rm=TRUE) # Evaluate on BMA data column of this variable
         coef <- as.character(round(coef, 3)) # Back to character
       }
-      
+      # Handle output different than static numbers
       output_var_name <- ifelse(get_se, bma_var, getBMACoefValue(bma_var, bma_coefs)) # Var name for SE, value for EST
-      return(paste0(" + ", coef, "*", output_var_name))
+      bpe_est_string <- paste0(bpe_est_string, " + ", coef, "*", output_var_name)
     }
-    return("")
   }
-  
-  # Apply the helper function to bma_vars
-  formula_parts <- purrr::map_chr(bma_vars, get_coef)
-  
-  # Concatenate all parts together
-  bpe_est_string <- paste(c(bpe_est_string, formula_parts), collapse = "")
-  
   # Append =0 to finish the formula in case of SE
   if (get_se){
     bpe_est_string <- paste(bpe_est_string, "= 0")
@@ -4111,7 +4105,7 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     res_df <- data.frame("estimate" = numeric(0), "standard_error" = numeric(0))
   }
   # Set study ids to all ids if required
-  if (all(study_ids == "all")){
+  if ("all" %in% study_ids){
     study_ids <- seq(from = 0, to = max(input_data$study_id), by = 1)
   }
   # Loop through study ids
@@ -4169,6 +4163,32 @@ generateBPEResultTableVerbose <- function(res,...){
     print(res$bpe_df)
     cat("\n\n")
   }
+}
+
+#' This function checks if all available studies were used in the BPE run.
+#' 
+#' @param input_data [data.frame] A dataframe that includes a column named 'study_name' which contains
+#' the names of all available studies.
+#' @param bpe_df [data.frame] The BPE result dataframe where the row names should include the
+#' study names from 'input_data' and an 'Author' row. These are the studies used in the BPE run.
+#' @return [logical] Returns TRUE if all studies were used, and FALSE otherwise.
+checkIfAllBPEStudiesUsed <- function(input_data, bpe_df){
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(bpe_df)
+  )
+  all_studies <- unique(input_data$study_name)
+  used_studies <- rownames(bpe_df)
+  if (!"Author" %in% used_studies){
+    return(FALSE)
+  }
+  # Pop the author
+  author_idx <- which(used_studies == "Author")
+  used_studies <- used_studies[-author_idx]
+  if (!all(all_studies %in% used_studies)){
+    return(FALSE)
+  }
+  return(TRUE)
 }
 
 #' getEconomicSignificance
@@ -4264,6 +4284,130 @@ getEconomicSignificanceVerbose <- function(res,...){
     print(res)
     cat("\n\n")
   }
+}
+
+#' Sort a data frame based on the estimates and grouping so that the estimates get
+#'  sorted within group, but the grouping order of the whole dataset stays the same.
+#'  In other words, shift rows within groups until all groups are sorted from lowest to highest.
+#' 
+#' @param df [data.frame] The data frame to be sorted. Must contain two numeric columns - estimate and group.
+#' 
+#' @return The sorted data frame.
+miracleBPESorting <- function(df){
+  # Validate input
+  stopifnot(
+    is.data.frame(df),
+    all(c("estimate", "group") %in% colnames(df)),
+    is.numeric(df$estimate),
+    is.numeric(df$group)
+  )
+  df$row_names <- rownames(df)
+  original_group <- df$group # Save the original grouping
+  # Create a new column that stores the sorted rank within each group
+  df <- df %>%
+    group_by(group) %>%
+    mutate(rank_within_group = min_rank(estimate)) %>%
+    ungroup()
+  # Sort the data frame using the new column
+  df <- df %>%
+    arrange(group, rank_within_group)
+  df$original_group <- original_group
+  # Initialize two objects to store information for the algorithm
+  miracle_index <- rep(NA, nrow(df))
+  group_scale_vector <- rep(1, length(unique(df$original_group))) # A vector for storing placement index values
+  # The miracle algorithm
+  for(i in 1:nrow(df)){
+    current_group <- df$original_group[i] # Group for this iteration 
+    current_rank_within_group <- group_scale_vector[current_group] # Within group rank of the row to fetch
+    desired_row_index <- which(df$group == current_group & df$rank_within_group == current_rank_within_group) # Index of the row to fetch
+    miracle_index[desired_row_index] <- i # Assign the index to the next expected value (lowest of current group)
+    group_scale_vector[current_group] <- current_rank_within_group + 1 # Increase the expected within group rank for next iteration
+  }
+  # Sort the data frame to its final order
+  df$miracle_index <- miracle_index
+  df <- df %>%
+    arrange(miracle_index)
+  # Drop redundant columns
+  df$miracle_index <- NULL
+  df$original_group <- NULL
+  df$rank_within_group <- NULL
+  # Validate correct sorting
+  for (group_id in unique(df$group)){
+    group_data <- as.vector(unlist(df[df$group == group_id,"estimate"]))
+    group_is_sorted <- all(group_data == sort(group_data))
+    if (!group_is_sorted){
+      message(paste("The miracle algorithm broke down. Check sorting of group",group_id))
+      stop("The miracle is over.")
+    }
+  }
+  return(df)
+}
+
+graphBPE <- function(bpe_df, theme = "blue",
+                     export_graphics = T, graphic_results_folder_path = NA, bpe_graphs_scale = 6
+                     ){
+  # Input validation
+  stopifnot(
+    is.data.frame(bpe_df),
+    is.logical(export_graphics),
+    is.numeric(bpe_graphs_scale),
+    nrow(bpe_df) > 0 # At least some data
+  )
+  # Get the information about graphs to use
+  graph_info <- list(
+    subsets = list(
+      "one"
+    ),
+    
+    graph_names = list(
+      "bpe_test"
+    )
+  )
+  # Get the theme to use
+  current_theme <- getTheme(theme)
+  point_color <- switch(theme,
+    blue = "#1261ff",
+    yellow =  "#FFD700",
+    green =  "#00FF00",
+    red =  "#FF0000",
+    purple = "#800080",
+    stop("Invalid theme type")
+  )
+  mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
+  tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
+  # Add a group column
+  n <- 4
+  rows_per_group <- ceiling(nrow(bpe_df)/n)
+  bpe_df$group <- sample(rep(1:n, each = rows_per_group, length.out = nrow(bpe_df)))
+  # Construct the graphs
+  bpe_df$row_names <- rownames(bpe_df)
+  # Sort the data using the miracle sort algorithm so that estimates are sorted within groups
+  bpe_df <- miracleBPESorting(bpe_df)
+  # Construct the graph
+  bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate)) + 
+                                         # group = group, colour = group) +
+    geom_line(aes(group = group, colour = factor(group))) +
+    # geom_ribbon(aes(ymin = ci_95_lower, ymax = ci_95_higher, fill = factor(group)), alpha = 0.1) +
+    # geom_vline(aes(yintercept = mean(estimate)), color = "red", linewidth = 0.5) + 
+    labs(x = "Temp", y = "Best-practice estimates") + 
+    current_theme
+  
+  # Plot the plot
+  suppressWarnings(print(bpe_graph))
+  # Export the graphs
+  if (export_graphics){
+    if (is.na(graphic_results_folder_path)){
+      stop("You must specify a path to the graphic results folder.")
+    }
+    for (name in graph_info$graph_names){
+      full_graph_path <- paste0(graphic_results_folder_path, name,'.png')
+      hardRemoveFile(full_graph_path)
+      ggsave(filename = full_graph_path, plot = bpe_graph, # automate
+             width = 403*bpe_graphs_scale, height = 371*bpe_graphs_scale, units = "px")
+    }
+  }
+  # Return the graphs
+  return(bpe_graph)
 }
 
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################
@@ -4488,8 +4632,7 @@ exportTable <- function(results_table, user_params, method_name){
   stopifnot(
     is.data.frame(results_table),
     is.list(user_params),
-    is.character(method_name),
-    method_name %in% names(user_params$export_options$export_methods) # Only recognized exports
+    is.character(method_name)
   )
   # Define the export paths
   numeric_results_folder <- user_params$folder_paths$numeric_results_folder # Export folder
@@ -4502,6 +4645,7 @@ exportTable <- function(results_table, user_params, method_name){
   use_rownames <- !all(1:n == row_names) # Rows are sequential integers
   # Export the table if it does not exist
   verbose_info <- user_params$export_options$export_methods[[method_name]] # Verbose name for the message
+  verbose_info <- ifelse(is.null(verbose_info), method_name, verbose_info) # Use non-verbose info if verbose not available
   identical_file_exists <- writeIfNotIdentical(results_table, results_path, use_rownames)
   if (!identical_file_exists){
     print(paste("Writing the", tolower(verbose_info), "results into", results_path))
