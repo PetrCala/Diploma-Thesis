@@ -143,6 +143,8 @@ adjustable_parameters:
   bpe_result_table_verbose: true 		# If TRUE, print out the table into the console along with the functional BPE form
   bpe_econ_sig_large_pip_only: true 		# If TRUE, display econ. significance for variables with PIP >= 0.5
   bpe_econ_sig_verbose: true 			# If TRUE, print out the economic significance table into the console
+  bpe_generate_graphs: true			# If TRUE, graph the BPE estimates onto several graphs. Export these, if graph export is on.
+  bpe_graphs_scale: 3				# A number to scale the BPE graphs by. Defaults to 3.
   # Robust Bayesian Model Averaging parameters - do not pass nested lists, priors etc.
   robma_verbose: true
   robma_param_priors_bias: null
