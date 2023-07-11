@@ -555,13 +555,15 @@ if (run_this$ma_variables_description_table){
 }
 
 ######################### BEST-PRACTICE ESTIMATE #########################
-
 if (run_this$bpe){
   if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
     stop("You must create these three objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
   }
   # Parameters
   bpe_study_ids <- getMultipleParams(adj_params, "bpe_studies")
+  if ("all" %in% bpe_study_ids){
+    print("Running the best practice estimate for all studies. This may take some time...")
+  }
   # BPE estimation
   bpe_res <- runCachedFunction(
     generateBPEResultTable, user_params,
@@ -582,10 +584,22 @@ if (run_this$bpe){
     display_large_pip_only = adj_params$bpe_econ_sig_large_pip_only,
     verbose_output = adj_params$bpe_econ_sig_verbose
   )
+  # Get BPE graphs
+  if (adj_params$bpe_generate_graphs){
+    # Later change to cached function
+    graphBPE(
+      bpe_df,
+      theme = export_options$theme,
+      export_graphics = export_options$export_graphics,
+      graphic_results_folder_path = folder_paths$graphic_results_folder,
+      bpe_graphs_scale = adj_params$bpe_graphs_scale
+    )
+  }
   # Export
   if (export_options$export_results){
-     exportTable(bpe_df, user_params, "bpe_res")
-     exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
+    bpe_res_name <- ifelse("all" %in% bpe_study_ids, "bpe_res_all_studies", "bpe_res")
+    exportTable(bpe_df, user_params, bpe_res_name)
+    exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
   }
 }
 
