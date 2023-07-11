@@ -9,12 +9,12 @@ run_this:
   t_stat_histogram: false
   linear_tests: false
   nonlinear_tests: false
-  exo_tests: false
+  exo_tests: true
   p_hacking_tests: false
-  bma: true
+  bma: false
   fma: false 					
   ma_variables_description_table: false 	
-  bpe: true 					
+  bpe: false 					
   robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
@@ -78,12 +78,17 @@ adjustable_parameters:
   t_hist_lower_cutoff: -120 		# Lower cutoff point for t-statistics
   t_hist_upper_cutoff: 120 		# Upper cutoff point for t-statistics
   t_hist_graph_scale: 6 		# Numeric, scale the graph by this number
-  # Nonlinear parameters - only selection model parametrizable
+  # Linear test parameters
+  linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks
+  # Nonlinear test parameters - only selection model parametrizable
   non_linear_stem_graph_scale: 5 		# Numeric, scale the graph by this number
   non_linear_stem_legend_position: "topright" # Position of the STEM plot legend
   non_linear_param_selection_cutoffs: [1.96]
   non_linear_param_selection_symmetric: false
   non_linear_param_selection_modelmu: "t" 	# Can be one of "normal", "t"
+  non_linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks and SE parentheses
+  # Parameters for tests relaxing exogeneity
+  exo_add_significance_marks: true		# If TRUE, print out also significance level asterisks and SE parentheses
   # P-uniform paramteres
   puni_param_side: "right" 		# puni_star side argument
   puni_param_method: "ML" 		# Method used for p-uniform calculation - one of "ML", "P"

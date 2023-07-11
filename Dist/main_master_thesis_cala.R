@@ -20,7 +20,7 @@ set.seed(123) # Results reproduction, stochastic functions to deterministic for 
  
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
-user_param_file <- "user_parameters.yaml" # File with user parameters
+user_param_file <- "user_parameters_vany.yaml" # File with user parameters
 
 # Working directory - change only if the script is being ran interactively
 if(interactive()) {
@@ -339,7 +339,8 @@ if (run_this$linear_tests){
   linear_tests_results <- runCachedFunction(
     getLinearTests, user_params,
     verbose_function = getLinearTestsVerbose,
-    data
+    data,
+    add_significance_marks = adj_params$linear_add_significance_marks
   )
   if (export_options$export_results){
     exportTable(linear_tests_results, user_params, "linear_tests")
@@ -363,6 +364,7 @@ if (run_this$nonlinear_tests){
     getNonlinearTests, user_params, 
     verbose_function = getNonlinearTestsVerbose,
     data, script_paths = nonlinear_script_paths,
+    add_significance_marks = adj_params$non_linear_add_significance_marks,
     selection_params = selection_params,
     theme = export_options$theme,
     export_graphics = export_options$export_graphics,
@@ -387,7 +389,8 @@ if (run_this$exo_tests){
     getExoTests, user_params,
     verbose_function = getExoTestsVerbose,
     data,
-    puni_params
+    puni_params,
+    add_significance_marks = adj_params$exo_add_significance_marks
   )
   exo_tests_results <- exo_tests_results_list[[1]]
   if (export_options$export_results){

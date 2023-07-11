@@ -2055,14 +2055,43 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
 
 ######################### LINEAR TESTS ######################### 
 
+#' Add significance marks (asterisks) to a coefficient. Input the coefficient and its
+#' standard error and return that coefficient with the asterisks. Character is always returned,
+#' although the input must be numeric.
+#' 
+#' @param coef [numeric] Coefficient.
+#' @param se [numeric] Its standard error.
+#' 
+#' @return [character] The coefficient with asterisks. Returned as character.
+add_asterisks <- function(coef, se) { # Switch does not really work here as far as I know
+  stopifnot(
+    is.numeric(coef),
+    is.numeric(se)
+  )
+  tvalue <- coef / se
+  if (tvalue > 2.58) {
+    asterisks <- "***"
+  } else if (tvalue > 1.96) {
+    asterisks <- "**"
+  } else if (tvalue > 1.645) {
+    asterisks <- "*"
+  } else {
+    asterisks <- ""
+  }
+  new_value <- paste0(as.character(coef), asterisks)
+  return(new_value)
+}
+
 #' Extract the four coefficients from linear test in the order
 #' - Intercept, Intercept SE, Slope, Slope SE
 #' 
 #' @param coeftest_object Coeftest object from the linear test
 #' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
 #'  standard errors as strings wrapped in parentheses. Defaults to T.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @return [vector] - Vector of len 4, with the coefficients
-extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
+extractLinearCoefs <- function(coeftest_object, add_significance_marks = T, verbose_coefs=T){
   # Check validity of the coeftest object
   stopifnot(
     nrow(coeftest_object) == 2,
@@ -2070,12 +2099,15 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
     colnames(coeftest_object)[1] == "Estimate",
     colnames(coeftest_object)[2] == "Std. Error"
   )
-  
   # Extract coefficients
   pub_bias_coef <- round(coeftest_object[2,"Estimate"], 3)
   pub_bias_se <- round(coeftest_object[2,"Std. Error"], 3)
   effect_coef <- round(coeftest_object[1,"Estimate"], 3)
   effect_se <- round(coeftest_object[1,"Std. Error"], 3)
+  if (add_significance_marks){
+    pub_bias_coef <- add_asterisks(pub_bias_coef, pub_bias_se)
+    effect_coef <- add_asterisks(effect_coef, effect_se)
+  }
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){
     pub_bias_se <- paste0("(", pub_bias_se, ")")
@@ -2090,33 +2122,36 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
 
 #' Run all the linear tests on data, and return a matrix of results.
 #' These tests are ran: OLS, FE, RE, Weighted OLS (by study size),
-#'  Weighted OLS (by precision).
+#'  Weighted OLS (by precision). You may also choose to add significance
+#'  level asterisks to the final output.
 #' 
 #' @param data [data.frame] Input data
-getLinearTests <- function(data) {
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
+getLinearTests <- function(data, add_significance_marks = T) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(all(required_cols %in% names(data)))
   # OLS
   ols <- lm(formula = effect ~ se, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
-  ols_coefs <- extractLinearCoefs(ols_res)
+  ols_coefs <- extractLinearCoefs(ols_res, add_significance_marks)
   # Between effects
   be <- plm(effect ~ se, model = "between", index = "study_id", data = data)
   be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
-  be_coefs <- extractLinearCoefs(be_res)
+  be_coefs <- extractLinearCoefs(be_res, add_significance_marks)
   # Random Effects
   re <- plm(effect ~ se, model = "random", index = "study_id", data = data)
   re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
-  re_coefs <- extractLinearCoefs(re_res)
+  re_coefs <- extractLinearCoefs(re_res, add_significance_marks)
   # Weighted by number of observations per study
   ols_w_study <- lm(formula = effect ~ se, data = data, weight = (data$study_size*data$study_size))
   ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
-  ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res)
+  ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res, add_significance_marks)
   # Weighted by precision
   ols_w_precision <- lm(formula = effect ~ se, data = data, weight = c(data$precision*data$precision))
   ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
-  ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res)
+  ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res, add_significance_marks)
   # Combine the results into a data frame
   results <- data.frame(
     OLS = ols_coefs,
@@ -2148,18 +2183,26 @@ getLinearTestsVerbose <- function(res, ...){
 #' are the the first two positions of the object.
 #' 
 #' @param nonlinear_object Non-linear object from the linear test
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @param pub_bias_present [bool] If T, the method returns publication bias coefs too.
 #'  Deafults to F.
 #' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
 #'  standard errors as strings wrapped in parentheses. Defaults to T.
 #' @return [vector] - Vector of len 4, with the coefficients
-extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbose_coefs=T, ...){
+extractNonlinearCoefs <- function(nonlinear_object, add_significance_marks = T, pub_bias_present = F, verbose_coefs=T, ...){
   # Extract coefficients
   effect_coef <- round(as.numeric(nonlinear_object[1,1]), 3)
   effect_se <- round(as.numeric(nonlinear_object[1,2]), 3)
+  if (add_significance_marks){
+    effect_coef <- add_asterisks(effect_coef, effect_se)
+  }
   if (pub_bias_present){
     pub_coef <- round(as.numeric(nonlinear_object[2,1]), 3)
     pub_se <- round(as.numeric(nonlinear_object[2,2]), 3)
+    if (add_significance_marks){
+      pub_coef <- add_asterisks(pub_coef, pub_se)
+    }
   }
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){
@@ -2415,16 +2458,19 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' Then, it calls the functions getWaapResults(), getTop10Results(), getStemResults(), getHierResults(),
 #' getSelectionResults(), and getEndoKinkResults() to get the coefficients for each method. Finally,
 #' it combines the results into a data frame, prints the results to the console, and returns the data
-#' frame silently.
+#' frame silently. You may also choose to add significance level asterisks into the final output.
 #'
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @param script_paths List of paths to all source scripts.
+#' @param add_significance_marks If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @param theme Theme for the graphics. Defaults to "blue".
 #' @param export_graphics If TRUE, export various graphs into the graphics folder.
 #' @param export_path Path to the export folder. Defaults to ./results/graphic.
 #' @param graph_scale Numeric, scale the graph by this number. Defaults to 5.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
-getNonlinearTests <- function(input_data, script_paths, selection_params = NULL, theme = "blue",
+getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
+                              add_significance_marks = T, theme = "blue",
                               export_graphics = T, export_path = './results/graphic',
                               graph_scale = 5, stem_legend_pos = "topleft") {
   # Validate the input
@@ -2447,7 +2493,11 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
       script_path = selection_script_path
     ),
     selection_params,
-    list(pub_bias_present = T, verbose_coefs = T)
+    list(
+      add_significance_marks = add_significance_marks, 
+      pub_bias_present = T,
+      verbose_coefs = T
+    )
   )
   all_stem_params <- c(
     list(
@@ -2459,17 +2509,18 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
       export_path = export_path,
       graph_scale = graph_scale,
       legend_pos = stem_legend_pos,
+      add_significance_marks = add_significance_marks,
       pub_bias_present = F,
       verbose_coefs = T
     )
   )
   # Get coefficients
-  waap_res <- getWaapResults(input_data, pub_bias_present = F, verbose_coefs = T)
-  top10_res <- getTop10Results(input_data, pub_bias_present = F, verbose_coefs = T)
+  waap_res <- getWaapResults(input_data, add_significance_marks = add_significance_marks, pub_bias_present = F, verbose_coefs = T)
+  top10_res <- getTop10Results(input_data, add_significance_marks = add_significance_marks, pub_bias_present = F, verbose_coefs = T)
   stem_res <- do.call(getStemResults, all_stem_params)
-  hier_res <- getHierResults(input_data, pub_bias_present = T, verbose_coefs = T)
+  hier_res <- getHierResults(input_data, add_significance_marks = add_significance_marks, pub_bias_present = T, verbose_coefs = T)
   sel_res <- do.call(getSelectionResults, all_selection_params)
-  endo_kink_res <- getEndoKinkResults(input_data, endo_script_path, pub_bias_present = T, verbose_coefs = T)
+  endo_kink_res <- getEndoKinkResults(input_data, endo_script_path, add_significance_marks = add_significance_marks, pub_bias_present = T, verbose_coefs = T)
   
   # Combine the results into a data frame
   results <- data.frame(
@@ -2502,6 +2553,8 @@ getNonlinearTestsVerbose <- function(res, ...){
 #'  and in the second row, the pub bias coefficients.
 #' 
 #' @param exo_object [matrix] Object from the exo tests, should be matrix (M(2,2))
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @param effect_present [bool] If T, the method returns effect coefs. Defaults to T
 #' @param pub_bias_present [bool] If T, the method returns publication bias coefs too.
 #'  Deafults to T.
@@ -2512,9 +2565,11 @@ getNonlinearTestsVerbose <- function(res, ...){
 #'    - Pub bias standard error
 #'    - Mean effect estimate
 #'    - Mean effect standard error
-extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T, verbose_coefs=T){
+extractExoCoefs <- function(exo_object, add_significance_marks = T,
+                            effect_present = T, pub_bias_present = T, verbose_coefs=T){
   # Validate input
   stopifnot(
+    is.logical(add_significance_marks),
     is.logical(effect_present),
     is.logical(pub_bias_present),
     is.logical(verbose_coefs),
@@ -2533,6 +2588,15 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
   pub_se <- ifelse(pub_bias_present,
                         round(as.numeric(exo_object[2,2]), 3),
                         "")
+  # Add significance marks
+  if (add_significance_marks){
+    if (effect_present){
+      effect_coef <- add_asterisks(effect_coef, effect_se)
+    }
+    if (pub_bias_present){
+      pub_coef <- add_asterisks(pub_coef, pub_se)
+    }
+  }
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){
     if (effect_present){
@@ -2729,6 +2793,8 @@ getMedians <- function(input_data, med_col){
 #' the Maximum Likelihood (ML) or Moments (P) method to estimate the publication bias.
 #'
 #' @param data [data.frame] A data frame containing the effects with their corresponding standard errors.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @inheritDotParams Parameters to pass to the main 'puni_star' call
 #'
 #' @return A vector containing the following four elements:
@@ -2739,7 +2805,7 @@ getMedians <- function(input_data, med_col){
 #' \item{Effect Beyond Bias}{A numeric value indicating the effect beyond bias estimate.}
 #' \item{Effect Standard Error}{A character string indicating the standard error of the effect beyond bias estimate.}
 #' }
-getPUniResults <- function(data, ...){
+getPUniResults <- function(data, add_significance_marks = T, ...){
   # Validation
   stopifnot(
     is.data.frame(data)
@@ -2772,6 +2838,10 @@ getPUniResults <- function(data, ...){
   est_se_verbose <- paste0("(", round(est_se, 3), ")") # Effect Standard Error
   est_pub_test_verbose <- paste0("L = ", round(est_main$L.0, 3)) # Test statistic of p-uni publication bias test
   est_pub_p_val_verbose <- paste0("(p = ", round(est_main$pval.0, 3), ")") # P-value for the L test statistic
+  # Add significance marks
+  if (add_significance_marks && !is.na(est_effect_verbose)){
+    est_effect_verbose <- add_asterisks(est_effect_verbose, est_se)
+  }
   # Return as a vector
   p_uni_coefs_out <- c(
     est_pub_test_verbose,
@@ -2789,13 +2859,15 @@ getPUniResults <- function(data, ...){
 #' @param input_data [data.frame] A data frame containing the necessary columns: "effect", "se", "study_id", "study_size", and "precision".
 #' @param puni_method [character] Method to be used for p-uniform calculation. One of "ML", "P". Defaults to "ML".
 #' @param puni_params [list] Aruments to be used in p-uniform.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #'
 #' @details This function first validates that the necessary columns are present in the input data frame.
 #' If the validation is successful, it performs three tests for publication bias and exogeneity in instrumental variable (IV)
 #' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
 #' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
 #' The results are then printed into the console and returned invisibly.
-getExoTests <- function(input_data, puni_params) {
+getExoTests <- function(input_data, puni_params, add_significance_marks = T) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -2805,12 +2877,14 @@ getExoTests <- function(input_data, puni_params) {
   # Get arguments
   all_puni_params <- c(
     list(
-      data = input_data
+      data = input_data,
+      add_significance_marks = add_significance_marks
     ),
     puni_params
   )
   # Get coefficients
-  iv_res_list <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  iv_res_list <- getIVResults(input_data, add_significance_marks = add_significance_marks,
+                              effect_present = T, pub_bias_present = T, verbose_coefs = T)
   iv_res <- iv_res_list[[1]] # Coefficients
   iv_best_instrument <- iv_res_list[[2]]
   p_uni_res <- do.call(getPUniResults, all_puni_params)
