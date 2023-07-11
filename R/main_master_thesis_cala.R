@@ -635,7 +635,8 @@ if (export_options$export_results){
     dest_folder = folder_paths$all_results_folder,
     folder_paths$temp_data_folder,
     folder_paths$graphic_results_folder,
-    folder_paths$numeric_results_folder
+    folder_paths$numeric_results_folder,
+    log_file_path
   )
 }
 
