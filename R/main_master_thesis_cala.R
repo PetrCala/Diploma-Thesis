@@ -20,7 +20,7 @@ set.seed(123) # Results reproduction, stochastic functions to deterministic for 
  
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
-user_param_file <- "user_parameters_vany.yaml" # File with user parameters
+user_param_file <- "user_parameters.yaml" # File with user parameters
 
 # Working directory - change only if the script is being ran interactively
 if(interactive()) {
