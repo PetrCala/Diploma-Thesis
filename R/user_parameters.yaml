@@ -2,20 +2,20 @@
 # Note: The parts "fma", "ma_variables_description_table", and "bpe" are only executable
 #	after running BMA
 run_this:
-  variable_summary_stats: true
-  effect_summary_stats: true
-  box_plot: true
-  funnel_plot: true
-  t_stat_histogram: true
-  linear_tests: true
-  nonlinear_tests: true
+  variable_summary_stats: false
+  effect_summary_stats: false
+  box_plot: false
+  funnel_plot: false
+  t_stat_histogram: false
+  linear_tests: false
+  nonlinear_tests: false
   exo_tests: true
-  p_hacking_tests: true
-  bma: true
-  fma: true 					
-  ma_variables_description_table: true 	
-  bpe: true 					
-  robma: true 	# Computationally expensive
+  p_hacking_tests: false
+  bma: false
+  fma: false 					
+  ma_variables_description_table: false 	
+  bpe: false 					
+  robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
