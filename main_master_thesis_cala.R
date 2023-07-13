@@ -380,7 +380,6 @@ if (run_this$nonlinear_tests){
 ### Apply p-uniform* method using sample means
 
 ######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
-
 if (run_this$exo_tests){
   # Parameters
   puni_params <- getMultipleParams(adj_params, "puni_param_",T,T)
