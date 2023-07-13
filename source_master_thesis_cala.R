@@ -2091,14 +2091,19 @@ add_asterisks <- function(coef, se) { # Switch does not really work here as far 
 #' - Intercept, Intercept SE, Slope, Slope SE
 #' 
 #' @param coeftest_object Coeftest object from the linear test
+#' @param nobs_total [numeric] Number of observations used to estimate the model. Usually the number
+#'  of rows in the main data frame.
 #' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
 #'  standard errors as strings wrapped in parentheses. Defaults to T.
 #' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
 #'  Defaults to T.
 #' @return [vector] - Vector of len 4, with the coefficients
-extractLinearCoefs <- function(coeftest_object, add_significance_marks = T, verbose_coefs=T){
+extractLinearCoefs <- function(coeftest_object, nobs_total, add_significance_marks = T, verbose_coefs=T){
   # Check validity of the coeftest object
   stopifnot(
+    is.numeric(nobs_total),
+    is.logical(add_significance_marks),
+    is.logical(verbose_coefs),
     nrow(coeftest_object) == 2,
     ncol(coeftest_object) == 4,
     colnames(coeftest_object)[1] == "Estimate",
@@ -2119,7 +2124,7 @@ extractLinearCoefs <- function(coeftest_object, add_significance_marks = T, verb
     effect_se <- paste0("(", effect_se, ")")
   }
   # Group and return quietly
-  lin_coefs <- c(pub_bias_coef, pub_bias_se, effect_coef, effect_se)
+  lin_coefs <- c(pub_bias_coef, pub_bias_se, effect_coef, effect_se, nobs_total)
   invisible(lin_coefs)
 }
 
@@ -2137,26 +2142,28 @@ getLinearTests <- function(data, add_significance_marks = T) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(all(required_cols %in% names(data)))
+  # Save the data length as information in the output
+  total_obs <- nrow(data)
   # OLS
   ols <- lm(formula = effect ~ se, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
-  ols_coefs <- extractLinearCoefs(ols_res, add_significance_marks)
+  ols_coefs <- extractLinearCoefs(ols_res, total_obs, add_significance_marks)
   # Between effects
   be <- plm(effect ~ se, model = "between", index = "study_id", data = data)
   be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
-  be_coefs <- extractLinearCoefs(be_res, add_significance_marks)
+  be_coefs <- extractLinearCoefs(be_res, total_obs, add_significance_marks)
   # Random Effects
   re <- plm(effect ~ se, model = "random", index = "study_id", data = data)
   re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
-  re_coefs <- extractLinearCoefs(re_res, add_significance_marks)
+  re_coefs <- extractLinearCoefs(re_res, total_obs, add_significance_marks)
   # Weighted by number of observations per study
   ols_w_study <- lm(formula = effect ~ se, data = data, weight = (data$study_size*data$study_size))
   ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
-  ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res, add_significance_marks)
+  ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res, total_obs, add_significance_marks)
   # Weighted by precision
   ols_w_precision <- lm(formula = effect ~ se, data = data, weight = c(data$precision*data$precision))
   ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
-  ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res, add_significance_marks)
+  ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res, total_obs, add_significance_marks)
   # Combine the results into a data frame
   results <- data.frame(
     OLS = ols_coefs,
@@ -2165,7 +2172,7 @@ getLinearTests <- function(data, add_significance_marks = T) {
     OLS_weighted_study = ols_w_study_coefs,
     OLS_weighted_precision = ols_w_precision_coefs
   )
-  rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)")
+  rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)", "Total observations")
   colnames(results) <- c("OLS", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
   # Print the results into the console and return
   getLinearTestsVerbose(results)
@@ -2188,14 +2195,26 @@ getLinearTestsVerbose <- function(res, ...){
 #' are the the first two positions of the object.
 #' 
 #' @param nonlinear_object Non-linear object from the linear test
+#' @param nobs_total [numeric] Number of observations used to estimate the model. Usually the number
+#'  of rows in the main data frame.
+#' @param nobs_model [numeric] Number of observations that are associated with the particular model.
+#'  Optional, defaults to "".
+#' @param nonlinear_object Non-linear object from the linear test
 #' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
 #'  Defaults to T.
 #' @param pub_bias_present [bool] If T, the method returns publication bias coefs too.
 #'  Deafults to F.
 #' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
 #'  standard errors as strings wrapped in parentheses. Defaults to T.
-#' @return [vector] - Vector of len 4, with the coefficients
-extractNonlinearCoefs <- function(nonlinear_object, add_significance_marks = T, pub_bias_present = F, verbose_coefs=T, ...){
+#' @return [vector] - Vector of len 6, with the pub bias coefs, effect coefs, and two nobs information coefs.
+extractNonlinearCoefs <- function(nonlinear_object, nobs_total, nobs_model = "",
+                                  add_significance_marks = T, pub_bias_present = F, verbose_coefs=T, ...){
+  # Input validation
+  stopifnot(
+    is.logical(add_significance_marks),
+    is.logical(pub_bias_present),
+    is.logical(verbose_coefs)
+  )
   # Extract coefficients
   effect_coef <- round(as.numeric(nonlinear_object[1,1]), 3)
   effect_se <- round(as.numeric(nonlinear_object[1,2]), 3)
@@ -2218,9 +2237,9 @@ extractNonlinearCoefs <- function(nonlinear_object, add_significance_marks = T, 
   }
   # Group and return quietly
   if (pub_bias_present){
-    nonlin_coefs <- c(pub_coef, pub_se, effect_coef, effect_se) # First two for pub bias
+    nonlin_coefs <- c(pub_coef, pub_se, effect_coef, effect_se, nobs_total, nobs_model) # First two for pub bias
   } else {
-    nonlin_coefs <- c("", "", effect_coef, effect_se)
+    nonlin_coefs <- c("", "", effect_coef, effect_se, nobs_total, nobs_model)
   }
   invisible(nonlin_coefs)
 }
@@ -2230,9 +2249,12 @@ extractNonlinearCoefs <- function(nonlinear_object, add_significance_marks = T, 
 getWaapResults <- function(data, ...){
   WLS_FE_avg <- sum(data$effect/data$se)/sum(1/data$se)
   WAAP_bound <- abs(WLS_FE_avg)/2.8
-  WAAP_reg <- lm(formula = effect ~ -precision, data = data[data$se<WAAP_bound,])
+  WAAP_data <- data[data$se<WAAP_bound,] # Only adequatedly powered
+  WAAP_reg <- lm(formula = effect ~ -precision, data = WAAP_data)
   WAAP_reg_cluster <- coeftest(WAAP_reg, vcov = vcovHC(WAAP_reg, type = "HC0", cluster = c(data$study_id)))
-  WAAP_coefs <- extractNonlinearCoefs(WAAP_reg_cluster, ...)
+  nobs_total <- nrow(data)
+  nobs_model <- nrow(WAAP_data)
+  WAAP_coefs <- extractNonlinearCoefs(WAAP_reg_cluster, nobs_total, nobs_model, ...)
   invisible(WAAP_coefs)
 }
 
@@ -2241,9 +2263,12 @@ getWaapResults <- function(data, ...){
 
 getTop10Results <- function(data, ...){
   T10_bound <- quantile(data$precision, probs = 0.9) #Setting the 90th quantile bound
-  T10_reg <- lm(formula = effect ~ -precision, data = data[data$precision>T10_bound,]) #Regression using the filtered data
+  T10_data <- data[data$precision>T10_bound,] # Only Top10 percent of obs
+  T10_reg <- lm(formula = effect ~ -precision, data = T10_data) #Regression using the filtered data
   T10_reg_cluster <- coeftest(T10_reg, vcov = vcovHC(T10_reg, type = "HC0", cluster = c(data$study_id)))
-  T10_coefs <- extractNonlinearCoefs(T10_reg_cluster, ...)
+  nobs_total <- nrow(data)
+  nobs_model <- nrow(T10_data)
+  T10_coefs <- extractNonlinearCoefs(T10_reg_cluster, nobs_total, nobs_model, ...)
   invisible(T10_coefs)
 }
 
@@ -2301,7 +2326,8 @@ getStemResults <- function(data, script_path, print_plot = T, theme = "blue",
     dev.off()
   }
   # Save results
-  stem_coefs <- extractNonlinearCoefs(est_stem, ...)
+  nobs_total <- nrow(data)
+  stem_coefs <- extractNonlinearCoefs(est_stem, nobs_total, ...)
   return(stem_coefs)
 }
 
@@ -2348,7 +2374,8 @@ getHierResults <- function(data, ...){
   quiet(
     hier_raw_coefs <- summary(out_h$Deltadraw)
   )
-  hier_coefs <- extractNonlinearCoefs(hier_raw_coefs, ...)
+  nobs_total <- nrow(data)
+  hier_coefs <- extractNonlinearCoefs(hier_raw_coefs, nobs_total, ...)
   invisible(hier_coefs)
 }
 
@@ -2412,9 +2439,9 @@ getSelectionResults <- function(data, script_path, cutoffs = c(1.960),
                      estimates_se[2]   # Pub Bias SE
                      )
   estimates_mat <- matrix(estimates_vec, nrow=2, ncol=2, byrow=TRUE)
-  
   # Extract the coefficients and return as a vector
-  sel_coefs <- extractNonlinearCoefs(estimates_mat, ...)
+  nobs_total <- nrow(data)
+  sel_coefs <- extractNonlinearCoefs(estimates_mat, nobs_total, ...)
   return(sel_coefs)
 }
   
@@ -2450,7 +2477,8 @@ getEndoKinkResults <- function(data, script_path, ...){
   estimates_vec <- runEndoKink(data, verbose = F)
   # Handle output and return verbose coefs
   estimates_mat <- matrix(estimates_vec, nrow=2, ncol=2, byrow=TRUE)
-  endo_kink_coefs <- extractNonlinearCoefs(estimates_mat, ...)
+  nobs_total <- nrow(data)
+  endo_kink_coefs <- extractNonlinearCoefs(estimates_mat, nobs_total, ...)
   return(endo_kink_coefs)
 }
   
@@ -2536,7 +2564,7 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
     sel_df = sel_res,
     endo_kink_df = endo_kink_res)
   
-  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)", "Total observations", "Model observations")
   colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch", "Selection", "Endogenous Kink")
   # Print the results into the console and return
   getNonlinearTestsVerbose(results)
@@ -2558,6 +2586,8 @@ getNonlinearTestsVerbose <- function(res, ...){
 #'  and in the second row, the pub bias coefficients.
 #' 
 #' @param exo_object [matrix] Object from the exo tests, should be matrix (M(2,2))
+#' @param nobs_total [numeric] Number of observations used to estimate the model. Usually the number
+#'  of rows in the main data frame.
 #' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
 #'  Defaults to T.
 #' @param effect_present [bool] If T, the method returns effect coefs. Defaults to T
@@ -2570,10 +2600,11 @@ getNonlinearTestsVerbose <- function(res, ...){
 #'    - Pub bias standard error
 #'    - Mean effect estimate
 #'    - Mean effect standard error
-extractExoCoefs <- function(exo_object, add_significance_marks = T,
+extractExoCoefs <- function(exo_object, total_obs, add_significance_marks = T,
                             effect_present = T, pub_bias_present = T, verbose_coefs=T){
   # Validate input
   stopifnot(
+    is.numeric(total_obs),
     is.logical(add_significance_marks),
     is.logical(effect_present),
     is.logical(pub_bias_present),
@@ -2612,7 +2643,7 @@ extractExoCoefs <- function(exo_object, add_significance_marks = T,
     }
   }
   # Group and return quietly
-  exo_coefs <- c(pub_coef, pub_se, effect_coef, effect_se)
+  exo_coefs <- c(pub_coef, pub_se, effect_coef, effect_se, total_obs)
   invisible(exo_coefs)
 }
 
@@ -2761,7 +2792,8 @@ getIVResults <- function(data, ...){
     ) 
   iv_coefs_mat <- matrix(IV_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
   # Extract the coefficients and return as a vector
-  iv_coefs_out <- extractExoCoefs(iv_coefs_mat, ...) 
+  total_obs <- nrow(data)
+  iv_coefs_out <- extractExoCoefs(iv_coefs_mat, total_obs, ...) 
   return(list(iv_coefs_out, best_instrument))
 }
 
@@ -2848,11 +2880,13 @@ getPUniResults <- function(data, add_significance_marks = T, ...){
     est_effect_verbose <- add_asterisks(est_effect_verbose, est_se)
   }
   # Return as a vector
+  total_obs <- nrow(data)
   p_uni_coefs_out <- c(
     est_pub_test_verbose,
     est_pub_p_val_verbose,
     est_effect_verbose,
-    est_se_verbose
+    est_se_verbose,
+    total_obs
   )
   return(p_uni_coefs_out)
 }
@@ -2898,7 +2932,7 @@ getExoTests <- function(input_data, puni_params, add_significance_marks = T) {
     iv_df = iv_res,
     p_uni_df = p_uni_res)
   # Label names
-  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)", "Total observations")
   colnames(results) <- c("IV", "p-Uniform")
   # Print the results into the console and return
   out_list <- list(results, iv_best_instrument)

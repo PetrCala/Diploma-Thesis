@@ -348,7 +348,6 @@ if (run_this$linear_tests){
 }
 
 ######################### NON-LINEAR TESTS ######################### 
-
 if (run_this$nonlinear_tests){
   # Extract source script paths
   stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
