@@ -1921,7 +1921,9 @@ generateHistTicks <- function(input_list, theme = "blue") {
   mean_info <- input_list$mean
   t_stats <- input_list$t_stats
   # Replace t-stats with arbitrary value if NA
-  t_stats<- ifelse(is.na(t_stats), lower_bound, t_stats)
+  if (all(is.na(t_stats))){
+    t_stats <- lower_bound
+  }
   # Exclude lower or upper bound if they are closer than 2 to any of the t-statistics values
   ticks <- c()
   if (all(abs(lower_bound - t_stats) >= 2)){

@@ -315,6 +315,7 @@ if (run_this$funnel_plot){
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
+
 if (run_this$t_stat_histogram){
   t_hist_path <- paste0(folder_paths$graphic_results_folder, "t_hist.png")
   t_hist_plot <- runCachedFunction( # Plot only if input changes
