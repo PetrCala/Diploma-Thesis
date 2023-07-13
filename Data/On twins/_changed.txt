@@ -14,13 +14,11 @@ BERMAN, Eli; LANG, Kevin; SINIVER, Erez. "Language-skill complementarity: return
 Added further through snowballing:
 Isacsson (1999)
 Blanchflower & Elias (1999)
-Bingley et al. (2005)
 Bingley et al. (2009)
 Isacsson (2004)
 
 
 Isacsson, G. (1999): "Estimates of the Return to Schooling in Sweden from a Large Sample of Twins." Labour Economics, 6, pp. 471-489.
 Blanchflower, David, and Peter Elias. "Ability, schooling and earnings: Are twins different?." Unpublished manuscript, Warwick University (1999).
-Bingley, Paul, Kaare Christensen, and Ian Walker. "Twin-based estimates of the returns to education: Evidence from the population of Danish twins." unpublished paper (2005).
 Bingley, Paul, Kaare Christensen, and Ian Walker. "The returns to observed and unobserved skills over time: Evidence from a panel of the population of danish twins." Danish National Institute for Social Research (2009).
 Isacsson, Gunnar. "Estimating the economic return to educational levels using data on twins." Journal of Applied Econometrics 19, no. 1 (2004): 99-119.
