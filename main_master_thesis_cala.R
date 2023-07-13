@@ -323,6 +323,8 @@ if (run_this$t_stat_histogram){
     data,
     lower_cutoff = adj_params$t_hist_lower_cutoff,
     upper_cutoff = adj_params$t_hist_upper_cutoff,
+    highlight_mean = T,
+    t_stats = c(-1.96, 1.96, 2.58),
     theme = export_options$theme,
     verbose = TRUE, # Print into console
     export_graphics = export_options$export_graphics,

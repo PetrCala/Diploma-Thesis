@@ -77,6 +77,8 @@ adjustable_parameters:
   # T-statistic histogram parameters
   t_hist_lower_cutoff: -120 		# Lower cutoff point for t-statistics
   t_hist_upper_cutoff: 120 		# Upper cutoff point for t-statistics
+  t_hist_higlight_mean: true		# If T, higlight the mean in the graph also
+  t_hist_t_stats: c(-1.96, 1.96)	# A vector of t-statistics to highlight in the graph. Must be a vector.
   t_hist_graph_scale: 6 		# Numeric, scale the graph by this number
   # Nonlinear parameters - only selection model parametrizable
   non_linear_stem_graph_scale: 5 		# Numeric, scale the graph by this number
