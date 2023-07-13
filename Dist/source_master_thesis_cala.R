@@ -699,9 +699,11 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   # Validate that no columns are static
   constant_columns <- apply(input_data, 2, function(col){length(unique(col)) == 1}) # Boolean vector with names
   if (any(constant_columns)){
-    message("There are constant columns in your data. Make sure to remove these first.")
-    message("These columns have constant values:")
-    message(paste(colnames(input_data)[constant_columns]), sep = "\n")
+        message(paste(
+        "There are constant columns in your data. Make sure to remove these first.",
+        "These columns have constant values:",
+        paste(as.character(colnames(input_data)[constant_columns]), collapse = "\n"),
+      sep="\n"))
     stop("Constant columns.")
   }
   ### Correlation validation
@@ -796,15 +798,15 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
       } else {
         other_rows <- ""
       }
-      message(paste("All percentage groups must sum up to 1.\n",
-                    "These variables do not fulfill that:\n",
-                    paste(group_var_names, collapse="\n"), "\n",
-                    "at rows:\n",
-                    paste(head(problematic_rows), collapse="\n"), "\n",
-                    other_rows, "\n",
+      message(paste("All percentage groups must sum up to 1.",
+                    "These variables do not fulfill that:",
+                    paste(group_var_names, collapse="\n"),
+                    "at rows:",
+                    paste(head(problematic_rows), collapse="\n"),
+                    other_rows,
                     "These are all unique row sums for this variable category. One or more, but perhaps not all of them are the faulty rows.",
-                    paste(as.character(unique(row_sums)), collapse="\n"), "\n", 
-                    sep=""))
+                    paste(as.character(unique(row_sums)), collapse="\n"), 
+                    sep="\n"))
       stop("Incorrect percentage group values")
     }
   }
@@ -2068,6 +2070,9 @@ add_asterisks <- function(coef, se) { # Switch does not really work here as far 
     is.numeric(coef),
     is.numeric(se)
   )
+  if (any(is.na(coef),is.na(se))){
+    return(coef)
+  }
   tvalue <- coef / se
   if (tvalue > 2.58) {
     asterisks <- "***"
@@ -3413,6 +3418,19 @@ runVifTest <- function(input_var, input_data, print_all_coefs = F, verbose = T){
   }
   # Run the test
   BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
+  # Check that there are no NAs in the model
+  if (any(is.na(coef(BMA_reg_test)))){
+    problematic_vars <- names(coef(BMA_reg_test))[which(is.na(coef(BMA_reg_test)))]
+    message(paste(
+      "There are some aliased coefficients in one of the suggested BMA model configurations.",
+      "Check colinearity in the data, remove the correlated variables, or try changing the model.",
+      "These are the problematic variables for the model:",
+      paste(problematic_vars, collapse = ", "),
+      "Note that the problem may lie elsewhere too, so removing these variables may not necessarily help.",
+      sep='\n'
+    ))
+    stop("Aliased coefficients in a suggested BMA model.")
+  }
   # Unhandled exception - fails in case of too few observations vs. too many variables
   vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients
   if (verbose){
@@ -4749,9 +4767,12 @@ hardRemoveFile <- function(file_path){
 #' 
 #' @export
 zipFolders <- function(zip_name, dest_folder, ...){
+  # Get today's date
+  today <- Sys.Date()
+  zip_date <- format(today, "%m-%d-%y")
   # Get arguments and paths
   folder_names <- as.vector(unlist(list(...))) # Folders to be zipped, character vector
-  zip_file_path <- file.path(paste0(dest_folder, zip_name, ".zip"))
+  zip_file_path <- file.path(paste0(dest_folder, zip_name, "_", zip_date, ".zip"))
   if(!dir.exists(dest_folder)){
     dir.create(dest_folder, recursive = TRUE)
   }

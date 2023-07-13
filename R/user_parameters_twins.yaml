@@ -20,7 +20,7 @@ run_this:
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
   source_data_folder: "./data/source/" 		# Folder with the source data frame
-  file_name: "data_set_master_thesis_cala" 	# Name of the data frame
+  file_name: "twin_data_master_thesis_cala" 	# Name of the data frame
   file_suffix: '.xlsm'
   data_sheet_name: "data_set"
   var_list_sheet_name: "var_list"
@@ -76,7 +76,7 @@ adjustable_parameters:
   funnel_verbose: true 			# If T, print cut outlier information
   # T-statistic histogram parameters
   t_hist_lower_cutoff: -120 		# Lower cutoff point for t-statistics
-  t_hist_upper_cutoff: 120 		# Upper cutoff point for t-statistics
+  t_hist_upper_cutoff: 85 		# Upper cutoff point for t-statistics
   t_hist_graph_scale: 6 		# Numeric, scale the graph by this number
   # Linear test parameters
   linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks
@@ -85,7 +85,7 @@ adjustable_parameters:
   non_linear_stem_legend_position: "topright" # Position of the STEM plot legend
   non_linear_param_selection_cutoffs: [1.96]
   non_linear_param_selection_symmetric: false
-  non_linear_param_selection_modelmu: "t" 	# Can be one of "normal", "t"
+  non_linear_param_selection_modelmu: "normal" 	# Can be one of "normal", "t"
   non_linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks and SE parentheses
   # Parameters for tests relaxing exogeneity
   exo_add_significance_marks: true		# If TRUE, print out also significance level asterisks and SE parentheses
@@ -118,7 +118,7 @@ adjustable_parameters:
   maive_studylevel: 0 		# 0 = No study-level correlation
   maive_verbose: true
   # Bayesian Model Averaging parameters
-  automatic_bma: false 			# If TRUE, automatically generate a formula for BMA with all VIF < 10
+  automatic_bma: true 			# If TRUE, automatically generate a formula for BMA with all VIF < 10
   bma_scale_data: false 		# If TRUE, standardize all variables onto the same scale automatically - UNSTABLE
   bma_adjustable_theme: true 		# If TRUE, modify the colors of bma plots to fit the theme
   bma_verbose: true 			# If TRUE, print suggested formulas, VIF, etc.
@@ -192,7 +192,7 @@ export_options:
     robma_estimates: "RoBMA estimates"
   # Other export options
   export_log_file_path: "main_results.txt" 	# Console log as a text file
-  export_zip_name: "results_all"	 	# Zip file with all results
+  export_zip_name: "results_twins"	 	# Zip file with all results
   export_graphics: true 			# If TRUE, save the graphs into the graphics folder as HTML files
   export_bma_data: false 			# If TRUE, export the data used for BMA into the temporary data folder
   theme: "blue" 				# One of "blue", "yellow", "green", "red", "purple"
