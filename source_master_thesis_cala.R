@@ -1518,7 +1518,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
        geom_boxplot(outlier.colour = plot_outlier_color, outlier.shape = 21, outlier.fill = plot_outlier_color,
                     fill=plot_fill, color = plot_color) +
        geom_hline(aes(yintercept = mean(effect)), color = vline_color, linewidth = 0.85) + 
-       coord_flip() + # The dark speech of Mordor, let it be heard around every corner
+       coord_flip() + # The dark speech of Mordor, let it be heard around every corner of Middle RRRth
        labs(title = NULL,y=paste("Effect of", tolower(effect_name)), x = "Grouped by " %>% paste0(factor_by_verbose)) +
        current_theme
   
@@ -4443,14 +4443,16 @@ miracleBPESorting <- function(df){
     is.data.frame(df),
     all(c("estimate", "group") %in% colnames(df)),
     is.numeric(df$estimate),
-    is.numeric(df$group)
+    !any(is.na(df$group))
   )
-  df$row_names <- rownames(df)
-  original_group <- df$group # Save the original grouping
+  group_verbose_names <- copy(df$group) # Save the verbose names
+  df$group <- as.integer(factor(df$group)) # Group, factored
+  original_group <- copy(df$group) # Save the original grouping (factored)
+  # stopifnot(all)
   # Create a new column that stores the sorted rank within each group
   df <- df %>%
     group_by(group) %>%
-    mutate(rank_within_group = min_rank(estimate)) %>%
+    mutate(rank_within_group = row_number(estimate)) %>%
     ungroup()
   # Sort the data frame using the new column
   df <- df %>%
@@ -4475,6 +4477,8 @@ miracleBPESorting <- function(df){
   df$miracle_index <- NULL
   df$original_group <- NULL
   df$rank_within_group <- NULL
+  df$group <- group_verbose_names # Back to verbose
+  df <- column_to_rownames(df, var = "row_names") # Restore rownames
   # Validate correct sorting
   for (group_id in unique(df$group)){
     group_data <- as.vector(unlist(df[df$group == group_id,"estimate"]))
@@ -4487,28 +4491,106 @@ miracleBPESorting <- function(df){
   return(df)
 }
 
-graphBPE <- function(bpe_df, theme = "blue",
+#' An auxiliary function to the BPE graph function. Input various necessary information
+#' and return the modified BPE data frame with a "group" column, where the rows are
+#' each marked with a group label. These can be numbers, or characters, and describe
+#' the group fully.
+addGroupColumn <- function(bpe_df, input_data, input_var_list, vars_to_use, group_type){
+  n_groups <- length(vars_to_use)
+  # Group the main data to the same length as the BPE df
+  bpe_studies <- rownames(bpe_df)
+  var_data <- input_data[input_data$study_name %in% bpe_studies, c("study_name", vars_to_use)]
+  var_data <- var_data %>%
+    group_by(study_name) %>%
+    summarise(across(everything(), \(x) median(x, na.rm = T)))
+  var_data$study_name <- NULL # Drop the study column (used for grouping)
+  expected_studies <- ifelse("Author" %in% bpe_studies, length(bpe_studies) - 1, length(bpe_studies))
+  if (nrow(var_data) != expected_studies){
+    stop("Incorrect grouping of variables in construction of the auxiliary group BPE graph column.")
+  }
+  # Get the verbose variable names
+  vars_to_use_verbose <- as.vector(input_var_list$var_name_verbose[match(vars_to_use, input_var_list$var_name)])
+  # Unlist the data in case there is only one column
+  if (n_groups == 1){
+    stopifnot(ncol(var_data) == 1)
+    var_data <- as.vector(unlist(var_data))
+  }
+  # Handle case of multiple columns
+  if (group_type == "dummy" || n_groups > 1){
+    if (n_groups < 2){
+      stop("A dummy may never have only one column. Check the data validation function.")
+    }
+    if(any(!sapply(var_data, is.numeric))){
+      message(paste("Only numeric values are allowed in case of multiple-valued variables.",
+              "Invalid variables:",
+              paste(vars_to_use, sep = '\n'),
+              sep = '\n'))
+      stop("Invalid variable values in the BPE graph function.")
+    }
+    # Vector of names of columns with highest value in each row
+    colnames(var_data) <- vars_to_use_verbose # Might be broken with special characters?
+    group_col <- apply(var_data, 1, function(x) names(x)[which.max(x)])
+  } else if (all(var_data %in% c(0,1))){
+  # Single 0/1 column
+    group_col <- paste(vars_to_use_verbose, "=", as.vector(var_data))
+  } else if (is.numeric(var_data)){
+  # Numeric, non-0/1 column
+    var_data <- as.vector(var_data) # A single column
+    above_below_vec <- ifelse(var_data >= median(var_data), ">=", "<") # Above/below median
+    group_col <- paste(vars_to_use_verbose, above_below_vec, median(var_data))
+  } else if (is.character(var_data)){
+    col_values <- as.integer(factor(var_data))
+    group_col <- paste0(vars_to_use_verbose, ": ", col_values)
+  } else {
+    message(paste(
+      "Your data is incorrectly specified. Check the values of variables:",
+      paste(vars_to_use, sep = "\n"),
+      sep = "\n"
+      ))
+    stop("Incorrect variable values in the BPE graphing function when constructing an auxiliary group column.")
+  }
+  # Put back the author's bpe
+  if ("Author" %in% bpe_studies){
+    author_idx <- which(bpe_studies == "Author")
+    group_col <- append(group_col, "Author", after = author_idx - 1)
+  }
+  bpe_df$group <- group_col
+  return(bpe_df)
+}
+      
+graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, theme = "blue",
                      export_graphics = T, graphic_results_folder_path = NA, bpe_graphs_scale = 6
                      ){
   # Input validation
   stopifnot(
     is.data.frame(bpe_df),
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
     is.logical(export_graphics),
     is.numeric(bpe_graphs_scale),
     nrow(bpe_df) > 0 # At least some data
   )
-  # Get the information about graphs to use
-  graph_info <- list(
-    subsets = list(
-      "one"
-    ),
-    
-    graph_names = list(
-      "bpe_test"
-    )
-  )
+  if (length(bpe_factors) < 1){
+    stop("You must specify at least one factor to group the BPE plots by.")
+  }
+  if (all(is.na(bpe_factors))){
+    stop("Please specify at least one non-NA BPE graph grouping factor.")
+  }
+  if (!all(is.numeric(bpe_factors))){
+    stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
+  }
+  # Shuffle the author BPE somewhere into the middle of the estimates
+  author_row_bool <- rownames(bpe_df) == "Author"
+  if (sum(author_row_bool) == 1){
+    author_row <- bpe_df[author_row_bool,]
+    author_rank <- match(author_row$estimate, sort(bpe_df$estimate)) # Rank among studies
+    bpe_df <- bpe_df[!author_row_bool,] # Drop the author index row
+    bpe_df <- rbind(bpe_df[1:(author_rank-1), ], author_row, bpe_df[author_rank:nrow(bpe_df), ]) # Insert into a new index
+  }
   # Get the theme to use
-  current_theme <- getTheme(theme)
+  current_theme <- getTheme(theme) +
+    theme(legend.title = element_blank(), # No legend title
+          legend.position = "top")
   point_color <- switch(theme,
     blue = "#1261ff",
     yellow =  "#FFD700",
@@ -4519,39 +4601,54 @@ graphBPE <- function(bpe_df, theme = "blue",
   )
   mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
   tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
-  # Add a group column
-  n <- 4
-  rows_per_group <- ceiling(nrow(bpe_df)/n)
-  bpe_df$group <- sample(rep(1:n, each = rows_per_group, length.out = nrow(bpe_df)))
-  # Construct the graphs
-  bpe_df$row_names <- rownames(bpe_df)
-  # Sort the data using the miracle sort algorithm so that estimates are sorted within groups
-  bpe_df <- miracleBPESorting(bpe_df)
-  # Construct the graph
-  bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate)) + 
-                                         # group = group, colour = group) +
-    geom_line(aes(group = group, colour = factor(group))) +
-    # geom_ribbon(aes(ymin = ci_95_lower, ymax = ci_95_higher, fill = factor(group)), alpha = 0.1) +
-    # geom_vline(aes(yintercept = mean(estimate)), color = "red", linewidth = 0.5) + 
-    labs(x = "Temp", y = "Best-practice estimates") + 
-    current_theme
-  
-  # Plot the plot
-  suppressWarnings(print(bpe_graph))
+  # Get the information about graphs to use
+  clean_bpe_df <- bpe_df
+  bpe_names <- paste0("bpe_", seq(length(bpe_factors))) # bpe_1, bpe_2,...
+  bpe_names_counter <- 1
+  bpe_graphs <- list()  
+  for (bpe_factor in bpe_factors){
+    bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
+    vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
+    group_type <- as.vector(input_var_list$data_type[input_var_list$group_category == bpe_factor])[1]
+    # Construct an auxiliary group column
+    bpe_df <- addGroupColumn(bpe_df, input_data, input_var_list, vars_to_use, group_type)
+    stopifnot("group" %in% colnames(bpe_df))
+    # Construct the graphs
+    bpe_df$row_names <- rownames(bpe_df)
+    # Sort the data using the miracle sort algorithm so that estimates are sorted within groups
+    bpe_df <- miracleBPESorting(bpe_df)
+    # Construct the graph
+    bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate,
+                                           color = group, group = group)) +
+      geom_point() + geom_line() +
+      labs(x = "Study id", y = "Best-practice estimate") + 
+      current_theme
+    # Plot the plot
+    suppressWarnings(print(bpe_graph))
+    # Drop the auxiliary group column
+    bpe_df$group <- NULL
+    # Save the graph and its name
+    current_bpe_name <- bpe_names[bpe_names_counter]
+    bpe_graphs[[current_bpe_name]] <- bpe_graph
+    bpe_names_counter <- bpe_names_counter + 1
+  }
   # Export the graphs
   if (export_graphics){
     if (is.na(graphic_results_folder_path)){
       stop("You must specify a path to the graphic results folder.")
     }
-    for (name in graph_info$graph_names){
+    for (name in bpe_names){
+      # Check the path to the graph
       full_graph_path <- paste0(graphic_results_folder_path, name,'.png')
       hardRemoveFile(full_graph_path)
-      ggsave(filename = full_graph_path, plot = bpe_graph, # automate
-             width = 403*bpe_graphs_scale, height = 371*bpe_graphs_scale, units = "px")
+      # Fetch the graph object from the graphs list object and graph the object
+      graph_object <- bpe_graphs[[name]]
+      ggsave(filename = full_graph_path, plot = graph_object,
+             width = 800*bpe_graphs_scale, height = 736*bpe_graphs_scale, units = "px")
     }
   }
   # Return the graphs
-  return(bpe_graph)
+  return(bpe_graphs)
 }
 
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################
@@ -4874,10 +4971,10 @@ getTheme <- function(theme_type, x_axis_tick_text = "black"){
   )
   # Construct and return the theme
   theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid"),
-        axis.text.x = ggtext::element_markdown(color = x_axis_tick_text),
-        axis.text.y = ggtext::element_markdown(color = "black"),
-        panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
-        plot.background = element_rect(fill = theme_color))
+      axis.text.x = ggtext::element_markdown(color = x_axis_tick_text),
+      axis.text.y = ggtext::element_markdown(color = "black"),
+      panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
+      plot.background = element_rect(fill = theme_color))
 }
 
 #' Export the graph into an HTML file using the plotly package
