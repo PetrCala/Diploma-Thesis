@@ -80,12 +80,15 @@ adjustable_parameters:
   t_hist_higlight_mean: true		# If T, higlight the mean in the graph also
   t_hist_t_stats: [-1.96, 1.96]		# A vector of t-statistics to highlight in the graph. Must be a vector.
   t_hist_graph_scale: 6 		# Numeric, scale the graph by this number
+  # Linear test parameters
+  linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks
   # Nonlinear parameters - only selection model parametrizable
   non_linear_stem_graph_scale: 5 		# Numeric, scale the graph by this number
   non_linear_stem_legend_position: "topright" 	# Position of the STEM plot legend
   non_linear_param_selection_cutoffs: [1.96]
   non_linear_param_selection_symmetric: false
   non_linear_param_selection_modelmu: "t" 	# Can be one of "normal", "t"
+  non_linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks and SE parentheses
   # P-uniform paramteres
   puni_param_side: "right" 		# puni_star side argument
   puni_param_method: "ML" 		# Method used for p-uniform calculation - one of "ML", "P"
