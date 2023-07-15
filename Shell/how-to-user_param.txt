@@ -1,0 +1,14 @@
+- The user_parameters_model.yaml file should hold a form of the parameters that the user can always reproduce the
+	results with. That is because this file gets copied directly to the Dist/ folder upon running the 
+	"update_dist.sh" Shell script (see the Shell/ folder).
+- The R/user_parameters.yaml file is then meant for liberal modifications, testing, exploration, etc. However, any changes
+	that you make to this file, should also be made in the *_model.yaml file, assuming they are structural changes
+	in code behavior. Say you add a new functionality and test it using the "R/user_parameters.yaml" file, then this
+	must be also added to the "*_model.yaml" file.
+- All other files within the custom_user_params/ folder should be listed within the update_user_params.sh Shell script,
+	as they will get all thus updated upon the script run. Any discrepancies that exist between the model .yaml file
+	and the other .yaml files (in the custom_user_params/ folder) should be incorporated directly into the shell script
+	code. As such, if you wish to modify these custom .yaml files, refer to the shell script, and not to the .yaml files
+	themselves.
+- Remember to periodically run the Shell/ files in order to keep the .yaml files synchronized and valid across folders and
+	different iterations of the repository.
