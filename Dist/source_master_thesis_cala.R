@@ -4432,7 +4432,14 @@ getEconomicSignificanceVerbose <- function(res,...){
 
 #' Sort a data frame based on the estimates and grouping so that the estimates get
 #'  sorted within group, but the grouping order of the whole dataset stays the same.
-#'  In other words, shift rows within groups until all groups are sorted from lowest to highest.
+#'  In other words, shift rows within groups until estimates within all groups are sorted from lowest to highest.
+#'  
+#' @details The group column can either contain integers or characters. The values can not be NA. During the
+#' algorithm run, all characters are converted into integer factors, and these are then used for sorting.
+#' As for the logic, the algorithm uses two auxiliary vectors and a for loop to iterate over all rows of the
+#' data frame. In each iteration, it identifies the correct final index of the current row, and assigns that
+#' final index to one of the auxiliary vectors called miracle_index. This vector is finally used to sort
+#' the data into the desired form.
 #' 
 #' @param df [data.frame] The data frame to be sorted. Must contain two numeric columns - estimate and group.
 #' 
@@ -4558,6 +4565,49 @@ addGroupColumn <- function(bpe_df, input_data, input_var_list, vars_to_use, grou
   return(bpe_df)
 }
       
+
+#' @title Graph Best Practice Estimates (BPEs)
+#'
+#' @description Create and export graphs of best practice estimates. These are grouped
+#' by factors, and for every factor, a new plot is created. All of them are then plotted
+#' and exported in a single list. If desired, these plots are also automatically saved
+#' in the graphics folder.
+#' 
+#' @details For different types of factors, different grouping is employed. For dummies, a
+#' graph is created for each variable (value) of that dummy. For categoric variables, it is
+#' created for each category. For single numberic factors, median of that column is used to split
+#' the data into two factors, and these are then graphed. Always, the author's best practice
+#' estimate is highlighted in the graph.
+#' Furthermore, the function employs a custom sorting algorithm to allow BPEs of different factors
+#' to stand out from one another in the graph despite the lack of a usable x axis (in the current
+#' form of the function, simple integers are used for x-axis indexing).
+#' 
+#' @param bpe_df [data.frame] A data frame containing the best practice estimates and their CIs.
+#' @param input_data [data.frame] A data frame containing the main data.
+#' @param input_var_list [data.frame] A data frame with variable information.
+#' @param bpe_factors [numeric] A vector of numeric values specifying the variable groups to factor by.
+#' If NULL, the function will stop and return an error message. Defaults to NULL.
+#' @param theme [character] A string specifying the color theme for the plots. Defaults to "blue".
+#' @param export_graphics [logical] A boolean value indicating whether or not to export the graphs as .png files.
+#' Defaults to TRUE.
+#' @param graphic_results_folder_path [character] A string representing the path to the folder
+#' where the graphics should be saved. If export_graphics is TRUE and this parameter is NA,
+#' the function will stop and return an error message. Defaults to NA.
+#' @param bpe_graphs_scale [numeric] A number specifying the scale for the exported .png graphics.
+#' It affects both the width and the height of the graphics. Default is 6.
+#'
+#' @return [list] A list of ggplot objects representing the BPE graphs.
+#'
+#' @examples
+#' \dontrun{
+#' # Assuming appropriate input data is available
+#' bpe_graphs = graphBPE(bpe_df, input_data, input_var_list, bpe_factors = c(1,2,3), theme = "blue",
+#' export_graphics = TRUE, graphic_results_folder_path = "path/to/folder", bpe_graphs_scale = 5)
+#' }
+#'
+#' @seealso \code{\link{ggplot2}}
+#' 
+#' @export
 graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, theme = "blue",
                      export_graphics = T, graphic_results_folder_path = NA, bpe_graphs_scale = 6
                      ){
