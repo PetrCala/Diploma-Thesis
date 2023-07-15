@@ -18,29 +18,38 @@ declare -A vany_changes
 
 #### TWIN DATASET CHANGES
 twin_changes=(
-    ['file_name\: \"data_set_master_thesis_cala\"']='file_name: \"twin_data_master_thesis_cala\"'
-    ['csv_suffix\: \"master_thesis_cala\"']='csv_suffix: \"twins\"'
+    ['file_name: "data_set_master_thesis_cala"']='file_name: "twin_data_master_thesis_cala"'
+    ['csv_suffix: "master_thesis_cala"']='csv_suffix: "twins"'
 )
 
 #### GREEN CHANGES
 green_changes=(
-    ['file_name\: \"data_set_master_thesis_cala\"']='file_name: \"data_set_green\"'
-    ['csv_suffix\: \"master_thesis_cala\"']='csv_suffix: \"green\"'
+    ['file_name: "data_set_master_thesis_cala"']='file_name: "data_set_green"'
+    ['csv_suffix: "master_thesis_cala"']='csv_suffix: "green"'
 )
 
 
 #### TERKA CHANGES
 terka_changes=(
-    ['file_name\: \"data_set_master_thesis_cala\"']='file_name: \"data_set_terka\"'
-    ['csv_suffix\: \"master_thesis_cala\"']='csv_suffix: \"terka\"'
+    ['file_name: "data_set_master_thesis_cala"']='file_name: "data_set_terka"'
+    ['csv_suffix: "master_thesis_cala"']='csv_suffix: "terka"'
 )
 
 
 #### VANY CHANGES
 declare -A vany_changes
 vany_changes=(
-    ['file_name\: \"data_set_master_thesis_cala\"']='file_name: \"data-set_bachelor-thesis_Nguyenova\"'
-    ['csv_suffix\: \"master_thesis_cala\"']='csv_suffix: \"vany\"'
+    ['file_name: "data_set_master_thesis_cala"']='file_name: "data-set_bachelor-thesis_Nguyenova"'
+    ['csv_suffix: "master_thesis_cala"']='csv_suffix: "vany"'
+    ['se: "standard_error"']='se: "se"'
+    ['effect_name: "years_of schooling on wage']='effect_name: "individual ability on wage"'
+    ['allowerd_missing_ratio: 0.9']='allowerd_missing_ratio: 0.7'
+    ['t_hist_t_stats: [-1.96, 1.96']='t_hist_t_stats: [1.645, 2.58]'
+    ['']=''
+    ['']=''
+    ['']=''
+    ['']=''
+    ['']=''
 )
 
 
