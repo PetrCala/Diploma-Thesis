@@ -7,7 +7,7 @@ __pycache__/
 **/*.Rhistory
 **/*.Rdata
 R/tests_master_thesis_cala.R
-R/Other analyses/
+R/custom_user_params/
 
 # R output files and cache
 R/_cache/*
