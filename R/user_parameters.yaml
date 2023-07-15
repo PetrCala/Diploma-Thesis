@@ -6,15 +6,15 @@ run_this:
   effect_summary_stats: false
   box_plot: false
   funnel_plot: false
-  t_stat_histogram: true
+  t_stat_histogram: false
   linear_tests: false
   nonlinear_tests: false
   exo_tests: false
   p_hacking_tests: false
-  bma: true
+  bma: false
   fma: false 					
   ma_variables_description_table: false 	
-  bpe: true 					
+  bpe: false 					
   robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
