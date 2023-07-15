@@ -385,6 +385,53 @@ loadExternalPackages <- function(pckg_folder){
 
 ######################### DATA PREPROCESSING #########################
 
+#' Validate that data types are identical within each group
+validateConsistentDataTypes <- function(input_var_list){
+  stopifnot(
+    all(
+      c("group_category", "data_type") %in% colnames(input_var_list)
+    )
+  )
+  prob_data <- input_var_list %>% 
+    group_by(group_category) %>%
+    summarise(n_distinct_data_type = n_distinct(data_type)) %>%
+    filter(n_distinct_data_type > 1)
+  if(nrow(prob_data) > 0){
+    prob_groups <- prob_data$group_category
+    prob_groups_verbose <- var_list$var_name_verbose[match(prob_groups, var_list$group_category)]
+    message(paste(
+    "All variables of the same group must have the same data type.",
+    "These variables have mismatching data types.",
+    paste(prob_groups_verbose, sep = '\n'),
+    sep = "\n"
+    ))
+    stop("Mismatching data types within variable groups.")
+  }
+}
+
+#' Validate that there are no dummy groups with only one variable (dummies must have at least 2)
+validateDummySpecifications <- function(input_var_list){
+  stopifnot(
+    all(
+      c("group_category", "data_type") %in% colnames(input_var_list)
+    )
+  )
+  prob_data <- input_var_list %>%
+    group_by(group_category) %>%
+    filter(sum(data_type == "dummy") == 1)
+  if (nrow(prob_data) > 0){
+    prob_groups <- prob_data$group_category
+    prob_groups_verbose <- var_list$var_name_verbose[match(prob_groups, var_list$group_category)]
+    message(paste(
+      "All dummy variable groups must have at least 2 distinct variable columns associated with them.",
+      "For single columns, use 'int' type instead of 'dummy'.",
+      "These variables are such single dummy columns:",
+      paste(prob_groups_verbose, sep = '\n'),
+      sep = '\n'
+    ))
+    stop("Single dummy columns identified.")
+  }
+}
 
 #' Check that the input variable list specifications are all correct
 #'
@@ -413,16 +460,10 @@ validateInputVarList <- function(input_var_list){
     message(duplicated_col)
     stop("Duplicate columns.")
   }
-  # Validate that data type stays consistent within each group
-  for (i in 1:max(input_var_list$group_category)){
-    data_slice <- input_var_list$data_type[input_var_list$group_category == i]
-    arbitrary_type <- data_slice[1] # Should be equal for all
-    validity_test <- all(data_slice == arbitrary_type)
-    if (!validity_test){
-      stop(paste("Incorrect data type for group", i))
-    }
-  }
-  # Validate that specifications are present for all variables where sum stats are required
+  # Check different specifications
+  validateConsistentDataTypes(input_var_list) # Consistent data types
+  validateDummySpecifications(input_var_list) # No single dummy columns
+  # Check effect summary statistics specifications
   data_to_summarize <- input_var_list[input_var_list$effect_sum_stats == TRUE, ]
   for (i in 1:nrow(data_to_summarize)){
     temp_row <- data_to_summarize[i,]
@@ -433,8 +474,7 @@ validateInputVarList <- function(input_var_list){
       stop(paste("Missing effect summary specifications for", problematic_var))
     }
   }
-    
-  # Check data values
+  # Validate that dummy columns contain only 1s and 0s
   dummy_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'dummy',]
   dummy_data_allowed_values <- c(0, 1)
   for (i in 1:nrow(dummy_data_to_check)){
@@ -446,7 +486,7 @@ validateInputVarList <- function(input_var_list){
       stop(paste("Problematic variable:",problematic_var))
     }
   }
-  
+  # Check data values
   perc_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'perc',]
   for (i in 1:nrow(perc_data_to_check)){
     temp_row <- perc_data_to_check[i,]
@@ -659,14 +699,12 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   ref_prone_types <- c("dummy", "perc") # Data types that always must have a single reference variable
   ref_forbidden_categories <- c("bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
   ### End of static
-  
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
     is.data.frame(input_var_list),
     is.logical(ignore_missing)
   )
-  
   # Do not pass if any values are NA. 
   if (!ignore_missing){
     if(any(is.na(input_data))){
@@ -684,26 +722,33 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   valid_column_names <- sapply(colnames(input_data), function(x) grepl(valid_col_pattern, x))
   if (!all(valid_column_names)){
     special_char_cols <- colnames(input_data)[!valid_column_names]
-    message("These columns contain special characters. Please modify the columns so that there are no such characters.")
-    message(special_char_cols)
+    message(paste(
+      "These columns contain special characters. Please modify the columns so that there are no such characters.",
+      paste(as.character(special_char_cols), collapse = "\n"),
+      sep = "\n"
+    ))
     stop("Invalid column names")
   }
   # Validate that there are no two same column names
   if (any(duplicated(colnames(input_data)))){
     duplicated_col <- colnames(input_data)[which(duplicated(colnames(input_data)))]
-    message("Duplicate column values are not allowed.")
-    message("Modify the names of these columns:")
-    message(duplicated_col)
+    message(paste(
+      "Duplicate column values are not allowed.",
+      "Modify the names of these columns:",
+      paste(as.character(duplicated_col), collapse = "\n"),
+      sep = "\n"
+    ))
     stop("Duplicate columns.")
   }
   # Validate that no columns are static
   constant_columns <- apply(input_data, 2, function(col){length(unique(col)) == 1}) # Boolean vector with names
   if (any(constant_columns)){
-        message(paste(
-        "There are constant columns in your data. Make sure to remove these first.",
-        "These columns have constant values:",
-        paste(as.character(colnames(input_data)[constant_columns]), collapse = "\n"),
-      sep="\n"))
+    message(paste(
+      "There are constant columns in your data. Make sure to remove these first.",
+      "These columns have constant values:",
+      paste(as.character(colnames(input_data)[constant_columns]), collapse = "\n"),
+      sep= "\n"
+    ))
     stop("Constant columns.")
   }
   ### Correlation validation
@@ -728,11 +773,12 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
         !all(type1 %in% c("dummy","perc"), type2 %in% c("dummy","perc"), type1 == type2, group1 == group2)
       })
     if (nrow(problematic_pairs) > 0) {
-      message(
-        "There are variables with perfect correlation in your data (1 or -1). Make sure to treat these variables.\n",
-        "These variables have perfect correlation:\n",
-        paste(capture.output(print(problematic_pairs)), collapse = "\n")
-      )
+      message(paste(
+        "There are variables with perfect correlation in your data (1 or -1). Make sure to treat these variables.",
+        "These variables have perfect correlation:",
+        paste(capture.output(print(problematic_pairs)), collapse = "\n"),
+        sep = "\n"
+      ))
       stop("Perfect correlation in data.")
     }
   }
@@ -798,15 +844,17 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
       } else {
         other_rows <- ""
       }
-      message(paste("All percentage groups must sum up to 1.",
-                    "These variables do not fulfill that:",
-                    paste(group_var_names, collapse="\n"),
-                    "at rows:",
-                    paste(head(problematic_rows), collapse="\n"),
-                    other_rows,
-                    "These are all unique row sums for this variable category. One or more, but perhaps not all of them are the faulty rows.",
-                    paste(as.character(unique(row_sums)), collapse="\n"), 
-                    sep="\n"))
+      message(paste(
+        "All percentage groups must sum up to 1.",
+        "These variables do not fulfill that:",
+        paste(group_var_names, collapse="\n"),
+        "at rows:",
+        paste(head(problematic_rows), collapse="\n"),
+        other_rows,
+        "These are all unique row sums for this variable category. One or more, but perhaps not all of them are the faulty rows.",
+        paste(as.character(unique(row_sums)), collapse="\n"), 
+        sep="\n"
+      ))
       stop("Incorrect percentage group values")
     }
   }
