@@ -89,6 +89,8 @@ adjustable_parameters:
   non_linear_param_selection_symmetric: false
   non_linear_param_selection_modelmu: "t" 	# Can be one of "normal", "t"
   non_linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks and SE parentheses
+  # Parameters for tests relaxing exogeneity
+  exo_add_significance_marks: true		# If TRUE, print out also significance level asterisks and SE parentheses
   # P-uniform paramteres
   puni_param_side: "right" 		# puni_star side argument
   puni_param_method: "ML" 		# Method used for p-uniform calculation - one of "ML", "P"
@@ -139,10 +141,11 @@ adjustable_parameters:
   # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
   bpe_studies: 
     # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, use "all".
-    - 0 	# Author
-    - 2 	# Bartlolj et al. (2013) - Most years of schooling
-    - 112 	# Staiger et al. (1997) - Most citations
-    - 7 	# Webbink (2004) - Random, unpublished, uncited work
+    - "all"
+    #- 0 	# Author
+    #- 2 	# Bartlolj et al. (2013) - Most years of schooling
+    #- 112 	# Staiger et al. (1997) - Most citations
+    #- 7 	# Webbink (2004) - Random, unpublished, uncited work
   bpe_use_ci: true 				# If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
   bpe_study_info: true 				# If TRUE, print out information about individual studies being estimated
   bpe_result_table_verbose: true 		# If TRUE, print out the table into the console along with the functional BPE form
