@@ -20,7 +20,7 @@ set.seed(123) # Results reproduction, stochastic functions to deterministic for 
  
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
-user_param_file <- "user_parameters.yaml" # File with user parameters
+user_param_file <- "custom_user_params/user_parameters_terka.yaml" # File with user parameters
 
 # Working directory - change only if the script is being ran interactively
 if(interactive()) {
@@ -174,9 +174,14 @@ sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 
 ######################### DATA PREPROCESSING #########################
 
+# Construct the source file paths
+data_path <- paste0(folder_paths$temp_data_folder, data_sheet_name, '_', csv_suffix, '.csv')
+var_list_path <- paste0(folder_paths$temp_data_folder, var_list_sheet_name, '_', csv_suffix, '.csv')
+
 # Read all the source .csv files
-data <- readDataCustom(paste0(folder_paths$temp_data_folder, data_sheet_name, '_', csv_suffix, '.csv'))
-var_list <- readDataCustom(paste0(folder_paths$temp_data_folder, var_list_sheet_name, '_', csv_suffix, '.csv'))
+data_separators <- identifyCsvSeparators(data_path) # Read on the larger file for higher likelihood of identification
+data <- readDataCustom(data_path, separators = data_separators)
+var_list <- readDataCustom(var_list_path, separators = data_separators)
 
 # Validate the input variable list
 validateInputVarList(var_list)
@@ -265,6 +270,7 @@ if (run_this$effect_summary_stats){
 if (run_this$box_plot){
   # Parameters
   factor_names <- getMultipleParams(adj_params, "box_plot_group_by_factor_")
+  factor_names <- factor_names[!is.na(factor_names)] # Only non-NA factors
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
     # Main plot
@@ -591,7 +597,9 @@ if (run_this$bpe){
   # Get BPE graphs
   if (adj_params$bpe_generate_graphs){
     # Later change to cached function
-    bpe_plots <- graphBPE(
+    bpe_plots <- runCachedFunction(
+      graphBPE, user_params,
+      verbose_function = nullVerboseFunction,
       bpe_df, data, var_list,
       bpe_factors = adj_params$bpe_graphs_factors,
       theme = export_options$theme,

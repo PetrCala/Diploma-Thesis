@@ -20,36 +20,58 @@ declare -A vany_changes
 twin_changes=(
     ['file_name: "data_set_master_thesis_cala"']='file_name: "twin_data_master_thesis_cala"'
     ['csv_suffix: "master_thesis_cala"']='csv_suffix: "twins"'
+    ['export_zip_name: "results_all"']='export_zip_name: "results_twins"'
 )
 
 #### GREEN CHANGES
 green_changes=(
     ['file_name: "data_set_master_thesis_cala"']='file_name: "data_set_green"'
     ['csv_suffix: "master_thesis_cala"']='csv_suffix: "green"'
+    ['obs_id: "obs_n"']='obs_id: "obs_id"'
+    ['reg_df: "reg_df"']='reg_df: .na'
+    ['effect_name: "years_of schooling on wage']='effect_name: "technological progress on employment"'
+    ['data_winsorization_level: 0.01']='data_winsorization_level: 0.05'
+    ['allowed_missing_ratio: 0.9']='allowed_missing_ratio: 0.7'
+    ['box_plot_group_by_factor_2: "country"']='box_plot_group_by_factor_2: .na'
+    ['funnel_graph_scale: 2.5']='funnel_graph_scale: 3'
+    ['non_linear_stem_legend_position: "topright"']='non_linear_stem_legend_position: "topleft"'
+    ['non_linear_param_selection_modelmu: "t"']='non_linear_param_selection_modelmu: "normal"'
+    ['automatic_bma: false']='automatic_bma: true'
+    ['bpe_generate_graphs: true']='bpe_generate_graphs: false'
+    ['export_zip_name: "results_all"']='export_zip_name: "results_all_green"'
+    ['theme: "blue"']='theme: "green"'
 )
 
 
 #### TERKA CHANGES
 terka_changes=(
+    ['funnel_graph_scale: 2.5']='funnel_graph_scale: 3'
     ['file_name: "data_set_master_thesis_cala"']='file_name: "data_set_terka"'
     ['csv_suffix: "master_thesis_cala"']='csv_suffix: "terka"'
+    ['study_size: "study_size"']='study_size: .na'
+    ['reg_df: "reg_df"']='reg_df: .na'
+    ['effect_name: "years_of schooling on wage']='effect_name: "peer status on academic achievement"'
+    ['box_plot_max_boxes: 60']='box_plot_max_boxes: 80'
+    ['non_linear_stem_legend_position: "topright"']='non_linear_stem_legend_position: "topleft"'
+    ['non_linear_param_selection_modelmu: "t"']='non_linear_param_selection_modelmu: "normal"'
+    ['bpe_generate_graphs: true']='bpe_generate_graphs: false'
+    ['export_zip_name: "results_all"']='export_zip_name: "results_terka"'
+    ['theme: "blue"']='theme: "purple"'
 )
 
 
 #### VANY CHANGES
-declare -A vany_changes
 vany_changes=(
     ['file_name: "data_set_master_thesis_cala"']='file_name: "data-set_bachelor-thesis_Nguyenova"'
     ['csv_suffix: "master_thesis_cala"']='csv_suffix: "vany"'
-    ['se: "standard_error"']='se: "se"'
+    ['se: "se"']='se: "standard_error"'
     ['effect_name: "years_of schooling on wage']='effect_name: "individual ability on wage"'
-    ['allowerd_missing_ratio: 0.9']='allowerd_missing_ratio: 0.7'
-    ['t_hist_t_stats: [-1.96, 1.96']='t_hist_t_stats: [1.645, 2.58]'
-    ['']=''
-    ['']=''
-    ['']=''
-    ['']=''
-    ['']=''
+    ['allowed_missing_ratio: 0.9']='allowed_missing_ratio: 0.7'
+    ['t_hist_t_stats: [-1.96, 1.96]']='t_hist_t_stats: [1.645, 2.58]'
+    ['non_linear_stem_legend_position: "topright"']='non_linear_stem_legend_position: "topleft"'
+    ['non_linear_param_selection_modelmu: "t"']='non_linear_param_selection_modelmu: "normal"'
+    ['bpe_generate_graphs: true']='bpe_generate_graphs: false'
+    ['export_zip_name: "results_all"']='export_zip_name: "results_vany"'
 )
 
 
