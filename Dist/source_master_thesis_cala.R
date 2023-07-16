@@ -4350,6 +4350,7 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
   # Set study ids to all ids if required
   if ("all" %in% study_ids){
     study_ids <- seq(from = 0, to = max(input_data$study_id), by = 1)
+    study_info_verbose <- F # Silence individual study message
   }
   # Loop through study ids
   for (study_id in study_ids) {

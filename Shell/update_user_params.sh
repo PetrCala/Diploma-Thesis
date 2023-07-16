@@ -72,6 +72,7 @@ vany_changes=(
     ['allowed_missing_ratio: 0.7']='allowed_missing_ratio: 0.9'
     ['t_hist_t_stats: [-1.96, 1.96]']='t_hist_t_stats: [1.645, 2.58]'
     ['non_linear_param_selection_modelmu: "t"']='non_linear_param_selection_modelmu: "normal"'
+    ['automatic_bma: false']='automatic_bma: true'
     ['bpe_generate_graphs: true']='bpe_generate_graphs: false'
     ['export_zip_name: "results_all"']='export_zip_name: "results_vany"'
 )
