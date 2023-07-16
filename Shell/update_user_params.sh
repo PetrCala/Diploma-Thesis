@@ -20,6 +20,9 @@ declare -A vany_changes
 twin_changes=(
     ['file_name: "data_set_master_thesis_cala"']='file_name: "twin_data_master_thesis_cala"'
     ['csv_suffix: "master_thesis_cala"']='csv_suffix: "twins"'
+    ['file_suffix: ".xlsx"']='file_suffix: ".xlsm"'
+    ['non_linear_param_selection_modelmu: "t"']='non_linear_param_selection_modelmu: "normal"'
+    ['automatic_bma: false']='automatic_bma: true'
     ['export_zip_name: "results_all"']='export_zip_name: "results_twins"'
 )
 
@@ -31,7 +34,7 @@ green_changes=(
     ['reg_df: "reg_df"']='reg_df: .na'
     ['effect_name: "years_of schooling on wage']='effect_name: "technological progress on employment"'
     ['data_winsorization_level: 0.01']='data_winsorization_level: 0.05'
-    ['allowed_missing_ratio: 0.9']='allowed_missing_ratio: 0.7'
+    ['allowed_missing_ratio: 0.7']='allowed_missing_ratio: 0.9'
     ['box_plot_group_by_factor_2: "country"']='box_plot_group_by_factor_2: .na'
     ['funnel_graph_scale: 2.5']='funnel_graph_scale: 3'
     ['non_linear_stem_legend_position: "topright"']='non_linear_stem_legend_position: "topleft"'
@@ -66,9 +69,8 @@ vany_changes=(
     ['csv_suffix: "master_thesis_cala"']='csv_suffix: "vany"'
     ['se: "se"']='se: "standard_error"'
     ['effect_name: "years_of schooling on wage']='effect_name: "individual ability on wage"'
-    ['allowed_missing_ratio: 0.9']='allowed_missing_ratio: 0.7'
+    ['allowed_missing_ratio: 0.7']='allowed_missing_ratio: 0.9'
     ['t_hist_t_stats: [-1.96, 1.96]']='t_hist_t_stats: [1.645, 2.58]'
-    ['non_linear_stem_legend_position: "topright"']='non_linear_stem_legend_position: "topleft"'
     ['non_linear_param_selection_modelmu: "t"']='non_linear_param_selection_modelmu: "normal"'
     ['bpe_generate_graphs: true']='bpe_generate_graphs: false'
     ['export_zip_name: "results_all"']='export_zip_name: "results_vany"'

@@ -4282,8 +4282,12 @@ runBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
   bpe_ols <- lm(formula = bma_formula, data = bma_data) # Constructing an OLS model
   bpe_glht <- glht(bpe_ols, linfct = c(bpe_formula_se), # GLHT
                    vcov = vcovHC(bpe_ols, type = "HC0", cluster = c(input_data$study_id)))
-  bpe_se <- as.numeric(summary(bpe_glht)$test$sigma) # Extract output
-  
+  # Prone to errors, so use tryCatch instead
+  bpe_se <- tryCatch({
+    as.numeric(summary(bpe_glht)$test$sigma) # Extract output
+  }, error = function(e){
+    NA # Return NA instead
+  })
   # Extract the results and return
   res <- c(bpe_est, bpe_se) # Result vector - c(BPE Estimate, BPE Standard Error)
   res <- round(res, 3) # Round up
@@ -4353,6 +4357,12 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     row.names(temp_df) <- study_name
     res_df <- rbind(res_df, temp_df)
   }
+  # Replace NAs with median SE
+  if (all(is.na(res_df$ci_95_lower)) || all(is.na(res_df$ci_95_lower))){
+    stop("All best-practice estimates yielded missing standard errors. Stopping the code.")
+  }
+  temp_df$ci_95_lower[is.na(temp_df$ci_95_lower)] <- median(temp_df$ci_95_lower, na.rm=T)
+  temp_df$ci_95_higher[is.na(temp_df$ci_95_higher)] <- median(temp_df$ci_95_higher, na.rm=T)
   # Get an arbitrary formula to print out in case of verbose output
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) 
   bpe_formula <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
