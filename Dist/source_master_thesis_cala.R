@@ -3055,15 +3055,18 @@ getExoTestsVerbose <- function(result_list, ...){
 #'  "t_stat" and "study_id", and these columns must be numeric.
 #' @param threshold [numeric] The t-statistic threshold used to define statistically significant results. Default is 1.96.
 #' @param width [numeric] The width of the Caliper interval used to define the sub-sample of observations used in the test. Default is 0.05.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @return A numeric vector with four elements: the estimate of the proportion of results reported, the standard error of the estimate,
 #' the number of observations with t-statistics above the threshold, and the number of observations with t-statistics below the threshold.
-runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
+runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05, add_significance_marks = T){
   # Validate input
   required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     is.numeric(threshold),
     is.numeric(width),
+    is.logical(add_significance_marks),
     all(required_cols %in% colnames(input_data))
   )
   # Add a column indicating which observations have t-stats above (below) threshold
@@ -3084,14 +3087,18 @@ runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
   }
   cal_res <- lm(formula = significant_t ~ t_stat - 1, data = subsetted_data)
   cal_res_coefs <- coeftest(cal_res, vcov = vcovHC(cal_res, type = "const", cluster = c(input_data$study_id)))
-  cal_est <- cal_res_coefs["t_stat", "Estimate"] # Estimate
-  cal_se <- cal_res_coefs["t_stat", "Std. Error"] # Standard Error
+  cal_est <- round(cal_res_coefs["t_stat", "Estimate"], 3) # Estimate
+  cal_se <- round(cal_res_coefs["t_stat", "Std. Error"], 3) # Standard Error
   cal_above <- nrow(subsetted_data[subsetted_data$t_stat > threshold, ]) # N. obs above the threshold
   cal_below <- nrow(subsetted_data[subsetted_data$t_stat < threshold, ]) # N. obs below the threshold
+  # Add significance marks if desired
+  if (add_significance_marks){
+    cal_est <- add_asterisks(cal_est, cal_se)
+  }
   # Return the output
   res <- c(
-    round(cal_est, 3),
-    round(cal_se, 3),
+    cal_est,
+    cal_se,
     cal_above,
     cal_below)
   invisible(res)
@@ -3106,18 +3113,23 @@ runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
 #'               Defaults to c(0.05, 0.1, 0.2).
 #' @param verbose [bool] A logical value indicating whether the results should be printed to the console. 
 #'                Defaults to TRUE.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' 
 #' @return A data frame with dimensions nrow = length(widths) * 3 and ncol = length(thresholds),
 #'         where the rows are named with the caliper width and its estimate, standard error, and n1/n2 ratio,
 #'         and the columns are named with the corresponding thresholds.
-getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2), verbose = T){
+getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2),
+                              verbose = T, add_significance_marks = T){
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
     is.vector(thresholds),
     is.vector(widths),
     is.numeric(thresholds),
-    is.numeric(widths)
+    is.numeric(widths),
+    is.logical(verbose),
+    is.logical(add_significance_marks)
   )
   # Initialize the output data frame
   num_thresholds <- length(thresholds)
@@ -3137,9 +3149,10 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
   # Run caliper tests for all thresholds and widths
   for (i in 1:num_thresholds){
     for (j in 1:num_widths){
-      caliper_res <- runCaliperTest(input_data, threshold = thresholds[i], width = widths[j])
-      result_df[j*3-2, i] <- round(caliper_res[1], 5) # Estimate
-      result_df[j*3-1, i] <- paste0("(", round(caliper_res[2], 5), ")") # Standard Error
+      caliper_res <- runCaliperTest(input_data, threshold = thresholds[i], width = widths[j],
+                                    add_significance_marks = add_significance_marks)
+      result_df[j*3-2, i] <- caliper_res[1] # Estimate
+      result_df[j*3-1, i] <- paste0("(", caliper_res[2], ")") # Standard Error
       result_df[j*3, i] <- paste0(caliper_res[3], "/", caliper_res[4]) # n1/n2
     }
   }
@@ -3301,10 +3314,14 @@ getElliottResultsVerbose <- function(res, ...){
 #' @param studylevel[int] Correlation at study level. Options -  none: 0 (default), fixed effects: 1, cluster: 2
 #'  (default 0)
 #' @param verbose [bool] Print out the results into the console in a nice format.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @inheritDotParams Parameters for the extractExoCoefs function.
 #' 
 #' @import maive_master_thesis_cala.R
-getMaiveResults <- function(input_data, script_path, method = 3, weight = 0, instrument = 1, studylevel = 2, verbose = T, ...){
+getMaiveResults <- function(input_data, script_path,
+                            method = 3, weight = 0, instrument = 1, studylevel = 2,
+                            verbose = T, add_significance_marks = T, ...){
   # Read the source file
   source(script_path)
   # Validate that the necessary columns are present
@@ -3316,13 +3333,18 @@ getMaiveResults <- function(input_data, script_path, method = 3, weight = 0, ins
     weight %in% c(0,1,2),
     instrument %in% c(0,1),
     studylevel %in% c(0,1,2),
-    is.logical(verbose)
+    is.logical(verbose),
+    is.logical(add_significance_marks)
   )
   # Subset data and rename columns
   input_data <- input_data[,c("effect", "se", "n_obs", "study_id")]
   colnames(input_data) <- c('bs', 'sebs', 'Ns', 'studyid')
   # Run the estimation
   MAIVE <- maive(dat=input_data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
+  # Add significance marks if desired
+  if (add_significance_marks){
+    MAIVE$beta <- add_asterisks(MAIVE$beta, MAIVE$SE)
+  }
   # Extract (and print) the output
   object<-c("MAIVE coefficient","MAIVE standard error","F-test of first step in IV",
             "Hausman-type test (use with caution)","Critical Value of Chi2(1)")
@@ -4786,7 +4808,7 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, the
 
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################
 
-getRoBMA <- function(input_data, verbose, ...){
+getRoBMA <- function(input_data, verbose, add_significance_marks = T, ...){
   # Validate input
   stopifnot(
     is.data.frame(input_data),
@@ -4816,6 +4838,19 @@ getRoBMA <- function(input_data, verbose, ...){
     summary(robma_est)$estimates
   )
   names(robma_out) <- c("Components","Estimates")
+  rownames(robma_out$Estimates) <- c("Effect", "Standard Error")
+  # Handle data types for easier object handling
+  robma_out$Estimates <- as.data.frame(robma_out$Estimates)
+  # Add significance marks - a bit wonky
+  if (add_significance_marks){
+    estimates_with_asterisks <- sapply(robma_out$Estimates, function(col){
+      est <- round(col[1], 3)
+      se <- round(col[2], 3)
+      add_asterisks(est, se) # Return the asterisk'ed estiamte
+    })
+    robma_out$Estimates["Effect",] <- as.vector(estimates_with_asterisks)
+    robma_out$Estimates["Standard Error", ] <- round(as.numeric(robma_out$Estimates["Standard Error", ]), 3)
+  }
   # Return the output
   if (verbose) {
     getRoBMAVerbose(robma_out, verbose = verbose)
@@ -4835,6 +4870,7 @@ getRoBMAVerbose <- function(res,...){
     cat("\n")
     print(robma_components)
     cat("\n")
+    print("Model-averaged estimates:")
     print(robma_estimates)
     cat("\n\n")
   }

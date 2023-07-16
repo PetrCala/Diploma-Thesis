@@ -15,7 +15,7 @@ run_this:
   fma: false 					
   ma_variables_description_table: false 	
   bpe: false 					
-  robma: false 	# Computationally expensive
+  robma: true 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
@@ -90,7 +90,7 @@ adjustable_parameters:
   non_linear_param_selection_modelmu: "t" 	# Can be one of "normal", "t"
   non_linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks and SE parentheses
   # Parameters for tests relaxing exogeneity
-  exo_add_significance_marks: true		# If TRUE, print out also significance level asterisks and SE parentheses
+  exo_add_significance_marks: true		# If TRUE, print out also significance level asterisks
   # P-uniform paramteres
   puni_param_side: "right" 		# puni_star side argument
   puni_param_method: "ML" 		# Method used for p-uniform calculation - one of "ML", "P"
@@ -106,6 +106,7 @@ adjustable_parameters:
   caliper_thresholds: [1.645, 1.96, 2.58] 	# Caliper thresholds - keep as vector
   caliper_widths: [0.05, 0.1, 0.2] 		# Caliper widths - keep as vector
   caliper_verbose: true
+  caliper_add_significance_marks: true		# If TRUE, print out also significance level asterisks
   # Elliott test parameters
   elliott_data_subsets: ["All data"] 		# Data subsets to run the tests on
   elliott_p_min: 0
@@ -119,6 +120,7 @@ adjustable_parameters:
   maive_instrument: 1 		# 1 = Yes (instrument SEs)
   maive_studylevel: 0 		# 0 = No study-level correlation
   maive_verbose: true
+  maive_add_significance_marks: true		# If TRUE, print out also significance level asterisks
   # Bayesian Model Averaging parameters
   automatic_bma: false 			# If TRUE, automatically generate a formula for BMA with all VIF < 10
   bma_scale_data: false 		# If TRUE, standardize all variables onto the same scale automatically - UNSTABLE
@@ -158,6 +160,7 @@ adjustable_parameters:
   robma_verbose: true
   robma_param_priors_bias: null
   robma_param_parallel: true
+  robma_add_significance_marks: true		# If TRUE, print out also significance level asterisks
 
 folder_paths:
   cache_folder: './_cache/' 			# Store cache files here
