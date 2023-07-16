@@ -331,6 +331,7 @@ if (run_this$t_stat_histogram){
     lower_cutoff = adj_params$t_hist_lower_cutoff,
     upper_cutoff = adj_params$t_hist_upper_cutoff,
     highlight_mean = adj_params$t_hist_highlight_mean,
+    add_density = adj_params$t_hist_add_density,
     t_stats = adj_params$t_hist_t_stats,
     theme = export_options$theme,
     verbose = TRUE, # Print into console

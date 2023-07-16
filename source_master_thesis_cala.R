@@ -2066,7 +2066,8 @@ generateHistTicks <- function(input_list, theme = "blue") {
 #' @param input_data A data frame containing the T-statistic values to be plotted.
 #' @param lower_cutoff An optional numeric value specifying the lower cutoff for filtering outliers. Default is -150.
 #' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
-#' @param highlight_mean Boolean, if TRUE, highlight the mean t-statistic of the data in the plot..
+#' @param highlight_mean Boolean, if TRUE, highlight the mean t-statistic of the data in the plot.
+#' @param add_density Boolean, if TRUE, add a density line into the plot.
 #' @param t_stats A vector with t-statistic values that should be highlighted in the plot.
 #' @param theme Theme to use. Defaults to "blue".
 #' @param verbose If TRUE, print out the plot. Defaults to TRUE.
@@ -2076,7 +2077,7 @@ generateHistTicks <- function(input_list, theme = "blue") {
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
 getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, highlight_mean = T,
-                         t_stats = c(-1.96, 1.96), theme = "blue", verbose = T,
+                         add_density = T, t_stats = c(-1.96, 1.96), theme = "blue", verbose = T,
                          export_graphics = T, output_path = NA, graph_scale = 6){
   # Specify a cutoff filter
   t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
@@ -2119,7 +2120,6 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, hi
     t_hist_plot <- ggplot(data = hist_data, aes(x = t_stat, y = after_stat(density))) +
       geom_histogram(color = "black", fill = fill_color, bins = 80) +
       lapply(t_stats, function(v) geom_vline(aes(xintercept=v), color = tstat_line_color, linewidth = 0.5)) + 
-      # geom_vline(aes(xintercept = mean(t_stat)), color = mean_line_color, linetype = "dashed", linewidth = 0.7) + 
       labs(x = "T-statistic", y = "Density") +
       scale_x_continuous(breaks = hist_ticks) + 
       current_theme 
@@ -2128,6 +2128,19 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, hi
   if (!is.na(hist_mean)){
     t_hist_plot <- t_hist_plot +
             geom_vline(aes(xintercept = hist_mean), color = mean_line_color, linetype = "dashed", linewidth = 0.7)
+  }
+  # Add a density line if desired
+  if (add_density){
+    density_line_color <- switch(theme,
+       blue = "#013091",
+       yellow = "#b89b00",
+       green = "#008000",
+       red = "#b30000", 
+       purple = "#660066",
+       stop("Invalid theme type")
+    )
+    t_hist_plot <- t_hist_plot + 
+      geom_density(aes(x = t_stat), alpha = 0.2, color = density_line_color, linewidth = 1)
   }
   # Print out the plot
   if (verbose){
@@ -4670,7 +4683,6 @@ addGroupColumn <- function(bpe_df, input_data, input_var_list, vars_to_use, grou
   bpe_df$group <- group_col
   return(bpe_df)
 }
-      
 
 #' @title Graph Best Practice Estimates (BPEs)
 #'
@@ -4777,7 +4789,7 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, the
     bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate,
                                            color = group, group = group)) +
       geom_point() +
-      geom_smooth(se = F, method = "gam", formula = y ~ s(x, bs = "cs")) +
+      geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = F) +
       labs(x = "Study id", y = "Best-practice estimate") + 
       current_theme
     # Plot the plot
@@ -4800,8 +4812,10 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, the
       hardRemoveFile(full_graph_path)
       # Fetch the graph object from the graphs list object and graph the object
       graph_object <- bpe_graphs[[name]]
-      ggsave(filename = full_graph_path, plot = graph_object,
-             width = 800*bpe_graphs_scale, height = 736*bpe_graphs_scale, units = "px")
+      suppressWarnings(
+        ggsave(filename = full_graph_path, plot = graph_object,
+               width = 800*bpe_graphs_scale, height = 736*bpe_graphs_scale, units = "px")
+      )
     }
   }
   # Return the graphs
