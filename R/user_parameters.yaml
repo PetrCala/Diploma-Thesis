@@ -11,10 +11,10 @@ run_this:
   nonlinear_tests: false
   exo_tests: false
   p_hacking_tests: false
-  bma: false
+  bma: true
   fma: false 					
   ma_variables_description_table: false 	
-  bpe: false 					
+  bpe: true 					
   robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH

@@ -4705,6 +4705,8 @@ addGroupColumn <- function(bpe_df, input_data, input_var_list, vars_to_use, grou
 #' @param input_var_list [data.frame] A data frame with variable information.
 #' @param bpe_factors [numeric] A vector of numeric values specifying the variable groups to factor by.
 #' If NULL, the function will stop and return an error message. Defaults to NULL.
+#' @param graph_type [character] One of "density", "miracle". Graph the graph either as densities, or
+#'  using the miracle sorting algorithm. Defaults to "density".
 #' @param theme [character] A string specifying the color theme for the plots. Defaults to "blue".
 #' @param export_graphics [logical] A boolean value indicating whether or not to export the graphs as .png files.
 #' Defaults to TRUE.
@@ -4726,7 +4728,7 @@ addGroupColumn <- function(bpe_df, input_data, input_var_list, vars_to_use, grou
 #' @seealso \code{\link{ggplot2}}
 #' 
 #' @export
-graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, theme = "blue",
+graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, graph_type = "density", theme = "blue",
                      export_graphics = T, graphic_results_folder_path = NA, bpe_graphs_scale = 6
                      ){
   # Input validation
@@ -4734,6 +4736,7 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, the
     is.data.frame(bpe_df),
     is.data.frame(input_data),
     is.data.frame(input_var_list),
+    is.character(graph_type),
     is.logical(export_graphics),
     is.numeric(bpe_graphs_scale),
     nrow(bpe_df) > 0 # At least some data
@@ -4747,6 +4750,9 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, the
   if (!all(is.numeric(bpe_factors))){
     stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
   }
+  if (!graph_type %in% c("density", "miracle"){
+    stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"miracle\""))
+  })
   # Shuffle the author BPE somewhere into the middle of the estimates
   author_row_bool <- rownames(bpe_df) == "Author"
   if (sum(author_row_bool) == 1){
@@ -4786,10 +4792,20 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, the
     # Sort the data using the miracle sort algorithm so that estimates are sorted within groups
     bpe_df <- miracleBPESorting(bpe_df)
     # Construct the graph
-    bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate,
-                                           color = group, group = group)) +
-      geom_point() +
-      geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = F) +
+    if (graph_type == "miracle"){
+      bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate,
+                                             color = group, group = group)) +
+        geom_point() +
+        geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = F) 
+      
+    } else if (graph_type == "density"){
+      bpe_graph <- ggplot(data = bpe_df, aes(x = estimate, y = after_stat(density),
+                                             color = group, group = group)) +
+        geom_density(aes(x = estimate), alpha = 0.2, linewidth = 1)
+    } else {
+      stop("Incorrect graph specification")
+    }
+    bpe_graph <- bpe_graph +
       labs(x = "Study id", y = "Best-practice estimate") + 
       current_theme
     # Plot the plot
