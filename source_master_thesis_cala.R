@@ -4750,9 +4750,9 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
   if (!all(is.numeric(bpe_factors))){
     stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
   }
-  if (!graph_type %in% c("density", "miracle"){
+  if (!graph_type %in% c("density", "miracle")){
     stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"miracle\""))
-  })
+  }
   # Shuffle the author BPE somewhere into the middle of the estimates
   author_row_bool <- rownames(bpe_df) == "Author"
   if (sum(author_row_bool) == 1){
@@ -4796,11 +4796,11 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
       bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate,
                                              color = group, group = group)) +
         geom_point() +
-        geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = F) 
+        geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = F)
       
     } else if (graph_type == "density"){
-      bpe_graph <- ggplot(data = bpe_df, aes(x = estimate, y = after_stat(density),
-                                             color = group, group = group)) +
+      bpe_graph <- ggplot(data = subset(bpe_df, rownames(bpe_df) != "Author"),
+                          aes(x = estimate, y = after_stat(density), color = group, group = group)) +
         geom_density(aes(x = estimate), alpha = 0.2, linewidth = 1)
     } else {
       stop("Incorrect graph specification")
