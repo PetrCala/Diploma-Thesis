@@ -114,6 +114,37 @@ readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_
   # invisible(dfs) # Return if need be
 }
 
+
+#' identifyCsvSeparators
+#' 
+#' A rather simple function for infering separator and decimal marks
+#' from a csv file.
+identifyCsvSeparators <- function(source_path){
+  if (!file.exists(source_path)){
+    stop(paste("The", source_path, "file not found."))
+  }
+  # Read the first few lines of the data frame
+  first_few_lines <- readLines(source_path, n = 20)
+  # Identify header line (assuming it is the first non-empty line)
+  header_line <- first_few_lines[which(nchar(trimws(first_few_lines)) > 0)][1]
+  remaining_lines <- first_few_lines[first_few_lines != header_line]
+  # Identify the first line after header that contains digits
+  first_data_line <- ""
+  for(line in remaining_lines) {
+    if(all(grepl("\\D", strsplit(line, "")[[1]])) | nchar(trimws(line)) == 0) next
+    else {
+      first_data_line <- line
+      break
+    }
+    stop("No rows with numeric values identified in the data. Error in reading data.")
+  }
+  # Infer decimal mark and grouping mark
+  decimal_mark <- ifelse(grepl("\\.", first_data_line), ".", ",")
+  grouping_mark <- ifelse(grepl(",", first_data_line), ",", ".")
+  out_list <- list(decimal_mark = decimal_mark, grouping_mark = grouping_mark)
+  return(out_list)
+}
+
 #' readDataCustom function
 #'
 #' This function reads data from a given source path, infers the decimal mark and grouping mark,
@@ -139,25 +170,16 @@ readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_
 #' \code{\link[utils]{read.delim}}, \code{\link[utils]{readLines}}
 #'
 #' @export
-readDataCustom <- function(source_path){
-  # Read the first few lines of the data frame
-  first_few_lines <- readLines(source_path, n = 20)
-  # Identify header line (assuming it is the first non-empty line)
-  header_line <- first_few_lines[which(nchar(trimws(first_few_lines)) > 0)][1]
-  remaining_lines <- first_few_lines[first_few_lines != header_line]
-  # Identify the first line after header that contains digits
-  first_data_line <- ""
-  for(line in remaining_lines) {
-    if(all(grepl("\\D", strsplit(line, "")[[1]])) | nchar(trimws(line)) == 0) next
-    else {
-      first_data_line <- line
-      break
-    }
-    stop("No rows with numeric values identified in the data. Error in reading data.")
+readDataCustom <- function(source_path, separators = NA){
+  # Validate the file existence and infer the separators
+  if (!file.exists(source_path)){
+    stop(paste("The", source_path, "file not found."))
   }
-  # Infer decimal mark and grouping mark
-  decimal_mark <- ifelse(grepl("\\.", first_data_line), ".", ",")
-  grouping_mark <- ifelse(grepl(",", first_data_line), ",", ".")
+  if (all(is.na(separators))){
+    separators <- identifyCsvSeparators(source_path)
+  }
+  decimal_mark <- separators$decimal_mark
+  grouping_mark <- separators$grouping_mark
   # Read data
   data_out <- read_delim(
     source_path,
@@ -1539,10 +1561,13 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
   stopifnot(
     all(required_cols %in% colnames(input_data)),
     is.data.frame(input_data),
-    is.character(factor_by),
     is.character(effect_name),
     is.logical(verbose)
   )
+  if (!factor_by %in% colnames(input_data)){
+    message(paste(factor_by, "is an invalid factor. Can not plot the box plot."))
+    stop("Invalid box plot factor.")
+  }
   # Plot variable preparation
   factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
   factor_by_verbose <- gsub("_", " ", factor_by) # More legible y-axis label
