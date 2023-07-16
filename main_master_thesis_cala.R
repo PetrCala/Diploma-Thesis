@@ -605,6 +605,7 @@ if (run_this$bpe){
       verbose_function = nullVerboseFunction,
       bpe_df, data, var_list,
       bpe_factors = adj_params$bpe_graphs_factors,
+      graph_type = adj_params$bpe_graphs_type,
       theme = export_options$theme,
       export_graphics = export_options$export_graphics,
       graphic_results_folder_path = folder_paths$graphic_results_folder,
