@@ -4776,7 +4776,8 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, the
     # Construct the graph
     bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate,
                                            color = group, group = group)) +
-      geom_point() + geom_line() +
+      geom_point() +
+      geom_smooth(se = F, method = "gam", formula = y ~ s(x, bs = "cs")) +
       labs(x = "Study id", y = "Best-practice estimate") + 
       current_theme
     # Plot the plot
