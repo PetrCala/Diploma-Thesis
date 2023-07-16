@@ -415,7 +415,8 @@ if (run_this$p_hacking_tests){
     data,
     thresholds = adj_params$caliper_thresholds,
     widths = adj_params$caliper_widths,
-    verbose = adj_params$caliper_verbose
+    verbose = adj_params$caliper_verbose,
+    add_significance_marks = adj_params$caliper_add_significance_marks
   )
   
   ###### PUBLICATION BIAS - p-hacking test (Elliott et al., 2022) ######
@@ -443,7 +444,8 @@ if (run_this$p_hacking_tests){
     weight=adj_params$maive_weight,
     instrument=adj_params$maive_instrument,
     studylevel=adj_params$maive_studylevel,
-    verbose=adj_params$maive_verbose
+    verbose=adj_params$maive_verbose,
+    add_significance_marks = adj_params$maive_add_significance_marks
   )
   if (export_options$export_results){
      exportTable(caliper_results, user_params, "p_hacking_tests_caliper")
@@ -626,6 +628,7 @@ if (run_this$robma){
     verbose_function = getRoBMAVerbose,
     data,
     verbose = adj_params$robma_verbose,
+    add_significance_marks = adj_params$robma_add_significance_marks,
     robma_params
   )
   # Export
