@@ -43,12 +43,10 @@ packages <- c(
   "data.table", # Fast data manipulation and aggregation
   "devtools", # Loading local packages
   "ddpcr", # Analysis of Droplet Digital PCR (ddPCR) data
-  "dplyr", # Data manipulation and data wrangling
   "fdrtool", # Elliott et al. (2022)
   "foreign", # Reading and writing data stored by other statistical software
   "gdata", # Elliott et al. (2022)
   "grDevices", # Elliott et al. (2022)
-  "ggplot2", # Creating graphics and data visualizations
   "ggtext", # ggplot axis text without warnings
   "haven", # Importing and exporting data from SAS, SPSS, and Stata
   "lmtest", # Hypothesis testing and diagnostics for linear regression models
@@ -62,10 +60,9 @@ packages <- c(
   "plotly", # Interactive plots
   "png", # PNG plots
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
-  "purrr", # Smart tables, study size
   "pracma", # MAIVE Estimator, Elliott et al. (2022)
+  "RColorBrewer", # Plot colors
   "rddensity", # Elliott et al. (2022)
-  "readr", # Reading data into R from various file formats
   "readxl", # Reading Excel files
   "RoBMA", # Robust BMA, Bartos et al. (2021)
   "sandwich", # Computing robust covariance matrix estimators, MAIVE estimator
@@ -125,13 +122,16 @@ unmodifiable_folders <- c(
 invisible(sapply(modifiable_folders, validateFolderExistence))
 invisible(sapply(unmodifiable_folders, validateFolderExistence, require_existence = TRUE)) # No overwriting
 
-# Clean result folders
-folders_to_clean <- c(
-  folder_paths$temp_data_folder,
+# Clean result and data folders
+folders_to_clean_forcefully <- c(
   folder_paths$graphic_results_folder,
   folder_paths$numeric_results_folder
 )
-invisible(sapply(folders_to_clean, cleanFolder))
+folders_to_clean_old_files_only <- c(
+  folder_paths$temp_data_folder
+)
+invisible(sapply(folders_to_clean_forcefully, cleanFolder, force = T)) # Clean all files
+invisible(sapply(folders_to_clean_old_files_only, cleanFolder)) # Clean only files older than 1 hour
 
 # Load external packages
 loadExternalPackages(folder_paths$ext_package_folder)
@@ -171,9 +171,14 @@ sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 
 ######################### DATA PREPROCESSING #########################
 
+# Construct the source file paths
+data_path <- paste0(folder_paths$temp_data_folder, data_sheet_name, '_', csv_suffix, '.csv')
+var_list_path <- paste0(folder_paths$temp_data_folder, var_list_sheet_name, '_', csv_suffix, '.csv')
+
 # Read all the source .csv files
-data <- readDataCustom(paste0(folder_paths$temp_data_folder, data_sheet_name, '_', csv_suffix, '.csv'))
-var_list <- readDataCustom(paste0(folder_paths$temp_data_folder, var_list_sheet_name, '_', csv_suffix, '.csv'))
+data_separators <- identifyCsvSeparators(data_path) # Read on the larger file for higher likelihood of identification
+data <- readDataCustom(data_path, separators = data_separators)
+var_list <- readDataCustom(var_list_path, separators = data_separators)
 
 # Validate the input variable list
 validateInputVarList(var_list)
@@ -258,10 +263,29 @@ if (run_this$effect_summary_stats){
   }
 }
 
+###### PRIMA FACIE GRAPHS ######
+if (run_this$prima_facie_graphs){
+  print("Generating the prima facie graphs...")
+  prima_facie_graphs <- runCachedFunction(
+    getPrimaFacieGraphs, user_params,
+    verbose_function = nullVerboseFunction,
+    data, var_list,
+    prima_factors = adj_params$prima_factors,
+    prima_type = adj_params$prima_type,
+    prima_hide_outliers = adj_params$prima_hide_outliers,
+    prima_bins = adj_params$prima_bins,
+    theme = export_options$theme,
+    export_graphics = export_options$export_graphics,
+    graphic_results_folder_path = folder_paths$graphic_results_folder,
+    prima_scale = adj_params$prima_scale
+  )
+}
+
 ###### BOX PLOT ######
 if (run_this$box_plot){
   # Parameters
   factor_names <- getMultipleParams(adj_params, "box_plot_group_by_factor_")
+  factor_names <- factor_names[!is.na(factor_names)] # Only non-NA factors
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
     # Main plot
@@ -312,6 +336,7 @@ if (run_this$funnel_plot){
 }
 
 ###### HISTOGRAM OF T-STATISTICS ######
+
 if (run_this$t_stat_histogram){
   t_hist_path <- paste0(folder_paths$graphic_results_folder, "t_hist.png")
   t_hist_plot <- runCachedFunction( # Plot only if input changes
@@ -320,6 +345,9 @@ if (run_this$t_stat_histogram){
     data,
     lower_cutoff = adj_params$t_hist_lower_cutoff,
     upper_cutoff = adj_params$t_hist_upper_cutoff,
+    highlight_mean = adj_params$t_hist_highlight_mean,
+    add_density = adj_params$t_hist_add_density,
+    t_stats = adj_params$t_hist_t_stats,
     theme = export_options$theme,
     verbose = TRUE, # Print into console
     export_graphics = export_options$export_graphics,
@@ -336,7 +364,8 @@ if (run_this$linear_tests){
   linear_tests_results <- runCachedFunction(
     getLinearTests, user_params,
     verbose_function = getLinearTestsVerbose,
-    data
+    data,
+    add_significance_marks = adj_params$linear_add_significance_marks
   )
   if (export_options$export_results){
     exportTable(linear_tests_results, user_params, "linear_tests")
@@ -344,7 +373,6 @@ if (run_this$linear_tests){
 }
 
 ######################### NON-LINEAR TESTS ######################### 
-
 if (run_this$nonlinear_tests){
   # Extract source script paths
   stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
@@ -360,6 +388,7 @@ if (run_this$nonlinear_tests){
     getNonlinearTests, user_params, 
     verbose_function = getNonlinearTestsVerbose,
     data, script_paths = nonlinear_script_paths,
+    add_significance_marks = adj_params$non_linear_add_significance_marks,
     selection_params = selection_params,
     theme = export_options$theme,
     export_graphics = export_options$export_graphics,
@@ -375,7 +404,6 @@ if (run_this$nonlinear_tests){
 ### Apply p-uniform* method using sample means
 
 ######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
-
 if (run_this$exo_tests){
   # Parameters
   puni_params <- getMultipleParams(adj_params, "puni_param_",T,T)
@@ -384,7 +412,8 @@ if (run_this$exo_tests){
     getExoTests, user_params,
     verbose_function = getExoTestsVerbose,
     data,
-    puni_params
+    puni_params,
+    add_significance_marks = adj_params$exo_add_significance_marks
   )
   exo_tests_results <- exo_tests_results_list[[1]]
   if (export_options$export_results){
@@ -402,7 +431,8 @@ if (run_this$p_hacking_tests){
     data,
     thresholds = adj_params$caliper_thresholds,
     widths = adj_params$caliper_widths,
-    verbose = adj_params$caliper_verbose
+    verbose = adj_params$caliper_verbose,
+    add_significance_marks = adj_params$caliper_add_significance_marks
   )
   
   ###### PUBLICATION BIAS - p-hacking test (Elliott et al., 2022) ######
@@ -411,7 +441,7 @@ if (run_this$p_hacking_tests){
     verbose_function = getElliottResultsVerbose,
     data,
     script_path = paste0(folder_paths$scripts_folder, script_files$elliott_source),
-    temp_data_path = paste0(folder_paths$data_folder, '/temp/'), # Store temp files here
+    temp_data_path = paste0(folder_paths$temp_data_folder),
     data_subsets = adj_params$elliott_data_subsets,
     p_min = adj_params$elliott_p_min,
     p_max = adj_params$elliott_p_max,
@@ -430,7 +460,8 @@ if (run_this$p_hacking_tests){
     weight=adj_params$maive_weight,
     instrument=adj_params$maive_instrument,
     studylevel=adj_params$maive_studylevel,
-    verbose=adj_params$maive_verbose
+    verbose=adj_params$maive_verbose,
+    add_significance_marks = adj_params$maive_add_significance_marks
   )
   if (export_options$export_results){
      exportTable(caliper_results, user_params, "p_hacking_tests_caliper")
@@ -494,7 +525,7 @@ if (run_this$bma){
   )
   # Store the bma data in the temporary data folder
   if (export_options$export_bma_data){
-    bma_data_path <- paste0(folder_paths$data_folder, 'temp/bma_data', '_', csv_suffix, '.csv')
+    bma_data_path <- paste0(folder_paths$temp_data_folder, 'bma_data', '_', csv_suffix, '.csv')
     write_csv(bma_data, bma_data_path)
   }
 }
@@ -552,13 +583,15 @@ if (run_this$ma_variables_description_table){
 }
 
 ######################### BEST-PRACTICE ESTIMATE #########################
-
 if (run_this$bpe){
   if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
     stop("You must create these three objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
   }
   # Parameters
   bpe_study_ids <- getMultipleParams(adj_params, "bpe_studies")
+  if ("all" %in% bpe_study_ids){
+    print("Running the best practice estimate for all studies. This may take some time...")
+  }
   # BPE estimation
   bpe_res <- runCachedFunction(
     generateBPEResultTable, user_params,
@@ -579,10 +612,25 @@ if (run_this$bpe){
     display_large_pip_only = adj_params$bpe_econ_sig_large_pip_only,
     verbose_output = adj_params$bpe_econ_sig_verbose
   )
+  # Get BPE graphs
+  if (adj_params$bpe_generate_graphs){
+    bpe_plots <- runCachedFunction(
+      graphBPE, user_params,
+      verbose_function = nullVerboseFunction,
+      bpe_df, data, var_list,
+      bpe_factors = adj_params$bpe_graphs_factors,
+      graph_type = adj_params$bpe_graphs_type,
+      theme = export_options$theme,
+      export_graphics = export_options$export_graphics,
+      graphic_results_folder_path = folder_paths$graphic_results_folder,
+      bpe_graphs_scale = adj_params$bpe_graphs_scale
+    )
+  }
   # Export
   if (export_options$export_results){
-     exportTable(bpe_df, user_params, "bpe_res")
-     exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
+    bpe_res_name <- ifelse("all" %in% bpe_study_ids, "bpe_res_all_studies", "bpe_res")
+    exportTable(bpe_df, user_params, bpe_res_name)
+    exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
   }
 }
 
@@ -596,6 +644,7 @@ if (run_this$robma){
     verbose_function = getRoBMAVerbose,
     data,
     verbose = adj_params$robma_verbose,
+    add_significance_marks = adj_params$robma_add_significance_marks,
     robma_params
   )
   # Export
@@ -615,7 +664,8 @@ if (export_options$export_results){
     dest_folder = folder_paths$all_results_folder,
     folder_paths$temp_data_folder,
     folder_paths$graphic_results_folder,
-    folder_paths$numeric_results_folder
+    folder_paths$numeric_results_folder,
+    log_file_path
   )
 }
 

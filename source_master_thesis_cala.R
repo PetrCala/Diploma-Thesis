@@ -47,22 +47,33 @@ validateFolderExistence <- function(folder_name, require_existence = FALSE){
   }
 }
 
-#' Clean a folder of all files by destroying and recreating it
-cleanFolder <- function(folder_name){
+#' Clean a folder of all files by destroying and recreating it.
+#' If force == F, only old files will get deleted.=
+cleanFolder <- function(folder_name, force = F, time_threshold = 1){
+  current_time <- Sys.time()
   files <- list.files(path = folder_name)
   files <- file.path(folder_name, files)  # use file.path() to ensure the correct path
   # Remove all files
   for (file in files){
-    tryCatch({
-      system(paste("rm", file), ignore.stdout = TRUE, ignore.stderr = TRUE)
-    }, warning = function(wrn){
-      cat("Warning:\n")
-      print(wrn)
-    }, error = function(err){
-      cat("Error:\n")
-      print(err)
+    # Always remove files if force == T, otherwise depending on time
+    if(force){
+      delete_file <- TRUE
+    } else {
+      file_mod_time <- file.info(file)$mtime  # get file modification time
+      time_diff <- difftime(current_time, file_mod_time, units = "hours")  # calculate time difference in hours
+      delete_file <- time_diff > time_threshold
     }
-    )
+    if (delete_file){
+      tryCatch({
+        system(paste("rm", file), ignore.stdout = TRUE, ignore.stderr = TRUE)
+      }, warning = function(wrn){
+        cat("Warning:\n")
+        print(wrn)
+      }, error = function(err){
+        cat("Error:\n")
+        print(err)
+      })
+    }
   }
 }
 
@@ -103,6 +114,37 @@ readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_
   # invisible(dfs) # Return if need be
 }
 
+
+#' identifyCsvSeparators
+#' 
+#' A rather simple function for infering separator and decimal marks
+#' from a csv file.
+identifyCsvSeparators <- function(source_path){
+  if (!file.exists(source_path)){
+    stop(paste("The", source_path, "file not found."))
+  }
+  # Read the first few lines of the data frame
+  first_few_lines <- readLines(source_path, n = 20)
+  # Identify header line (assuming it is the first non-empty line)
+  header_line <- first_few_lines[which(nchar(trimws(first_few_lines)) > 0)][1]
+  remaining_lines <- first_few_lines[first_few_lines != header_line]
+  # Identify the first line after header that contains digits
+  first_data_line <- ""
+  for(line in remaining_lines) {
+    if(all(grepl("\\D", strsplit(line, "")[[1]])) | nchar(trimws(line)) == 0) next
+    else {
+      first_data_line <- line
+      break
+    }
+    stop("No rows with numeric values identified in the data. Error in reading data.")
+  }
+  # Infer decimal mark and grouping mark
+  decimal_mark <- ifelse(grepl("\\.", first_data_line), ".", ",")
+  grouping_mark <- ifelse(grepl(",", first_data_line), ",", ".")
+  out_list <- list(decimal_mark = decimal_mark, grouping_mark = grouping_mark)
+  return(out_list)
+}
+
 #' readDataCustom function
 #'
 #' This function reads data from a given source path, infers the decimal mark and grouping mark,
@@ -128,25 +170,16 @@ readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_
 #' \code{\link[utils]{read.delim}}, \code{\link[utils]{readLines}}
 #'
 #' @export
-readDataCustom <- function(source_path){
-  # Read the first few lines of the data frame
-  first_few_lines <- readLines(source_path, n = 20)
-  # Identify header line (assuming it is the first non-empty line)
-  header_line <- first_few_lines[which(nchar(trimws(first_few_lines)) > 0)][1]
-  remaining_lines <- first_few_lines[first_few_lines != header_line]
-  # Identify the first line after header that contains digits
-  first_data_line <- ""
-  for(line in remaining_lines) {
-    if(all(grepl("\\D", strsplit(line, "")[[1]])) | nchar(trimws(line)) == 0) next
-    else {
-      first_data_line <- line
-      break
-    }
-    stop("No rows with numeric values identified in the data. Error in reading data.")
+readDataCustom <- function(source_path, separators = NA){
+  # Validate the file existence and infer the separators
+  if (!file.exists(source_path)){
+    stop(paste("The", source_path, "file not found."))
   }
-  # Infer decimal mark and grouping mark
-  decimal_mark <- ifelse(grepl("\\.", first_data_line), ".", ",")
-  grouping_mark <- ifelse(grepl(",", first_data_line), ",", ".")
+  if (all(is.na(separators))){
+    separators <- identifyCsvSeparators(source_path)
+  }
+  decimal_mark <- separators$decimal_mark
+  grouping_mark <- separators$grouping_mark
   # Read data
   data_out <- read_delim(
     source_path,
@@ -374,6 +407,53 @@ loadExternalPackages <- function(pckg_folder){
 
 ######################### DATA PREPROCESSING #########################
 
+#' Validate that data types are identical within each group
+validateConsistentDataTypes <- function(input_var_list){
+  stopifnot(
+    all(
+      c("group_category", "data_type") %in% colnames(input_var_list)
+    )
+  )
+  prob_data <- input_var_list %>% 
+    group_by(group_category) %>%
+    summarise(n_distinct_data_type = n_distinct(data_type)) %>%
+    filter(n_distinct_data_type > 1)
+  if(nrow(prob_data) > 0){
+    prob_groups <- prob_data$group_category
+    prob_groups_verbose <- var_list$var_name_verbose[match(prob_groups, var_list$group_category)]
+    message(paste(
+    "All variables of the same group must have the same data type.",
+    "These variables have mismatching data types.",
+    paste(prob_groups_verbose, sep = '\n'),
+    sep = "\n"
+    ))
+    stop("Mismatching data types within variable groups.")
+  }
+}
+
+#' Validate that there are no dummy groups with only one variable (dummies must have at least 2)
+validateDummySpecifications <- function(input_var_list){
+  stopifnot(
+    all(
+      c("group_category", "data_type") %in% colnames(input_var_list)
+    )
+  )
+  prob_data <- input_var_list %>%
+    group_by(group_category) %>%
+    filter(sum(data_type == "dummy") == 1)
+  if (nrow(prob_data) > 0){
+    prob_groups <- prob_data$group_category
+    prob_groups_verbose <- var_list$var_name_verbose[match(prob_groups, var_list$group_category)]
+    message(paste(
+      "All dummy variable groups must have at least 2 distinct variable columns associated with them.",
+      "For single columns, use 'int' type instead of 'dummy'.",
+      "These variables are such single dummy columns:",
+      paste(prob_groups_verbose, sep = '\n'),
+      sep = '\n'
+    ))
+    stop("Single dummy columns identified.")
+  }
+}
 
 #' Check that the input variable list specifications are all correct
 #'
@@ -402,16 +482,10 @@ validateInputVarList <- function(input_var_list){
     message(duplicated_col)
     stop("Duplicate columns.")
   }
-  # Validate that data type stays consistent within each group
-  for (i in 1:max(input_var_list$group_category)){
-    data_slice <- input_var_list$data_type[input_var_list$group_category == i]
-    arbitrary_type <- data_slice[1] # Should be equal for all
-    validity_test <- all(data_slice == arbitrary_type)
-    if (!validity_test){
-      stop(paste("Incorrect data type for group", i))
-    }
-  }
-  # Validate that specifications are present for all variables where sum stats are required
+  # Check different specifications
+  validateConsistentDataTypes(input_var_list) # Consistent data types
+  validateDummySpecifications(input_var_list) # No single dummy columns
+  # Check effect summary statistics specifications
   data_to_summarize <- input_var_list[input_var_list$effect_sum_stats == TRUE, ]
   for (i in 1:nrow(data_to_summarize)){
     temp_row <- data_to_summarize[i,]
@@ -422,8 +496,7 @@ validateInputVarList <- function(input_var_list){
       stop(paste("Missing effect summary specifications for", problematic_var))
     }
   }
-    
-  # Check data values
+  # Validate that dummy columns contain only 1s and 0s
   dummy_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'dummy',]
   dummy_data_allowed_values <- c(0, 1)
   for (i in 1:nrow(dummy_data_to_check)){
@@ -435,7 +508,7 @@ validateInputVarList <- function(input_var_list){
       stop(paste("Problematic variable:",problematic_var))
     }
   }
-  
+  # Check data values
   perc_data_to_check <- data_to_summarize[data_to_summarize$data_type == 'perc',]
   for (i in 1:nrow(perc_data_to_check)){
     temp_row <- perc_data_to_check[i,]
@@ -648,14 +721,12 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   ref_prone_types <- c("dummy", "perc") # Data types that always must have a single reference variable
   ref_forbidden_categories <- c("bma", "to_log_for_bma", "bpe") # A reference variable can't have these TRUE
   ### End of static
-  
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
     is.data.frame(input_var_list),
     is.logical(ignore_missing)
   )
-  
   # Do not pass if any values are NA. 
   if (!ignore_missing){
     if(any(is.na(input_data))){
@@ -673,24 +744,33 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
   valid_column_names <- sapply(colnames(input_data), function(x) grepl(valid_col_pattern, x))
   if (!all(valid_column_names)){
     special_char_cols <- colnames(input_data)[!valid_column_names]
-    message("These columns contain special characters. Please modify the columns so that there are no such characters.")
-    message(special_char_cols)
+    message(paste(
+      "These columns contain special characters. Please modify the columns so that there are no such characters.",
+      paste(as.character(special_char_cols), collapse = "\n"),
+      sep = "\n"
+    ))
     stop("Invalid column names")
   }
   # Validate that there are no two same column names
   if (any(duplicated(colnames(input_data)))){
     duplicated_col <- colnames(input_data)[which(duplicated(colnames(input_data)))]
-    message("Duplicate column values are not allowed.")
-    message("Modify the names of these columns:")
-    message(duplicated_col)
+    message(paste(
+      "Duplicate column values are not allowed.",
+      "Modify the names of these columns:",
+      paste(as.character(duplicated_col), collapse = "\n"),
+      sep = "\n"
+    ))
     stop("Duplicate columns.")
   }
   # Validate that no columns are static
   constant_columns <- apply(input_data, 2, function(col){length(unique(col)) == 1}) # Boolean vector with names
   if (any(constant_columns)){
-    message("There are constant columns in your data. Make sure to remove these first.")
-    message("These columns have constant values:")
-    message(paste(colnames(input_data)[constant_columns]), sep = "\n")
+    message(paste(
+      "There are constant columns in your data. Make sure to remove these first.",
+      "These columns have constant values:",
+      paste(as.character(colnames(input_data)[constant_columns]), collapse = "\n"),
+      sep= "\n"
+    ))
     stop("Constant columns.")
   }
   ### Correlation validation
@@ -715,11 +795,12 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
         !all(type1 %in% c("dummy","perc"), type2 %in% c("dummy","perc"), type1 == type2, group1 == group2)
       })
     if (nrow(problematic_pairs) > 0) {
-      message(
-        "There are variables with perfect correlation in your data (1 or -1). Make sure to treat these variables.\n",
-        "These variables have perfect correlation:\n",
-        paste(capture.output(print(problematic_pairs)), collapse = "\n")
-      )
+      message(paste(
+        "There are variables with perfect correlation in your data (1 or -1). Make sure to treat these variables.",
+        "These variables have perfect correlation:",
+        paste(capture.output(print(problematic_pairs)), collapse = "\n"),
+        sep = "\n"
+      ))
       stop("Perfect correlation in data.")
     }
   }
@@ -785,15 +866,17 @@ validateData <- function(input_data, input_var_list, ignore_missing = F){
       } else {
         other_rows <- ""
       }
-      message(paste("All percentage groups must sum up to 1.\n",
-                    "These variables do not fulfill that:\n",
-                    paste(group_var_names, collapse="\n"), "\n",
-                    "at rows:\n",
-                    paste(head(problematic_rows), collapse="\n"), "\n",
-                    other_rows, "\n",
-                    "These are all unique row sums for this variable category. One or more, but perhaps not all of them are the faulty rows.",
-                    paste(as.character(unique(row_sums)), collapse="\n"), "\n", 
-                    sep=""))
+      message(paste(
+        "All percentage groups must sum up to 1.",
+        "These variables do not fulfill that:",
+        paste(group_var_names, collapse="\n"),
+        "at rows:",
+        paste(head(problematic_rows), collapse="\n"),
+        other_rows,
+        "These are all unique row sums for this variable category. One or more, but perhaps not all of them are the faulty rows.",
+        paste(as.character(unique(row_sums)), collapse="\n"), 
+        sep="\n"
+      ))
       stop("Incorrect percentage group values")
     }
   }
@@ -1456,6 +1539,222 @@ getEffectSummaryStatsVerbose <- function(out_list, ...){
   }
 }
 
+#' @title generateGroupColumn
+#' 
+#' @description
+#' Using a subsetted dataframe var_data, generate a vector (referred to as the "group column")
+#' that fully describes the grouping of the variables. One could think of this function as
+#' an inverse function to "dummify", only the var_data can be of many types. A variables information
+#' data frame is also necessary for the procedure.
+#' 
+#' @details
+#' Make sure the var_data object only contains the variables you wish to generate the group column for.
+#' Also, make sure these have the same data type and group category in the variable information df.
+#' 
+#' @param var_data [data.frame] A data frame with variables to generate the group column for.
+#' @param input_var_list [data.frame] Variable information data frame.
+#' 
+#' @return group_col [vector] A vector that fully specifies the grouping of the var_data variables.
+generateGroupColumn <- function(var_data, input_var_list){
+  # Validate input
+  stopifnot(
+    is.data.frame(var_data),
+    is.data.frame(input_var_list)
+  )
+  n_groups <- ncol(var_data)
+  vars_to_use <- as.vector(colnames(var_data))
+  # Get the verbose variable names
+  vars_to_use_verbose <- as.vector(input_var_list$var_name_verbose[match(vars_to_use, input_var_list$var_name)])
+  # Get the group_type
+  group_type_vec <- as.vector(input_var_list$data_type[match(vars_to_use, input_var_list$var_name)])
+  group_type <- unique(group_type_vec)
+  if (length(group_type) != 1){
+    stop("Incorrectly specified group type. Must be consistent for the variables to use.")
+  }
+  # Unlist if there is only one column
+  if (n_groups == 1){
+    stopifnot(ncol(var_data) == 1)
+    var_data <- as.vector(unlist(var_data))
+  }
+  # Handle case of multiple columns
+  if (group_type == "dummy" || n_groups > 1){
+    if (n_groups < 2){
+      stop("A dummy may never have only one column. Check the data validation function.")
+    }
+    if(any(!sapply(var_data, is.numeric))){
+      message(paste("Only numeric values are allowed in case of multiple-valued variables.",
+              "Invalid variables:",
+              paste(vars_to_use, sep = '\n'),
+              sep = '\n'))
+      stop("Invalid variable values in the BPE graph function.")
+    }
+    # Vector of names of columns with highest value in each row
+    colnames(var_data) <- vars_to_use_verbose # Might be broken with special characters?
+    group_col <- apply(var_data, 1, function(x) names(x)[which.max(x)])
+  } else if (all(var_data %in% c(0,1))){
+  # Single 0/1 column
+    group_col <- paste(vars_to_use_verbose, "=", as.vector(var_data))
+  } else if (is.numeric(var_data)){
+  # Numeric, non-0/1 column
+    var_data <- as.vector(var_data) # A single column
+    above_below_vec <- ifelse(var_data >= median(var_data), ">=", "<") # Above/below median
+    group_col <- paste(vars_to_use_verbose, above_below_vec, median(var_data))
+  } else if (is.character(var_data)){
+    col_values <- as.integer(factor(var_data))
+    group_col <- paste0(vars_to_use_verbose, ": ", col_values)
+  } else {
+    message(paste(
+      "Your data is incorrectly specified. Check the values of variables:",
+      paste(vars_to_use, sep = "\n"),
+      sep = "\n"
+      ))
+    stop("Incorrect variable values in the BPE graphing function when constructing an auxiliary group column.")
+  }
+  return(group_col)
+}
+
+
+#' @param input_data [data.frame] A data frame containing the main data.
+#' @param input_var_list [data.frame] A data frame with variable information.
+#' @param prima_factors [numeric] A vector of numeric values specifying the variable groups to factor by.
+#' If NULL, the function will stop and return an error message. Defaults to NULL.
+#' @param prima_type [character] One of "density", "histogram", "automatic". Graph the graph either as densities, or
+#'  using histograms. If set to automatic, the script will automatically determine the optimal type. Defaults to "automatic".
+#' @param prima_hide_outliers [logical] If TRUE, outliers (equal to the outermost histogram bins) will be
+#'  hidden in the graph. Defaults to TRUE.
+#' @param prima_bins [numeric] Number of bins to use in the histogram. Defaults to 80.
+#' @param theme [character] A string specifying the color theme for the plots. Defaults to "blue".
+#' @param export_graphics [logical] A boolean value indicating whether or not to export the graphs as .png files.
+#' Defaults to TRUE.
+#' @param graphic_results_folder_path [character] A string representing the path to the folder
+#' where the graphics should be saved. If export_graphics is TRUE and this parameter is NA,
+#' the function will stop and return an error message. Defaults to NA.
+#' @param prima_scale [numeric] A number specifying the scale for the exported .png graphics.
+#' It affects both the width and the height of the graphics. Default is 6.
+#'
+#' @return [list] A list of ggplot objects representing the prima facie graphs.
+#'
+#' @examples
+#' \dontrun{
+#' # Assuming appropriate input data is available
+#' prima_facie_graphs = getPrimaFacieGraphs(data, var_list, bpe_factors = c(1,2,3), theme = "blue",
+#' export_graphics = TRUE, graphic_results_folder_path = "path/to/folder", prima_scale = 5)
+#' }
+#'
+#' @seealso \code{\link{ggplot2}}
+#' 
+#' @export
+getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL, prima_type = "density",
+                                prima_hide_outliers = T, prima_bins = 80, theme = "blue",
+                                export_graphics = T, graphic_results_folder_path = NA, prima_scale = 3){
+  # Input validation
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.character(prima_type),
+    is.logical(prima_hide_outliers),
+    is.numeric(prima_bins),
+    is.character(theme),
+    is.logical(export_graphics),
+    is.numeric(prima_scale),
+    nrow(input_data) > 0, # At least some data
+    prima_bins > 0
+  )
+  if (length(prima_factors) < 1){
+    stop("You must specify at least one factor to group the BPE plots by.")
+  }
+  if (all(is.na(prima_factors))){
+    stop("Please specify at least one non-NA BPE graph grouping factor.")
+  }
+  if (!all(is.numeric(prima_factors))){
+    stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
+  }
+  if (!prima_type %in% c("density", "histogram", "automatic")){
+    stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"histogram\", \"automatic\""))
+  }
+  # Get the theme to use
+  current_theme <- getTheme(theme) +
+    theme(legend.title = element_blank(), # No legend title
+          legend.position = "top")
+  # Get the information about graphs to use
+  clean_data <- input_data
+  prima_names <- paste0("prima_facie_", seq(length(prima_factors))) # prima_facie_1, prima_facie_2,...
+  prima_names_counter <- 1
+  prima_graphs <- list()  
+  for (prima_factor in prima_factors){
+    prima_df <- copy(clean_data) # Each iteration with a clean dataset - sorting shuffles the data otherwise
+    vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == prima_factor])
+    # Construct an auxiliary group column
+    var_data <- prima_df[,vars_to_use]
+    group_col <- generateGroupColumn(var_data, input_var_list)
+    # Assign the group column to the data
+    if (length(group_col) != nrow(prima_df)){
+      stop("Incorrect length of the generated group column in prima graphing.")
+    }
+    prima_df$group <- group_col
+    # Hide outliers if desired
+    bin_width <- diff(range(prima_df$effect)) / prima_bins
+    if (prima_hide_outliers){
+      x_min <- min(prima_df$effect) + bin_width
+      x_max <- max(prima_df$effect) - bin_width
+      prima_df <- prima_df[prima_df$effect < x_max & prima_df$effect > x_min,] # Outliers out
+    }
+    # Determine the optimal graph type
+    if (prima_type == "automatic"){
+      graph_type <- ifelse(length(unique(prima_df$group)) > 3, "density", "histogram")
+    } else {
+      graph_type <- prima_type
+    }
+    # Get custom colors for the current group of variables
+    prima_palette <- getColors(theme, "prima_facie_graphs", submethod = graph_type)
+    # Construct the graph
+    if (graph_type == "histogram"){
+      prima_graph <- ggplot(data = prima_df, aes(x = effect, y = after_stat(density), fill = group)) +
+        geom_histogram(binwidth = bin_width, bins = bin_width) +
+        scale_fill_brewer(palette = prima_palette)
+    } else if (graph_type == "density"){
+      prima_graph <- ggplot(data = prima_df, aes(x = effect, y = after_stat(density), color = group)) +
+          geom_density(aes(x = effect), alpha = 0.2, linewidth = 1) +
+          scale_color_brewer(palette = prima_palette)
+    } else {
+      stop("Incorrect graph specification")
+    }
+    # Add labs and theme
+    prima_graph <- prima_graph + 
+      labs(x = "Effect", y = "Density") + 
+      current_theme
+    # Drop the auxiliary group column
+    prima_df$group <- NULL
+    # Save the graph and its name
+    current_prima_name <- prima_names[prima_names_counter]
+    prima_graphs[[current_prima_name]] <- prima_graph
+    prima_names_counter <- prima_names_counter + 1
+  }
+  # Print the output - do not reprint during cache runs
+  for (prima_graph in prima_graphs){
+    suppressWarnings(print(prima_graph))
+  }
+  # Export the graphs
+  if (export_graphics){
+    if (is.na(graphic_results_folder_path)){
+      stop("You must specify a path to the graphic results folder.")
+    }
+    for (name in prima_names){
+      # Check the path to the graph
+      full_graph_path <- paste0(graphic_results_folder_path, name,'.png')
+      hardRemoveFile(full_graph_path)
+      # Fetch the graph object from the graphs list object and graph the object
+      graph_object <- prima_graphs[[name]]
+      suppressWarnings(
+        ggsave(filename = full_graph_path, plot = graph_object,
+               width = 800*prima_scale, height = 736*prima_scale, units = "px")
+      )
+    }
+  }
+  # Return the graphs
+  return(prima_graphs)
+}
+
 
 #' Input the main data frame, specify a factor to group by, and create a box plot.
 #' This plot is automatically printed out into the Plots window if verbose == TRUE.
@@ -1478,23 +1777,19 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
   stopifnot(
     all(required_cols %in% colnames(input_data)),
     is.data.frame(input_data),
-    is.character(factor_by),
     is.character(effect_name),
     is.logical(verbose)
   )
+  if (!factor_by %in% colnames(input_data)){
+    message(paste(factor_by, "is an invalid factor. Can not plot the box plot."))
+    stop("Invalid box plot factor.")
+  }
   # Plot variable preparation
   factor_levels <- rev(sort(unique(input_data[[factor_by]]))) # Dark magic - tells plot how to group y-axis
   factor_by_verbose <- gsub("_", " ", factor_by) # More legible y-axis label
   # Get the theme to use
   current_theme <- getTheme(theme)
-  plot_colors <- switch(theme,
-     blue = list("#005CAB","#e6f3ff","#0d4ed1"),
-     yellow = list("#AB9800","#FFF5CC","#D1B00D"),
-     green = list("#009B0F","#CCF3D1","#0DD146"),
-     red = list("#AB0000","#FFCCCC","#D10D0D"),
-     purple = list("#6A0DAB","#EAD6F5","#900DAB"),
-    stop("Invalid theme type")
-  )
+  plot_colors <- getColors(theme, "box_plot")
   plot_outlier_color <- plot_colors[[1]]
   plot_fill <- plot_colors[[2]]
   plot_color <- plot_colors[[3]]
@@ -1505,7 +1800,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
        geom_boxplot(outlier.colour = plot_outlier_color, outlier.shape = 21, outlier.fill = plot_outlier_color,
                     fill=plot_fill, color = plot_color) +
        geom_hline(aes(yintercept = mean(effect)), color = vline_color, linewidth = 0.85) + 
-       coord_flip() + # The dark speech of Mordor, let it be heard around every corner
+       coord_flip() + # The dark speech of Mordor, let it be heard around every corner of Middle RRRth
        labs(title = NULL,y=paste("Effect of", tolower(effect_name)), x = "Grouped by " %>% paste0(factor_by_verbose)) +
        current_theme
   
@@ -1836,14 +2131,7 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
   funnel_tick_text <- funnel_visual_info$x_axis_tick_text
   # Get the theme to use
   current_theme <- getTheme(theme, x_axis_tick_text = funnel_tick_text)
-  point_color <- switch(theme,
-    blue = "#1261ff",
-    yellow =  "#D1B00D",
-    green =  "#00FF00",
-    red =  "#FF0000",
-    purple = "#800080",
-    stop("Invalid theme type")
-  )
+  point_color <- getColors(theme, "funnel_plot")
   vline_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   
   # Precision to log if necessary
@@ -1881,37 +2169,51 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
 
 #' Generate ticks for a histogram plot
 #'
-#' This function takes a vector of five numbers as input, which represent the lower bound,
-#' upper bound, mean value, lower t-statictic, and upper t-statistic. It generates a sorted vector of
-#' tick values between the lower and upper bounds, where ticks are spaced at intervals of 50, excluding ticks
-#' that are closer than 2 to either bound or the t-stats. The input mean value, as well as the two t-statistics
-#' are included in the output vector. Additionally, the function generates a vector of
-#' colors ("black", "red", or "darkorange") with the same length as the output vector, where the
-#' "red" color corresponds to the positions of the t-statistics values and "darkorange" corresponds
-#' to the position of the mean value.
+#' This function takes a list of multiple subsets, which represent the lower bound,
+#' upper bound, information about whether to highlight the mean value, as well as t-statistics to highlight.
+#' Using these, generate and return a list that contains the values of ticks to use, as well as their colors.
 #'
-#' @param input_vec [numeric(3)] A numeric vector of length 5, containing the lower bound, upper bound, mean value, and the t-stats.
+#' @param input_list [list] A list containing the information about the t-stat bounds, desired t-stat values to
+#'  highlight, and whether to highlight mean.
+#' A numeric vector of length 5, containing the lower bound, upper bound, mean value, and the t-stats.
 #' @param theme [character] Type of theme to use
 #' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values, the mean value,
 #'         and the t-statistics values, and "x_axis_tick_text", a character vector of the same length as "output_vec",
 #'         with "red" indicating the positions of the t-statistics values, "darkoran
-generateHistTicks <- function(input_vec, theme = "blue") {
-  lower_bound <- input_vec[1]
-  upper_bound <- input_vec[2]
-  mean_value <- input_vec[3]
-  t_stat_low <- input_vec[4]
-  t_stat_high <- input_vec[5]
-  
-  # Exclude lower or upper bound if it's closer than 2 to any of the t-statistics values
+generateHistTicks <- function(input_list, theme = "blue") {
+  # Validate input
+  expected_input_names <- c("bounds", "mean", "t_stats")
+  stopifnot(
+    is(input_list, "list"),
+    is.character(theme),
+    all(expected_input_names %in% names(input_list)),
+    length(input_list$bounds) == 2,
+    length(input_list$mean) == 1
+  )
+  # Unlist the input list
+  lower_bound <- input_list$bounds$lower_bound
+  upper_bound <- input_list$bounds$upper_bound
+  mean_info <- input_list$mean
+  t_stats <- input_list$t_stats
+  # Replace t-stats with arbitrary value if NA
+  if (all(is.na(t_stats))){
+    t_stats <- lower_bound
+  }
+  # Exclude lower or upper bound if they are closer than 2 to any of the t-statistics values
   ticks <- c()
-  if (abs(lower_bound - t_stat_low) >= 2 && abs(lower_bound - t_stat_high) >= 2) {
+  if (all(abs(lower_bound - t_stats) >= 2)){
     ticks <- c(ticks, lower_bound)
   }
-  if (abs(upper_bound - t_stat_low) >= 2 && abs(upper_bound - t_stat_high) >= 2) {
+  if (all(abs(upper_bound - t_stats) >= 2)){
     ticks <- c(ticks, upper_bound)
   }
-  
-  ticks <- c(ticks, t_stat_low, t_stat_high) # Base vector
+  # Get the base vector with bounds and t_stats
+  ticks <- c(ticks, t_stats)
+  if (!is.na(mean_info)){
+    ticks <- c(ticks, mean_info)
+  }
+  ticks <- unique(ticks) # Remove duplicit values
+  base_ticks <- ticks # Save for for loop, unmodifiable
   
   #' For two numeric values, find the highest possible number (step) from a predefined list
   #' that splits the range between these two values into at least 3 roughly equal segments.
@@ -1934,31 +2236,24 @@ generateHistTicks <- function(input_vec, theme = "blue") {
   current_tick <- ceiling(lower_bound / step_length) * step_length
   
   while (current_tick < upper_bound) {
-    # If not too close to bounds/t-stats, add the tick to tick list
-    if (abs(current_tick - lower_bound) >= 2 && 
-        abs(current_tick - upper_bound) >= 2 &&
-        abs(current_tick - t_stat_low) >= 2 &&
-        abs(current_tick - t_stat_high) >= 2 &&
-        abs(current_tick - mean_value) >= 2
-        ) {
+    # If not too close to bounds/t-stats/mean, add the tick to tick list
+    if (all(abs(current_tick - base_ticks) >= 2)) {
       ticks <- c(ticks, round(current_tick, 2))
     }
     current_tick <- current_tick + step_length
   }
   
-  # Add the mean value and sort the vector
-  hist_ticks <- sort(c(ticks, mean_value))
+  # Sort the vector
+  hist_ticks <- sort(ticks)
   
   # Create the color vector
   x_axis_tick_text <- rep("black", length(hist_ticks))
-  mean_index <- which(hist_ticks == mean_value)
-  t_stat_low_index <- which(hist_ticks == t_stat_low)
-  t_stat_high_index <- which(hist_ticks == t_stat_high)
-  
-  # Get colors for the ticks
-  x_axis_tick_text[mean_index] <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
-  x_axis_tick_text[t_stat_low_index] <- ifelse(theme %in% c("blue", "green"), "red", "blue")
-  x_axis_tick_text[t_stat_high_index] <- ifelse(theme %in% c("blue", "green"), "red", "blue")
+  t_stat_indexes <- as.vector(which(hist_ticks %in% t_stats))
+  x_axis_tick_text[t_stat_indexes] <- ifelse(theme %in% c("blue", "green"), "red", "blue")
+  if (!is.na(mean_info)){
+    mean_index <- which(hist_ticks == mean_info)
+    x_axis_tick_text[mean_index] <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
+  }
   
   # Round the tick values to 2 decimal points
   hist_ticks <- round(hist_ticks, 2)
@@ -1973,8 +2268,9 @@ generateHistTicks <- function(input_vec, theme = "blue") {
 #' @param input_data A data frame containing the T-statistic values to be plotted.
 #' @param lower_cutoff An optional numeric value specifying the lower cutoff for filtering outliers. Default is -150.
 #' @param upper_cutoff An optional numeric value specifying the upper cutoff for filtering outliers. Default is 150.
-#' @param lower_tstat A numeric value specifying which t statistic should be highlighted in the plot
-#' @param upper_tstat Similar to lower_tstat
+#' @param highlight_mean Boolean, if TRUE, highlight the mean t-statistic of the data in the plot.
+#' @param add_density Boolean, if TRUE, add a density line into the plot.
+#' @param t_stats A vector with t-statistic values that should be highlighted in the plot.
 #' @param theme Theme to use. Defaults to "blue".
 #' @param verbose If TRUE, print out the plot. Defaults to TRUE.
 #' @param export_graphics If TRUE, export the plot to a png object into the graphics folder. Defaults to TRUE.
@@ -1982,13 +2278,12 @@ generateHistTicks <- function(input_vec, theme = "blue") {
 #' @param graph_scale Numeric, scale the graph by this number. Defaults to 6.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
-getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
-                         lower_tstat = -1.96, upper_tstat = 1.96, theme = "blue", verbose = T,
+getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, highlight_mean = T,
+                         add_density = T, t_stats = c(-1.96, 1.96), theme = "blue", verbose = T,
                          export_graphics = T, output_path = NA, graph_scale = 6){
   # Specify a cutoff filter
   t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
   hist_data <- input_data[t_hist_filter,]
-  
   # Get lower bound
   lbound_choices <- c(lower_cutoff, min(hist_data$t_stat)) # Either lowest t-stat, or cutoff point
   hist_lbound <- lbound_choices[which.max(lbound_choices)] # Choose the higher one
@@ -1996,35 +2291,45 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
   ubound_choices <- c(upper_cutoff, max(hist_data$t_stat)) # Either highest t-stat, or cutoff point
   hist_ubound <- ubound_choices[which.min(ubound_choices)] # Choose the lower one
   # Put all the visual information input together
-  hist_mean <- mean(hist_data$t_stat)
-  base_hist_ticks <- c(hist_lbound, hist_ubound, hist_mean, lower_tstat, upper_tstat)
+  hist_mean <- ifelse(highlight_mean, mean(hist_data$t_stat), NA) # None if not to be highlighted
+  base_hist_ticks <- list(
+    bounds = list(
+      lower_bound = hist_lbound,
+      upper_bound = hist_ubound
+    ),
+    mean = hist_mean,
+    t_stats = t_stats
+  )
   # Generate and extract variable visual information
   hist_visual_info <- generateHistTicks(base_hist_ticks, theme = theme)
   hist_ticks <- hist_visual_info$hist_ticks
   hist_ticks_text <- hist_visual_info$x_axis_tick_text
   # Get the theme to use
-  current_theme <- getTheme(theme, x_axis_tick_text = hist_ticks_text)
-  fill_color <- switch(theme,
-    blue = "#1261ff",
-    yellow =  "#FFD700",
-    green =  "#00FF00",
-    red =  "#FF0000",
-    purple = "#800080",
-    stop("Invalid theme type")
-  )
+  current_theme <- getTheme(theme, x_axis_tick_text = hist_ticks_text) # Tick text automatically theme adjusted
+  fill_color <- getColors(theme, "t_stat_histogram", submethod = "main")
+  # Get line colors
   mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
   tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Construct the histogram
   quiet(
     t_hist_plot <- ggplot(data = hist_data, aes(x = t_stat, y = after_stat(density))) +
       geom_histogram(color = "black", fill = fill_color, bins = 80) +
-      geom_vline(aes(xintercept = mean(t_stat)), color = mean_line_color, linetype = "dashed", linewidth = 0.7) + 
-      geom_vline(aes(xintercept = lower_tstat), color = tstat_line_color, linewidth = 0.5) +
-      geom_vline(aes(xintercept = upper_tstat), color = tstat_line_color, linewidth = 0.5) +
+      lapply(t_stats, function(v) geom_vline(aes(xintercept=v), color = tstat_line_color, linewidth = 0.5)) + 
       labs(x = "T-statistic", y = "Density") +
       scale_x_continuous(breaks = hist_ticks) + 
-      current_theme
+      current_theme 
   )
+  # Add a mean line if desired
+  if (!is.na(hist_mean)){
+    t_hist_plot <- t_hist_plot +
+            geom_vline(aes(xintercept = hist_mean), color = mean_line_color, linetype = "dashed", linewidth = 0.7)
+  }
+  # Add a density line if desired
+  if (add_density){
+    density_line_color <- getColors(theme, "t_stat_histogram", submethod = "density")
+    t_hist_plot <- t_hist_plot + 
+      geom_density(aes(x = t_stat), alpha = 0.2, color = density_line_color, linewidth = 1)
+  }
   # Print out the plot
   if (verbose){
     suppressWarnings(print(t_hist_plot))
@@ -2044,34 +2349,74 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120,
 
 ######################### LINEAR TESTS ######################### 
 
+#' Add significance marks (asterisks) to a coefficient. Input the coefficient and its
+#' standard error and return that coefficient with the asterisks. Character is always returned,
+#' although the input must be numeric.
+#' 
+#' @param coef [numeric] Coefficient.
+#' @param se [numeric] Its standard error.
+#' 
+#' @return [character] The coefficient with asterisks. Returned as character.
+add_asterisks <- function(coef, se) { # Switch does not really work here as far as I know
+  stopifnot(
+    is.numeric(coef),
+    is.numeric(se)
+  )
+  if (any(is.na(coef),is.na(se))){
+    return(coef)
+  }
+  tvalue <- coef / se
+  if (tvalue > 2.58) {
+    asterisks <- "***"
+  } else if (tvalue > 1.96) {
+    asterisks <- "**"
+  } else if (tvalue > 1.645) {
+    asterisks <- "*"
+  } else {
+    asterisks <- ""
+  }
+  new_value <- paste0(as.character(coef), asterisks)
+  return(new_value)
+}
+
 #' Extract the four coefficients from linear test in the order
 #' - Intercept, Intercept SE, Slope, Slope SE
 #' 
 #' @param coeftest_object Coeftest object from the linear test
+#' @param nobs_total [numeric] Number of observations used to estimate the model. Usually the number
+#'  of rows in the main data frame.
 #' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
 #'  standard errors as strings wrapped in parentheses. Defaults to T.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @return [vector] - Vector of len 4, with the coefficients
-extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
+extractLinearCoefs <- function(coeftest_object, nobs_total, add_significance_marks = T, verbose_coefs=T){
   # Check validity of the coeftest object
   stopifnot(
+    is.numeric(nobs_total),
+    is.logical(add_significance_marks),
+    is.logical(verbose_coefs),
     nrow(coeftest_object) == 2,
     ncol(coeftest_object) == 4,
     colnames(coeftest_object)[1] == "Estimate",
     colnames(coeftest_object)[2] == "Std. Error"
   )
-  
   # Extract coefficients
   pub_bias_coef <- round(coeftest_object[2,"Estimate"], 3)
   pub_bias_se <- round(coeftest_object[2,"Std. Error"], 3)
   effect_coef <- round(coeftest_object[1,"Estimate"], 3)
   effect_se <- round(coeftest_object[1,"Std. Error"], 3)
+  if (add_significance_marks){
+    pub_bias_coef <- add_asterisks(pub_bias_coef, pub_bias_se)
+    effect_coef <- add_asterisks(effect_coef, effect_se)
+  }
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){
     pub_bias_se <- paste0("(", pub_bias_se, ")")
     effect_se <- paste0("(", effect_se, ")")
   }
   # Group and return quietly
-  lin_coefs <- c(pub_bias_coef, pub_bias_se, effect_coef, effect_se)
+  lin_coefs <- c(pub_bias_coef, pub_bias_se, effect_coef, effect_se, nobs_total)
   invisible(lin_coefs)
 }
 
@@ -2079,33 +2424,38 @@ extractLinearCoefs <- function(coeftest_object, verbose_coefs=T){
 
 #' Run all the linear tests on data, and return a matrix of results.
 #' These tests are ran: OLS, FE, RE, Weighted OLS (by study size),
-#'  Weighted OLS (by precision).
+#'  Weighted OLS (by precision). You may also choose to add significance
+#'  level asterisks to the final output.
 #' 
 #' @param data [data.frame] Input data
-getLinearTests <- function(data) {
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
+getLinearTests <- function(data, add_significance_marks = T) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(all(required_cols %in% names(data)))
+  # Save the data length as information in the output
+  total_obs <- nrow(data)
   # OLS
   ols <- lm(formula = effect ~ se, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
-  ols_coefs <- extractLinearCoefs(ols_res)
+  ols_coefs <- extractLinearCoefs(ols_res, total_obs, add_significance_marks)
   # Between effects
   be <- plm(effect ~ se, model = "between", index = "study_id", data = data)
   be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
-  be_coefs <- extractLinearCoefs(be_res)
+  be_coefs <- extractLinearCoefs(be_res, total_obs, add_significance_marks)
   # Random Effects
   re <- plm(effect ~ se, model = "random", index = "study_id", data = data)
   re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
-  re_coefs <- extractLinearCoefs(re_res)
+  re_coefs <- extractLinearCoefs(re_res, total_obs, add_significance_marks)
   # Weighted by number of observations per study
   ols_w_study <- lm(formula = effect ~ se, data = data, weight = (data$study_size*data$study_size))
   ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
-  ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res)
+  ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res, total_obs, add_significance_marks)
   # Weighted by precision
   ols_w_precision <- lm(formula = effect ~ se, data = data, weight = c(data$precision*data$precision))
   ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
-  ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res)
+  ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res, total_obs, add_significance_marks)
   # Combine the results into a data frame
   results <- data.frame(
     OLS = ols_coefs,
@@ -2114,7 +2464,7 @@ getLinearTests <- function(data) {
     OLS_weighted_study = ols_w_study_coefs,
     OLS_weighted_precision = ols_w_precision_coefs
   )
-  rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)")
+  rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)", "Total observations")
   colnames(results) <- c("OLS", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
   # Print the results into the console and return
   getLinearTestsVerbose(results)
@@ -2137,18 +2487,38 @@ getLinearTestsVerbose <- function(res, ...){
 #' are the the first two positions of the object.
 #' 
 #' @param nonlinear_object Non-linear object from the linear test
+#' @param nobs_total [numeric] Number of observations used to estimate the model. Usually the number
+#'  of rows in the main data frame.
+#' @param nobs_model [numeric] Number of observations that are associated with the particular model.
+#'  Optional, defaults to "".
+#' @param nonlinear_object Non-linear object from the linear test
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @param pub_bias_present [bool] If T, the method returns publication bias coefs too.
 #'  Deafults to F.
 #' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
 #'  standard errors as strings wrapped in parentheses. Defaults to T.
-#' @return [vector] - Vector of len 4, with the coefficients
-extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbose_coefs=T, ...){
+#' @return [vector] - Vector of len 6, with the pub bias coefs, effect coefs, and two nobs information coefs.
+extractNonlinearCoefs <- function(nonlinear_object, nobs_total, nobs_model = "",
+                                  add_significance_marks = T, pub_bias_present = F, verbose_coefs=T, ...){
+  # Input validation
+  stopifnot(
+    is.logical(add_significance_marks),
+    is.logical(pub_bias_present),
+    is.logical(verbose_coefs)
+  )
   # Extract coefficients
   effect_coef <- round(as.numeric(nonlinear_object[1,1]), 3)
   effect_se <- round(as.numeric(nonlinear_object[1,2]), 3)
+  if (add_significance_marks){
+    effect_coef <- add_asterisks(effect_coef, effect_se)
+  }
   if (pub_bias_present){
     pub_coef <- round(as.numeric(nonlinear_object[2,1]), 3)
     pub_se <- round(as.numeric(nonlinear_object[2,2]), 3)
+    if (add_significance_marks){
+      pub_coef <- add_asterisks(pub_coef, pub_se)
+    }
   }
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){
@@ -2159,9 +2529,9 @@ extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbos
   }
   # Group and return quietly
   if (pub_bias_present){
-    nonlin_coefs <- c(pub_coef, pub_se, effect_coef, effect_se) # First two for pub bias
+    nonlin_coefs <- c(pub_coef, pub_se, effect_coef, effect_se, nobs_total, nobs_model) # First two for pub bias
   } else {
-    nonlin_coefs <- c("", "", effect_coef, effect_se)
+    nonlin_coefs <- c("", "", effect_coef, effect_se, nobs_total, nobs_model)
   }
   invisible(nonlin_coefs)
 }
@@ -2171,9 +2541,12 @@ extractNonlinearCoefs <- function(nonlinear_object, pub_bias_present = F, verbos
 getWaapResults <- function(data, ...){
   WLS_FE_avg <- sum(data$effect/data$se)/sum(1/data$se)
   WAAP_bound <- abs(WLS_FE_avg)/2.8
-  WAAP_reg <- lm(formula = effect ~ -precision, data = data[data$se<WAAP_bound,])
+  WAAP_data <- data[data$se<WAAP_bound,] # Only adequatedly powered
+  WAAP_reg <- lm(formula = effect ~ -precision, data = WAAP_data)
   WAAP_reg_cluster <- coeftest(WAAP_reg, vcov = vcovHC(WAAP_reg, type = "HC0", cluster = c(data$study_id)))
-  WAAP_coefs <- extractNonlinearCoefs(WAAP_reg_cluster, ...)
+  nobs_total <- nrow(data)
+  nobs_model <- nrow(WAAP_data)
+  WAAP_coefs <- extractNonlinearCoefs(WAAP_reg_cluster, nobs_total, nobs_model, ...)
   invisible(WAAP_coefs)
 }
 
@@ -2182,9 +2555,12 @@ getWaapResults <- function(data, ...){
 
 getTop10Results <- function(data, ...){
   T10_bound <- quantile(data$precision, probs = 0.9) #Setting the 90th quantile bound
-  T10_reg <- lm(formula = effect ~ -precision, data = data[data$precision>T10_bound,]) #Regression using the filtered data
+  T10_data <- data[data$precision>T10_bound,] # Only Top10 percent of obs
+  T10_reg <- lm(formula = effect ~ -precision, data = T10_data) #Regression using the filtered data
   T10_reg_cluster <- coeftest(T10_reg, vcov = vcovHC(T10_reg, type = "HC0", cluster = c(data$study_id)))
-  T10_coefs <- extractNonlinearCoefs(T10_reg_cluster, ...)
+  nobs_total <- nrow(data)
+  nobs_model <- nrow(T10_data)
+  T10_coefs <- extractNonlinearCoefs(T10_reg_cluster, nobs_total, nobs_model, ...)
   invisible(T10_coefs)
 }
 
@@ -2242,7 +2618,8 @@ getStemResults <- function(data, script_path, print_plot = T, theme = "blue",
     dev.off()
   }
   # Save results
-  stem_coefs <- extractNonlinearCoefs(est_stem, ...)
+  nobs_total <- nrow(data)
+  stem_coefs <- extractNonlinearCoefs(est_stem, nobs_total, ...)
   return(stem_coefs)
 }
 
@@ -2289,7 +2666,8 @@ getHierResults <- function(data, ...){
   quiet(
     hier_raw_coefs <- summary(out_h$Deltadraw)
   )
-  hier_coefs <- extractNonlinearCoefs(hier_raw_coefs, ...)
+  nobs_total <- nrow(data)
+  hier_coefs <- extractNonlinearCoefs(hier_raw_coefs, nobs_total, ...)
   invisible(hier_coefs)
 }
 
@@ -2353,9 +2731,9 @@ getSelectionResults <- function(data, script_path, cutoffs = c(1.960),
                      estimates_se[2]   # Pub Bias SE
                      )
   estimates_mat <- matrix(estimates_vec, nrow=2, ncol=2, byrow=TRUE)
-  
   # Extract the coefficients and return as a vector
-  sel_coefs <- extractNonlinearCoefs(estimates_mat, ...)
+  nobs_total <- nrow(data)
+  sel_coefs <- extractNonlinearCoefs(estimates_mat, nobs_total, ...)
   return(sel_coefs)
 }
   
@@ -2391,7 +2769,8 @@ getEndoKinkResults <- function(data, script_path, ...){
   estimates_vec <- runEndoKink(data, verbose = F)
   # Handle output and return verbose coefs
   estimates_mat <- matrix(estimates_vec, nrow=2, ncol=2, byrow=TRUE)
-  endo_kink_coefs <- extractNonlinearCoefs(estimates_mat, ...)
+  nobs_total <- nrow(data)
+  endo_kink_coefs <- extractNonlinearCoefs(estimates_mat, nobs_total, ...)
   return(endo_kink_coefs)
 }
   
@@ -2404,16 +2783,19 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' Then, it calls the functions getWaapResults(), getTop10Results(), getStemResults(), getHierResults(),
 #' getSelectionResults(), and getEndoKinkResults() to get the coefficients for each method. Finally,
 #' it combines the results into a data frame, prints the results to the console, and returns the data
-#' frame silently.
+#' frame silently. You may also choose to add significance level asterisks into the final output.
 #'
 #' @param data The main data frame, onto which all the non-linear methods are then called.
 #' @param script_paths List of paths to all source scripts.
+#' @param add_significance_marks If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @param theme Theme for the graphics. Defaults to "blue".
 #' @param export_graphics If TRUE, export various graphs into the graphics folder.
 #' @param export_path Path to the export folder. Defaults to ./results/graphic.
 #' @param graph_scale Numeric, scale the graph by this number. Defaults to 5.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
-getNonlinearTests <- function(input_data, script_paths, selection_params = NULL, theme = "blue",
+getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
+                              add_significance_marks = T, theme = "blue",
                               export_graphics = T, export_path = './results/graphic',
                               graph_scale = 5, stem_legend_pos = "topleft") {
   # Validate the input
@@ -2436,7 +2818,11 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
       script_path = selection_script_path
     ),
     selection_params,
-    list(pub_bias_present = T, verbose_coefs = T)
+    list(
+      add_significance_marks = add_significance_marks, 
+      pub_bias_present = T,
+      verbose_coefs = T
+    )
   )
   all_stem_params <- c(
     list(
@@ -2448,17 +2834,18 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
       export_path = export_path,
       graph_scale = graph_scale,
       legend_pos = stem_legend_pos,
+      add_significance_marks = add_significance_marks,
       pub_bias_present = F,
       verbose_coefs = T
     )
   )
   # Get coefficients
-  waap_res <- getWaapResults(input_data, pub_bias_present = F, verbose_coefs = T)
-  top10_res <- getTop10Results(input_data, pub_bias_present = F, verbose_coefs = T)
+  waap_res <- getWaapResults(input_data, add_significance_marks = add_significance_marks, pub_bias_present = F, verbose_coefs = T)
+  top10_res <- getTop10Results(input_data, add_significance_marks = add_significance_marks, pub_bias_present = F, verbose_coefs = T)
   stem_res <- do.call(getStemResults, all_stem_params)
-  hier_res <- getHierResults(input_data, pub_bias_present = T, verbose_coefs = T)
+  hier_res <- getHierResults(input_data, add_significance_marks = add_significance_marks, pub_bias_present = T, verbose_coefs = T)
   sel_res <- do.call(getSelectionResults, all_selection_params)
-  endo_kink_res <- getEndoKinkResults(input_data, endo_script_path, pub_bias_present = T, verbose_coefs = T)
+  endo_kink_res <- getEndoKinkResults(input_data, endo_script_path, add_significance_marks = add_significance_marks, pub_bias_present = T, verbose_coefs = T)
   
   # Combine the results into a data frame
   results <- data.frame(
@@ -2469,7 +2856,7 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
     sel_df = sel_res,
     endo_kink_df = endo_kink_res)
   
-  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)", "Total observations", "Model observations")
   colnames(results) <- c("WAAP", "Top10", "Stem", "Hierarch", "Selection", "Endogenous Kink")
   # Print the results into the console and return
   getNonlinearTestsVerbose(results)
@@ -2491,6 +2878,10 @@ getNonlinearTestsVerbose <- function(res, ...){
 #'  and in the second row, the pub bias coefficients.
 #' 
 #' @param exo_object [matrix] Object from the exo tests, should be matrix (M(2,2))
+#' @param nobs_total [numeric] Number of observations used to estimate the model. Usually the number
+#'  of rows in the main data frame.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @param effect_present [bool] If T, the method returns effect coefs. Defaults to T
 #' @param pub_bias_present [bool] If T, the method returns publication bias coefs too.
 #'  Deafults to T.
@@ -2501,9 +2892,12 @@ getNonlinearTestsVerbose <- function(res, ...){
 #'    - Pub bias standard error
 #'    - Mean effect estimate
 #'    - Mean effect standard error
-extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T, verbose_coefs=T){
+extractExoCoefs <- function(exo_object, total_obs, add_significance_marks = T,
+                            effect_present = T, pub_bias_present = T, verbose_coefs=T){
   # Validate input
   stopifnot(
+    is.numeric(total_obs),
+    is.logical(add_significance_marks),
     is.logical(effect_present),
     is.logical(pub_bias_present),
     is.logical(verbose_coefs),
@@ -2522,6 +2916,15 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
   pub_se <- ifelse(pub_bias_present,
                         round(as.numeric(exo_object[2,2]), 3),
                         "")
+  # Add significance marks
+  if (add_significance_marks){
+    if (effect_present){
+      effect_coef <- add_asterisks(effect_coef, effect_se)
+    }
+    if (pub_bias_present){
+      pub_coef <- add_asterisks(pub_coef, pub_se)
+    }
+  }
   # Wrap the standard errors in parenthesis for cleaner presentation
   if (verbose_coefs){
     if (effect_present){
@@ -2532,7 +2935,7 @@ extractExoCoefs <- function(exo_object, effect_present = T, pub_bias_present = T
     }
   }
   # Group and return quietly
-  exo_coefs <- c(pub_coef, pub_se, effect_coef, effect_se)
+  exo_coefs <- c(pub_coef, pub_se, effect_coef, effect_se, total_obs)
   invisible(exo_coefs)
 }
 
@@ -2681,7 +3084,8 @@ getIVResults <- function(data, ...){
     ) 
   iv_coefs_mat <- matrix(IV_coefs_vec, nrow=2, ncol=2, byrow=TRUE)
   # Extract the coefficients and return as a vector
-  iv_coefs_out <- extractExoCoefs(iv_coefs_mat, ...) 
+  total_obs <- nrow(data)
+  iv_coefs_out <- extractExoCoefs(iv_coefs_mat, total_obs, ...) 
   return(list(iv_coefs_out, best_instrument))
 }
 
@@ -2718,6 +3122,8 @@ getMedians <- function(input_data, med_col){
 #' the Maximum Likelihood (ML) or Moments (P) method to estimate the publication bias.
 #'
 #' @param data [data.frame] A data frame containing the effects with their corresponding standard errors.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @inheritDotParams Parameters to pass to the main 'puni_star' call
 #'
 #' @return A vector containing the following four elements:
@@ -2728,7 +3134,7 @@ getMedians <- function(input_data, med_col){
 #' \item{Effect Beyond Bias}{A numeric value indicating the effect beyond bias estimate.}
 #' \item{Effect Standard Error}{A character string indicating the standard error of the effect beyond bias estimate.}
 #' }
-getPUniResults <- function(data, ...){
+getPUniResults <- function(data, add_significance_marks = T, ...){
   # Validation
   stopifnot(
     is.data.frame(data)
@@ -2761,12 +3167,18 @@ getPUniResults <- function(data, ...){
   est_se_verbose <- paste0("(", round(est_se, 3), ")") # Effect Standard Error
   est_pub_test_verbose <- paste0("L = ", round(est_main$L.0, 3)) # Test statistic of p-uni publication bias test
   est_pub_p_val_verbose <- paste0("(p = ", round(est_main$pval.0, 3), ")") # P-value for the L test statistic
+  # Add significance marks
+  if (add_significance_marks && !is.na(est_effect_verbose)){
+    est_effect_verbose <- add_asterisks(est_effect_verbose, est_se)
+  }
   # Return as a vector
+  total_obs <- nrow(data)
   p_uni_coefs_out <- c(
     est_pub_test_verbose,
     est_pub_p_val_verbose,
     est_effect_verbose,
-    est_se_verbose
+    est_se_verbose,
+    total_obs
   )
   return(p_uni_coefs_out)
 }
@@ -2778,13 +3190,15 @@ getPUniResults <- function(data, ...){
 #' @param input_data [data.frame] A data frame containing the necessary columns: "effect", "se", "study_id", "study_size", and "precision".
 #' @param puni_method [character] Method to be used for p-uniform calculation. One of "ML", "P". Defaults to "ML".
 #' @param puni_params [list] Aruments to be used in p-uniform.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #'
 #' @details This function first validates that the necessary columns are present in the input data frame.
 #' If the validation is successful, it performs three tests for publication bias and exogeneity in instrumental variable (IV)
 #' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
 #' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
 #' The results are then printed into the console and returned invisibly.
-getExoTests <- function(input_data, puni_params) {
+getExoTests <- function(input_data, puni_params, add_significance_marks = T) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
@@ -2794,12 +3208,14 @@ getExoTests <- function(input_data, puni_params) {
   # Get arguments
   all_puni_params <- c(
     list(
-      data = input_data
+      data = input_data,
+      add_significance_marks = add_significance_marks
     ),
     puni_params
   )
   # Get coefficients
-  iv_res_list <- getIVResults(input_data, effect_present = T, pub_bias_present = T, verbose_coefs = T)
+  iv_res_list <- getIVResults(input_data, add_significance_marks = add_significance_marks,
+                              effect_present = T, pub_bias_present = T, verbose_coefs = T)
   iv_res <- iv_res_list[[1]] # Coefficients
   iv_best_instrument <- iv_res_list[[2]]
   p_uni_res <- do.call(getPUniResults, all_puni_params)
@@ -2808,7 +3224,7 @@ getExoTests <- function(input_data, puni_params) {
     iv_df = iv_res,
     p_uni_df = p_uni_res)
   # Label names
-  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)")
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)", "Total observations")
   colnames(results) <- c("IV", "p-Uniform")
   # Print the results into the console and return
   out_list <- list(results, iv_best_instrument)
@@ -2840,15 +3256,18 @@ getExoTestsVerbose <- function(result_list, ...){
 #'  "t_stat" and "study_id", and these columns must be numeric.
 #' @param threshold [numeric] The t-statistic threshold used to define statistically significant results. Default is 1.96.
 #' @param width [numeric] The width of the Caliper interval used to define the sub-sample of observations used in the test. Default is 0.05.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @return A numeric vector with four elements: the estimate of the proportion of results reported, the standard error of the estimate,
 #' the number of observations with t-statistics above the threshold, and the number of observations with t-statistics below the threshold.
-runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
+runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05, add_significance_marks = T){
   # Validate input
   required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
     is.numeric(threshold),
     is.numeric(width),
+    is.logical(add_significance_marks),
     all(required_cols %in% colnames(input_data))
   )
   # Add a column indicating which observations have t-stats above (below) threshold
@@ -2869,14 +3288,18 @@ runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
   }
   cal_res <- lm(formula = significant_t ~ t_stat - 1, data = subsetted_data)
   cal_res_coefs <- coeftest(cal_res, vcov = vcovHC(cal_res, type = "const", cluster = c(input_data$study_id)))
-  cal_est <- cal_res_coefs["t_stat", "Estimate"] # Estimate
-  cal_se <- cal_res_coefs["t_stat", "Std. Error"] # Standard Error
+  cal_est <- round(cal_res_coefs["t_stat", "Estimate"], 3) # Estimate
+  cal_se <- round(cal_res_coefs["t_stat", "Std. Error"], 3) # Standard Error
   cal_above <- nrow(subsetted_data[subsetted_data$t_stat > threshold, ]) # N. obs above the threshold
   cal_below <- nrow(subsetted_data[subsetted_data$t_stat < threshold, ]) # N. obs below the threshold
+  # Add significance marks if desired
+  if (add_significance_marks){
+    cal_est <- add_asterisks(cal_est, cal_se)
+  }
   # Return the output
   res <- c(
-    round(cal_est, 3),
-    round(cal_se, 3),
+    cal_est,
+    cal_se,
     cal_above,
     cal_below)
   invisible(res)
@@ -2891,18 +3314,23 @@ runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05){
 #'               Defaults to c(0.05, 0.1, 0.2).
 #' @param verbose [bool] A logical value indicating whether the results should be printed to the console. 
 #'                Defaults to TRUE.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' 
 #' @return A data frame with dimensions nrow = length(widths) * 3 and ncol = length(thresholds),
 #'         where the rows are named with the caliper width and its estimate, standard error, and n1/n2 ratio,
 #'         and the columns are named with the corresponding thresholds.
-getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2), verbose = T){
+getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2),
+                              verbose = T, add_significance_marks = T){
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
     is.vector(thresholds),
     is.vector(widths),
     is.numeric(thresholds),
-    is.numeric(widths)
+    is.numeric(widths),
+    is.logical(verbose),
+    is.logical(add_significance_marks)
   )
   # Initialize the output data frame
   num_thresholds <- length(thresholds)
@@ -2922,9 +3350,10 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
   # Run caliper tests for all thresholds and widths
   for (i in 1:num_thresholds){
     for (j in 1:num_widths){
-      caliper_res <- runCaliperTest(input_data, threshold = thresholds[i], width = widths[j])
-      result_df[j*3-2, i] <- round(caliper_res[1], 5) # Estimate
-      result_df[j*3-1, i] <- paste0("(", round(caliper_res[2], 5), ")") # Standard Error
+      caliper_res <- runCaliperTest(input_data, threshold = thresholds[i], width = widths[j],
+                                    add_significance_marks = add_significance_marks)
+      result_df[j*3-2, i] <- caliper_res[1] # Estimate
+      result_df[j*3-1, i] <- paste0("(", caliper_res[2], ")") # Standard Error
       result_df[j*3, i] <- paste0(caliper_res[3], "/", caliper_res[4]) # n1/n2
     }
   }
@@ -3086,10 +3515,14 @@ getElliottResultsVerbose <- function(res, ...){
 #' @param studylevel[int] Correlation at study level. Options -  none: 0 (default), fixed effects: 1, cluster: 2
 #'  (default 0)
 #' @param verbose [bool] Print out the results into the console in a nice format.
+#' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
+#'  Defaults to T.
 #' @inheritDotParams Parameters for the extractExoCoefs function.
 #' 
 #' @import maive_master_thesis_cala.R
-getMaiveResults <- function(input_data, script_path, method = 3, weight = 0, instrument = 1, studylevel = 2, verbose = T, ...){
+getMaiveResults <- function(input_data, script_path,
+                            method = 3, weight = 0, instrument = 1, studylevel = 2,
+                            verbose = T, add_significance_marks = T, ...){
   # Read the source file
   source(script_path)
   # Validate that the necessary columns are present
@@ -3101,13 +3534,18 @@ getMaiveResults <- function(input_data, script_path, method = 3, weight = 0, ins
     weight %in% c(0,1,2),
     instrument %in% c(0,1),
     studylevel %in% c(0,1,2),
-    is.logical(verbose)
+    is.logical(verbose),
+    is.logical(add_significance_marks)
   )
   # Subset data and rename columns
   input_data <- input_data[,c("effect", "se", "n_obs", "study_id")]
   colnames(input_data) <- c('bs', 'sebs', 'Ns', 'studyid')
   # Run the estimation
   MAIVE <- maive(dat=input_data,method=method,weight=weight,instrument=instrument,studylevel=studylevel)
+  # Add significance marks if desired
+  if (add_significance_marks){
+    MAIVE$beta <- add_asterisks(MAIVE$beta, MAIVE$SE)
+  }
   # Extract (and print) the output
   object<-c("MAIVE coefficient","MAIVE standard error","F-test of first step in IV",
             "Hausman-type test (use with caution)","Critical Value of Chi2(1)")
@@ -3328,6 +3766,19 @@ runVifTest <- function(input_var, input_data, print_all_coefs = F, verbose = T){
   }
   # Run the test
   BMA_reg_test <- lm(formula = BMA_formula, data = input_data)
+  # Check that there are no NAs in the model
+  if (any(is.na(coef(BMA_reg_test)))){
+    problematic_vars <- names(coef(BMA_reg_test))[which(is.na(coef(BMA_reg_test)))]
+    message(paste(
+      "There are some aliased coefficients in one of the suggested BMA model configurations.",
+      "Check colinearity in the data, remove the correlated variables, or try changing the model.",
+      "These are the problematic variables for the model:",
+      paste(problematic_vars, collapse = ", "),
+      "Note that the problem may lie elsewhere too, so removing these variables may not necessarily help.",
+      sep='\n'
+    ))
+    stop("Aliased coefficients in a suggested BMA model.")
+  }
   # Unhandled exception - fails in case of too few observations vs. too many variables
   vif_coefs <- car::vif(BMA_reg_test) #VIF coefficients
   if (verbose){
@@ -3545,14 +3996,7 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
   if (any(print_results == "all", export_graphics == TRUE)){
     # Get the plot theme
     if (adjustable_theme){
-      color_spectrum <- switch(theme,
-        blue = c("#005CAB", "white", "#844ec7"),
-        yellow = c("#AB9800", "white", "#009B0F"),
-        green = c("#009B0F", "white", "#AB0000"),
-        red = c("#AB0000", "white", "#6A0DAB"),
-        purple = c("#6A0DAB", "white", "#005CAB"),
-        stop("Invalid theme type.")
-      )
+      color_spectrum <- getColors(theme, "bma")
     } else {
       color_spectrum <- c("red", "white", "blue") # Default
     }
@@ -3900,7 +4344,7 @@ getBMACoefValue <- function(coef_name, bma_coefs, value_type = "Post Mean"){
 #' @param include_intercept [logical] If TRUE, include intercept in the BPE.
 #'   Defaults to TRUE.
 #' @param get_se [logical] If TRUE, return the formula for SE evaluation instead (for
-#'   explanation see the getBPE function). Defaults to FALSE.
+#'   explanation see the runBPE function). Defaults to FALSE.
 #' @return [character] The formula as a string.
 constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
                                 study_id = 0, include_intercept = TRUE, get_se = FALSE) {
@@ -3931,7 +4375,7 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
       if (study_id != 0){
         coef <- median(bma_data[input_data$study_id==study_id,bma_var]) # Actual data from the study - use median in case of varying data
       } else {
-      # Use author's BPE - variable list information
+        # Use author's BPE - variable list information
         coef <- input_var_list$bpe[input_var_list$var_name == bma_var] # Automatically coerced to character - RRRRRR
       }
       # Handle unassigned variables
@@ -3949,7 +4393,7 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
         }
         coef <- round(coef, 3)
       } else { # char
-      # Handle character coefficients
+        # Handle character coefficients
         stopifnot(is.character(coef)) # Should never occur (non-numeric values autoamtically read as characters)
         if (!coef %in% allowed_characters){
           # Invalid bpe specification for this varaiable
@@ -3958,7 +4402,7 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
             "Current specification: '", coef,"'.\n",
             "Must be one of the following: ", 
             paste(allowed_characters, collapse = ", "), "."
-            )
+          )
           )
           stop("Invalid BPE specification.")
         }
@@ -4016,7 +4460,7 @@ getBPEData <- function(input_data, bma_data){
 #' Defaults to TRUE.
 #' @param verbose_output [logical] If TRUE, print out the output information into the console.
 #' Defaults to TRUE.
-getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
+runBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
                    study_id = 0, include_intercept = TRUE, study_info_verbose = TRUE, verbose_output = TRUE){
   # Check input
   stopifnot(
@@ -4039,6 +4483,7 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
   # Input preprocessing
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) # Extract the coefficients
   bma_vars <- rownames(bma_coefs) # Variables used in the BMA
+   
   
   # Get the BPE estimate
   # Get formula as a string - ((intercept) + coefs * values)
@@ -4053,8 +4498,12 @@ getBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
   bpe_ols <- lm(formula = bma_formula, data = bma_data) # Constructing an OLS model
   bpe_glht <- glht(bpe_ols, linfct = c(bpe_formula_se), # GLHT
                    vcov = vcovHC(bpe_ols, type = "HC0", cluster = c(input_data$study_id)))
-  bpe_se <- as.numeric(summary(bpe_glht)$test$sigma) # Extract output
-  
+  # Prone to errors, so use tryCatch instead
+  bpe_se <- tryCatch({
+    as.numeric(summary(bpe_glht)$test$sigma) # Extract output
+  }, error = function(e){
+    NA # Return NA instead
+  })
   # Extract the results and return
   res <- c(bpe_est, bpe_se) # Result vector - c(BPE Estimate, BPE Standard Error)
   res <- round(res, 3) # Round up
@@ -4093,8 +4542,9 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     res_df <- data.frame("estimate" = numeric(0), "standard_error" = numeric(0))
   }
   # Set study ids to all ids if required
-  if (all(study_ids == "all")){
+  if ("all" %in% study_ids){
     study_ids <- seq(from = 0, to = max(input_data$study_id), by = 1)
+    study_info_verbose <- F # Silence individual study message
   }
   # Loop through study ids
   for (study_id in study_ids) {
@@ -4102,7 +4552,7 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
                          "Author",
                          as.character(input_data$study_name[input_data$study_id == study_id][1]))
     # BPE estimation
-    bpe_result <- getBPE(input_data, input_var_list, bma_model, bma_formula, bma_data, study_id,
+    bpe_result <- runBPE(input_data, input_var_list, bma_model, bma_formula, bma_data, study_id,
                          include_intercept = TRUE,
                          study_info_verbose = study_info_verbose, # Information about study names
                          verbose_output = FALSE) # Individual study outcomes into console - keep FALSE
@@ -4124,6 +4574,12 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     row.names(temp_df) <- study_name
     res_df <- rbind(res_df, temp_df)
   }
+  # Replace NAs with median SE
+  if (all(is.na(res_df$ci_95_lower)) || all(is.na(res_df$ci_95_lower))){
+    stop("All best-practice estimates yielded missing standard errors. Stopping the code.")
+  }
+  temp_df$ci_95_lower[is.na(temp_df$ci_95_lower)] <- median(temp_df$ci_95_lower, na.rm=T)
+  temp_df$ci_95_higher[is.na(temp_df$ci_95_higher)] <- median(temp_df$ci_95_higher, na.rm=T)
   # Get an arbitrary formula to print out in case of verbose output
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) 
   bpe_formula <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
@@ -4151,6 +4607,32 @@ generateBPEResultTableVerbose <- function(res,...){
     print(res$bpe_df)
     cat("\n\n")
   }
+}
+
+#' This function checks if all available studies were used in the BPE run.
+#' 
+#' @param input_data [data.frame] A dataframe that includes a column named 'study_name' which contains
+#' the names of all available studies.
+#' @param bpe_df [data.frame] The BPE result dataframe where the row names should include the
+#' study names from 'input_data' and an 'Author' row. These are the studies used in the BPE run.
+#' @return [logical] Returns TRUE if all studies were used, and FALSE otherwise.
+checkIfAllBPEStudiesUsed <- function(input_data, bpe_df){
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(bpe_df)
+  )
+  all_studies <- unique(input_data$study_name)
+  used_studies <- rownames(bpe_df)
+  if (!"Author" %in% used_studies){
+    return(FALSE)
+  }
+  # Pop the author
+  author_idx <- which(used_studies == "Author")
+  used_studies <- used_studies[-author_idx]
+  if (!all(all_studies %in% used_studies)){
+    return(FALSE)
+  }
+  return(TRUE)
 }
 
 #' getEconomicSignificance
@@ -4248,9 +4730,248 @@ getEconomicSignificanceVerbose <- function(res,...){
   }
 }
 
+#' Sort a data frame based on the estimates and grouping so that the estimates get
+#'  sorted within group, but the grouping order of the whole dataset stays the same.
+#'  In other words, shift rows within groups until estimates within all groups are sorted from lowest to highest.
+#'  
+#' @details The group column can either contain integers or characters. The values can not be NA. During the
+#' algorithm run, all characters are converted into integer factors, and these are then used for sorting.
+#' As for the logic, the algorithm uses two auxiliary vectors and a for loop to iterate over all rows of the
+#' data frame. In each iteration, it identifies the correct final index of the current row, and assigns that
+#' final index to one of the auxiliary vectors called miracle_index. This vector is finally used to sort
+#' the data into the desired form.
+#' 
+#' @param df [data.frame] The data frame to be sorted. Must contain two numeric columns - estimate and group.
+#' 
+#' @return The sorted data frame.
+miracleBPESorting <- function(df){
+  # Validate input
+  stopifnot(
+    is.data.frame(df),
+    all(c("estimate", "group") %in% colnames(df)),
+    is.numeric(df$estimate),
+    !any(is.na(df$group))
+  )
+  group_verbose_names <- copy(df$group) # Save the verbose names
+  df$row_names <- rownames(df) # Rownames to col
+  df$group <- as.integer(factor(df$group)) # Group, factored
+  original_group <- copy(df$group) # Save the original grouping (factored)
+  # stopifnot(all)
+  # Create a new column that stores the sorted rank within each group
+  df <- df %>%
+    group_by(group) %>%
+    mutate(rank_within_group = row_number(estimate)) %>%
+    ungroup()
+  # Sort the data frame using the new column
+  df <- df %>%
+    arrange(group, rank_within_group)
+  df$original_group <- original_group
+  # Initialize two objects to store information for the algorithm
+  miracle_index <- rep(NA, nrow(df))
+  group_scale_vector <- rep(1, length(unique(df$original_group))) # A vector for storing placement index values
+  # The miracle algorithm
+  for(i in 1:nrow(df)){
+    current_group <- df$original_group[i] # Group for this iteration 
+    current_rank_within_group <- group_scale_vector[current_group] # Within group rank of the row to fetch
+    desired_row_index <- which(df$group == current_group & df$rank_within_group == current_rank_within_group) # Index of the row to fetch
+    miracle_index[desired_row_index] <- i # Assign the index to the next expected value (lowest of current group)
+    group_scale_vector[current_group] <- current_rank_within_group + 1 # Increase the expected within group rank for next iteration
+  }
+  # Sort the data frame to its final order
+  df$miracle_index <- miracle_index
+  df <- df %>%
+    arrange(miracle_index)
+  # Drop redundant columns
+  df$miracle_index <- NULL
+  df$original_group <- NULL
+  df$rank_within_group <- NULL
+  df$group <- group_verbose_names # Back to verbose
+  df <- column_to_rownames(df, var = "row_names") # Restore rownames
+  # Validate correct sorting
+  for (group_id in unique(df$group)){
+    group_data <- as.vector(unlist(df[df$group == group_id,"estimate"]))
+    group_is_sorted <- all(group_data == sort(group_data))
+    if (!group_is_sorted){
+      message(paste("The miracle algorithm broke down. Check sorting of group",group_id))
+      stop("The miracle is over.")
+    }
+  }
+  return(df)
+}
+
+
+#' @title Graph Best Practice Estimates (BPEs)
+#'
+#' @description Create and export graphs of best practice estimates. These are grouped
+#' by factors, and for every factor, a new plot is created. All of them are then plotted
+#' and exported in a single list. If desired, these plots are also automatically saved
+#' in the graphics folder.
+#' 
+#' @details For different types of factors, different grouping is employed. For dummies, a
+#' graph is created for each variable (value) of that dummy. For categoric variables, it is
+#' created for each category. For single numberic factors, median of that column is used to split
+#' the data into two factors, and these are then graphed. Always, the author's best practice
+#' estimate is highlighted in the graph.
+#' Furthermore, the function employs a custom sorting algorithm to allow BPEs of different factors
+#' to stand out from one another in the graph despite the lack of a usable x axis (in the current
+#' form of the function, simple integers are used for x-axis indexing).
+#' 
+#' @param bpe_df [data.frame] A data frame containing the best practice estimates and their CIs.
+#' @param input_data [data.frame] A data frame containing the main data.
+#' @param input_var_list [data.frame] A data frame with variable information.
+#' @param bpe_factors [numeric] A vector of numeric values specifying the variable groups to factor by.
+#' If NULL, the function will stop and return an error message. Defaults to NULL.
+#' @param graph_type [character] One of "density", "miracle". Graph the graph either as densities, or
+#'  using the miracle sorting algorithm. Defaults to "density".
+#' @param theme [character] A string specifying the color theme for the plots. Defaults to "blue".
+#' @param export_graphics [logical] A boolean value indicating whether or not to export the graphs as .png files.
+#' Defaults to TRUE.
+#' @param graphic_results_folder_path [character] A string representing the path to the folder
+#' where the graphics should be saved. If export_graphics is TRUE and this parameter is NA,
+#' the function will stop and return an error message. Defaults to NA.
+#' @param bpe_graphs_scale [numeric] A number specifying the scale for the exported .png graphics.
+#' It affects both the width and the height of the graphics. Default is 6.
+#'
+#' @return [list] A list of ggplot objects representing the BPE graphs.
+#'
+#' @examples
+#' \dontrun{
+#' # Assuming appropriate input data is available
+#' bpe_graphs = graphBPE(bpe_df, input_data, input_var_list, bpe_factors = c(1,2,3), theme = "blue",
+#' export_graphics = TRUE, graphic_results_folder_path = "path/to/folder", bpe_graphs_scale = 5)
+#' }
+#'
+#' @seealso \code{\link{ggplot2}}
+#' 
+#' @export
+graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, graph_type = "density", theme = "blue",
+                     export_graphics = T, graphic_results_folder_path = NA, bpe_graphs_scale = 6
+                     ){
+  # Input validation
+  stopifnot(
+    is.data.frame(bpe_df),
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.character(graph_type),
+    is.logical(export_graphics),
+    is.numeric(bpe_graphs_scale),
+    nrow(bpe_df) > 0 # At least some data
+  )
+  if (length(bpe_factors) < 1){
+    stop("You must specify at least one factor to group the BPE plots by.")
+  }
+  if (all(is.na(bpe_factors))){
+    stop("Please specify at least one non-NA BPE graph grouping factor.")
+  }
+  if (!all(is.numeric(bpe_factors))){
+    stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
+  }
+  if (!graph_type %in% c("density", "miracle")){
+    stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"miracle\""))
+  }
+  # Shuffle the author BPE somewhere into the middle of the estimates
+  author_row_bool <- rownames(bpe_df) == "Author"
+  if (sum(author_row_bool) == 1){
+    author_row <- bpe_df[author_row_bool,]
+    author_rank <- match(author_row$estimate, sort(bpe_df$estimate)) # Rank among studies
+    bpe_df <- bpe_df[!author_row_bool,] # Drop the author index row
+    bpe_df <- rbind(bpe_df[1:(author_rank-1), ], author_row, bpe_df[author_rank:nrow(bpe_df), ]) # Insert into a new index
+  }
+  # Get the theme to use
+  current_theme <- getTheme(theme) +
+    theme(legend.title = element_blank(), # No legend title
+          legend.position = "top")
+  mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
+  tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
+  # Get the information about graphs to use
+  clean_bpe_df <- bpe_df
+  bpe_studies <- rownames(bpe_df)
+  bpe_names <- paste0("bpe_", seq(length(bpe_factors))) # bpe_1, bpe_2,...
+  bpe_names_counter <- 1
+  bpe_graphs <- list()  
+  for (bpe_factor in bpe_factors){
+    bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
+    vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
+    # Construct an auxiliary group column
+    # Group the main data to the same length as the BPE df
+    var_data <- input_data %>%
+      subset(study_name %in% bpe_studies) %>%
+      select(c("study_name", all_of(vars_to_use))) %>%
+      group_by(study_name) %>%
+      summarise(across(everything(), \(x) median(x, na.rm = T))) %>%
+      select(-c("study_name")) # Drop the study_name col
+    # Validate correct grouping
+    expected_studies <- ifelse("Author" %in% bpe_studies, length(bpe_studies) - 1, length(bpe_studies))
+    if (nrow(var_data) != expected_studies){
+      stop("Incorrect grouping of variables in construction of the auxiliary group BPE graph column.")
+    }
+    # Generate the group column using a custom function
+    group_col <- generateGroupColumn(var_data, input_var_list)
+    # Put back the author's bpe
+    if ("Author" %in% bpe_studies){
+      author_idx <- which(bpe_studies == "Author")
+      group_col <- append(group_col, "Author", after = author_idx - 1)
+    }
+    # Assign the group column to the data
+    if (length(group_col) != nrow(bpe_df)){
+      stop("Incorrect length of the generated group column in BPE graphing.")
+    }
+    bpe_df$group <- group_col
+    # Get custom colors for the current group of variables
+    bpe_palette <- getColors(theme, "bpe", submethod = graph_type)
+    # Construct the graph
+    if (graph_type == "miracle"){
+      # Sort the data using the miracle sort algorithm so that estimates are sorted within groups
+      bpe_df <- miracleBPESorting(bpe_df)
+      bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate, color = group)) +
+        geom_point() +
+        geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = F) +
+        labs(x = "Study id", y = "Best-practice estimate")
+    } else if (graph_type == "density"){
+      bpe_graph <- ggplot(data = subset(bpe_df, rownames(bpe_df) != "Author"),
+                          aes(x = estimate, y = after_stat(density), color = group)) +
+        geom_density(aes(x = estimate), alpha = 0.2, linewidth = 1) +
+        labs(x = "Best-practice estimate", y = "Density")
+    } else {
+      stop("Incorrect graph specification")
+    }
+    # Add the theme
+    bpe_graph <- bpe_graph +
+      scale_color_brewer(palette = bpe_palette) +
+      current_theme
+    # Plot the plot
+    suppressWarnings(print(bpe_graph))
+    # Drop the auxiliary group column
+    bpe_df$group <- NULL
+    # Save the graph and its name
+    current_bpe_name <- bpe_names[bpe_names_counter]
+    bpe_graphs[[current_bpe_name]] <- bpe_graph
+    bpe_names_counter <- bpe_names_counter + 1
+  }
+  # Export the graphs
+  if (export_graphics){
+    if (is.na(graphic_results_folder_path)){
+      stop("You must specify a path to the graphic results folder.")
+    }
+    for (name in bpe_names){
+      # Check the path to the graph
+      full_graph_path <- paste0(graphic_results_folder_path, name,'.png')
+      hardRemoveFile(full_graph_path)
+      # Fetch the graph object from the graphs list object and graph the object
+      graph_object <- bpe_graphs[[name]]
+      suppressWarnings(
+        ggsave(filename = full_graph_path, plot = graph_object,
+               width = 800*bpe_graphs_scale, height = 736*bpe_graphs_scale, units = "px")
+      )
+    }
+  }
+  # Return the graphs
+  return(bpe_graphs)
+}
+
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################
 
-getRoBMA <- function(input_data, verbose, ...){
+getRoBMA <- function(input_data, verbose, add_significance_marks = T, ...){
   # Validate input
   stopifnot(
     is.data.frame(input_data),
@@ -4280,6 +5001,19 @@ getRoBMA <- function(input_data, verbose, ...){
     summary(robma_est)$estimates
   )
   names(robma_out) <- c("Components","Estimates")
+  rownames(robma_out$Estimates) <- c("Effect", "Standard Error")
+  # Handle data types for easier object handling
+  robma_out$Estimates <- as.data.frame(robma_out$Estimates)
+  # Add significance marks - a bit wonky
+  if (add_significance_marks){
+    estimates_with_asterisks <- sapply(robma_out$Estimates, function(col){
+      est <- round(col[1], 3)
+      se <- round(col[2], 3)
+      add_asterisks(est, se) # Return the asterisk'ed estimate
+    })
+    robma_out$Estimates["Effect",] <- as.vector(estimates_with_asterisks)
+    robma_out$Estimates["Standard Error", ] <- round(as.numeric(robma_out$Estimates["Standard Error", ]), 3)
+  }
   # Return the output
   if (verbose) {
     getRoBMAVerbose(robma_out, verbose = verbose)
@@ -4299,6 +5033,7 @@ getRoBMAVerbose <- function(res,...){
     cat("\n")
     print(robma_components)
     cat("\n")
+    print("Model-averaged estimates:")
     print(robma_estimates)
     cat("\n\n")
   }
@@ -4470,8 +5205,7 @@ exportTable <- function(results_table, user_params, method_name){
   stopifnot(
     is.data.frame(results_table),
     is.list(user_params),
-    is.character(method_name),
-    method_name %in% names(user_params$export_options$export_methods) # Only recognized exports
+    is.character(method_name)
   )
   # Define the export paths
   numeric_results_folder <- user_params$folder_paths$numeric_results_folder # Export folder
@@ -4484,6 +5218,7 @@ exportTable <- function(results_table, user_params, method_name){
   use_rownames <- !all(1:n == row_names) # Rows are sequential integers
   # Export the table if it does not exist
   verbose_info <- user_params$export_options$export_methods[[method_name]] # Verbose name for the message
+  verbose_info <- ifelse(is.null(verbose_info), method_name, verbose_info) # Use non-verbose info if verbose not available
   identical_file_exists <- writeIfNotIdentical(results_table, results_path, use_rownames)
   if (!identical_file_exists){
     print(paste("Writing the", tolower(verbose_info), "results into", results_path))
@@ -4513,9 +5248,12 @@ hardRemoveFile <- function(file_path){
 #' 
 #' @export
 zipFolders <- function(zip_name, dest_folder, ...){
+  # Get today's date
+  today <- Sys.Date()
+  zip_date <- format(today, "%m-%d-%y")
   # Get arguments and paths
   folder_names <- as.vector(unlist(list(...))) # Folders to be zipped, character vector
-  zip_file_path <- file.path(paste0(dest_folder, zip_name, ".zip"))
+  zip_file_path <- file.path(paste0(dest_folder, zip_name, "_", zip_date, ".zip"))
   if(!dir.exists(dest_folder)){
     dir.create(dest_folder, recursive = TRUE)
   }
@@ -4542,20 +5280,38 @@ zipFoldersVerbose <- function(zip_file_path){
 
 ######################### GRAPHICS #########################
 
-#' Specify the type of theme to use and return the theme
-#' 
-#' Available choices - main, yellow, green, red
-getTheme <- function(theme_type, x_axis_tick_text = "black"){
-  # Validate the theme type
-  available_themes <- c("blue", "yellow", "green", "red", "purple")
-  if (!theme_type %in% available_themes){ # Loaded from source
-    message(paste(theme_type, "is not a valid theme."))
+#' Get a list of themes that the script recognizes
+getAvailableThemes <- function(){
+  c("blue", "yellow", "green", "red", "purple")
+}
+
+#' Validate that a theme is available for use
+validateTheme <- function(theme){
+  available_themes <- getAvailableThemes()
+  if (!is.character(theme)){
+    message(paste(
+      paste(theme,"is not a valid theme."),
+      "Please choose one of the following themes:",
+      paste(available_themes, collapse = ", "),
+      sep = "\n"
+    ))
+  }
+  if (!theme %in% available_themes){ # Loaded from source
+    message(paste(theme, "is not a valid theme."))
     message("You must choose one of the following themes:")
     message(available_themes)
     stop("Invalid theme")
   }
+}
+
+#' Specify the type of theme to use and return the theme
+#' 
+#' Available choices - main, yellow, green, red
+getTheme <- function(theme, x_axis_tick_text = "black"){
+  # Validate the theme
+  validateTheme(theme)
   # Get specific colors
-  theme_color <- switch(theme_type,
+  theme_color <- switch(theme,
     blue = "#DCEEF3",
     yellow = "#FFFFD1",
     green = "#D1FFD1",
@@ -4565,10 +5321,101 @@ getTheme <- function(theme_type, x_axis_tick_text = "black"){
   )
   # Construct and return the theme
   theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid"),
-        axis.text.x = ggtext::element_markdown(color = x_axis_tick_text),
-        axis.text.y = ggtext::element_markdown(color = "black"),
-        panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
-        plot.background = element_rect(fill = theme_color))
+      axis.text.x = ggtext::element_markdown(color = x_axis_tick_text),
+      axis.text.y = ggtext::element_markdown(color = "black"),
+      panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
+      plot.background = element_rect(fill = theme_color))
+}
+
+getColors <- function(theme, method, submethod = NA, ...){
+  validateTheme(theme)
+  colors <- switch(method,
+    prima_facie_graphs = switch(submethod,
+      #\dontrun $display.brewer.all()
+      histogram =  switch(theme, # Get a scale name instead
+        blue = "Paired",
+        yellow =  "YlOrRd",
+        green =  "Set2",
+        red =  "Reds",
+        purple = "Purples",
+        stop(paste("Invalid theme type", theme))
+      ),
+      density = switch(theme,
+        blue = "Paired",
+        yellow = "RdYlBu",
+        green = "Paired",
+        red = "RdBu",
+        purple = "Purples",
+        stop(paste("Invalid theme type", theme))
+      ),
+      stop(paste("Invalid submethod type:", submethod))
+    ),
+    box_plot = switch(theme,
+      blue = list("#005CAB","#e6f3ff","#0d4ed1"),
+      yellow = list("#AB9800","#FFF5CC","#D1B00D"),
+      green = list("#009B0F","#CCF3D1","#0DD146"),
+      red = list("#AB0000","#FFCCCC","#D10D0D"),
+      purple = list("#6A0DAB","#EAD6F5","#900DAB"),
+      stop(paste("Invalid theme type", theme))
+    ),
+    funnel_plot = switch(theme,
+      blue = "#1261ff",
+      yellow =  "#D1B00D",
+      green =  "#00FF00",
+      red =  "#FF0000",
+      purple = "#800080",
+      stop(paste("Invalid theme type", theme))
+    ),
+    t_stat_histogram = switch(submethod,
+      main = switch(theme,
+        blue = "#1261ff",
+        yellow =  "#D1B00D",
+        green =  "#00FF00",
+        red =  "#FF0000",
+        purple = "#800080",
+        stop(paste("Invalid theme type", theme))
+      ),
+      density = switch(theme,
+        blue = "#013091",
+        yellow = "#b89b00",
+        green = "#008000",
+        red = "#b30000", 
+        purple = "#660066",
+        stop(paste("Invalid theme type", theme))
+      ),
+      stop(paste("Invalid submethod for t-statistic histogram:", submethod))
+    ),
+    bma = switch(theme,
+      blue = c("#005CAB", "white", "#844ec7"),
+      yellow = c("#AB9800", "white", "#009B0F"),
+      green = c("#009B0F", "white", "#AB0000"),
+      red = c("#AB0000", "white", "#6A0DAB"),
+      purple = c("#6A0DAB", "white", "#005CAB"),
+      stop(paste("Invalid theme type", theme))
+    ),
+    bpe = switch(submethod,
+      #\dontrun $display.brewer.all()
+      miracle =  switch(theme,
+        blue = "Paired",
+        yellow =  "YlOrRd",
+        green =  "Set2",
+        red =  "Reds",
+        purple = "Purples",
+        stop(paste("Invalid theme type", theme))
+      ),
+      density = switch(theme,
+        blue = "Paired",
+        yellow = "RdYlBu",
+        green = "Paired",
+        red = "RdBu",
+        purple = "Purples",
+        stop(paste("Invalid theme type", theme))
+      ),
+      stop(paste("Invalid submethod type:", submethod))
+    ),
+    stop(paste("Invalid method:", method))
+  )
+  return(colors)
 }
 
 #' Export the graph into an HTML file using the plotly package
