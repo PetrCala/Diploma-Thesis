@@ -163,20 +163,20 @@ Here is a list and explanation of the available methods:
 	- *Precision-weighted OLS*
 * **Non-linear tests** - Construct 6 non-linear models for publication bias. These are:
 	- *Weighted Average of Adequately Powered* [Ioannidis et al., 2017](http://pinguet.free.fr/ioannidis17.pdf)
-	- *Top10* [Stanley et al., 2010](https://www.tandfonline.com/doi/abs/10.1198/tast.2009.08205)
-	- *Stem-based method* [Furukawa, 2019](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3362053)
-	- *Hierarchial Bayes* [Allenby & Rossi (2006)](https://books.google.com/books?hl=en&lr=&id=RymGgxN3zD4C&oi=fnd&pg=PA418&dq=hierarchical+bayes&ots=a4t-KvUdua&sig=K7V5JgPF4_gJll2d7reATSQ8I-I)
-	- *Selection model* [Andrews & Kasy, 2019](javascript:void(0))
-	- *Endogenous Kink model* [Bom & Rachinger, 2020](javascript:void(0))
+	- *Top10* - [Stanley et al., 2010](https://www.tandfonline.com/doi/abs/10.1198/tast.2009.08205)
+	- *Stem-based method* - [Furukawa, 2019](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3362053)
+	- *Hierarchial Bayes* - [Allenby & Rossi (2006)](https://books.google.com/books?hl=en&lr=&id=RymGgxN3zD4C&oi=fnd&pg=PA418&dq=hierarchical+bayes&ots=a4t-KvUdua&sig=K7V5JgPF4_gJll2d7reATSQ8I-I)
+	- *Selection model* - [Andrews & Kasy, 2019](javascript:void(0))
+	- *Endogenous Kink model* - [Bom & Rachinger, 2020](javascript:void(0))
 * **Tests relaxing exogeneity** - Construct 2 models relaxing the exogeneity assumption. These are:
 	- *Instrumental Variable regression*
-	- *p-uniform** [van Aert & van Assen (2018)](https://cloud.r-project.org/web/packages/puniform/puniform.pdf)
+	- *p-uniform** - [van Aert & van Assen (2018)](https://cloud.r-project.org/web/packages/puniform/puniform.pdf)
 * **P-hacking tests** - Construct 3 models that detect p-hacking. These are:
 	- *Caliper tests* - [Gerber & Malhotra, 2008](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=43eb85dd4af8c64cf6bacba73c39b1027606bcdf)
 	- *Elliott tests* - [Elliot et al. (2022)](https://onlinelibrary.wiley.com/doi/abs/10.3982/ECTA18583)
 	- *MAIVE estimator* -[Irsova et al., 2023](https://www.econstor.eu/handle/10419/268683)
 * **Bayesian Model Averaging** - Automatically construct a valid formula and run Bayesian model averaging, extracting the coefficients into tables and creating graphs also. Is highly customizable within the user parameters script.
-* **Frequentist Model Averaging** - Construct a Frequentist model averaging model [source](https://www.sciencedirect.com/science/article/pii/S0304407615000342)
+* **Frequentist Model Averaging** - Construct a Frequentist model averaging model ([source](https://www.sciencedirect.com/science/article/pii/S0304407615000342))
 * **Model Averaging variables description table** - Combine the results of both model averaging approaches into a single, clean table.
 * **Best-practice estimate** - For studies of your choice, generate best-practice estimates. Using one of these estimates, also calculate economic significance of variables with high PIP in the BMA model. This method requires a BMA model as input.
 * **Best-practice estimate: Graphs** - Generate smart graphs that display the distribution of the generated best-practice estimates. For this, you must specify which variables you wish to use as factors - the method will evaluate various subsets of each such specified variable. These subsets are determined automatically using either the most common value of each study, or median value as a cutoff point, among other logic.
