@@ -265,10 +265,10 @@ if (run_this$effect_summary_stats){
 
 ###### PRIMA FACIE GRAPHS ######
 if (run_this$prima_facie_graphs){
-  # prima_facie_graphs <- runCachedFunction(
-  #   graphBPE, user_params,
-  #   verbose_function = nullVerboseFunction,
-  prima_facie_graphs <- getPrimaFacieGraphs(
+  print("Generating the prima facie graphs...")
+  prima_facie_graphs <- runCachedFunction(
+    getPrimaFacieGraphs, user_params,
+    verbose_function = nullVerboseFunction,
     data, var_list,
     prima_factors = adj_params$prima_factors,
     prima_type = adj_params$prima_type,
