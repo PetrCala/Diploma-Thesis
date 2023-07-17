@@ -1645,8 +1645,8 @@ generateGroupColumn <- function(var_data, input_var_list){
 #' 
 #' @export
 getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL, prima_type = "density",
-                                prima_hide_outliers = T, prima_bins = 80, theme = "blue", export_graphics = T,
-                                graphic_results_folder_path = NA, prima_scale = 3){
+                                prima_hide_outliers = T, prima_bins = 80, theme = "blue",
+                                export_graphics = T, graphic_results_folder_path = NA, prima_scale = 3){
   # Input validation
   stopifnot(
     is.data.frame(input_data),
@@ -1723,14 +1723,16 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
     prima_graph <- prima_graph + 
       labs(x = "Effect", y = "Density") + 
       current_theme
-    # Plot the plot
-    suppressWarnings(print(prima_graph))
     # Drop the auxiliary group column
     prima_df$group <- NULL
     # Save the graph and its name
     current_prima_name <- prima_names[prima_names_counter]
     prima_graphs[[current_prima_name]] <- prima_graph
     prima_names_counter <- prima_names_counter + 1
+  }
+  # Print the output - do not reprint during cache runs
+  for (prima_graph in prima_graphs){
+    suppressWarnings(print(prima_graph))
   }
   # Export the graphs
   if (export_graphics){
@@ -4929,7 +4931,7 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
       bpe_graph <- ggplot(data = subset(bpe_df, rownames(bpe_df) != "Author"),
                           aes(x = estimate, y = after_stat(density), color = group)) +
         geom_density(aes(x = estimate), alpha = 0.2, linewidth = 1) +
-        labs(x = "Best-practice estiamte", y = "Density")
+        labs(x = "Best-practice estimate", y = "Density")
     } else {
       stop("Incorrect graph specification")
     }
@@ -5007,7 +5009,7 @@ getRoBMA <- function(input_data, verbose, add_significance_marks = T, ...){
     estimates_with_asterisks <- sapply(robma_out$Estimates, function(col){
       est <- round(col[1], 3)
       se <- round(col[2], 3)
-      add_asterisks(est, se) # Return the asterisk'ed estiamte
+      add_asterisks(est, se) # Return the asterisk'ed estimate
     })
     robma_out$Estimates["Effect",] <- as.vector(estimates_with_asterisks)
     robma_out$Estimates["Standard Error", ] <- round(as.numeric(robma_out$Estimates["Standard Error", ]), 3)
