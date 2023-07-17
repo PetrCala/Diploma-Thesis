@@ -124,10 +124,10 @@ invisible(sapply(unmodifiable_folders, validateFolderExistence, require_existenc
 
 # Clean result and data folders
 folders_to_clean_forcefully <- c(
-  folder_paths$graphic_results_folder,
   folder_paths$numeric_results_folder
 )
 folders_to_clean_old_files_only <- c(
+  folder_paths$graphic_results_folder,
   folder_paths$temp_data_folder
 )
 invisible(sapply(folders_to_clean_forcefully, cleanFolder, force = T)) # Clean all files

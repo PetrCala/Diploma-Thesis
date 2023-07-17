@@ -4987,6 +4987,35 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
 
 ###### BPE SUMMARY STATISTICS ######
 
+#' @title getBPESummaryStats
+#' 
+#' @description
+#' Generate a table containing various summary statistics for those Best-practice estimates across
+#' literature that are listed in the "bpe_df" object. Grouping factors are necessary to specify for which
+#' variables these statistics should be printed, as well as for what confidence level. A data set of
+#' the summary statistics is returned.
+#' 
+#' @details
+#' The function employs several auxiliary functions, including an automatic splitting of estimates into groups
+#' based values of a specified variable (see generateGroupColumn() and addGroupColumnToBPEData()).
+#' 
+#' 
+#' @note
+#' This function works very similarly in principle to the `getEffectSummaryStats()` function.
+#'  Feel free to check that function's documentation as well.
+#' 
+#' @param bpe_df [data.frame] Data frame with the Best-practice estimates. Must contain the columns
+#'  "estimate", "ci_95_lower', and "ci_95_higher"
+#' @param input_data [data.frame] Main data frame.
+#' @param input_var_list [data.frame] Variable information data frame.
+#' @param bpe_factors [numeric] A vector of numeric values specifying the variable groups to factor by.
+#' If NULL, the function will stop and return an error message. Defaults to NULL.
+#' @param conf.level [numeric] Confidence level for the confidence interval. Must be between 0 and 1.
+#' Defaults to 0.95
+#' 
+#' @return [data.frame] A data frame with the summary statistics
+#' 
+#' @export
 getBPESummaryStats <- function (bpe_df, input_data, input_var_list, bpe_factors = NULL, conf.level = 0.95) {
   # Validate input
   stopifnot(
@@ -5090,6 +5119,9 @@ getBPESummaryStatsVerbose <- function(res, ...){
 
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################
 
+#' Run the main RoBMA method using the main data frame and return the results.
+#' Automatically add significance marks if desired. Is able to inherit parameters
+#' that are then fed into the RoBMA() function call. 
 getRoBMA <- function(input_data, verbose, add_significance_marks = T, ...){
   # Validate input
   stopifnot(
