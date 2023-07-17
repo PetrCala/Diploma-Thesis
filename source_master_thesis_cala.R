@@ -1460,7 +1460,6 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       var_sd <- round(sd(input_effect_data), 3)
       var_ci_lower <- round(var_mean - var_sd*z, 3)
       var_ci_upper <- round(var_mean + var_sd*z, 3)
-      # var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
       var_weighted_mean <- round(weighted.mean(input_effect_data, w = 1/input_study_size_data),3)
       var_ci_lower_w <- round(var_weighted_mean - var_sd*z, 3)
       var_ci_upper_w <- round(var_weighted_mean + var_sd*z, 3)
@@ -4799,6 +4798,47 @@ miracleBPESorting <- function(df){
   return(df)
 }
 
+#' An auxiliary method for adding a "group" column to the bpe data object. Used for 
+#' graphing BPE graphs, and for generating the BPE summary statistics table. The output
+#' of the function is the same dataframe as the inputted "bpe_df" object, only with an
+#' extra "group" column.
+addGroupColToBPEData <- function(bpe_df, vars_to_use, input_data, input_var_list){
+  # Validate input
+  stopifnot(
+    is.data.frame(bpe_df),
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    all(colnames(bpe_df) == c("estimate", "ci_95_lower", "ci_95_higher"))
+  )
+  bpe_studies <- rownames(bpe_df)
+  # Group the main data to the same length as the BPE df
+  var_data <- input_data %>%
+    subset(study_name %in% bpe_studies) %>%
+    select(c("study_name", all_of(vars_to_use))) %>%
+    group_by(study_name) %>%
+    summarise(across(everything(), \(x) median(x, na.rm = T))) %>%
+    select(-c("study_name")) # Drop the study_name col
+  # Validate correct grouping
+  expected_studies <- ifelse("Author" %in% bpe_studies, length(bpe_studies) - 1, length(bpe_studies))
+  if (nrow(var_data) != expected_studies){
+    stop("Incorrect grouping of variables in construction of the auxiliary group BPE graph column.")
+  }
+  # Generate the group column using a custom function
+  group_col <- generateGroupColumn(var_data, input_var_list)
+  # Put back the author's bpe
+  if ("Author" %in% bpe_studies){
+    author_idx <- which(bpe_studies == "Author")
+    group_col <- append(group_col, "Author", after = author_idx - 1)
+  }
+  # Assign the group column to the data
+  if (length(group_col) != nrow(bpe_df)){
+    stop("Incorrect length of the generated group column in BPE graphing.")
+  }
+  bpe_df$group <- group_col
+  return(bpe_df)
+}
+
+
 
 #' @title Graph Best Practice Estimates (BPEs)
 #'
@@ -4861,10 +4901,10 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
     stop("You must specify at least one factor to group the BPE plots by.")
   }
   if (all(is.na(bpe_factors))){
-    stop("Please specify at least one non-NA BPE graph grouping factor.")
+    stop("Please specify at least one non-NA BPE grouping factor.")
   }
   if (!all(is.numeric(bpe_factors))){
-    stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
+    stop("All BPE factors must be numeric values spectifying the variable groups to factor by.")
   }
   if (!graph_type %in% c("density", "miracle")){
     stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"miracle\""))
@@ -4885,38 +4925,14 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
   tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Get the information about graphs to use
   clean_bpe_df <- bpe_df
-  bpe_studies <- rownames(bpe_df)
   bpe_names <- paste0("bpe_", seq(length(bpe_factors))) # bpe_1, bpe_2,...
   bpe_names_counter <- 1
   bpe_graphs <- list()  
   for (bpe_factor in bpe_factors){
     bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
     vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
-    # Construct an auxiliary group column
-    # Group the main data to the same length as the BPE df
-    var_data <- input_data %>%
-      subset(study_name %in% bpe_studies) %>%
-      select(c("study_name", all_of(vars_to_use))) %>%
-      group_by(study_name) %>%
-      summarise(across(everything(), \(x) median(x, na.rm = T))) %>%
-      select(-c("study_name")) # Drop the study_name col
-    # Validate correct grouping
-    expected_studies <- ifelse("Author" %in% bpe_studies, length(bpe_studies) - 1, length(bpe_studies))
-    if (nrow(var_data) != expected_studies){
-      stop("Incorrect grouping of variables in construction of the auxiliary group BPE graph column.")
-    }
-    # Generate the group column using a custom function
-    group_col <- generateGroupColumn(var_data, input_var_list)
-    # Put back the author's bpe
-    if ("Author" %in% bpe_studies){
-      author_idx <- which(bpe_studies == "Author")
-      group_col <- append(group_col, "Author", after = author_idx - 1)
-    }
-    # Assign the group column to the data
-    if (length(group_col) != nrow(bpe_df)){
-      stop("Incorrect length of the generated group column in BPE graphing.")
-    }
-    bpe_df$group <- group_col
+    # Construct and add an auxiliary group column
+    bpe_df <- addGroupColToBPEData(bpe_df, vars_to_use, input_data, input_var_list)
     # Get custom colors for the current group of variables
     bpe_palette <- getColors(theme, "bpe", submethod = graph_type)
     # Construct the graph
@@ -4967,6 +4983,109 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
   }
   # Return the graphs
   return(bpe_graphs)
+}
+
+###### BPE SUMMARY STATISTICS ######
+
+getBPESummaryStats <- function (bpe_df, input_data, input_var_list, bpe_factors = NULL, conf.level = 0.95) {
+  # Validate input
+  stopifnot(
+    is.data.frame(bpe_df),
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.numeric(conf.level),
+    conf.level > 0,
+    conf.level < 1,
+    all(colnames(bpe_df) == c("estimate", "ci_95_lower", "ci_95_higher"))
+  )
+  if (length(bpe_factors) < 1){
+    stop("You must specify at least one factor to group the BPE plots by.")
+  }
+  if (all(is.na(bpe_factors))){
+    stop("Please specify at least one non-NA BPE grouping factor.")
+  }
+  if (!all(is.numeric(bpe_factors))){
+    stop("All BPE factors must be numeric values spectifying the variable groups to factor by.")
+  }
+  if (nrow(bpe_df) < 2){
+    stop("There are not enough estimates to compute summary statistics. Please specify at least two studies to run the BPE for.")
+  }
+  # Constants
+  z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) # Z value for conf. int. calculation
+  # Output columns
+  bpe_stat_names <- c("Data subset", "Mean", "CI lower", "CI upper", "Median", "Min", "Max", "SD", "Studies")
+  # Initialize output data frame
+  df <- data.frame(col1 = character(),
+                   col2 = numeric(),
+                   col3 = numeric(),
+                   col4 = numeric(),
+                   col5 = numeric(),
+                   col6 = numeric(),
+                   col7 = numeric(),
+                   col8 = numeric(),
+                   col9 = numeric(),
+                   stringsAsFactors = F
+                   )
+  stopifnot(ncol(df) == length(bpe_stat_names))
+  # Add an auxiliary function for constructing new rows
+  getNewDataRow <- function(bpe_df_subset, var_name, z){
+    # Summary stats computation
+    var_mean <- round(mean(bpe_df_subset$estimate), 3)
+    var_sd <- round(sd(bpe_df_subset$estimate), 3)
+    var_ci_lower <- round(var_mean - var_sd*z, 3)
+    var_ci_upper <- round(var_mean + var_sd*z, 3)
+    var_median <- round(median(bpe_df_subset$estimate), 3)
+    var_min <- round(min(bpe_df_subset$estimate), 3)
+    var_max <- round(max(bpe_df_subset$estimate), 3)
+    var_obs <- nrow(bpe_df_subset)
+    # Initialize and append a new row
+    new_row <- data.frame(
+      col1 = var_name,
+      col2 = var_mean,
+      col3 = var_ci_lower,
+      col4 = var_ci_upper,
+      col5 = var_median,
+      col6 = var_min,
+      col7 = var_max,
+      col8 = var_sd,
+      col9 = var_obs
+    )
+    return(new_row)
+  }
+  
+  # Iterate over the desired factors and append new rows for each of them
+  bpe_df <- bpe_df[rownames(bpe_df) != "Author",] # Do not use author, as the method is preocupied with literature instead
+  clean_bpe_df <- bpe_df
+  bpe_studies <- rownames(bpe_df)
+  for (bpe_factor in bpe_factors){
+    bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
+    vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
+    # Construct and add an auxiliary group column
+    bpe_df <- addGroupColToBPEData(bpe_df, vars_to_use, input_data, input_var_list)
+    # Add rows for each unique group of the group column
+    for (var_name in unique(bpe_df$group)){
+      bpe_df_sub <- bpe_df[bpe_df$group == var_name, ]
+      new_row <- getNewDataRow(bpe_df_sub, var_name, z)
+      df <- rbind(df, new_row)
+    }
+  }
+  # Add a row on top of the data frame with all observations
+  first_row <- getNewDataRow(bpe_df, "All data", z)
+  df <- rbind(first_row, df)
+  # Put the final output together
+  colnames(df) <- bpe_stat_names
+  # Print out verbose output and return the data frame
+  getBPESummaryStatsVerbose(df)
+  # Return data frame only
+  return(df)
+}
+
+#' Verbose output for the getBPESummaryStatsVerbose function
+getBPESummaryStatsVerbose <- function(res, ...){
+  # Verbose output
+  cat("Best-practice estimate summary statistics:\n")
+  print(res)
+  cat("\n")
 }
 
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################

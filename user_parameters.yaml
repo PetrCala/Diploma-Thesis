@@ -1,6 +1,7 @@
 # RUN THESE PARTS OF THE MAIN SCRIPT
 # Note: The parts "fma", "ma_variables_description_table", and "bpe" are only executable
-#	after running BMA
+#	after running BMA. The parts "bpe_graphs" and "bpe_summary_stats" can be ran only
+#	after running BPE.
 run_this:
   variable_summary_stats: true
   effect_summary_stats: true
@@ -16,6 +17,8 @@ run_this:
   fma: true 					
   ma_variables_description_table: true 	
   bpe: true 					
+  bpe_graphs: true
+  bpe_summary_stats: true
   robma: true 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
@@ -161,10 +164,10 @@ adjustable_parameters:
   bpe_result_table_verbose: true 		# If TRUE, print out the table into the console along with the functional BPE form
   bpe_econ_sig_large_pip_only: true 		# If TRUE, display econ. significance for variables with PIP >= 0.5
   bpe_econ_sig_verbose: true 			# If TRUE, print out the economic significance table into the console
-  bpe_generate_graphs: true			# If TRUE, graph the BPE estimates onto several graphs. Export these, if graph export is on.
+  bpe_factors: [10, 31, 32]		 	# A numeric vector with ids of variable groups to use for BPE graphs/summary stats
   bpe_graphs_type: "density"			# Type of the BPE graphs. One of "density", "miracle".
-  bpe_graphs_factors: [10, 31, 32]		# A numeric vector with ids of variable groups to graph
   bpe_graphs_scale: 3				# A number to scale the BPE graphs by. Defaults to 3.
+  bpe_summary_stats_conf_level: 0.95		# Confidence level for the BPE summary statistics table
   # Robust Bayesian Model Averaging parameters - do not pass nested lists, priors etc.
   robma_verbose: true
   robma_param_priors_bias: null
@@ -203,6 +206,7 @@ export_options:
     ma_variables_description_table: "Model averaging description table"
     bpe_res: "Best practice estimate"
     bpe_econ_sig: "Economic significance"
+    bpe_summary_stats: "Best-practice estimate summary stats"
     robma_components: "RoBMA components"
     robma_estimates: "RoBMA estimates"
   # Other export options
