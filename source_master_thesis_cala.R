@@ -1539,6 +1539,208 @@ getEffectSummaryStatsVerbose <- function(out_list, ...){
   }
 }
 
+#' @title generateGroupColumn
+#' 
+#' @description
+#' Using a subsetted dataframe var_data, generate a vector (referred to as the "group column")
+#' that fully describes the grouping of the variables. One could think of this function as
+#' an inverse function to "dummify", only the var_data can be of many types. A variables information
+#' data frame is also necessary for the procedure.
+#' 
+#' @details
+#' Make sure the var_data object only contains the variables you wish to generate the group column for.
+#' Also, make sure these have the same data type and group category in the variable information df.
+#' 
+#' @param var_data [data.frame] A data frame with variables to generate the group column for.
+#' @param input_var_list [data.frame] Variable information data frame.
+#' 
+#' @return group_col [vector] A vector that fully specifies the grouping of the var_data variables.
+generateGroupColumn <- function(var_data, input_var_list){
+  # Validate input
+  stopifnot(
+    is.data.frame(var_data),
+    is.data.frame(input_var_list)
+  )
+  n_groups <- ncol(var_data)
+  vars_to_use <- as.vector(colnames(var_data))
+  # Get the verbose variable names
+  vars_to_use_verbose <- as.vector(input_var_list$var_name_verbose[match(vars_to_use, input_var_list$var_name)])
+  # Get the group_type
+  group_type_vec <- as.vector(input_var_list$data_type[match(vars_to_use, input_var_list$var_name)])
+  group_type <- unique(group_type_vec)
+  if (length(group_type) != 1){
+    stop("Incorrectly specified group type. Must be consistent for the variables to use.")
+  }
+  # Unlist if there is only one column
+  if (n_groups == 1){
+    stopifnot(ncol(var_data) == 1)
+    var_data <- as.vector(unlist(var_data))
+  }
+  # Handle case of multiple columns
+  if (group_type == "dummy" || n_groups > 1){
+    if (n_groups < 2){
+      stop("A dummy may never have only one column. Check the data validation function.")
+    }
+    if(any(!sapply(var_data, is.numeric))){
+      message(paste("Only numeric values are allowed in case of multiple-valued variables.",
+              "Invalid variables:",
+              paste(vars_to_use, sep = '\n'),
+              sep = '\n'))
+      stop("Invalid variable values in the BPE graph function.")
+    }
+    # Vector of names of columns with highest value in each row
+    colnames(var_data) <- vars_to_use_verbose # Might be broken with special characters?
+    group_col <- apply(var_data, 1, function(x) names(x)[which.max(x)])
+  } else if (all(var_data %in% c(0,1))){
+  # Single 0/1 column
+    group_col <- paste(vars_to_use_verbose, "=", as.vector(var_data))
+  } else if (is.numeric(var_data)){
+  # Numeric, non-0/1 column
+    var_data <- as.vector(var_data) # A single column
+    above_below_vec <- ifelse(var_data >= median(var_data), ">=", "<") # Above/below median
+    group_col <- paste(vars_to_use_verbose, above_below_vec, median(var_data))
+  } else if (is.character(var_data)){
+    col_values <- as.integer(factor(var_data))
+    group_col <- paste0(vars_to_use_verbose, ": ", col_values)
+  } else {
+    message(paste(
+      "Your data is incorrectly specified. Check the values of variables:",
+      paste(vars_to_use, sep = "\n"),
+      sep = "\n"
+      ))
+    stop("Incorrect variable values in the BPE graphing function when constructing an auxiliary group column.")
+  }
+  return(group_col)
+}
+
+
+#' @param input_data [data.frame] A data frame containing the main data.
+#' @param input_var_list [data.frame] A data frame with variable information.
+#' @param prima_factors [numeric] A vector of numeric values specifying the variable groups to factor by.
+#' If NULL, the function will stop and return an error message. Defaults to NULL.
+#' @param prima_type [character] One of "density", "histogram". Graph the graph either as densities, or
+#'  using histograms. Defaults to "density".
+#' @param prima_hide_outliers [logical] If TRUE, outliers (equal to the outermost histogram bins) will be
+#'  hidden in the graph. Defaults to TRUE.
+#' @param prima_bins [numeric] Number of bins to use in the histogram. Defaults to 80.
+#' @param theme [character] A string specifying the color theme for the plots. Defaults to "blue".
+#' @param export_graphics [logical] A boolean value indicating whether or not to export the graphs as .png files.
+#' Defaults to TRUE.
+#' @param graphic_results_folder_path [character] A string representing the path to the folder
+#' where the graphics should be saved. If export_graphics is TRUE and this parameter is NA,
+#' the function will stop and return an error message. Defaults to NA.
+#' @param prima_scale [numeric] A number specifying the scale for the exported .png graphics.
+#' It affects both the width and the height of the graphics. Default is 6.
+#'
+#' @return [list] A list of ggplot objects representing the prima facie graphs.
+#'
+#' @examples
+#' \dontrun{
+#' # Assuming appropriate input data is available
+#' prima_facie_graphs = getPrimaFacieGraphs(data, var_list, bpe_factors = c(1,2,3), theme = "blue",
+#' export_graphics = TRUE, graphic_results_folder_path = "path/to/folder", prima_scale = 5)
+#' }
+#'
+#' @seealso \code{\link{ggplot2}}
+#' 
+#' @export
+getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL, prima_type = "density",
+                                prima_hide_outliers = T, prima_bins = 80, theme = "blue", export_graphics = T,
+                                graphic_results_folder_path = NA, prima_scale = 3){
+  # Input validation
+  stopifnot(
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.character(prima_type),
+    is.logical(prima_hide_outliers),
+    is.numeric(prima_bins),
+    is.character(theme),
+    is.logical(export_graphics),
+    is.numeric(prima_scale),
+    nrow(input_data) > 0, # At least some data
+    prima_bins > 0
+  )
+  if (length(prima_factors) < 1){
+    stop("You must specify at least one factor to group the BPE plots by.")
+  }
+  if (all(is.na(prima_factors))){
+    stop("Please specify at least one non-NA BPE graph grouping factor.")
+  }
+  if (!all(is.numeric(prima_factors))){
+    stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
+  }
+  if (!prima_type %in% c("density", "histogram")){
+    stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"histogram\""))
+  }
+  # Get the theme to use
+  current_theme <- getTheme(theme) +
+    theme(legend.title = element_blank(), # No legend title
+          legend.position = "top")
+  # Get the information about graphs to use
+  clean_data <- input_data
+  prima_names <- paste0("prima_facie_", seq(length(prima_factors))) # prima_facie_1, prima_facie_2,...
+  prima_names_counter <- 1
+  prima_graphs <- list()  
+  for (prima_factor in prima_factors){
+    prima_df <- copy(clean_data) # Each iteration with a clean dataset - sorting shuffles the data otherwise
+    vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == prima_factor])
+    # Construct an auxiliary group column
+    var_data <- prima_df[,vars_to_use]
+    group_col <- generateGroupColumn(var_data, input_var_list)
+    # Assign the group column to the data
+    if (length(group_col) != nrow(prima_df)){
+      stop("Incorrect length of the generated group column in prima graphing.")
+    }
+    prima_df$group <- group_col
+    # Hide outliers if desired
+    bin_width <- diff(range(prima_df$effect)) / prima_bins
+    if (prima_hide_outliers){
+      x_min <- min(prima_df$effect) + bin_width
+      x_max <- max(prima_df$effect) - bin_width
+      prima_df <- prima_df[prima_df$effect < x_max & prima_df$effect > x_min,] # Outliers out
+    }
+    # Construct the graph
+    prima_graph <- ggplot(data = prima_df, aes(x = effect, y = after_stat(density),
+                                               color = group, group = group)) +
+                    labs(x = "Effect", y = "Density") + 
+                    current_theme
+    if (prima_type == "histogram"){
+      prima_graph <- prima_graph + geom_histogram(aes(fill = group), binwidth = bin_width, bins = 80)
+    } else if (prima_type == "density"){
+      prima_graph <- prima_graph +  geom_density(aes(x = effect), alpha = 0.2, linewidth = 1)
+    } else {
+      stop("Incorrect graph specification")
+    }
+    # Plot the plot
+    suppressWarnings(print(prima_graph))
+    # Drop the auxiliary group column
+    prima_df$group <- NULL
+    # Save the graph and its name
+    current_prima_name <- prima_names[prima_names_counter]
+    prima_graphs[[current_prima_name]] <- prima_graph
+    prima_names_counter <- prima_names_counter + 1
+  }
+  # Export the graphs
+  if (export_graphics){
+    if (is.na(graphic_results_folder_path)){
+      stop("You must specify a path to the graphic results folder.")
+    }
+    for (name in prima_names){
+      # Check the path to the graph
+      full_graph_path <- paste0(graphic_results_folder_path, name,'.png')
+      hardRemoveFile(full_graph_path)
+      # Fetch the graph object from the graphs list object and graph the object
+      graph_object <- prima_graphs[[name]]
+      suppressWarnings(
+        ggsave(filename = full_graph_path, plot = graph_object,
+               width = 800*prima_scale, height = 736*prima_scale, units = "px")
+      )
+    }
+  }
+  # Return the graphs
+  return(prima_graphs)
+}
+
 
 #' Input the main data frame, specify a factor to group by, and create a box plot.
 #' This plot is automatically printed out into the Plots window if verbose == TRUE.
@@ -4572,6 +4774,7 @@ miracleBPESorting <- function(df){
     !any(is.na(df$group))
   )
   group_verbose_names <- copy(df$group) # Save the verbose names
+  df$row_names <- rownames(df) # Rownames to col
   df$group <- as.integer(factor(df$group)) # Group, factored
   original_group <- copy(df$group) # Save the original grouping (factored)
   # stopifnot(all)
@@ -4617,72 +4820,6 @@ miracleBPESorting <- function(df){
   return(df)
 }
 
-#' An auxiliary function to the BPE graph function. Input various necessary information
-#' and return the modified BPE data frame with a "group" column, where the rows are
-#' each marked with a group label. These can be numbers, or characters, and describe
-#' the group fully.
-addGroupColumn <- function(bpe_df, input_data, input_var_list, vars_to_use, group_type){
-  n_groups <- length(vars_to_use)
-  # Group the main data to the same length as the BPE df
-  bpe_studies <- rownames(bpe_df)
-  var_data <- input_data[input_data$study_name %in% bpe_studies, c("study_name", vars_to_use)]
-  var_data <- var_data %>%
-    group_by(study_name) %>%
-    summarise(across(everything(), \(x) median(x, na.rm = T)))
-  var_data$study_name <- NULL # Drop the study column (used for grouping)
-  expected_studies <- ifelse("Author" %in% bpe_studies, length(bpe_studies) - 1, length(bpe_studies))
-  if (nrow(var_data) != expected_studies){
-    stop("Incorrect grouping of variables in construction of the auxiliary group BPE graph column.")
-  }
-  # Get the verbose variable names
-  vars_to_use_verbose <- as.vector(input_var_list$var_name_verbose[match(vars_to_use, input_var_list$var_name)])
-  # Unlist the data in case there is only one column
-  if (n_groups == 1){
-    stopifnot(ncol(var_data) == 1)
-    var_data <- as.vector(unlist(var_data))
-  }
-  # Handle case of multiple columns
-  if (group_type == "dummy" || n_groups > 1){
-    if (n_groups < 2){
-      stop("A dummy may never have only one column. Check the data validation function.")
-    }
-    if(any(!sapply(var_data, is.numeric))){
-      message(paste("Only numeric values are allowed in case of multiple-valued variables.",
-              "Invalid variables:",
-              paste(vars_to_use, sep = '\n'),
-              sep = '\n'))
-      stop("Invalid variable values in the BPE graph function.")
-    }
-    # Vector of names of columns with highest value in each row
-    colnames(var_data) <- vars_to_use_verbose # Might be broken with special characters?
-    group_col <- apply(var_data, 1, function(x) names(x)[which.max(x)])
-  } else if (all(var_data %in% c(0,1))){
-  # Single 0/1 column
-    group_col <- paste(vars_to_use_verbose, "=", as.vector(var_data))
-  } else if (is.numeric(var_data)){
-  # Numeric, non-0/1 column
-    var_data <- as.vector(var_data) # A single column
-    above_below_vec <- ifelse(var_data >= median(var_data), ">=", "<") # Above/below median
-    group_col <- paste(vars_to_use_verbose, above_below_vec, median(var_data))
-  } else if (is.character(var_data)){
-    col_values <- as.integer(factor(var_data))
-    group_col <- paste0(vars_to_use_verbose, ": ", col_values)
-  } else {
-    message(paste(
-      "Your data is incorrectly specified. Check the values of variables:",
-      paste(vars_to_use, sep = "\n"),
-      sep = "\n"
-      ))
-    stop("Incorrect variable values in the BPE graphing function when constructing an auxiliary group column.")
-  }
-  # Put back the author's bpe
-  if ("Author" %in% bpe_studies){
-    author_idx <- which(bpe_studies == "Author")
-    group_col <- append(group_col, "Author", after = author_idx - 1)
-  }
-  bpe_df$group <- group_col
-  return(bpe_df)
-}
 
 #' @title Graph Best Practice Estimates (BPEs)
 #'
@@ -4777,36 +4914,57 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
   tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Get the information about graphs to use
   clean_bpe_df <- bpe_df
+  bpe_studies <- rownames(bpe_df)
   bpe_names <- paste0("bpe_", seq(length(bpe_factors))) # bpe_1, bpe_2,...
   bpe_names_counter <- 1
   bpe_graphs <- list()  
   for (bpe_factor in bpe_factors){
     bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
     vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
-    group_type <- as.vector(input_var_list$data_type[input_var_list$group_category == bpe_factor])[1]
     # Construct an auxiliary group column
-    bpe_df <- addGroupColumn(bpe_df, input_data, input_var_list, vars_to_use, group_type)
-    stopifnot("group" %in% colnames(bpe_df))
-    # Construct the graphs
-    bpe_df$row_names <- rownames(bpe_df)
-    # Sort the data using the miracle sort algorithm so that estimates are sorted within groups
-    bpe_df <- miracleBPESorting(bpe_df)
+    # Group the main data to the same length as the BPE df
+    var_data <- input_data %>%
+      subset(study_name %in% bpe_studies) %>%
+      select(c("study_name", all_of(vars_to_use))) %>%
+      group_by(study_name) %>%
+      summarise(across(everything(), \(x) median(x, na.rm = T))) %>%
+      select(-c("study_name")) # Drop the study_name col
+    # Validate correct grouping
+    expected_studies <- ifelse("Author" %in% bpe_studies, length(bpe_studies) - 1, length(bpe_studies))
+    if (nrow(var_data) != expected_studies){
+      stop("Incorrect grouping of variables in construction of the auxiliary group BPE graph column.")
+    }
+    # Generate the group column using a custom function
+    group_col <- generateGroupColumn(var_data, input_var_list)
+    # Put back the author's bpe
+    if ("Author" %in% bpe_studies){
+      author_idx <- which(bpe_studies == "Author")
+      group_col <- append(group_col, "Author", after = author_idx - 1)
+    }
+    # Assign the group column to the data
+    if (length(group_col) != nrow(bpe_df)){
+      stop("Incorrect length of the generated group column in BPE graphing.")
+    }
+    bpe_df$group <- group_col
     # Construct the graph
     if (graph_type == "miracle"){
+      # Sort the data using the miracle sort algorithm so that estimates are sorted within groups
+      bpe_df <- miracleBPESorting(bpe_df)
       bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate,
                                              color = group, group = group)) +
         geom_point() +
-        geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = F)
-      
+        geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = F) +
+        labs(x = "Study id", y = "Best-practice estimate")
     } else if (graph_type == "density"){
       bpe_graph <- ggplot(data = subset(bpe_df, rownames(bpe_df) != "Author"),
                           aes(x = estimate, y = after_stat(density), color = group, group = group)) +
-        geom_density(aes(x = estimate), alpha = 0.2, linewidth = 1)
+        geom_density(aes(x = estimate), alpha = 0.2, linewidth = 1) +
+        labs(x = "Best-practice estiamte", y = "Density")
     } else {
       stop("Incorrect graph specification")
     }
+    # Add the theme
     bpe_graph <- bpe_graph +
-      labs(x = "Study id", y = "Best-practice estimate") + 
       current_theme
     # Plot the plot
     suppressWarnings(print(bpe_graph))
@@ -5149,18 +5307,28 @@ zipFoldersVerbose <- function(zip_file_path){
 
 ######################### GRAPHICS #########################
 
-#' Specify the type of theme to use and return the theme
-#' 
-#' Available choices - main, yellow, green, red
-getTheme <- function(theme_type, x_axis_tick_text = "black"){
-  # Validate the theme type
-  available_themes <- c("blue", "yellow", "green", "red", "purple")
+#' Get a list of themes that the script recognizes
+getAvailableThemes <- function(){
+  c("blue", "yellow", "green", "red", "purple")
+}
+
+#' Validate that a theme is available for use
+validateTheme <- function(theme){
+  available_themes <- getAvailableThemes()
   if (!theme_type %in% available_themes){ # Loaded from source
     message(paste(theme_type, "is not a valid theme."))
     message("You must choose one of the following themes:")
     message(available_themes)
     stop("Invalid theme")
   }
+}
+
+#' Specify the type of theme to use and return the theme
+#' 
+#' Available choices - main, yellow, green, red
+getTheme <- function(theme_type, x_axis_tick_text = "black"){
+  # Validate the theme
+  validateTheme(theme_type)
   # Get specific colors
   theme_color <- switch(theme_type,
     blue = "#DCEEF3",
@@ -5176,6 +5344,13 @@ getTheme <- function(theme_type, x_axis_tick_text = "black"){
       axis.text.y = ggtext::element_markdown(color = "black"),
       panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
       plot.background = element_rect(fill = theme_color))
+}
+
+#' Specify a theme and an object that holds several unique
+#'  values and for each of those values return a color
+#'  that fits the color theme
+generatePlotColors <- function(group, theme){
+ return(NULL)
 }
 
 #' Export the graph into an HTML file using the plotly package

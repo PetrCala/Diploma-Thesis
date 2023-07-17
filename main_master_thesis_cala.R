@@ -43,12 +43,10 @@ packages <- c(
   "data.table", # Fast data manipulation and aggregation
   "devtools", # Loading local packages
   "ddpcr", # Analysis of Droplet Digital PCR (ddPCR) data
-  "dplyr", # Data manipulation and data wrangling
   "fdrtool", # Elliott et al. (2022)
   "foreign", # Reading and writing data stored by other statistical software
   "gdata", # Elliott et al. (2022)
   "grDevices", # Elliott et al. (2022)
-  "ggplot2", # Creating graphics and data visualizations
   "ggtext", # ggplot axis text without warnings
   "haven", # Importing and exporting data from SAS, SPSS, and Stata
   "lmtest", # Hypothesis testing and diagnostics for linear regression models
@@ -62,10 +60,8 @@ packages <- c(
   "plotly", # Interactive plots
   "png", # PNG plots
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
-  "purrr", # Smart tables, study size
   "pracma", # MAIVE Estimator, Elliott et al. (2022)
   "rddensity", # Elliott et al. (2022)
-  "readr", # Reading data into R from various file formats
   "readxl", # Reading Excel files
   "RoBMA", # Robust BMA, Bartos et al. (2021)
   "sandwich", # Computing robust covariance matrix estimators, MAIVE estimator
@@ -264,6 +260,24 @@ if (run_this$effect_summary_stats){
   if (export_options$export_results){
     exportTable(effect_sum_stats, user_params, "effect_summary_stats")
   }
+}
+
+###### PRIMA FACIE GRAPHS ######
+if (run_this$prima_facie_graphs){
+  # prima_facie_graphs <- runCachedFunction(
+  #   graphBPE, user_params,
+  #   verbose_function = nullVerboseFunction,
+  prima_facie_graphs <- getPrimaFacieGraphs(
+    data, var_list,
+    prima_factors = adj_params$prima_factors,
+    prima_type = adj_params$prima_type,
+    prima_hide_outliers = adj_params$prima_hide_outliers,
+    prima_bins = adj_params$prima_bins,
+    theme = export_options$theme,
+    export_graphics = export_options$export_graphics,
+    graphic_results_folder_path = folder_paths$graphic_results_folder,
+    prima_scale = adj_params$prima_scale
+  )
 }
 
 ###### BOX PLOT ######
@@ -599,7 +613,6 @@ if (run_this$bpe){
   )
   # Get BPE graphs
   if (adj_params$bpe_generate_graphs){
-    # Later change to cached function
     bpe_plots <- runCachedFunction(
       graphBPE, user_params,
       verbose_function = nullVerboseFunction,
