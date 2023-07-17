@@ -20,7 +20,7 @@ set.seed(123) # Results reproduction, stochastic functions to deterministic for 
  
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
-user_param_file <- "user_parameters.yaml" # File with user parameters
+user_param_file <- "custom_user_params/user_parameters_model.yaml" # File with user parameters
 
 # Working directory - change only if the script is being ran interactively
 if(interactive()) {
@@ -61,6 +61,7 @@ packages <- c(
   "png", # PNG plots
   "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
   "pracma", # MAIVE Estimator, Elliott et al. (2022)
+  "RColorBrewer", # Plot colors
   "rddensity", # Elliott et al. (2022)
   "readxl", # Reading Excel files
   "RoBMA", # Robust BMA, Bartos et al. (2021)
