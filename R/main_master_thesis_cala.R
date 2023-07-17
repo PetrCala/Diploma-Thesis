@@ -612,20 +612,6 @@ if (run_this$bpe){
     display_large_pip_only = adj_params$bpe_econ_sig_large_pip_only,
     verbose_output = adj_params$bpe_econ_sig_verbose
   )
-  # Get BPE graphs
-  if (adj_params$bpe_generate_graphs){
-    bpe_plots <- runCachedFunction(
-      graphBPE, user_params,
-      verbose_function = nullVerboseFunction,
-      bpe_df, data, var_list,
-      bpe_factors = adj_params$bpe_graphs_factors,
-      graph_type = adj_params$bpe_graphs_type,
-      theme = export_options$theme,
-      export_graphics = export_options$export_graphics,
-      graphic_results_folder_path = folder_paths$graphic_results_folder,
-      bpe_graphs_scale = adj_params$bpe_graphs_scale
-    )
-  }
   # Export
   if (export_options$export_results){
     bpe_res_name <- ifelse("all" %in% bpe_study_ids, "bpe_res_all_studies", "bpe_res")
@@ -634,11 +620,47 @@ if (run_this$bpe){
   }
 }
 
+###### BPE GRAPHS ######
+if (run_this$bpe_graphs){
+  if (!exists("bpe_df")){
+    stop("You must run BPE first before you construct the summary statistic tables.")
+  }
+  bpe_graphs <- runCachedFunction(
+    graphBPE, user_params,
+    verbose_function = nullVerboseFunction,
+    bpe_df, data, var_list,
+    bpe_factors = adj_params$bpe_factors,
+    graph_type = adj_params$bpe_graphs_type,
+    theme = export_options$theme,
+    export_graphics = export_options$export_graphics,
+    graphic_results_folder_path = folder_paths$graphic_results_folder,
+    bpe_graphs_scale = adj_params$bpe_graphs_scale
+  )
+}
+
+###### BPE SUMMARY STATISTICS ######
+if (run_this$bpe_summary_stats){
+  if (!exists("bpe_df")){
+    stop("You must run BPE first before you construct the summary statistic tables.")
+  }
+  bpe_sum_stats <- runCachedFunction(
+    getBPESummaryStats, user_params,
+    verbose_function = getBPESummaryStatsVerbose,
+    bpe_df, data, var_list,
+    bpe_factors = adj_params$bpe_factors,
+    conf.level = adj_params$bpe_summary_stats_conf_level
+  )
+  if (export_options$export_results){
+    exportTable(bpe_sum_stats, user_params, "bpe_summary_stats")
+  }
+}
+
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################
 
 # Source:  https://github.com/FBartos/RoBMA
 if (run_this$robma){
   robma_params <- getMultipleParams(adj_params, "robma_param_",T,T)
+  print("Running Robust BMA. This may take some time...")
   robma_res <- runCachedFunction(
     getRoBMA, user_params,
     verbose_function = getRoBMAVerbose,
