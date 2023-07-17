@@ -191,7 +191,8 @@ script_files:
   stem_source: "stem_method_master_thesis_cala.R" 		# STEM method (Furukawa, 2019) - fixed package handling
 
 export_options:
-  export_results: true 		# Export all results if they differ from the existing ones - no extra time
+  export_results: true 		# If TRUE, export all numeric into the numeric results folder
+  export_graphics: true 	# If TRUE, save the graphs into the graphic results folder
   export_methods: 
     # Verbose names of all allowed export methods
     variable_summary_stats: "Variable summary stats"
@@ -212,7 +213,6 @@ export_options:
   # Other export options
   export_log_file_path: "main_results.txt" 	# Console log as a text file
   export_zip_name: "results_all" 		# Zip file with all results
-  export_graphics: true 			# If TRUE, save the graphs into the graphics folder as HTML files
   export_bma_data: false 			# If TRUE, export the data used for BMA into the temporary data folder
   theme: "blue" 				# One of "blue", "yellow", "green", "red", "purple"
 
