@@ -4,23 +4,23 @@
 #	after running BPE.
 
 run_this:
-  variable_summary_stats: false
-  effect_summary_stats: false
-  prima_facie_graphs: false
-  box_plot: false
-  funnel_plot: false
-  t_stat_histogram: false
-  linear_tests: false
-  nonlinear_tests: false
-  exo_tests: false
-  p_hacking_tests: false
+  variable_summary_stats: true
+  effect_summary_stats: true
+  prima_facie_graphs: true
+  box_plot: true
+  funnel_plot: true
+  t_stat_histogram: true
+  linear_tests: true
+  nonlinear_tests: true
+  exo_tests: true
+  p_hacking_tests: true
   bma: true
-  fma: false 					
-  ma_variables_description_table: false 	
+  fma: true 					
+  ma_variables_description_table: true 	
   bpe: true 					
-  bpe_graphs: false
+  bpe_graphs: true
   bpe_summary_stats: true 					
-  robma: false 	# Computationally expensive
+  robma: true 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
@@ -167,7 +167,6 @@ adjustable_parameters:
   bpe_econ_sig_large_pip_only: true 		# If TRUE, display econ. significance for variables with PIP >= 0.5
   bpe_econ_sig_verbose: true 			# If TRUE, print out the economic significance table into the console
   bpe_factors: [10, 11, 12, 14, 15, 17, 19, 20, 22, 23, 25, 26, 27, 28, 30, 31, 32, 35, 36, 37] # A numeric vector with ids of variable groups to use for BPE graphs/summary stats
-  #bpe_factors: [10, 31, 32] # A numeric vector with ids of variable groups to use for BPE graphs/summary stats
   #bpe_factors: [10, 31, 32]		 	# A numeric vector with ids of variable groups to use for BPE graphs/summary stats
   bpe_graphs_type: "density"			# Type of the BPE graphs. One of "density", "miracle".
   bpe_graphs_scale: 3				# A number to scale the BPE graphs by. Defaults to 3.
@@ -195,7 +194,8 @@ script_files:
   stem_source: "stem_method_master_thesis_cala.R" 		# STEM method (Furukawa, 2019) - fixed package handling
 
 export_options:
-  export_results: true 		# Export all results if they differ from the existing ones - no extra time
+  export_results: true 		# If TRUE, export all numeric into the numeric results folder
+  export_graphics: true 	# If TRUE, save the graphs into the graphic results folder
   export_methods: 
     # Verbose names of all allowed export methods
     variable_summary_stats: "Variable summary stats"
@@ -216,7 +216,6 @@ export_options:
   # Other export options
   export_log_file_path: "main_results.txt" 	# Console log as a text file
   export_zip_name: "results_all"	 	# Zip file with all results
-  export_graphics: true 			# If TRUE, save the graphs into the graphics folder as HTML files
   export_bma_data: false 			# If TRUE, export the data used for BMA into the temporary data folder
   theme: "blue" 				# One of "blue", "yellow", "green", "red", "purple"
 

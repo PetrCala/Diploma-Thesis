@@ -162,12 +162,12 @@ Here is a list and explanation of the available methods:
 	- *Study-weighted OLS*
 	- *Precision-weighted OLS*
 * **Non-linear tests** - Construct 6 non-linear models for publication bias. These are:
-	- *Weighted Average of Adequately Powered* [Ioannidis et al., 2017](http://pinguet.free.fr/ioannidis17.pdf)
+	- *Weighted Average of Adequately Powered* - [Ioannidis et al., 2017](http://pinguet.free.fr/ioannidis17.pdf)
 	- *Top10* - [Stanley et al., 2010](https://www.tandfonline.com/doi/abs/10.1198/tast.2009.08205)
 	- *Stem-based method* - [Furukawa, 2019](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3362053)
 	- *Hierarchial Bayes* - [Allenby & Rossi (2006)](https://books.google.com/books?hl=en&lr=&id=RymGgxN3zD4C&oi=fnd&pg=PA418&dq=hierarchical+bayes&ots=a4t-KvUdua&sig=K7V5JgPF4_gJll2d7reATSQ8I-I)
-	- *Selection model* - [Andrews & Kasy, 2019](javascript:void(0))
-	- *Endogenous Kink model* - [Bom & Rachinger, 2020](javascript:void(0))
+	- *Selection model* - [Andrews & Kasy, 2019](https://www.aeaweb.org/doi/10.1257/aer.20180310)
+	- *Endogenous Kink model* - [Bom & Rachinger, 2020](https://onlinelibrary.wiley.com/doi/abs/10.1002/jrsm.1352)
 * **Tests relaxing exogeneity** - Construct 2 models relaxing the exogeneity assumption. These are:
 	- *Instrumental Variable regression*
 	- *p-uniform** - [van Aert & van Assen (2018)](https://cloud.r-project.org/web/packages/puniform/puniform.pdf)

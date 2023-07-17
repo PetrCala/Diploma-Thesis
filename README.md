@@ -146,6 +146,7 @@ To run the code, follow these steps:
 5. You may encounter errors caused by mismatching file names, package incompatibility, etc. The script will automatically attempt to install all the necessary packages (if they are not installed on your local machine), so in case there are any conflicts, make sure to check that you have fulfilled all prerequisites from the prerequisites section. If you, however, wish to run the code line by line, working with the main script may prove more suitable.
 5. If all goes well, you should see the output in the console, and in the results folder. In the folder `results/numeric/`, you will find for numerical and text-based output, while the folder and `results/graphics/` holds graphical output. Furthermore, a file called `main_results.txt`, containing the console log with numerous clean and formatted results, will be created in the `results/` folder. Any existing files within these folders will likely be overwritten upon running the script, so make sure to save any desired files outside these folders after they are generated.
 6. If you wish to look under the hood of the code, see the file `source_master_thesis_cala.R`, which contains all the technical functions, preprocessing, and validation, that is hidden in the main file.
+
 ## List of available methods
 Here is a list and explanation of the available methods:
 * **Variable summary statistics** - Generate a table with various summary statistics for variables of your choice. You should specify these variables in the *Variable information* data sheet.
@@ -161,12 +162,12 @@ Here is a list and explanation of the available methods:
 	- *Study-weighted OLS*
 	- *Precision-weighted OLS*
 * **Non-linear tests** - Construct 6 non-linear models for publication bias. These are:
-	- *Weighted Average of Adequately Powered* [Ioannidis et al., 2017](http://pinguet.free.fr/ioannidis17.pdf)
+	- *Weighted Average of Adequately Powered* - [Ioannidis et al., 2017](http://pinguet.free.fr/ioannidis17.pdf)
 	- *Top10* - [Stanley et al., 2010](https://www.tandfonline.com/doi/abs/10.1198/tast.2009.08205)
 	- *Stem-based method* - [Furukawa, 2019](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3362053)
 	- *Hierarchial Bayes* - [Allenby & Rossi (2006)](https://books.google.com/books?hl=en&lr=&id=RymGgxN3zD4C&oi=fnd&pg=PA418&dq=hierarchical+bayes&ots=a4t-KvUdua&sig=K7V5JgPF4_gJll2d7reATSQ8I-I)
-	- *Selection model* - [Andrews & Kasy, 2019](javascript:void(0))
-	- *Endogenous Kink model* - [Bom & Rachinger, 2020](javascript:void(0))
+	- *Selection model* - [Andrews & Kasy, 2019](https://www.aeaweb.org/doi/10.1257/aer.20180310)
+	- *Endogenous Kink model* - [Bom & Rachinger, 2020](https://onlinelibrary.wiley.com/doi/abs/10.1002/jrsm.1352)
 * **Tests relaxing exogeneity** - Construct 2 models relaxing the exogeneity assumption. These are:
 	- *Instrumental Variable regression*
 	- *p-uniform** - [van Aert & van Assen (2018)](https://cloud.r-project.org/web/packages/puniform/puniform.pdf)
