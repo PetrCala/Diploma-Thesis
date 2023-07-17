@@ -1618,8 +1618,8 @@ generateGroupColumn <- function(var_data, input_var_list){
 #' @param input_var_list [data.frame] A data frame with variable information.
 #' @param prima_factors [numeric] A vector of numeric values specifying the variable groups to factor by.
 #' If NULL, the function will stop and return an error message. Defaults to NULL.
-#' @param prima_type [character] One of "density", "histogram". Graph the graph either as densities, or
-#'  using histograms. Defaults to "density".
+#' @param prima_type [character] One of "density", "histogram", "automatic". Graph the graph either as densities, or
+#'  using histograms. If set to automatic, the script will automatically determine the optimal type. Defaults to "automatic".
 #' @param prima_hide_outliers [logical] If TRUE, outliers (equal to the outermost histogram bins) will be
 #'  hidden in the graph. Defaults to TRUE.
 #' @param prima_bins [numeric] Number of bins to use in the histogram. Defaults to 80.
@@ -1669,8 +1669,8 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
   if (!all(is.numeric(prima_factors))){
     stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
   }
-  if (!prima_type %in% c("density", "histogram")){
-    stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"histogram\""))
+  if (!prima_type %in% c("density", "histogram", "automatic")){
+    stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"histogram\", \"automatic\""))
   }
   # Get the theme to use
   current_theme <- getTheme(theme) +
@@ -1699,18 +1699,30 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
       x_max <- max(prima_df$effect) - bin_width
       prima_df <- prima_df[prima_df$effect < x_max & prima_df$effect > x_min,] # Outliers out
     }
+    # Determine the optimal graph type
+    if (prima_type == "automatic"){
+      graph_type <- ifelse(length(unique(prima_df$group)) > 3, "density", "histogram")
+    } else {
+      graph_type <- prima_type
+    }
+    # Get custom colors for the current group of variables
+    prima_palette <- getColors(theme, "prima_facie_graphs", submethod = graph_type)
     # Construct the graph
-    prima_graph <- ggplot(data = prima_df, aes(x = effect, y = after_stat(density),
-                                               color = group, group = group)) +
-                    labs(x = "Effect", y = "Density") + 
-                    current_theme
-    if (prima_type == "histogram"){
-      prima_graph <- prima_graph + geom_histogram(aes(fill = group), binwidth = bin_width, bins = 80)
-    } else if (prima_type == "density"){
-      prima_graph <- prima_graph +  geom_density(aes(x = effect), alpha = 0.2, linewidth = 1)
+    if (graph_type == "histogram"){
+      prima_graph <- ggplot(data = prima_df, aes(x = effect, y = after_stat(density), fill = group)) +
+        geom_histogram(binwidth = bin_width, bins = bin_width) +
+        scale_fill_brewer(palette = prima_palette)
+    } else if (graph_type == "density"){
+      prima_graph <- ggplot(data = prima_df, aes(x = effect, y = after_stat(density), color = group)) +
+          geom_density(aes(x = effect), alpha = 0.2, linewidth = 1) +
+          scale_color_brewer(palette = prima_palette)
     } else {
       stop("Incorrect graph specification")
     }
+    # Add labs and theme
+    prima_graph <- prima_graph + 
+      labs(x = "Effect", y = "Density") + 
+      current_theme
     # Plot the plot
     suppressWarnings(print(prima_graph))
     # Drop the auxiliary group column
@@ -1775,14 +1787,7 @@ getBoxPlot <- function(input_data, factor_by = 'country', effect_name = 'effect'
   factor_by_verbose <- gsub("_", " ", factor_by) # More legible y-axis label
   # Get the theme to use
   current_theme <- getTheme(theme)
-  plot_colors <- switch(theme,
-     blue = list("#005CAB","#e6f3ff","#0d4ed1"),
-     yellow = list("#AB9800","#FFF5CC","#D1B00D"),
-     green = list("#009B0F","#CCF3D1","#0DD146"),
-     red = list("#AB0000","#FFCCCC","#D10D0D"),
-     purple = list("#6A0DAB","#EAD6F5","#900DAB"),
-    stop("Invalid theme type")
-  )
+  plot_colors <- getColors(theme, "box_plot")
   plot_outlier_color <- plot_colors[[1]]
   plot_fill <- plot_colors[[2]]
   plot_color <- plot_colors[[3]]
@@ -2124,14 +2129,7 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
   funnel_tick_text <- funnel_visual_info$x_axis_tick_text
   # Get the theme to use
   current_theme <- getTheme(theme, x_axis_tick_text = funnel_tick_text)
-  point_color <- switch(theme,
-    blue = "#1261ff",
-    yellow =  "#D1B00D",
-    green =  "#00FF00",
-    red =  "#FF0000",
-    purple = "#800080",
-    stop("Invalid theme type")
-  )
+  point_color <- getColors(theme, "funnel_plot")
   vline_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   
   # Precision to log if necessary
@@ -2306,14 +2304,7 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, hi
   hist_ticks_text <- hist_visual_info$x_axis_tick_text
   # Get the theme to use
   current_theme <- getTheme(theme, x_axis_tick_text = hist_ticks_text) # Tick text automatically theme adjusted
-  fill_color <- switch(theme,
-    blue = "#1261ff",
-    yellow =  "#FFD700",
-    green =  "#00FF00",
-    red =  "#FF0000",
-    purple = "#800080",
-    stop("Invalid theme type")
-  )
+  fill_color <- getColors(theme, "t_stat_histogram", submethod = "main")
   # Get line colors
   mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
   tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
@@ -2333,14 +2324,7 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, hi
   }
   # Add a density line if desired
   if (add_density){
-    density_line_color <- switch(theme,
-       blue = "#013091",
-       yellow = "#b89b00",
-       green = "#008000",
-       red = "#b30000", 
-       purple = "#660066",
-       stop("Invalid theme type")
-    )
+    density_line_color <- getColors(theme, "t_stat_histogram", submethod = "density")
     t_hist_plot <- t_hist_plot + 
       geom_density(aes(x = t_stat), alpha = 0.2, color = density_line_color, linewidth = 1)
   }
@@ -4010,14 +3994,7 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
   if (any(print_results == "all", export_graphics == TRUE)){
     # Get the plot theme
     if (adjustable_theme){
-      color_spectrum <- switch(theme,
-        blue = c("#005CAB", "white", "#844ec7"),
-        yellow = c("#AB9800", "white", "#009B0F"),
-        green = c("#009B0F", "white", "#AB0000"),
-        red = c("#AB0000", "white", "#6A0DAB"),
-        purple = c("#6A0DAB", "white", "#005CAB"),
-        stop("Invalid theme type.")
-      )
+      color_spectrum <- getColors(theme, "bma")
     } else {
       color_spectrum <- c("red", "white", "blue") # Default
     }
@@ -4902,14 +4879,6 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
   current_theme <- getTheme(theme) +
     theme(legend.title = element_blank(), # No legend title
           legend.position = "top")
-  point_color <- switch(theme,
-    blue = "#1261ff",
-    yellow =  "#FFD700",
-    green =  "#00FF00",
-    red =  "#FF0000",
-    purple = "#800080",
-    stop("Invalid theme type")
-  )
   mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
   tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Get the information about graphs to use
@@ -4946,18 +4915,19 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
       stop("Incorrect length of the generated group column in BPE graphing.")
     }
     bpe_df$group <- group_col
+    # Get custom colors for the current group of variables
+    bpe_palette <- getColors(theme, "bpe", submethod = graph_type)
     # Construct the graph
     if (graph_type == "miracle"){
       # Sort the data using the miracle sort algorithm so that estimates are sorted within groups
       bpe_df <- miracleBPESorting(bpe_df)
-      bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate,
-                                             color = group, group = group)) +
+      bpe_graph <- ggplot(data = bpe_df, aes(x = seq(1, nrow(bpe_df)), y = estimate, color = group)) +
         geom_point() +
         geom_smooth(method = lm, formula = y ~ splines::bs(x, 3), se = F) +
         labs(x = "Study id", y = "Best-practice estimate")
     } else if (graph_type == "density"){
       bpe_graph <- ggplot(data = subset(bpe_df, rownames(bpe_df) != "Author"),
-                          aes(x = estimate, y = after_stat(density), color = group, group = group)) +
+                          aes(x = estimate, y = after_stat(density), color = group)) +
         geom_density(aes(x = estimate), alpha = 0.2, linewidth = 1) +
         labs(x = "Best-practice estiamte", y = "Density")
     } else {
@@ -4965,6 +4935,7 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
     }
     # Add the theme
     bpe_graph <- bpe_graph +
+      scale_color_brewer(palette = bpe_palette) +
       current_theme
     # Plot the plot
     suppressWarnings(print(bpe_graph))
@@ -5315,8 +5286,16 @@ getAvailableThemes <- function(){
 #' Validate that a theme is available for use
 validateTheme <- function(theme){
   available_themes <- getAvailableThemes()
-  if (!theme_type %in% available_themes){ # Loaded from source
-    message(paste(theme_type, "is not a valid theme."))
+  if (!is.character(theme)){
+    message(paste(
+      paste(theme,"is not a valid theme."),
+      "Please choose one of the following themes:",
+      paste(available_themes, collapse = ", "),
+      sep = "\n"
+    ))
+  }
+  if (!theme %in% available_themes){ # Loaded from source
+    message(paste(theme, "is not a valid theme."))
     message("You must choose one of the following themes:")
     message(available_themes)
     stop("Invalid theme")
@@ -5326,11 +5305,11 @@ validateTheme <- function(theme){
 #' Specify the type of theme to use and return the theme
 #' 
 #' Available choices - main, yellow, green, red
-getTheme <- function(theme_type, x_axis_tick_text = "black"){
+getTheme <- function(theme, x_axis_tick_text = "black"){
   # Validate the theme
-  validateTheme(theme_type)
+  validateTheme(theme)
   # Get specific colors
-  theme_color <- switch(theme_type,
+  theme_color <- switch(theme,
     blue = "#DCEEF3",
     yellow = "#FFFFD1",
     green = "#D1FFD1",
@@ -5346,11 +5325,95 @@ getTheme <- function(theme_type, x_axis_tick_text = "black"){
       plot.background = element_rect(fill = theme_color))
 }
 
-#' Specify a theme and an object that holds several unique
-#'  values and for each of those values return a color
-#'  that fits the color theme
-generatePlotColors <- function(group, theme){
- return(NULL)
+getColors <- function(theme, method, submethod = NA, ...){
+  validateTheme(theme)
+  colors <- switch(method,
+    prima_facie_graphs = switch(submethod,
+      #\dontrun $display.brewer.all()
+      histogram =  switch(theme, # Get a scale name instead
+        blue = "Paired",
+        yellow =  "YlOrRd",
+        green =  "Set2",
+        red =  "Reds",
+        purple = "Purples",
+        stop(paste("Invalid theme type", theme))
+      ),
+      density = switch(theme,
+        blue = "Paired",
+        yellow = "RdYlBu",
+        green = "Paired",
+        red = "RdBu",
+        purple = "Purples",
+        stop(paste("Invalid theme type", theme))
+      ),
+      stop(paste("Invalid submethod type:", submethod))
+    ),
+    box_plot = switch(theme,
+      blue = list("#005CAB","#e6f3ff","#0d4ed1"),
+      yellow = list("#AB9800","#FFF5CC","#D1B00D"),
+      green = list("#009B0F","#CCF3D1","#0DD146"),
+      red = list("#AB0000","#FFCCCC","#D10D0D"),
+      purple = list("#6A0DAB","#EAD6F5","#900DAB"),
+      stop(paste("Invalid theme type", theme))
+    ),
+    funnel_plot = switch(theme,
+      blue = "#1261ff",
+      yellow =  "#D1B00D",
+      green =  "#00FF00",
+      red =  "#FF0000",
+      purple = "#800080",
+      stop(paste("Invalid theme type", theme))
+    ),
+    t_stat_histogram = switch(submethod,
+      main = switch(theme,
+        blue = "#1261ff",
+        yellow =  "#D1B00D",
+        green =  "#00FF00",
+        red =  "#FF0000",
+        purple = "#800080",
+        stop(paste("Invalid theme type", theme))
+      ),
+      density = switch(theme,
+        blue = "#013091",
+        yellow = "#b89b00",
+        green = "#008000",
+        red = "#b30000", 
+        purple = "#660066",
+        stop(paste("Invalid theme type", theme))
+      ),
+      stop(paste("Invalid submethod for t-statistic histogram:", submethod))
+    ),
+    bma = switch(theme,
+      blue = c("#005CAB", "white", "#844ec7"),
+      yellow = c("#AB9800", "white", "#009B0F"),
+      green = c("#009B0F", "white", "#AB0000"),
+      red = c("#AB0000", "white", "#6A0DAB"),
+      purple = c("#6A0DAB", "white", "#005CAB"),
+      stop(paste("Invalid theme type", theme))
+    ),
+    bpe = switch(submethod,
+      #\dontrun $display.brewer.all()
+      miracle =  switch(theme,
+        blue = "Paired",
+        yellow =  "YlOrRd",
+        green =  "Set2",
+        red =  "Reds",
+        purple = "Purples",
+        stop(paste("Invalid theme type", theme))
+      ),
+      density = switch(theme,
+        blue = "Paired",
+        yellow = "RdYlBu",
+        green = "Paired",
+        red = "RdBu",
+        purple = "Purples",
+        stop(paste("Invalid theme type", theme))
+      ),
+      stop(paste("Invalid submethod type:", submethod))
+    ),
+    stop(paste("Invalid method:", method))
+  )
+  return(colors)
 }
 
 #' Export the graph into an HTML file using the plotly package
