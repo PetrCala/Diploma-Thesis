@@ -1,20 +1,21 @@
-# RUN THESE PARTS OF THE MAIN SCRIPT
+#RUN THESE PARTS OF THE MAIN SCRIPT
 # Note: The parts "fma", "ma_variables_description_table", and "bpe" are only executable
 #	after running BMA
 run_this:
   variable_summary_stats: false
   effect_summary_stats: false
+  prima_facie_graphs: true
   box_plot: false
   funnel_plot: false
-  t_stat_histogram: true
+  t_stat_histogram: false
   linear_tests: false
   nonlinear_tests: false
   exo_tests: false
   p_hacking_tests: false
-  bma: true
+  bma: false
   fma: false 					
   ma_variables_description_table: false 	
-  bpe: true 					
+  bpe: false 					
   robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
@@ -60,6 +61,12 @@ adjustable_parameters:
   allowed_missing_ratio: 0.7 			# Allow ratio*100(%) missing observations for each variable
   # Effect summary statistics confidence level
   effect_summary_stats_conf_level: 0.95 	# Between 0 and 1 (excluding)
+  # Prima facie graphs parameters
+  prima_factors: [10, 31, 32]			# Type of the prima facie graphs. One of "density", "histogram".
+  prima_type: "density"      			# A numeric vector with ids of variable groups to graph
+  prima_hide_outliers: true			# If TRUE, outliers (equal to the outermost histogram bins) will be hidden
+  prima_bins: 80				# Number of bins to use in the histogram.
+  prima_scale: 3             			# A number to scale the prima facie graphs by.
   # Box plot parameters
   box_plot_group_by_factor_1: "study_name" 	# Group by study name
   box_plot_group_by_factor_2: "country" 	# Group by country
