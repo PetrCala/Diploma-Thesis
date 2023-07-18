@@ -1,26 +1,26 @@
-#RUN THESE PARTS OF THE MAIN SCRIPT
+#UN THESE PARTS OF THE MAIN SCRIPT
 # Note: The parts "fma", "ma_variables_description_table", and "bpe" are only executable
 #	after running BMA. The parts "bpe_graphs" and "bpe_summary_stats" can be ran only
 #	after running BPE.
 
 run_this:
-  variable_summary_stats: true
-  effect_summary_stats: true
-  prima_facie_graphs: true
-  box_plot: true
+  variable_summary_stats: false
+  effect_summary_stats: false
+  prima_facie_graphs: false
+  box_plot: false
   funnel_plot: true
   t_stat_histogram: true
   linear_tests: true
   nonlinear_tests: true
   exo_tests: true
   p_hacking_tests: true
-  bma: true
-  fma: true 					
-  ma_variables_description_table: true 	
-  bpe: true 					
-  bpe_graphs: true
-  bpe_summary_stats: true 					
-  robma: true 	# Computationally expensive
+  bma: false
+  fma: false 					
+  ma_variables_description_table: false 	
+  bpe: false 					
+  bpe_graphs: false
+  bpe_summary_stats: false 					
+  robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
@@ -53,8 +53,8 @@ adjustable_parameters:
   # Data subsetting conditions
   # Note - if you do not with to use any conditions, set ANY condition to NA. The data will not subset.
   # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
-  data_subset_condition_1: .na
-  data_subset_condition_2: "ability_uncontrolled == 1"
+  #data_subset_condition_1: .na
+  data_subset_condition_1: "ability_direct == 1"
   # "data_subset_condition_X" = X 		# Add more conditions in this manner - up to 20
   # Data winsorization characteristics
   data_winsorization_level: 0.01 		# Between 0 and 1 (excluding)
@@ -221,5 +221,5 @@ export_options:
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache: true 	# Store intermediate output in a cache in the /_cache/ folder.
+  use_cache: false 	# Store intermediate output in a cache in the /_cache/ folder.
   cache_age: 3600 	# In seconds - an hour 
