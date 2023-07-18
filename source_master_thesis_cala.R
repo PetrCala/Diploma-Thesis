@@ -1673,8 +1673,7 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
   }
   # Get the theme to use
   current_theme <- getTheme(theme) +
-    theme(legend.title = element_blank(), # No legend title
-          legend.position = "top")
+    getTopRightLegend(text_size = 18)
   # Get the information about graphs to use
   clean_data <- input_data
   prima_names <- paste0("prima_facie_", seq(length(prima_factors))) # prima_facie_1, prima_facie_2,...
@@ -1746,7 +1745,7 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
       graph_object <- prima_graphs[[name]]
       suppressWarnings(
         ggsave(filename = full_graph_path, plot = graph_object,
-               width = 800*prima_scale, height = 736*prima_scale, units = "px")
+               width = 800*prima_scale, height = 666*prima_scale, units = "px")
       )
     }
   }
@@ -4919,8 +4918,7 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
   }
   # Get the theme to use
   current_theme <- getTheme(theme) +
-    theme(legend.title = element_blank(), # No legend title
-          legend.position = "top")
+    getTopRightLegend(text_size = 16)
   mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
   tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Get the information about graphs to use
@@ -4977,7 +4975,7 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
       graph_object <- bpe_graphs[[name]]
       suppressWarnings(
         ggsave(filename = full_graph_path, plot = graph_object,
-               width = 800*bpe_graphs_scale, height = 736*bpe_graphs_scale, units = "px")
+               width = 800*bpe_graphs_scale, height = 666*bpe_graphs_scale, units = "px")
       )
     }
   }
@@ -5476,6 +5474,19 @@ getTheme <- function(theme, x_axis_tick_text = "black"){
       axis.text.y = ggtext::element_markdown(color = "black"),
       panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
       plot.background = element_rect(fill = theme_color))
+}
+
+#' Return a theme object that moves the legend to the top right corner of the graph
+getTopRightLegend <- function(text_size = 18){
+    theme(
+      legend.title = element_blank(), # No legend title
+      legend.position = c(.98, .98), # Legend at the top right
+      legend.justification = c("right", "top"), # To make sure the legend doesn't go outside the plotting area
+      legend.direction = "vertical", # Stack legend text vertically
+      legend.box = "vertical", # Set legend box direction
+      legend.text = element_text(size = text_size), # Larger legend text
+      legend.background = element_rect(colour = "grey", fill = "white") # Grey border around the legend
+    )
 }
 
 getColors <- function(theme, method, submethod = NA, ...){
