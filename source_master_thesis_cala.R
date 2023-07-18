@@ -4810,12 +4810,17 @@ addGroupColToBPEData <- function(bpe_df, vars_to_use, input_data, input_var_list
     all(colnames(bpe_df) == c("estimate", "ci_95_lower", "ci_95_higher"))
   )
   bpe_studies <- rownames(bpe_df)
+  # Define a custom function that will allow the grouping to be done using mode (most frequent value)
+  getmode <- function(v) {
+    uniqv <- unique(v)
+    uniqv[which.max(tabulate(match(v, uniqv)))]
+  }
   # Group the main data to the same length as the BPE df
   var_data <- input_data %>%
     subset(study_name %in% bpe_studies) %>%
     select(c("study_name", all_of(vars_to_use))) %>%
     group_by(study_name) %>%
-    summarise(across(everything(), \(x) median(x, na.rm = T))) %>%
+    summarise(across(everything(), getmode)) %>%
     select(-c("study_name")) # Drop the study_name col
   # Validate correct grouping
   expected_studies <- ifelse("Author" %in% bpe_studies, length(bpe_studies) - 1, length(bpe_studies))
