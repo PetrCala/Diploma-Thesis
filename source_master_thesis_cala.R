@@ -2360,7 +2360,13 @@ add_asterisks <- function(coef, se) { # Switch does not really work here as far 
     is.numeric(coef),
     is.numeric(se)
   )
-  if (any(is.na(coef),is.na(se))){
+  # NA values or 0 values
+  if (any(
+    is.na(coef),
+    is.na(se),
+    coef == 0,
+    se == 0
+    )){
     return(coef)
   }
   tvalue <- coef / se
