@@ -21,8 +21,10 @@ twin_changes=(
     ['file_name: "data_set_master_thesis_cala"']='file_name: "twin_data_master_thesis_cala"'
     ['csv_suffix: "master_thesis_cala"']='csv_suffix: "twins"'
     ['file_suffix: ".xlsx"']='file_suffix: ".xlsm"'
+    ['prima_factors: [10, 31, 32]']='prima_factors: [29]' # Methods
+    #['prima_factors: [10, 31, 32]']='prima_factors: [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 24, 25, 26, 27, 28, 29, 32, 33, 34, 35]' 
+    ['prima_legend_font_size: 18']='prima_legend_font_size: 16'
     ['non_linear_param_selection_modelmu: "t"']='non_linear_param_selection_modelmu: "normal"'
-    ['automatic_bma: false']='automatic_bma: true'
     ['export_zip_name: "results_all"']='export_zip_name: "results_twins"'
 )
 

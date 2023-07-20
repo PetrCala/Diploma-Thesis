@@ -70,6 +70,7 @@ adjustable_parameters:
   prima_hide_outliers: true			# If TRUE, outliers (equal to the outermost histogram bins) will be hidden
   prima_bins: 80				# Number of bins to use in the histogram.
   prima_scale: 3             			# A number to scale the prima facie graphs by.
+  prima_legend_font_size: 18			# Size of the font in the prima facie graphs.
   # Box plot parameters
   box_plot_group_by_factor_1: "study_name" 	# Group by study name
   box_plot_group_by_factor_2: "country" 	# Group by country
