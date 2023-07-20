@@ -20,7 +20,7 @@ set.seed(123) # Results reproduction, stochastic functions to deterministic for 
  
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
-user_param_file <- "user_parameters.yaml" # File with user parameters
+user_param_file <- "custom_user_params/user_parameters_twins.yaml" # File with user parameters
 
 # Working directory - change only if the script is being ran interactively
 if(interactive()) {
@@ -277,7 +277,8 @@ if (run_this$prima_facie_graphs){
     theme = export_options$theme,
     export_graphics = export_options$export_graphics,
     graphic_results_folder_path = folder_paths$graphic_results_folder,
-    prima_scale = adj_params$prima_scale
+    prima_scale = adj_params$prima_scale,
+    prima_font_size = adj_params$prima_legend_font_size
   )
 }
 

@@ -1630,6 +1630,8 @@ generateGroupColumn <- function(var_data, input_var_list){
 #' the function will stop and return an error message. Defaults to NA.
 #' @param prima_scale [numeric] A number specifying the scale for the exported .png graphics.
 #' It affects both the width and the height of the graphics. Default is 6.
+#' @param prima_legend_font_size [numeric] A number to represent the font size in the prima
+#' facie graphs. Defaults to 18.
 #'
 #' @return [list] A list of ggplot objects representing the prima facie graphs.
 #'
@@ -1645,7 +1647,8 @@ generateGroupColumn <- function(var_data, input_var_list){
 #' @export
 getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL, prima_type = "density",
                                 prima_hide_outliers = T, prima_bins = 80, theme = "blue",
-                                export_graphics = T, graphic_results_folder_path = NA, prima_scale = 3){
+                                export_graphics = T, graphic_results_folder_path = NA,
+                                prima_scale = 3, prima_legend_font_size = 18){
   # Input validation
   stopifnot(
     is.data.frame(input_data),
@@ -1673,7 +1676,7 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
   }
   # Get the theme to use
   current_theme <- getTheme(theme) +
-    getTopRightLegend(text_size = 18)
+    getTopRightLegend(text_size = prima_legend_font_size)
   # Get the information about graphs to use
   clean_data <- input_data
   prima_names <- paste0("prima_facie_", seq(length(prima_factors))) # prima_facie_1, prima_facie_2,...
