@@ -4,23 +4,23 @@
 #	after running BPE.
 
 run_this:
-  variable_summary_stats: true
-  effect_summary_stats: true
-  prima_facie_graphs: true
-  box_plot: true
-  funnel_plot: true
-  t_stat_histogram: true
-  linear_tests: true
-  nonlinear_tests: true
+  variable_summary_stats: false
+  effect_summary_stats: false
+  prima_facie_graphs: false
+  box_plot: false
+  funnel_plot: false
+  t_stat_histogram: false
+  linear_tests: false
+  nonlinear_tests: false
   exo_tests: true
-  p_hacking_tests: true
-  bma: true
-  fma: true 					
-  ma_variables_description_table: true 	
-  bpe: true 					
-  bpe_graphs: true
-  bpe_summary_stats: true 					
-  robma: true 	# Computationally expensive
+  p_hacking_tests: false
+  bma: false
+  fma: false 					
+  ma_variables_description_table: false 	
+  bpe: false 					
+  bpe_graphs: false
+  bpe_summary_stats: false 					
+  robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
@@ -105,6 +105,8 @@ adjustable_parameters:
   non_linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks and SE parentheses
   # Parameters for tests relaxing exogeneity
   exo_add_significance_marks: true		# If TRUE, print out also significance level asterisks
+  # Instrumental Variable regression parameters
+  iv_instrument: "1/sqrt(n_obs)"		# Instrument to use for the IV regression. Must contain "n_obs". Can be set to "automatic".
   # P-uniform paramteres
   puni_param_side: "right" 		# puni_star side argument
   puni_param_method: "ML" 		# Method used for p-uniform calculation - one of "ML", "P"
@@ -222,5 +224,5 @@ export_options:
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache: true 	# Store intermediate output in a cache in the /_cache/ folder.
+  use_cache: false 	# Store intermediate output in a cache in the /_cache/ folder.
   cache_age: 3600 	# In seconds - an hour 

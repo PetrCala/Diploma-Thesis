@@ -3046,6 +3046,8 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 #' - log(data$n_obs)
 #'
 #' @param data a data frame containing the data for the IV regression
+#' @param iv_instrument [character] Instrument to choose in the IV regression. If set to "automatic", determine the best
+#' instrument automatically.
 #' @inheritDotParams ... additional arguments to be passed to extractExoCoefs
 #'
 #' @return A list with a numeric vector containing the extracted coefficients from the IV regression
@@ -3059,23 +3061,31 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 #' @examples
 #' data <- data.frame(effect = rnorm(10), se = rnorm(10), n_obs = rep(10, 10), study_id = rep(1:10, each = 1))
 #' getIVResults(data)
-getIVResults <- function(data, ...){
-  # Define the instruments to use
-  instruments <- list(1/sqrt(data$n_obs), 1/data$n_obs, 1/data$n_obs^2, log(data$n_obs))
-  instruments_verbose <- c('1/sqrt(n_obs)', '1/n_obs', '1/n_obs^2', 'log(n_obs)')
-  # Find out the best instrument
-  best_instrument <- findBestInstrument(data, instruments, instruments_verbose)
-  # If more best instruments are identified
-  if (length(best_instrument) > 1){ 
-    best_instrument <- best_instrument[1] # Choose the first one arbitrarily
-    print(paste("Choosing", best_instrument, "arbitrarily as an instrument for the regression."))
+getIVResults <- function(data, iv_instrument = "automatic", ...){
+  # Determine the best instrument automatically
+  if (iv_instrument == "automatic"){
+    instruments <- list(1/sqrt(data$n_obs), 1/data$n_obs, 1/data$n_obs^2, log(data$n_obs))
+    instruments_verbose <- c('1/sqrt(n_obs)', '1/n_obs', '1/n_obs^2', 'log(n_obs)')
+    # Find out the best instrument
+    best_instrument <- findBestInstrument(data, instruments, instruments_verbose)
+    # If more best instruments are identified
+    if (length(best_instrument) > 1){ 
+      best_instrument <- best_instrument[1] # Choose the first one arbitrarily
+      print(paste("Choosing", best_instrument, "arbitrarily as an instrument for the regression."))
+    }
+    stopifnot(
+      best_instrument %in% instruments_verbose,
+      length(best_instrument) == 1 # Should be redundant
+      )
+    # Get instrument values instead of name
+    best_instrument_values <- instruments[match(best_instrument, instruments_verbose)][[1]]
+  } else {
+    if (!grepl("n_obs", iv_instrument)){
+      stop("The chosen IV instrument must contain the column n_obs.")
+    }
+    best_instrument <- iv_instrument # Character
+    best_instrument_values <- eval(parse(text = gsub("n_obs", "data$n_obs", best_instrument))) # Actual values
   }
-  stopifnot(
-    best_instrument %in% instruments_verbose,
-    length(best_instrument) == 1 # Should be redundant
-    )
-  # Get instrument values instead of name
-  best_instrument_values <- instruments[match(best_instrument, instruments_verbose)][[1]]
   # Run the regression
   data$instr_temp <- best_instrument_values
   iv_formula <- as.formula("effect ~ se | instr_temp")
@@ -3195,8 +3205,9 @@ getPUniResults <- function(data, add_significance_marks = T, ...){
 #' Performs two tests for publication bias and exogeneity in instrumental variable (IV) analyses using clustered data.
 #'
 #' @param input_data [data.frame] A data frame containing the necessary columns: "effect", "se", "study_id", "study_size", and "precision".
-#' @param puni_method [character] Method to be used for p-uniform calculation. One of "ML", "P". Defaults to "ML".
 #' @param puni_params [list] Aruments to be used in p-uniform.
+#' @param iv_instrument [character] Instrument to choose in the IV regression. If set to "automatic", determine the best
+#' instrument automatically.
 #' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
 #'  Defaults to T.
 #'
@@ -3205,11 +3216,12 @@ getPUniResults <- function(data, add_significance_marks = T, ...){
 #' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
 #' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
 #' The results are then printed into the console and returned invisibly.
-getExoTests <- function(input_data, puni_params, add_significance_marks = T) {
+getExoTests <- function(input_data, puni_params, iv_instrument = "automatic", add_significance_marks = T) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
+    is.character(iv_instrument),
     all(required_cols %in% names(input_data))
   )
   # Get arguments
@@ -3221,7 +3233,7 @@ getExoTests <- function(input_data, puni_params, add_significance_marks = T) {
     puni_params
   )
   # Get coefficients
-  iv_res_list <- getIVResults(input_data, add_significance_marks = add_significance_marks,
+  iv_res_list <- getIVResults(input_data, iv_instrument = iv_instrument, add_significance_marks = add_significance_marks,
                               effect_present = T, pub_bias_present = T, verbose_coefs = T)
   iv_res <- iv_res_list[[1]] # Coefficients
   iv_best_instrument <- iv_res_list[[2]]

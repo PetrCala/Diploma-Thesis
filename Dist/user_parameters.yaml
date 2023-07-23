@@ -103,6 +103,8 @@ adjustable_parameters:
   non_linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks and SE parentheses
   # Parameters for tests relaxing exogeneity
   exo_add_significance_marks: true		# If TRUE, print out also significance level asterisks
+  # Instrumental Variable regression parameters
+  iv_instrument: "1/sqrt(n_obs)"		# Instrument to use for the IV regression. Must contain "n_obs". Can be set to "automatic".
   # P-uniform paramteres
   puni_param_side: "right" 		# puni_star side argument
   puni_param_method: "ML" 		# Method used for p-uniform calculation - one of "ML", "P"

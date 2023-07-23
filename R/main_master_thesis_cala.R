@@ -413,7 +413,8 @@ if (run_this$exo_tests){
     getExoTests, user_params,
     verbose_function = getExoTestsVerbose,
     data,
-    puni_params,
+    puni_params = puni_params,
+    iv_instrument = adj_params$iv_instrument,
     add_significance_marks = adj_params$exo_add_significance_marks
   )
   exo_tests_results <- exo_tests_results_list[[1]]
