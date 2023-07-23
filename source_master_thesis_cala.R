@@ -2430,7 +2430,7 @@ extractLinearCoefs <- function(coeftest_object, nobs_total, add_significance_mar
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
 
 #' Run all the linear tests on data, and return a matrix of results.
-#' These tests are ran: OLS, FE, RE, Weighted OLS (by study size),
+#' These tests are ran: OLS, FE, BE, RE, Weighted OLS (by study size),
 #'  Weighted OLS (by precision). You may also choose to add significance
 #'  level asterisks to the final output.
 #' 
@@ -2443,36 +2443,50 @@ getLinearTests <- function(data, add_significance_marks = T) {
   stopifnot(all(required_cols %in% names(data)))
   # Save the data length as information in the output
   total_obs <- nrow(data)
-  # OLS
+  ### OLS
   ols <- lm(formula = effect ~ se, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
   ols_coefs <- extractLinearCoefs(ols_res, total_obs, add_significance_marks)
-  # Between effects
+  ### Fixed effects
+  fe <- plm(effect ~ se, model = "within", index = "study_id", data = data)
+  fe_res <- coeftest(fe, vcov = vcov(fe, type = "fixed", cluster = c(data$study_id)))
+  # Calculate the intercept and extract the coefficients
+  fe_intercept <- within_intercept(fe, vcov = function(fe) {vcov(fe, type = "fixed", cluster = c(data$study_id))})
+  fe_effect_coef <- fe_intercept[[1]] # Coefficient
+  fe_effect_se <- attr(fe_intercept, "se") # SE
+  # Bind together the values into the existing coeftest object
+  names(fe_res) <- c("Estimate", "Str. Error")
+  new_row <- c(fe_effect_coef, fe_effect_se)
+  new_fe_res <- rbind(new_row, fe_res)
+  # Extract the coefficients
+  fe_coefs <- extractLinearCoefs(new_fe_res, total_obs, add_significance_marks)
+  ### Between effects
   be <- plm(effect ~ se, model = "between", index = "study_id", data = data)
   be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
   be_coefs <- extractLinearCoefs(be_res, total_obs, add_significance_marks)
-  # Random Effects
+  ### Random Effects
   re <- plm(effect ~ se, model = "random", index = "study_id", data = data)
   re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
   re_coefs <- extractLinearCoefs(re_res, total_obs, add_significance_marks)
-  # Weighted by number of observations per study
+  ### Weighted by number of observations per study
   ols_w_study <- lm(formula = effect ~ se, data = data, weight = (data$study_size*data$study_size))
   ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
   ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res, total_obs, add_significance_marks)
-  # Weighted by precision
+  ### Weighted by precision
   ols_w_precision <- lm(formula = effect ~ se, data = data, weight = c(data$precision*data$precision))
   ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
   ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res, total_obs, add_significance_marks)
   # Combine the results into a data frame
   results <- data.frame(
     OLS = ols_coefs,
+    FE = fe_coefs,
     BE = be_coefs,
     RE = re_coefs,
     OLS_weighted_study = ols_w_study_coefs,
     OLS_weighted_precision = ols_w_precision_coefs
   )
   rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)", "Total observations")
-  colnames(results) <- c("OLS", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
+  colnames(results) <- c("OLS", "Fixed Effects", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
   # Print the results into the console and return
   getLinearTestsVerbose(results)
   return(results) 
