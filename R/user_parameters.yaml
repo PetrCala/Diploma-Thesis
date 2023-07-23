@@ -10,9 +10,9 @@ run_this:
   box_plot: false
   funnel_plot: false
   t_stat_histogram: false
-  linear_tests: false
+  linear_tests: true
   nonlinear_tests: false
-  exo_tests: true
+  exo_tests: false
   p_hacking_tests: false
   bma: false
   fma: false 					
