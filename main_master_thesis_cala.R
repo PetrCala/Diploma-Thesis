@@ -278,7 +278,7 @@ if (run_this$prima_facie_graphs){
     export_graphics = export_options$export_graphics,
     graphic_results_folder_path = folder_paths$graphic_results_folder,
     prima_scale = adj_params$prima_scale,
-    prima_font_size = adj_params$prima_legend_font_size
+    prima_legend_font_size = adj_params$prima_legend_font_size
   )
 }
 
@@ -413,7 +413,8 @@ if (run_this$exo_tests){
     getExoTests, user_params,
     verbose_function = getExoTestsVerbose,
     data,
-    puni_params,
+    puni_params = puni_params,
+    iv_instrument = adj_params$iv_instrument,
     add_significance_marks = adj_params$exo_add_significance_marks
   )
   exo_tests_results <- exo_tests_results_list[[1]]
