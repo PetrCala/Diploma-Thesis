@@ -3978,12 +3978,12 @@ runBMA <- function(bma_data, bma_params){
   # Get parameters
   all_bma_params <- c(
     list(
-      X.data = bma_data
+      bma_data
     ),
     bma_params
   )
+  dev.off() # Reset the graphics device
   # Actual estimation with inhereted parameters
-  runBMAVerbose(bma_params)
   quiet(
     bma_model <- do.call(bms, all_bma_params)
   )
@@ -3991,8 +3991,7 @@ runBMA <- function(bma_data, bma_params){
 }
 
 #' Verbose output for the runBMA function
-runBMAVerbose <- function(bma_params, ...){
-  print(paste("Running the Bayesian Model Averaging with",bma_params$g, "g-prior and",bma_params$mprior, "model prior..."))
+runBMAVerbose <- function(...){
 }
 
 #' Rename the BMA model names to their verbose form using the variable information
@@ -4193,8 +4192,8 @@ graphBMAComparison <- function(bma_models, input_var_list, theme = "blue", verbo
     main_path <- paste0(export_path, "/bma_comparison",".png")
     hardRemoveFile(main_path) # Remove the graph if it exists
     # Save the plot
-    png(main_path, width=650*graph_scale, height=630*graph_scale, units = "px",
-        res = 80*graph_scale)
+    png(main_path, width=520*graph_scale, height=478*graph_scale, units = "px",
+        res = 90*graph_scale)
     eval(graph_call, envir=environment())
     dev.off()
   }

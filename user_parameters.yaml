@@ -142,7 +142,7 @@ adjustable_parameters:
   bma_verbose: true 			# If TRUE, print suggested formulas, VIF, etc.
   bma_print_results: "none" 		# Print raw results - one of c("none", "fast", "verbose", "all")
   bma_graph_scale: 2 			# Numeric, scale the corrplot graph by this amount
-  bma_comparison_graph_scale: 2		# Numeric, scale the comparison graph by this amount
+  bma_comparison_graph_scale: 3		# Numeric, scale the comparison graph by this amount
   # Bayesian Model Averaging direct parameters
   #  - These parameters are fed directly into the "bms" function. If you wish to run BMA models with multiple specifications,
   #     characterize the values of the desired parameters as lists of multiple values. In that case, make sure that all lists
