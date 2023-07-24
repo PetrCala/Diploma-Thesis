@@ -144,7 +144,7 @@ adjustable_parameters:
   bma_verbose: true 			# If TRUE, print suggested formulas, VIF, etc.
   bma_print_results: "none" 		# Print raw results - one of c("none", "fast", "verbose", "all")
   bma_graph_scale: 2 			# Numeric, scale the corrplot graph by this amount
-  bma_comparison_graph_scale: 2		# Numeric, scale the comparison graph by this amount
+  bma_comparison_graph_scale: 3		# Numeric, scale the comparison graph by this amount
   # Bayesian Model Averaging direct parameters
   #  - These parameters are fed directly into the "bms" function. If you wish to run BMA models with multiple specifications,
   #     characterize the values of the desired parameters as lists of multiple values. In that case, make sure that all lists
@@ -153,8 +153,8 @@ adjustable_parameters:
   #     will be used to construct the default BMA model, used later in BPE, economic significance, etc.
   bma_param_burn: 10000 		# Burn-ins (def 1e5)
   bma_param_iter: 30000 		# Draws (def 3e5)
-  bma_param_g: ["UIP", "UIP"] 		# g-Prior
-  bma_param_mprior: ["dilut", "uniform"] 		# Model Prior
+  bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
+  bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
   bma_param_nmodel: 20000 		# Number of models (def 50000)
   bma_param_mcmc: "bd" 			# Markov Chain Monte Carlo
   # Frequentist Model Averaging parameters
