@@ -1460,7 +1460,6 @@ getEffectSummaryStats <- function (input_data, input_var_list, conf.level = 0.95
       var_sd <- round(sd(input_effect_data), 3)
       var_ci_lower <- round(var_mean - var_sd*z, 3)
       var_ci_upper <- round(var_mean + var_sd*z, 3)
-      # var_weighted_mean <- round(weighted.mean(input_effect_data, w = input_study_size_data^2),3)
       var_weighted_mean <- round(weighted.mean(input_effect_data, w = 1/input_study_size_data),3)
       var_ci_lower_w <- round(var_weighted_mean - var_sd*z, 3)
       var_ci_upper_w <- round(var_weighted_mean + var_sd*z, 3)
@@ -1631,6 +1630,8 @@ generateGroupColumn <- function(var_data, input_var_list){
 #' the function will stop and return an error message. Defaults to NA.
 #' @param prima_scale [numeric] A number specifying the scale for the exported .png graphics.
 #' It affects both the width and the height of the graphics. Default is 6.
+#' @param prima_legend_font_size [numeric] A number to represent the font size in the prima
+#' facie graphs. Defaults to 18.
 #'
 #' @return [list] A list of ggplot objects representing the prima facie graphs.
 #'
@@ -1646,7 +1647,8 @@ generateGroupColumn <- function(var_data, input_var_list){
 #' @export
 getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL, prima_type = "density",
                                 prima_hide_outliers = T, prima_bins = 80, theme = "blue",
-                                export_graphics = T, graphic_results_folder_path = NA, prima_scale = 3){
+                                export_graphics = T, graphic_results_folder_path = NA,
+                                prima_scale = 3, prima_legend_font_size = 18){
   # Input validation
   stopifnot(
     is.data.frame(input_data),
@@ -1674,8 +1676,7 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
   }
   # Get the theme to use
   current_theme <- getTheme(theme) +
-    theme(legend.title = element_blank(), # No legend title
-          legend.position = "top")
+    getTopRightLegend(text_size = prima_legend_font_size)
   # Get the information about graphs to use
   clean_data <- input_data
   prima_names <- paste0("prima_facie_", seq(length(prima_factors))) # prima_facie_1, prima_facie_2,...
@@ -1747,7 +1748,7 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
       graph_object <- prima_graphs[[name]]
       suppressWarnings(
         ggsave(filename = full_graph_path, plot = graph_object,
-               width = 800*prima_scale, height = 736*prima_scale, units = "px")
+               width = 800*prima_scale, height = 666*prima_scale, units = "px")
       )
     }
   }
@@ -2362,7 +2363,13 @@ add_asterisks <- function(coef, se) { # Switch does not really work here as far 
     is.numeric(coef),
     is.numeric(se)
   )
-  if (any(is.na(coef),is.na(se))){
+  # NA values or 0 values
+  if (any(
+    is.na(coef),
+    is.na(se),
+    coef == 0,
+    se == 0
+    )){
     return(coef)
   }
   tvalue <- coef / se
@@ -2423,7 +2430,7 @@ extractLinearCoefs <- function(coeftest_object, nobs_total, add_significance_mar
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
 
 #' Run all the linear tests on data, and return a matrix of results.
-#' These tests are ran: OLS, FE, RE, Weighted OLS (by study size),
+#' These tests are ran: OLS, FE, BE, RE, Weighted OLS (by study size),
 #'  Weighted OLS (by precision). You may also choose to add significance
 #'  level asterisks to the final output.
 #' 
@@ -2436,36 +2443,50 @@ getLinearTests <- function(data, add_significance_marks = T) {
   stopifnot(all(required_cols %in% names(data)))
   # Save the data length as information in the output
   total_obs <- nrow(data)
-  # OLS
+  ### OLS
   ols <- lm(formula = effect ~ se, data = data)
   ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
   ols_coefs <- extractLinearCoefs(ols_res, total_obs, add_significance_marks)
-  # Between effects
+  ### Fixed effects
+  fe <- plm(effect ~ se, model = "within", index = "study_id", data = data)
+  fe_res <- coeftest(fe, vcov = vcov(fe, type = "fixed", cluster = c(data$study_id)))
+  # Calculate the intercept and extract the coefficients
+  fe_intercept <- within_intercept(fe, vcov = function(fe) {vcov(fe, type = "fixed", cluster = c(data$study_id))})
+  fe_effect_coef <- fe_intercept[[1]] # Coefficient
+  fe_effect_se <- attr(fe_intercept, "se") # SE
+  # Bind together the values into the existing coeftest object
+  names(fe_res) <- c("Estimate", "Str. Error")
+  new_row <- c(fe_effect_coef, fe_effect_se)
+  new_fe_res <- rbind(new_row, fe_res)
+  # Extract the coefficients
+  fe_coefs <- extractLinearCoefs(new_fe_res, total_obs, add_significance_marks)
+  ### Between effects
   be <- plm(effect ~ se, model = "between", index = "study_id", data = data)
   be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
   be_coefs <- extractLinearCoefs(be_res, total_obs, add_significance_marks)
-  # Random Effects
+  ### Random Effects
   re <- plm(effect ~ se, model = "random", index = "study_id", data = data)
   re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
   re_coefs <- extractLinearCoefs(re_res, total_obs, add_significance_marks)
-  # Weighted by number of observations per study
+  ### Weighted by number of observations per study
   ols_w_study <- lm(formula = effect ~ se, data = data, weight = (data$study_size*data$study_size))
   ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
   ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res, total_obs, add_significance_marks)
-  # Weighted by precision
+  ### Weighted by precision
   ols_w_precision <- lm(formula = effect ~ se, data = data, weight = c(data$precision*data$precision))
   ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
   ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res, total_obs, add_significance_marks)
   # Combine the results into a data frame
   results <- data.frame(
     OLS = ols_coefs,
+    FE = fe_coefs,
     BE = be_coefs,
     RE = re_coefs,
     OLS_weighted_study = ols_w_study_coefs,
     OLS_weighted_precision = ols_w_precision_coefs
   )
   rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)", "Total observations")
-  colnames(results) <- c("OLS", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
+  colnames(results) <- c("OLS", "Fixed Effects", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
   # Print the results into the console and return
   getLinearTestsVerbose(results)
   return(results) 
@@ -3039,6 +3060,8 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 #' - log(data$n_obs)
 #'
 #' @param data a data frame containing the data for the IV regression
+#' @param iv_instrument [character] Instrument to choose in the IV regression. If set to "automatic", determine the best
+#' instrument automatically.
 #' @inheritDotParams ... additional arguments to be passed to extractExoCoefs
 #'
 #' @return A list with a numeric vector containing the extracted coefficients from the IV regression
@@ -3052,23 +3075,31 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 #' @examples
 #' data <- data.frame(effect = rnorm(10), se = rnorm(10), n_obs = rep(10, 10), study_id = rep(1:10, each = 1))
 #' getIVResults(data)
-getIVResults <- function(data, ...){
-  # Define the instruments to use
-  instruments <- list(1/sqrt(data$n_obs), 1/data$n_obs, 1/data$n_obs^2, log(data$n_obs))
-  instruments_verbose <- c('1/sqrt(n_obs)', '1/n_obs', '1/n_obs^2', 'log(n_obs)')
-  # Find out the best instrument
-  best_instrument <- findBestInstrument(data, instruments, instruments_verbose)
-  # If more best instruments are identified
-  if (length(best_instrument) > 1){ 
-    best_instrument <- best_instrument[1] # Choose the first one arbitrarily
-    print(paste("Choosing", best_instrument, "arbitrarily as an instrument for the regression."))
+getIVResults <- function(data, iv_instrument = "automatic", ...){
+  # Determine the best instrument automatically
+  if (iv_instrument == "automatic"){
+    instruments <- list(1/sqrt(data$n_obs), 1/data$n_obs, 1/data$n_obs^2, log(data$n_obs))
+    instruments_verbose <- c('1/sqrt(n_obs)', '1/n_obs', '1/n_obs^2', 'log(n_obs)')
+    # Find out the best instrument
+    best_instrument <- findBestInstrument(data, instruments, instruments_verbose)
+    # If more best instruments are identified
+    if (length(best_instrument) > 1){ 
+      best_instrument <- best_instrument[1] # Choose the first one arbitrarily
+      print(paste("Choosing", best_instrument, "arbitrarily as an instrument for the regression."))
+    }
+    stopifnot(
+      best_instrument %in% instruments_verbose,
+      length(best_instrument) == 1 # Should be redundant
+      )
+    # Get instrument values instead of name
+    best_instrument_values <- instruments[match(best_instrument, instruments_verbose)][[1]]
+  } else {
+    if (!grepl("n_obs", iv_instrument)){
+      stop("The chosen IV instrument must contain the column n_obs.")
+    }
+    best_instrument <- iv_instrument # Character
+    best_instrument_values <- eval(parse(text = gsub("n_obs", "data$n_obs", best_instrument))) # Actual values
   }
-  stopifnot(
-    best_instrument %in% instruments_verbose,
-    length(best_instrument) == 1 # Should be redundant
-    )
-  # Get instrument values instead of name
-  best_instrument_values <- instruments[match(best_instrument, instruments_verbose)][[1]]
   # Run the regression
   data$instr_temp <- best_instrument_values
   iv_formula <- as.formula("effect ~ se | instr_temp")
@@ -3188,8 +3219,9 @@ getPUniResults <- function(data, add_significance_marks = T, ...){
 #' Performs two tests for publication bias and exogeneity in instrumental variable (IV) analyses using clustered data.
 #'
 #' @param input_data [data.frame] A data frame containing the necessary columns: "effect", "se", "study_id", "study_size", and "precision".
-#' @param puni_method [character] Method to be used for p-uniform calculation. One of "ML", "P". Defaults to "ML".
 #' @param puni_params [list] Aruments to be used in p-uniform.
+#' @param iv_instrument [character] Instrument to choose in the IV regression. If set to "automatic", determine the best
+#' instrument automatically.
 #' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
 #'  Defaults to T.
 #'
@@ -3198,11 +3230,12 @@ getPUniResults <- function(data, add_significance_marks = T, ...){
 #' analyses using clustered data: the IV test, and the p-Uniform test. The results of the two tests are combined
 #' into a data frame, with row names corresponding to the tests and column names corresponding to the test type.
 #' The results are then printed into the console and returned invisibly.
-getExoTests <- function(input_data, puni_params, add_significance_marks = T) {
+getExoTests <- function(input_data, puni_params, iv_instrument = "automatic", add_significance_marks = T) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(
     is.data.frame(input_data),
+    is.character(iv_instrument),
     all(required_cols %in% names(input_data))
   )
   # Get arguments
@@ -3214,7 +3247,7 @@ getExoTests <- function(input_data, puni_params, add_significance_marks = T) {
     puni_params
   )
   # Get coefficients
-  iv_res_list <- getIVResults(input_data, add_significance_marks = add_significance_marks,
+  iv_res_list <- getIVResults(input_data, iv_instrument = iv_instrument, add_significance_marks = add_significance_marks,
                               effect_present = T, pub_bias_present = T, verbose_coefs = T)
   iv_res <- iv_res_list[[1]] # Coefficients
   iv_best_instrument <- iv_res_list[[2]]
@@ -3576,6 +3609,51 @@ getMaiveResultsVerbose <- function(res, ...){
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
     
+#' @title Handle BMA setup parameters for multiple models
+#' 
+#' @description
+#' Split the BMA parameter list into sub-lists, where each of these has values of
+#'  length 1 and represents a single BMA model setup. The first model should always
+#'  appear in index one of parameters with multiple values. For parameters with
+#'  only one value, this value will be used for all models (sub-lists). In case
+#'  there are not either 1 or n values specified for each parameter (where n is
+#'  the number of models the user wishes to use), the code will throw an error.
+#'  
+#' @note
+#' The function always returns a list, even if all parameters have a single value.
+#'  This is so that the bma model main for loop can iterate over the results.
+#'  
+#' @param bma_params [list] A list with the "bma_param_" parameters from the 
+#'  user parameter file.
+#'
+#' @return A list of lists, where each sub-list corresponds to a single BMA
+#'  model setup.
+handleBMAParams <- function(bma_params){
+  adj_bma_params <- list() # Store results here
+  param_counts <- unique(sapply(bma_params, length)) # Values per parameter
+  if (length(param_counts) == 1){
+    adj_bma_params[[1]] <- bma_params
+  } else if (length(param_counts) == 2){
+    model_count <- param_counts[!param_counts == 1]
+    # Iterate over models parameter values - evaluate main model first with index 1
+    for (i in 1:model_count){ 
+      # Extract parameters of the current iteration model
+      single_model_params <- lapply(bma_params, function(x){x[1]})
+      adj_bma_params[[i]] <- single_model_params
+      # Remove the last value for parameters with multiple values
+      bma_params <- lapply(bma_params, function(x){
+        if (length(x) > 1){
+          return(x[-1]) # All but first element
+        }
+        return(x)
+      })
+    }
+  } else {
+    stop("You must provide one or n values for each BMA parameter. n can be any number, but all parameters must have 1 or n values.")
+  }
+  return(adj_bma_params)
+}
+ 
 #' This function searches for an optimal Bayesian Model Averaging (BMA) formula by removing the variables
 #' with the highest Variance Inflation Factor (VIF) until the VIF coefficients of the remaining variables
 #' are below 10 or the maximum number of groups to remove is reached.
@@ -3904,8 +3982,8 @@ runBMA <- function(bma_data, bma_params){
     ),
     bma_params
   )
+  dev.off() # Reset the graphics device
   # Actual estimation with inhereted parameters
-  runBMAVerbose()
   quiet(
     bma_model <- do.call(bms, all_bma_params)
   )
@@ -3914,7 +3992,24 @@ runBMA <- function(bma_data, bma_params){
 
 #' Verbose output for the runBMA function
 runBMAVerbose <- function(...){
-  print("Running the Bayesian Model Averaging...")
+}
+
+#' Rename the BMA model names to their verbose form using the variable information
+#' data frame. Input these two objects (BMA model and variable list DF) and return
+#' the modified BMA model.
+renameBMAModel <- function(bma_model, input_var_list){
+  # Validate input
+  stopifnot(
+    class(bma_model) == "bma",
+    is.data.frame(input_var_list)
+  )
+  # Rename the model names
+  bma_names <- bma_model$reg.names
+  idx <- match(bma_names, input_var_list$var_name)
+  bma_names[!is.na(idx)] <- input_var_list$var_name_verbose[na.omit(idx)]
+  bma_names[is.na(idx)] <- "Intercept"
+  bma_model$reg.names <- bma_names
+  return(bma_model)
 }
 
 
@@ -3972,14 +4067,10 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
     is.numeric(graph_scale)
   )
   # Rename the variables to verbose form
-  bma_names <- bma_model$reg.names
-  idx <- match(bma_names, input_var_list$var_name)
-  bma_names[!is.na(idx)] <- input_var_list$var_name_verbose[na.omit(idx)]
-  bma_names[is.na(idx)] <- "Intercept"
-  bma_model$reg.names <- bma_names
+  bma_model <- renameBMAModel(bma_model, input_var_list)
   # Get verbose names for the bma correlation matirx too
   effect_verbose <- input_var_list$var_name_verbose[match("effect",input_var_list$var_name)]
-  bma_matrix_names <- c(effect_verbose, bma_names)
+  bma_matrix_names <- c(effect_verbose, bma_model$reg.names)
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
   # Print out coefficient and model statistics
@@ -4033,11 +4124,14 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
     cat("\n\n")
   }
   if (export_graphics){
+    # Get the model flagging information
+    gprior <- bma_model$gprior.info$gtype
+    mprior <- bma_model$mprior.info$origargs$mpmode
     # Paths
     validateFolderExistence(export_path)
-    main_path <- paste0(export_path, "/bma_main.png")
-    dist_path <- paste0(export_path, "/bma_dist.png")
-    corrplot_path <- paste0(export_path, "/bma_corrplot.png")
+    main_path <- paste0(export_path, "/bma_", gprior, "_", mprior, "_results.png")
+    dist_path <- paste0(export_path, "/bma_", gprior, "_", mprior, "_dist.png")
+    corrplot_path <- paste0(export_path, "/bma_", gprior, "_", mprior, "_corrplot.png")
     # Remove existing plots if they exist
     for (path in list(main_path, dist_path, corrplot_path)){
       hardRemoveFile(path)
@@ -4066,6 +4160,46 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
 extractBMAResultsVerbose <- function(...){
   # Todo
 }
+
+graphBMAComparison <- function(bma_models, input_var_list, theme = "blue", verbose = T, export_graphics = T,
+                               export_path = "./results/graphic", graph_scale = 2){
+  # Rename the BMA models to verbose
+  bma_models <- lapply(bma_models, renameBMAModel, input_var_list = input_var_list)
+  # Loop through the BMA objects and construct the partial call strings
+  bma_model_calls <- list()
+  for (i in 1:length(bma_models)){
+    bma_model <- bma_models[[i]]
+    # Get the model flagging information
+    gprior <- bma_model$gprior.info$gtype
+    mprior <- bma_model$mprior.info$origargs$mpmode
+    prior_info_verbose <- paste(gprior,"and",mprior)
+    # Construct and save the partial call
+    model_call <- sprintf('"%s"=bma_models[[%s]]', prior_info_verbose, i)
+    bma_model_calls <- append(bma_model_calls, model_call)
+  }
+  # Construct the final call string
+  call_str <- paste0("BMS::plotComp(", paste(bma_model_calls, collapse = ", "), ", add.grid=F, cex.xaxis=0.7)")
+  graph_call <- parse(text = call_str)
+  # Create an environment to evaluate the expression under
+  # Plot the plot
+  if (verbose){
+    eval(graph_call, envir=environment())
+  }
+  # Export the plot
+  if (export_graphics){
+    # Export the results
+    validateFolderExistence(export_path)
+    main_path <- paste0(export_path, "/bma_comparison",".png")
+    hardRemoveFile(main_path) # Remove the graph if it exists
+    # Save the plot
+    png(main_path, width=520*graph_scale, height=478*graph_scale, units = "px",
+        res = 90*graph_scale)
+    eval(graph_call, envir=environment())
+    dev.off()
+  }
+  return(NULL)
+}
+
 
 #' A helper function (not used in the main analysis) that allows the user to generate
 #' a boolean vector for the excel variable info sheet - namely the "bma" column.
@@ -4799,6 +4933,52 @@ miracleBPESorting <- function(df){
   return(df)
 }
 
+#' An auxiliary method for adding a "group" column to the bpe data object. Used for 
+#' graphing BPE graphs, and for generating the BPE summary statistics table. The output
+#' of the function is the same dataframe as the inputted "bpe_df" object, only with an
+#' extra "group" column.
+addGroupColToBPEData <- function(bpe_df, vars_to_use, input_data, input_var_list){
+  # Validate input
+  stopifnot(
+    is.data.frame(bpe_df),
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    all(colnames(bpe_df) == c("estimate", "ci_95_lower", "ci_95_higher"))
+  )
+  bpe_studies <- rownames(bpe_df)
+  # Define a custom function that will allow the grouping to be done using mode (most frequent value)
+  getmode <- function(v) {
+    uniqv <- unique(v)
+    uniqv[which.max(tabulate(match(v, uniqv)))]
+  }
+  # Group the main data to the same length as the BPE df
+  var_data <- input_data %>%
+    subset(study_name %in% bpe_studies) %>%
+    select(c("study_name", all_of(vars_to_use))) %>%
+    group_by(study_name) %>%
+    summarise(across(everything(), getmode)) %>%
+    select(-c("study_name")) # Drop the study_name col
+  # Validate correct grouping
+  expected_studies <- ifelse("Author" %in% bpe_studies, length(bpe_studies) - 1, length(bpe_studies))
+  if (nrow(var_data) != expected_studies){
+    stop("Incorrect grouping of variables in construction of the auxiliary group BPE graph column.")
+  }
+  # Generate the group column using a custom function
+  group_col <- generateGroupColumn(var_data, input_var_list)
+  # Put back the author's bpe
+  if ("Author" %in% bpe_studies){
+    author_idx <- which(bpe_studies == "Author")
+    group_col <- append(group_col, "Author", after = author_idx - 1)
+  }
+  # Assign the group column to the data
+  if (length(group_col) != nrow(bpe_df)){
+    stop("Incorrect length of the generated group column in BPE graphing.")
+  }
+  bpe_df$group <- group_col
+  return(bpe_df)
+}
+
+
 
 #' @title Graph Best Practice Estimates (BPEs)
 #'
@@ -4861,10 +5041,10 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
     stop("You must specify at least one factor to group the BPE plots by.")
   }
   if (all(is.na(bpe_factors))){
-    stop("Please specify at least one non-NA BPE graph grouping factor.")
+    stop("Please specify at least one non-NA BPE grouping factor.")
   }
   if (!all(is.numeric(bpe_factors))){
-    stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
+    stop("All BPE factors must be numeric values spectifying the variable groups to factor by.")
   }
   if (!graph_type %in% c("density", "miracle")){
     stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"miracle\""))
@@ -4879,44 +5059,19 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
   }
   # Get the theme to use
   current_theme <- getTheme(theme) +
-    theme(legend.title = element_blank(), # No legend title
-          legend.position = "top")
+    getTopRightLegend(text_size = 16)
   mean_line_color <- ifelse(theme %in% c("blue", "green"), "darkorange", "darkgreen")
   tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Get the information about graphs to use
   clean_bpe_df <- bpe_df
-  bpe_studies <- rownames(bpe_df)
   bpe_names <- paste0("bpe_", seq(length(bpe_factors))) # bpe_1, bpe_2,...
   bpe_names_counter <- 1
   bpe_graphs <- list()  
   for (bpe_factor in bpe_factors){
     bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
     vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
-    # Construct an auxiliary group column
-    # Group the main data to the same length as the BPE df
-    var_data <- input_data %>%
-      subset(study_name %in% bpe_studies) %>%
-      select(c("study_name", all_of(vars_to_use))) %>%
-      group_by(study_name) %>%
-      summarise(across(everything(), \(x) median(x, na.rm = T))) %>%
-      select(-c("study_name")) # Drop the study_name col
-    # Validate correct grouping
-    expected_studies <- ifelse("Author" %in% bpe_studies, length(bpe_studies) - 1, length(bpe_studies))
-    if (nrow(var_data) != expected_studies){
-      stop("Incorrect grouping of variables in construction of the auxiliary group BPE graph column.")
-    }
-    # Generate the group column using a custom function
-    group_col <- generateGroupColumn(var_data, input_var_list)
-    # Put back the author's bpe
-    if ("Author" %in% bpe_studies){
-      author_idx <- which(bpe_studies == "Author")
-      group_col <- append(group_col, "Author", after = author_idx - 1)
-    }
-    # Assign the group column to the data
-    if (length(group_col) != nrow(bpe_df)){
-      stop("Incorrect length of the generated group column in BPE graphing.")
-    }
-    bpe_df$group <- group_col
+    # Construct and add an auxiliary group column
+    bpe_df <- addGroupColToBPEData(bpe_df, vars_to_use, input_data, input_var_list)
     # Get custom colors for the current group of variables
     bpe_palette <- getColors(theme, "bpe", submethod = graph_type)
     # Construct the graph
@@ -4961,7 +5116,7 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
       graph_object <- bpe_graphs[[name]]
       suppressWarnings(
         ggsave(filename = full_graph_path, plot = graph_object,
-               width = 800*bpe_graphs_scale, height = 736*bpe_graphs_scale, units = "px")
+               width = 800*bpe_graphs_scale, height = 666*bpe_graphs_scale, units = "px")
       )
     }
   }
@@ -4969,8 +5124,143 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
   return(bpe_graphs)
 }
 
+###### BPE SUMMARY STATISTICS ######
+
+#' @title getBPESummaryStats
+#' 
+#' @description
+#' Generate a table containing various summary statistics for those Best-practice estimates across
+#' literature that are listed in the "bpe_df" object. Grouping factors are necessary to specify for which
+#' variables these statistics should be printed, as well as for what confidence level. A data set of
+#' the summary statistics is returned.
+#' 
+#' @details
+#' The function employs several auxiliary functions, including an automatic splitting of estimates into groups
+#' based values of a specified variable (see generateGroupColumn() and addGroupColumnToBPEData()).
+#' 
+#' 
+#' @note
+#' This function works very similarly in principle to the `getEffectSummaryStats()` function.
+#'  Feel free to check that function's documentation as well.
+#' 
+#' @param bpe_df [data.frame] Data frame with the Best-practice estimates. Must contain the columns
+#'  "estimate", "ci_95_lower', and "ci_95_higher"
+#' @param input_data [data.frame] Main data frame.
+#' @param input_var_list [data.frame] Variable information data frame.
+#' @param bpe_factors [numeric] A vector of numeric values specifying the variable groups to factor by.
+#' If NULL, the function will stop and return an error message. Defaults to NULL.
+#' @param conf.level [numeric] Confidence level for the confidence interval. Must be between 0 and 1.
+#' Defaults to 0.95
+#' 
+#' @return [data.frame] A data frame with the summary statistics
+#' 
+#' @export
+getBPESummaryStats <- function (bpe_df, input_data, input_var_list, bpe_factors = NULL, conf.level = 0.95) {
+  # Validate input
+  stopifnot(
+    is.data.frame(bpe_df),
+    is.data.frame(input_data),
+    is.data.frame(input_var_list),
+    is.numeric(conf.level),
+    conf.level > 0,
+    conf.level < 1,
+    all(colnames(bpe_df) == c("estimate", "ci_95_lower", "ci_95_higher"))
+  )
+  if (length(bpe_factors) < 1){
+    stop("You must specify at least one factor to group the BPE plots by.")
+  }
+  if (all(is.na(bpe_factors))){
+    stop("Please specify at least one non-NA BPE grouping factor.")
+  }
+  if (!all(is.numeric(bpe_factors))){
+    stop("All BPE factors must be numeric values spectifying the variable groups to factor by.")
+  }
+  if (nrow(bpe_df) < 2){
+    stop("There are not enough estimates to compute summary statistics. Please specify at least two studies to run the BPE for.")
+  }
+  # Constants
+  z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) # Z value for conf. int. calculation
+  # Output columns
+  bpe_stat_names <- c("Data subset", "Mean", "CI lower", "CI upper", "Median", "Min", "Max", "SD", "Studies")
+  # Initialize output data frame
+  df <- data.frame(col1 = character(),
+                   col2 = numeric(),
+                   col3 = numeric(),
+                   col4 = numeric(),
+                   col5 = numeric(),
+                   col6 = numeric(),
+                   col7 = numeric(),
+                   col8 = numeric(),
+                   col9 = numeric(),
+                   stringsAsFactors = F
+                   )
+  stopifnot(ncol(df) == length(bpe_stat_names))
+  # Add an auxiliary function for constructing new rows
+  getNewDataRow <- function(bpe_df_subset, var_name, z){
+    # Summary stats computation
+    var_mean <- round(mean(bpe_df_subset$estimate), 3)
+    var_sd <- round(sd(bpe_df_subset$estimate), 3)
+    var_ci_lower <- round(var_mean - var_sd*z, 3)
+    var_ci_upper <- round(var_mean + var_sd*z, 3)
+    var_median <- round(median(bpe_df_subset$estimate), 3)
+    var_min <- round(min(bpe_df_subset$estimate), 3)
+    var_max <- round(max(bpe_df_subset$estimate), 3)
+    var_obs <- nrow(bpe_df_subset)
+    # Initialize and append a new row
+    new_row <- data.frame(
+      col1 = var_name,
+      col2 = var_mean,
+      col3 = var_ci_lower,
+      col4 = var_ci_upper,
+      col5 = var_median,
+      col6 = var_min,
+      col7 = var_max,
+      col8 = var_sd,
+      col9 = var_obs
+    )
+    return(new_row)
+  }
+  
+  # Iterate over the desired factors and append new rows for each of them
+  bpe_df <- bpe_df[rownames(bpe_df) != "Author",] # Do not use author, as the method is preocupied with literature instead
+  clean_bpe_df <- bpe_df
+  bpe_studies <- rownames(bpe_df)
+  for (bpe_factor in bpe_factors){
+    bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
+    vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
+    # Construct and add an auxiliary group column
+    bpe_df <- addGroupColToBPEData(bpe_df, vars_to_use, input_data, input_var_list)
+    # Add rows for each unique group of the group column
+    for (var_name in unique(bpe_df$group)){
+      bpe_df_sub <- bpe_df[bpe_df$group == var_name, ]
+      new_row <- getNewDataRow(bpe_df_sub, var_name, z)
+      df <- rbind(df, new_row)
+    }
+  }
+  # Add a row on top of the data frame with all observations
+  first_row <- getNewDataRow(bpe_df, "All data", z)
+  df <- rbind(first_row, df)
+  # Put the final output together
+  colnames(df) <- bpe_stat_names
+  # Print out verbose output and return the data frame
+  getBPESummaryStatsVerbose(df)
+  # Return data frame only
+  return(df)
+}
+
+#' Verbose output for the getBPESummaryStatsVerbose function
+getBPESummaryStatsVerbose <- function(res, ...){
+  # Verbose output
+  cat("Best-practice estimate summary statistics:\n")
+  print(res)
+  cat("\n")
+}
+
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################
 
+#' Run the main RoBMA method using the main data frame and return the results.
+#' Automatically add significance marks if desired. Is able to inherit parameters
+#' that are then fed into the RoBMA() function call. 
 getRoBMA <- function(input_data, verbose, add_significance_marks = T, ...){
   # Validate input
   stopifnot(
@@ -5325,6 +5615,19 @@ getTheme <- function(theme, x_axis_tick_text = "black"){
       axis.text.y = ggtext::element_markdown(color = "black"),
       panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
       plot.background = element_rect(fill = theme_color))
+}
+
+#' Return a theme object that moves the legend to the top right corner of the graph
+getTopRightLegend <- function(text_size = 18){
+    theme(
+      legend.title = element_blank(), # No legend title
+      legend.position = c(.98, .98), # Legend at the top right
+      legend.justification = c("right", "top"), # To make sure the legend doesn't go outside the plotting area
+      legend.direction = "vertical", # Stack legend text vertically
+      legend.box = "vertical", # Set legend box direction
+      legend.text = element_text(size = text_size), # Larger legend text
+      legend.background = element_rect(colour = "grey", fill = "white") # Grey border around the legend
+    )
 }
 
 getColors <- function(theme, method, submethod = NA, ...){

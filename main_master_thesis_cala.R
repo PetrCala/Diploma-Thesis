@@ -124,10 +124,10 @@ invisible(sapply(unmodifiable_folders, validateFolderExistence, require_existenc
 
 # Clean result and data folders
 folders_to_clean_forcefully <- c(
-  folder_paths$graphic_results_folder,
   folder_paths$numeric_results_folder
 )
 folders_to_clean_old_files_only <- c(
+  folder_paths$graphic_results_folder,
   folder_paths$temp_data_folder
 )
 invisible(sapply(folders_to_clean_forcefully, cleanFolder, force = T)) # Clean all files
@@ -277,7 +277,8 @@ if (run_this$prima_facie_graphs){
     theme = export_options$theme,
     export_graphics = export_options$export_graphics,
     graphic_results_folder_path = folder_paths$graphic_results_folder,
-    prima_scale = adj_params$prima_scale
+    prima_scale = adj_params$prima_scale,
+    prima_legend_font_size = adj_params$prima_legend_font_size
   )
 }
 
@@ -412,7 +413,8 @@ if (run_this$exo_tests){
     getExoTests, user_params,
     verbose_function = getExoTestsVerbose,
     data,
-    puni_params,
+    puni_params = puni_params,
+    iv_instrument = adj_params$iv_instrument,
     add_significance_marks = adj_params$exo_add_significance_marks
   )
   exo_tests_results <- exo_tests_results_list[[1]]
@@ -504,24 +506,45 @@ if (run_this$bma){
     data, var_list, bma_vars,
     scale_data = adj_params$bma_scale_data
   )
-  bma_params <- getMultipleParams(adj_params, "bma_param_",T,T)
-  bma_model <- runCachedFunction(
-    runBMA, user_params,
-    verbose_function = runBMAVerbose,
-    bma_data,
-    bma_params = bma_params
-  )
-  # Print out the results
-  bma_coefs <- runCachedFunction(
-    extractBMAResults, user_params,
-    verbose_function = extractBMAResultsVerbose,
-    bma_model, bma_data, var_list,
-    print_results = adj_params$bma_print_results,
-    adjustable_theme = adj_params$bma_adjustable_theme,
+  raw_bma_params <- getMultipleParams(adj_params, "bma_param_",T,T)
+  bma_params <- handleBMAParams(raw_bma_params) # Split into lists, each for a single model
+  # Run a BMA estimation for each parameter list - iterate last to first, where index == 1 is main model
+  bma_models <- list() # All BMA model objects stored here
+  bma_all_coefs <- list() # All BMA coefficients stored here
+  for (i in length(bma_params):1){
+    model_params <- bma_params[[i]]
+    # Estimate the model
+    print(paste("Running Bayesian Model Averaging with",model_params$g, "g-prior and",model_params$mprior, "model prior..."))
+    bma_model <- runCachedFunction(
+      runBMA, user_params,
+      verbose_function = nullVerboseFunction,
+      bma_data,
+      bma_params = model_params
+    )
+    # Extract the coefficients and plot graphs
+    bma_coefs <- runCachedFunction(
+      extractBMAResults, user_params,
+      verbose_function = extractBMAResultsVerbose,
+      bma_model, bma_data, var_list,
+      print_results = adj_params$bma_print_results,
+      adjustable_theme = adj_params$bma_adjustable_theme,
+      theme = export_options$theme,
+      export_graphics = export_options$export_graphics,
+      export_path = folder_paths$graphic_results_folder,
+      graph_scale = adj_params$bma_graph_scale
+    )
+    # Save the results
+    bma_models[[i]] <- bma_model
+    bma_all_coefs[[i]] <- bma_coefs
+  }
+  # Add a BMA comparison graph
+  graphBMAComparison(
+    bma_models, var_list,
     theme = export_options$theme,
+    verbose = T,
     export_graphics = export_options$export_graphics,
-    export_path = user_params$folder_paths$graphic_results_folder,
-    graph_scale = adj_params$bma_graph_scale
+    export_path = folder_paths$graphic_results_folder,
+    graph_scale = adj_params$bma_comparison_graph_scale
   )
   # Store the bma data in the temporary data folder
   if (export_options$export_bma_data){
@@ -612,20 +635,6 @@ if (run_this$bpe){
     display_large_pip_only = adj_params$bpe_econ_sig_large_pip_only,
     verbose_output = adj_params$bpe_econ_sig_verbose
   )
-  # Get BPE graphs
-  if (adj_params$bpe_generate_graphs){
-    bpe_plots <- runCachedFunction(
-      graphBPE, user_params,
-      verbose_function = nullVerboseFunction,
-      bpe_df, data, var_list,
-      bpe_factors = adj_params$bpe_graphs_factors,
-      graph_type = adj_params$bpe_graphs_type,
-      theme = export_options$theme,
-      export_graphics = export_options$export_graphics,
-      graphic_results_folder_path = folder_paths$graphic_results_folder,
-      bpe_graphs_scale = adj_params$bpe_graphs_scale
-    )
-  }
   # Export
   if (export_options$export_results){
     bpe_res_name <- ifelse("all" %in% bpe_study_ids, "bpe_res_all_studies", "bpe_res")
@@ -634,11 +643,47 @@ if (run_this$bpe){
   }
 }
 
+###### BPE GRAPHS ######
+if (run_this$bpe_graphs){
+  if (!exists("bpe_df")){
+    stop("You must run BPE first before you construct the summary statistic tables.")
+  }
+  bpe_graphs <- runCachedFunction(
+    graphBPE, user_params,
+    verbose_function = nullVerboseFunction,
+    bpe_df, data, var_list,
+    bpe_factors = adj_params$bpe_factors,
+    graph_type = adj_params$bpe_graphs_type,
+    theme = export_options$theme,
+    export_graphics = export_options$export_graphics,
+    graphic_results_folder_path = folder_paths$graphic_results_folder,
+    bpe_graphs_scale = adj_params$bpe_graphs_scale
+  )
+}
+
+###### BPE SUMMARY STATISTICS ######
+if (run_this$bpe_summary_stats){
+  if (!exists("bpe_df")){
+    stop("You must run BPE first before you construct the summary statistic tables.")
+  }
+  bpe_sum_stats <- runCachedFunction(
+    getBPESummaryStats, user_params,
+    verbose_function = getBPESummaryStatsVerbose,
+    bpe_df, data, var_list,
+    bpe_factors = adj_params$bpe_factors,
+    conf.level = adj_params$bpe_summary_stats_conf_level
+  )
+  if (export_options$export_results){
+    exportTable(bpe_sum_stats, user_params, "bpe_summary_stats")
+  }
+}
+
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################
 
 # Source:  https://github.com/FBartos/RoBMA
 if (run_this$robma){
   robma_params <- getMultipleParams(adj_params, "robma_param_",T,T)
+  print("Running Robust BMA. This may take some time...")
   robma_res <- runCachedFunction(
     getRoBMA, user_params,
     verbose_function = getRoBMAVerbose,

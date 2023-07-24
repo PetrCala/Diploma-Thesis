@@ -1,6 +1,7 @@
 # RUN THESE PARTS OF THE MAIN SCRIPT
 # Note: The parts "fma", "ma_variables_description_table", and "bpe" are only executable
-#	after running BMA
+#	after running BMA. The parts "bpe_graphs" and "bpe_summary_stats" can be ran only
+#	after running BPE.
 run_this:
   variable_summary_stats: true
   effect_summary_stats: true
@@ -16,6 +17,8 @@ run_this:
   fma: true 					
   ma_variables_description_table: true 	
   bpe: true 					
+  bpe_graphs: true
+  bpe_summary_stats: true
   robma: true 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
@@ -67,6 +70,7 @@ adjustable_parameters:
   prima_hide_outliers: true			# If TRUE, outliers (equal to the outermost histogram bins) will be hidden
   prima_bins: 80				# Number of bins to use in the histogram.
   prima_scale: 3             			# A number to scale the prima facie graphs by.
+  prima_legend_font_size: 18			# Size of the font in the prima facie graphs.
   # Box plot parameters
   box_plot_group_by_factor_1: "study_name" 	# Group by study name
   box_plot_group_by_factor_2: "country" 	# Group by country
@@ -85,7 +89,7 @@ adjustable_parameters:
   t_hist_lower_cutoff: -120 		# Lower cutoff point for t-statistics
   t_hist_upper_cutoff: 120 		# Upper cutoff point for t-statistics
   t_hist_highlight_mean: true		# If T, higlight the mean in the graph also
-  t_hist_add_density: true		# If T, add a density line into the graph
+  t_hist_add_density: false		# If T, add a density line into the graph
   t_hist_t_stats: [-1.96, 1.96]		# A vector of t-statistics to highlight in the graph. Must be a vector.
   t_hist_graph_scale: 6 		# Numeric, scale the graph by this number
   # Linear test parameters
@@ -99,6 +103,8 @@ adjustable_parameters:
   non_linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks and SE parentheses
   # Parameters for tests relaxing exogeneity
   exo_add_significance_marks: true		# If TRUE, print out also significance level asterisks
+  # Instrumental Variable regression parameters
+  iv_instrument: "1/sqrt(n_obs)"		# Instrument to use for the IV regression. Must contain "n_obs". Can be set to "automatic".
   # P-uniform paramteres
   puni_param_side: "right" 		# puni_star side argument
   puni_param_method: "ML" 		# Method used for p-uniform calculation - one of "ML", "P"
@@ -134,14 +140,21 @@ adjustable_parameters:
   bma_scale_data: false 		# If TRUE, standardize all variables onto the same scale automatically - UNSTABLE
   bma_adjustable_theme: true 		# If TRUE, modify the colors of bma plots to fit the theme
   bma_verbose: true 			# If TRUE, print suggested formulas, VIF, etc.
-  bma_graph_scale: 2 			# Numeric, scale the corrplot graph by this amount
   bma_print_results: "none" 		# Print raw results - one of c("none", "fast", "verbose", "all")
-  bma_param_burn: 10000 		# Burn-ins (def 1e5)
-  bma_param_iter: 30000 		# Draws (def 3e5)
-  bma_param_g: "UIP" 			# g-Prior
-  bma_param_mprior: "dilut" 		# Model Prior
-  bma_param_nmodel: 20000 		# Number of models (def 50000)
-  bma_param_mcmc: "bd" 			# Markov Chain Monte Carlo
+  bma_graph_scale: 2 			# Numeric, scale the corrplot graph by this amount
+  bma_comparison_graph_scale: 3		# Numeric, scale the comparison graph by this amount
+  # Bayesian Model Averaging direct parameters
+  #  - These parameters are fed directly into the "bms" function. If you wish to run BMA models with multiple specifications,
+  #     characterize the values of the desired parameters as lists of multiple values. In that case, make sure that all lists
+  #     of size longer than 1 are of equal size. Values in the same index positions of these lists will then make setups of the
+  #     BMA models. In case a singular value is provided, that value will be used for all models. Values in positions of index 1
+  #     will be used to construct the default BMA model, used later in BPE, economic significance, etc.
+  bma_param_burn: 10000 						# Burn-ins (def 1e5)
+  bma_param_iter: 30000 						# Draws (def 3e5)
+  bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
+  bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
+  bma_param_nmodel: 20000 						# Number of models (def 50000)
+  bma_param_mcmc: "bd" 							# Markov Chain Monte Carlo
   # Frequentist Model Averaging parameters
   fma_verbose: false 				# If TRUE, print out the raw results of FMA into the console
   # Model averaging parameters
@@ -161,10 +174,10 @@ adjustable_parameters:
   bpe_result_table_verbose: true 		# If TRUE, print out the table into the console along with the functional BPE form
   bpe_econ_sig_large_pip_only: true 		# If TRUE, display econ. significance for variables with PIP >= 0.5
   bpe_econ_sig_verbose: true 			# If TRUE, print out the economic significance table into the console
-  bpe_generate_graphs: true			# If TRUE, graph the BPE estimates onto several graphs. Export these, if graph export is on.
+  bpe_factors: [10, 31, 32]		 	# A numeric vector with ids of variable groups to use for BPE graphs/summary stats
   bpe_graphs_type: "density"			# Type of the BPE graphs. One of "density", "miracle".
-  bpe_graphs_factors: [10, 31, 32]		# A numeric vector with ids of variable groups to graph
   bpe_graphs_scale: 3				# A number to scale the BPE graphs by. Defaults to 3.
+  bpe_summary_stats_conf_level: 0.95		# Confidence level for the BPE summary statistics table
   # Robust Bayesian Model Averaging parameters - do not pass nested lists, priors etc.
   robma_verbose: true
   robma_param_priors_bias: null
@@ -188,7 +201,8 @@ script_files:
   stem_source: "stem_method_master_thesis_cala.R" 		# STEM method (Furukawa, 2019) - fixed package handling
 
 export_options:
-  export_results: true 		# Export all results if they differ from the existing ones - no extra time
+  export_results: true 		# If TRUE, export all numeric into the numeric results folder
+  export_graphics: true 	# If TRUE, save the graphs into the graphic results folder
   export_methods: 
     # Verbose names of all allowed export methods
     variable_summary_stats: "Variable summary stats"
@@ -203,12 +217,12 @@ export_options:
     ma_variables_description_table: "Model averaging description table"
     bpe_res: "Best practice estimate"
     bpe_econ_sig: "Economic significance"
+    bpe_summary_stats: "Best-practice estimate summary stats"
     robma_components: "RoBMA components"
     robma_estimates: "RoBMA estimates"
   # Other export options
   export_log_file_path: "main_results.txt" 	# Console log as a text file
   export_zip_name: "results_all" 		# Zip file with all results
-  export_graphics: true 			# If TRUE, save the graphs into the graphics folder as HTML files
   export_bma_data: false 			# If TRUE, export the data used for BMA into the temporary data folder
   theme: "blue" 				# One of "blue", "yellow", "green", "red", "purple"
 
