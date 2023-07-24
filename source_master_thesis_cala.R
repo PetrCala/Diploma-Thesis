@@ -3736,7 +3736,7 @@ findOptimalBMAFormula <- function(input_data, input_var_list, max_groups_to_remo
     res_object <- bma_formula
   }
   # All information to return (for cacheing)
-  out_list <- list(res_object, removed_groups, removed_groups_verbose, bma_formula)
+  out_list <- list(res_object, vif_coefs, removed_groups, removed_groups_verbose, bma_formula)
   # Verbose output
   if (verbose) {
     findOptimalBMAFormulaVerbose(
@@ -3755,13 +3755,16 @@ findOptimalBMAFormulaVerbose <- function(out_list, ...){
   # Validate input
   stopifnot(
     is(out_list, "list"),
-    length(out_list) == 4 # Via the main function
+    length(out_list) == 5 # Via the main function
   )
   # Extract function output
-  removed_groups <- out_list[[2]]
-  removed_groups_verbose <- out_list[[3]]
-  bma_formula <- out_list[[4]]
+  vif_coefs <- out_list[[2]]
+  removed_groups <- out_list[[3]]
+  removed_groups_verbose <- out_list[[4]]
+  bma_formula <- out_list[[5]]
   if (verbose_on){
+    print("These are all the Variance Inflation Coefficients for this formula:")
+    print(vif_coefs)
     print(paste("Removed", removed_groups, "groups with VIF > 10."))
     print("The removed groups contained these variables:")
     print(removed_groups_verbose)
