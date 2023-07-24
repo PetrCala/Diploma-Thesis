@@ -514,7 +514,7 @@ if (run_this$bma){
   for (i in length(bma_params):1){
     model_params <- bma_params[[i]]
     # Estimate the model
-    print(paste("Running the Bayesian Model Averaging with",model_params$g, "g-prior and",model_params$mprior, "model prior..."))
+    print(paste("Running Bayesian Model Averaging with",model_params$g, "g-prior and",model_params$mprior, "model prior..."))
     bma_model <- runCachedFunction(
       runBMA, user_params,
       verbose_function = nullVerboseFunction,
