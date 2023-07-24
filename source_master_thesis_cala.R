@@ -3609,6 +3609,51 @@ getMaiveResultsVerbose <- function(res, ...){
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
     
+#' @title Handle BMA setup parameters for multiple models
+#' 
+#' @description
+#' Split the BMA parameter list into sub-lists, where each of these has values of
+#'  length 1 and represents a single BMA model setup. The first model should always
+#'  appear in index one of parameters with multiple values. For parameters with
+#'  only one value, this value will be used for all models (sub-lists). In case
+#'  there are not either 1 or n values specified for each parameter (where n is
+#'  the number of models the user wishes to use), the code will throw an error.
+#'  
+#' @note
+#' The function always returns a list, even if all parameters have a single value.
+#'  This is so that the bma model main for loop can iterate over the results.
+#'  
+#' @param bma_params [list] A list with the "bma_param_" parameters from the 
+#'  user parameter file.
+#'
+#' @return A list of lists, where each sub-list corresponds to a single BMA
+#'  model setup.
+handleBMAParams <- function(bma_params){
+  adj_bma_params <- list() # Store results here
+  param_counts <- unique(sapply(bma_params, length)) # Values per parameter
+  if (length(param_counts) == 1){
+    adj_bma_params[[1]] <- bma_params
+  } else if (length(param_counts) == 2){
+    model_count <- param_counts[!param_counts == 1]
+    # Iterate over models parameter values - evaluate main model first with index 1
+    for (i in 1:model_count){ 
+      # Extract parameters of the current iteration model
+      single_model_params <- lapply(bma_params, function(x){x[1]})
+      adj_bma_params[[i]] <- single_model_params
+      # Remove the last value for parameters with multiple values
+      bma_params <- lapply(bma_params, function(x){
+        if (length(x) > 1){
+          return(x[-1]) # All but first element
+        }
+        return(x)
+      })
+    }
+  } else {
+    stop("You must provide one or n values for each BMA parameter. n can be any number, but all parameters must have 1 or n values.")
+  }
+  return(adj_bma_params)
+}
+ 
 #' This function searches for an optimal Bayesian Model Averaging (BMA) formula by removing the variables
 #' with the highest Variance Inflation Factor (VIF) until the VIF coefficients of the remaining variables
 #' are below 10 or the maximum number of groups to remove is reached.
@@ -3933,12 +3978,12 @@ runBMA <- function(bma_data, bma_params){
   # Get parameters
   all_bma_params <- c(
     list(
-      bma_data
+      X.data = bma_data
     ),
     bma_params
   )
   # Actual estimation with inhereted parameters
-  runBMAVerbose()
+  runBMAVerbose(bma_params)
   quiet(
     bma_model <- do.call(bms, all_bma_params)
   )
@@ -3946,8 +3991,26 @@ runBMA <- function(bma_data, bma_params){
 }
 
 #' Verbose output for the runBMA function
-runBMAVerbose <- function(...){
-  print("Running the Bayesian Model Averaging...")
+runBMAVerbose <- function(bma_params, ...){
+  print(paste("Running the Bayesian Model Averaging with",bma_params$g, "g-prior and",bma_params$mprior, "model prior..."))
+}
+
+#' Rename the BMA model names to their verbose form using the variable information
+#' data frame. Input these two objects (BMA model and variable list DF) and return
+#' the modified BMA model.
+renameBMAModel <- function(bma_model, input_var_list){
+  # Validate input
+  stopifnot(
+    class(bma_model) == "bma",
+    is.data.frame(input_var_list)
+  )
+  # Rename the model names
+  bma_names <- bma_model$reg.names
+  idx <- match(bma_names, input_var_list$var_name)
+  bma_names[!is.na(idx)] <- input_var_list$var_name_verbose[na.omit(idx)]
+  bma_names[is.na(idx)] <- "Intercept"
+  bma_model$reg.names <- bma_names
+  return(bma_model)
 }
 
 
@@ -4005,14 +4068,10 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
     is.numeric(graph_scale)
   )
   # Rename the variables to verbose form
-  bma_names <- bma_model$reg.names
-  idx <- match(bma_names, input_var_list$var_name)
-  bma_names[!is.na(idx)] <- input_var_list$var_name_verbose[na.omit(idx)]
-  bma_names[is.na(idx)] <- "Intercept"
-  bma_model$reg.names <- bma_names
+  bma_model <- renameBMAModel(bma_model, input_var_list)
   # Get verbose names for the bma correlation matirx too
   effect_verbose <- input_var_list$var_name_verbose[match("effect",input_var_list$var_name)]
-  bma_matrix_names <- c(effect_verbose, bma_names)
+  bma_matrix_names <- c(effect_verbose, bma_model$reg.names)
   # Extract the coefficients
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T)
   # Print out coefficient and model statistics
@@ -4066,11 +4125,14 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
     cat("\n\n")
   }
   if (export_graphics){
+    # Get the model flagging information
+    gprior <- bma_model$gprior.info$gtype
+    mprior <- bma_model$mprior.info$origargs$mpmode
     # Paths
     validateFolderExistence(export_path)
-    main_path <- paste0(export_path, "/bma_main.png")
-    dist_path <- paste0(export_path, "/bma_dist.png")
-    corrplot_path <- paste0(export_path, "/bma_corrplot.png")
+    main_path <- paste0(export_path, "/bma_", gprior, "_", mprior, "_results.png")
+    dist_path <- paste0(export_path, "/bma_", gprior, "_", mprior, "_dist.png")
+    corrplot_path <- paste0(export_path, "/bma_", gprior, "_", mprior, "_corrplot.png")
     # Remove existing plots if they exist
     for (path in list(main_path, dist_path, corrplot_path)){
       hardRemoveFile(path)
@@ -4099,6 +4161,46 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
 extractBMAResultsVerbose <- function(...){
   # Todo
 }
+
+graphBMAComparison <- function(bma_models, input_var_list, theme = "blue", verbose = T, export_graphics = T,
+                               export_path = "./results/graphic", graph_scale = 2){
+  # Rename the BMA models to verbose
+  bma_models <- lapply(bma_models, renameBMAModel, input_var_list = input_var_list)
+  # Loop through the BMA objects and construct the partial call strings
+  bma_model_calls <- list()
+  for (i in 1:length(bma_models)){
+    bma_model <- bma_models[[i]]
+    # Get the model flagging information
+    gprior <- bma_model$gprior.info$gtype
+    mprior <- bma_model$mprior.info$origargs$mpmode
+    prior_info_verbose <- paste(gprior,"and",mprior)
+    # Construct and save the partial call
+    model_call <- sprintf('"%s"=bma_models[[%s]]', prior_info_verbose, i)
+    bma_model_calls <- append(bma_model_calls, model_call)
+  }
+  # Construct the final call string
+  call_str <- paste0("BMS::plotComp(", paste(bma_model_calls, collapse = ", "), ", add.grid=F, cex.xaxis=0.7)")
+  graph_call <- parse(text = call_str)
+  # Create an environment to evaluate the expression under
+  # Plot the plot
+  if (verbose){
+    eval(graph_call, envir=environment())
+  }
+  # Export the plot
+  if (export_graphics){
+    # Export the results
+    validateFolderExistence(export_path)
+    main_path <- paste0(export_path, "/bma_comparison",".png")
+    hardRemoveFile(main_path) # Remove the graph if it exists
+    # Save the plot
+    png(main_path, width=650*graph_scale, height=630*graph_scale, units = "px",
+        res = 80*graph_scale)
+    eval(graph_call, envir=environment())
+    dev.off()
+  }
+  return(NULL)
+}
+
 
 #' A helper function (not used in the main analysis) that allows the user to generate
 #' a boolean vector for the excel variable info sheet - namely the "bma" column.

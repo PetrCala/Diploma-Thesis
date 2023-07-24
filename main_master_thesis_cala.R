@@ -506,24 +506,44 @@ if (run_this$bma){
     data, var_list, bma_vars,
     scale_data = adj_params$bma_scale_data
   )
-  bma_params <- getMultipleParams(adj_params, "bma_param_",T,T)
-  bma_model <- runCachedFunction(
-    runBMA, user_params,
-    verbose_function = runBMAVerbose,
-    bma_data,
-    bma_params = bma_params
-  )
-  # Print out the results
-  bma_coefs <- runCachedFunction(
-    extractBMAResults, user_params,
-    verbose_function = extractBMAResultsVerbose,
-    bma_model, bma_data, var_list,
-    print_results = adj_params$bma_print_results,
-    adjustable_theme = adj_params$bma_adjustable_theme,
+  raw_bma_params <- getMultipleParams(adj_params, "bma_param_",T,T)
+  bma_params <- handleBMAParams(raw_bma_params) # Split into lists, each for a single model
+  # Run a BMA estimation for each parameter list - iterate last to first, where index == 1 is main model
+  bma_models <- list() # All BMA model objects stored here
+  bma_all_coefs <- list() # All BMA coefficients stored here
+  for (i in length(bma_params):1){
+    model_params <- bma_params[[i]]
+    # Estimate the model
+    bma_model <- runCachedFunction(
+      runBMA, user_params,
+      verbose_function = runBMAVerbose,
+      bma_data,
+      bma_params = model_params
+    )
+    # Extract the coefficients and plot graphs
+    bma_coefs <- runCachedFunction(
+      extractBMAResults, user_params,
+      verbose_function = extractBMAResultsVerbose,
+      bma_model, bma_data, var_list,
+      print_results = adj_params$bma_print_results,
+      adjustable_theme = adj_params$bma_adjustable_theme,
+      theme = export_options$theme,
+      export_graphics = export_options$export_graphics,
+      export_path = folder_paths$graphic_results_folder,
+      graph_scale = adj_params$bma_graph_scale
+    )
+    # Save the results
+    bma_models[[i]] <- bma_model
+    bma_all_coefs[[i]] <- bma_coefs
+  }
+  # Add a BMA comparison graph
+  graphBMAComparison(
+    bma_models, var_list,
     theme = export_options$theme,
+    verbose = T,
     export_graphics = export_options$export_graphics,
-    export_path = user_params$folder_paths$graphic_results_folder,
-    graph_scale = adj_params$bma_graph_scale
+    export_path = folder_paths$graphic_results_folder,
+    graph_scale = adj_params$bma_comparison_graph_scale
   )
   # Store the bma data in the temporary data folder
   if (export_options$export_bma_data){
