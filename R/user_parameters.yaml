@@ -10,13 +10,13 @@ run_this:
   box_plot: false
   funnel_plot: false
   t_stat_histogram: false
-  linear_tests: true
+  linear_tests: false
   nonlinear_tests: false
   exo_tests: false
   p_hacking_tests: false
-  bma: false
-  fma: false 					
-  ma_variables_description_table: false 	
+  bma: true
+  fma: true 					
+  ma_variables_description_table: true 	
   bpe: false 					
   bpe_graphs: false
   bpe_summary_stats: false 					
@@ -142,12 +142,19 @@ adjustable_parameters:
   bma_scale_data: false 		# If TRUE, standardize all variables onto the same scale automatically - UNSTABLE
   bma_adjustable_theme: true 		# If TRUE, modify the colors of bma plots to fit the theme
   bma_verbose: true 			# If TRUE, print suggested formulas, VIF, etc.
-  bma_graph_scale: 2 			# Numeric, scale the corrplot graph by this amount
   bma_print_results: "none" 		# Print raw results - one of c("none", "fast", "verbose", "all")
+  bma_graph_scale: 2 			# Numeric, scale the corrplot graph by this amount
+  bma_comparison_graph_scale: 2		# Numeric, scale the comparison graph by this amount
+  # Bayesian Model Averaging direct parameters
+  #  - These parameters are fed directly into the "bms" function. If you wish to run BMA models with multiple specifications,
+  #     characterize the values of the desired parameters as lists of multiple values. In that case, make sure that all lists
+  #     of size longer than 1 are of equal size. Values in the same index positions of these lists will then make setups of the
+  #     BMA models. In case a singular value is provided, that value will be used for all models. Values in positions of index 1
+  #     will be used to construct the default BMA model, used later in BPE, economic significance, etc.
   bma_param_burn: 10000 		# Burn-ins (def 1e5)
   bma_param_iter: 30000 		# Draws (def 3e5)
-  bma_param_g: "UIP" 			# g-Prior
-  bma_param_mprior: "dilut" 		# Model Prior
+  bma_param_g: ["UIP", "UIP"] 		# g-Prior
+  bma_param_mprior: ["dilut", "uniform"] 		# Model Prior
   bma_param_nmodel: 20000 		# Number of models (def 50000)
   bma_param_mcmc: "bd" 			# Markov Chain Monte Carlo
   # Frequentist Model Averaging parameters
@@ -224,5 +231,5 @@ export_options:
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache: false 	# Store intermediate output in a cache in the /_cache/ folder.
+  use_cache: true 	# Store intermediate output in a cache in the /_cache/ folder.
   cache_age: 3600 	# In seconds - an hour 
