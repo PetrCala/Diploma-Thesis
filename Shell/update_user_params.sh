@@ -82,7 +82,6 @@ vany_changes=(
     ['t_hist_highlight_mean: true']='t_hist_highlight_mean: false'
     ['t_hist_t_stats: \[-1.96, 1.96\]']='t_hist_t_stats: [1.645, 1.96, 2.58]'
     ['non_linear_param_selection_modelmu: "t"']='non_linear_param_selection_modelmu: "normal"'
-    ['automatic_bma: false']='automatic_bma: true'
     ['export_zip_name: "results_all"']='export_zip_name: "results_vany"'
 )
 
