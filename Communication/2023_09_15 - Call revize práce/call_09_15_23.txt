@@ -1,0 +1,27 @@
+- Zmínit focus studie, že je trochu víc broad
+- Ch3, p11, studie nemusí specificky reportovat est_se, ale prostě nějaké measures of precision - ať to vyznívá, že bereme
+	cokoli, co se dá přepočítat
+- Ch3.2 - zkusit dohledat reference k těm rovnicím, z jakých jsou zdroju
+- Interpolaci si zkusit přečíst, jestli dává smysl takto
+- Zaokrouhlovat teoreticky čísla, která jsou moc detailní (v textu), víc desetinných míst
+- Page 16, poslední věta, increase 7.56% in UNITS, not LOG wage
+	- association with 7.56 perc. increase in wages (or points)
+- Grafy prima facie, BPE, vygenerovat grafy s větším textem os, jako např. ty legendy vpravo nahoře, teoreticky
+	i u funnelů - změnit kdyžtak počet os, i pak velikost textu
+	- kdyžtak u funnelů udělat, aby osy byly zaokrouhlené (mimo mean) na 0 des. míst
+- DF beta method - identifikuje potencionálně směrodatné outliery, a jestli je nevyhodit pak
+- Paper zigraiova havranek (2016), mrknout na diskuzi, co dělá precision, proč, atd.
+- Furukawa, udělat jenom pro reprezentativní sample (takže medians)
+- AK bude mít nějakej validity check paper, který testuje ty předpoklady toho modelu, které většinou nesedí (nikde)
+	- do kódu by se teoreticky dala přidat validita, kde by se nad non-lin vyprintil řádek informující o tom,
+	jak jsou-nejsou ty předpoklady splněné
+- U meta-analýzy jsou klasika bootstrapované CI, ne jenom clustered at standard errors
+- U IV reportovat first stage F stat (ideálně ten anderson-robin CI) - F by měla být ideálně nad 10. Nad 30 je ideál.
+- U caliperů, odstranit n1-n2, a udělat sumu (n = 43)
+	- Udělat teoreticky widths po lineárních intervalech (0.05, 0.1, 0.15)
+- Udělat t-statistiky přiblížení (průřez) teoreticky
+- Do BMA dopsat lighter-darker in greyscale
+- BPE - udělat si pro každou proměnnou BPE condition, jak by se měla chovat. Pak v RAMCI HODNOT TE STUDIE vybrat
+	přes tuhletu condition tu jednu hodnotu reprezentativni te studie, a tou přenásobit ten BMA koeficient.
+- Dělat práci focused, aby se čtenář neztrácel v random konceptech - ty hodit do apendixu
+- U twin studies se focusnout na randomized experiment vs zbytek (survey vs zbytek)
