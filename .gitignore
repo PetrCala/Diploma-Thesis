@@ -12,7 +12,7 @@ R/custom_user_params/
 # R output files and cache
 R/_cache/*
 R/results/*
-R/data/*
+R/data/temp/*
 R/graphics/*
 R/*_debug.R
 R/temp_*.R
@@ -36,7 +36,7 @@ R/temp_*.R
 Thesis main/Historic/
 Data/AdditionalData/
 Results/
-Communication/Topic overview/Userful works/*
+Communication/Topic overview/Useful works/*
 
 # P&P folder files
 **/P&P (2018) analysis/Tools/*
