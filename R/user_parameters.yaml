@@ -4,15 +4,15 @@
 #	after running BPE.
 
 run_this:
-  variable_summary_stats: true
-  effect_summary_stats: true
-  prima_facie_graphs: true
-  box_plot: true
-  funnel_plot: true
+  variable_summary_stats: false
+  effect_summary_stats: false
+  prima_facie_graphs: false
+  box_plot: false
+  funnel_plot: false
   t_stat_histogram: false
   linear_tests: false
   nonlinear_tests: false
-  exo_tests: false
+  exo_tests: true
   p_hacking_tests: false
   bma: false
   fma: false 					
@@ -231,5 +231,5 @@ export_options:
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache: true 	# Store intermediate output in a cache in the /_cache/ folder.
+  use_cache: false 	# Store intermediate output in a cache in the /_cache/ folder.
   cache_age: 3600 	# In seconds - an hour 
