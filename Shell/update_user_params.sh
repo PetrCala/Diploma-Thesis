@@ -94,7 +94,7 @@ vany_changes=(
 
 # Base path
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-PROJECT_ROOT="$(dirname"#SCRIPT_DIR")"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Source files
 MODEL_FILE_PATH="$PROJECT_ROOT/R/custom_user_params/user_parameters_model.yaml"
