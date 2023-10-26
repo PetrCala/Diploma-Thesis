@@ -279,6 +279,24 @@ applyDataSubsetConditions <- function(data, conditions) {
 applyDataSubsetConditionsVerbose <- function(...){
 }
 
+#' Round a number until one of two scenarios
+#'  1. The number is a float - the last decimal point is non-zero, or there are no decimal points
+#'  2. The number is an integer - do not round, the number is returned as an integer
+#'  
+#'  @param num [float] The number to round
+#'  @return [float] The rounded number
+roundToNonZero <- function(num) {
+  str_num <- formatC(num, format = "f", digits = 15) # Convert to string with sufficient decimals
+  dec_part <- unlist(strsplit(str_num, split = "\\."))[[2]]
+  if (grepl("^0+$", dec_part)){
+    # The decimal part is made up of only zeros (the number is an integer)
+    round_to <- 0
+  } else {
+    round_to <- max(which(strsplit(dec_part, "")[[1]] != "0")) # Round to last non-zero nubmer
+  }
+  return(round(num, round_to))
+}
+
 
 
 ####################### PACKAGE HANDLING ########################
@@ -2059,8 +2077,9 @@ generateFunnelTicks <- function(input_vec, add_zero = T, theme = "blue"){
   mean_index <- which(funnel_ticks == mean_value)
   x_axis_tick_text[mean_index] <- ifelse(theme %in% c("blue", "green"), "red", "blue")
   
-  # Round all ticks to 2 decimal spaces
+  # Round all ticks to 2 decimal points, and remove trailing zeros
   funnel_ticks <- round(funnel_ticks, 2)
+  funnel_ticks <- sapply(funnel_ticks, roundToNonZero)
   
   return(list("funnel_ticks" = funnel_ticks, "x_axis_tick_text" = x_axis_tick_text))
 }
@@ -2147,7 +2166,7 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
       geom_point(color = point_color) + 
       geom_vline(aes(xintercept = mean(effect)), color = vline_color, linewidth = 0.5) + 
       labs(title = NULL, x = paste("Estimate of the effect -",x_title), y = "Precision of the effect") +
-      scale_x_continuous(breaks = funnel_ticks) +
+      scale_x_continuous(breaks = funnel_ticks, labels = intOrDecimal) + # Display integers as integers, floats as floats
       current_theme
   )
     
@@ -2317,7 +2336,7 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, hi
       geom_histogram(color = "black", fill = fill_color, bins = 80) +
       lapply(t_stats, function(v) geom_vline(aes(xintercept=v), color = tstat_line_color, linewidth = 0.5)) + 
       labs(x = "T-statistic", y = "Density") +
-      scale_x_continuous(breaks = hist_ticks) + 
+      scale_x_continuous(breaks = hist_ticks, labels=intOrDecimal) + 
       current_theme 
   )
   # Add a mean line if desired
@@ -5611,7 +5630,7 @@ validateTheme <- function(theme){
 }
 
 #' Specify the type of theme to use and return the theme
-#' 
+#'
 #' Available choices - main, yellow, green, red
 getTheme <- function(theme, x_axis_tick_text = "black"){
   # Validate the theme
@@ -5627,9 +5646,13 @@ getTheme <- function(theme, x_axis_tick_text = "black"){
   )
   # Construct and return the theme
   theme(axis.line = element_line(color = "black", linewidth = 0.5, linetype = "solid"),
-      axis.text.x = ggtext::element_markdown(color = x_axis_tick_text),
-      axis.text.y = ggtext::element_markdown(color = "black"),
-      panel.background = element_rect(fill = "white"), panel.grid.major.x = element_line(color = theme_color),
+      axis.text.x = ggtext::element_markdown(color = x_axis_tick_text, size=16),
+      axis.text.y = ggtext::element_markdown(color = "black", size=16),
+      axis.title.x = element_text(size = 18),                                     
+      axis.title.y = element_text(size = 18),                                      
+      legend.text = element_text(size = 14),     
+      panel.background = element_rect(fill = "white"),
+      panel.grid.major.x = element_line(color = theme_color),
       plot.background = element_rect(fill = theme_color))
 }
 
@@ -5735,6 +5758,13 @@ getColors <- function(theme, method, submethod = NA, ...){
     stop(paste("Invalid method:", method))
   )
   return(colors)
+}
+
+#' Return a number as either an integer if it is one, or a decimal if it is not
+#' 
+#' Used when plotting graphs for prettier tick labels (10, 20, 25.243, 30,...)
+intOrDecimal <- function(x) {
+  ifelse(x == floor(x), as.integer(x), x)
 }
 
 #' Export the graph into an HTML file using the plotly package

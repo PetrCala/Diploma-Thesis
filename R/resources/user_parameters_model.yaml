@@ -76,7 +76,7 @@ adjustable_parameters:
   box_plot_group_by_factor_2: "country" 	# Group by country
   # "box_plot_group_by_factor_X" = X 		# Add more factors in this manner - up to 20
   box_plot_max_boxes: 60 			# Maximum number of boxes to display per single plot - more plots otherwise
-  box_plot_graph_scale: 3 			# Numeric, scale the graph by this number
+  box_plot_graph_scale: 4 			# Numeric, scale the graph by this number
   box_plot_verbose: true 			# Get information about the plots being printed
   # Funnel plot parameters
   funnel_precision_to_log: false 	# If T, use log of precision as y axis (default: precision)
