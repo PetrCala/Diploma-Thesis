@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # STATIC
-BASE_PATH="C:/Users/hso20/OneDrive/Plocha/IES/Diploma-Thesis/"
-R_FOLDER_PATH="$BASE_PATH/R/"
-DIST_FOLDER_PATH="$BASE_PATH/Dist/"
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+R_FOLDER_PATH="$PROJECT_ROOT/R"
+DIST_FOLDER_PATH="$PROJECT_ROOT/Dist"
 
 # Base path
 
-cd $BASE_PATH
+cd $PROJECT_ROOT
 
 # Read dist_info.txt, remove carriage return characters and store the result in SOURCE_FILES variable
 cd $R_FOLDER_PATH

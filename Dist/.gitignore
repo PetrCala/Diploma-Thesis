@@ -7,6 +7,9 @@ __pycache__/
 **/*.Rhistory
 **/*.Rdata
 
+# User parameter file
+user_parameters.yaml
+
 # Leftover folders from the subtree split
 Data/AdditionalData/
 Dist/

@@ -93,18 +93,19 @@ vany_changes=(
 #### STATIC ####
 
 # Base path
-BASE_PATH="C:/Users/hso20/OneDrive/Plocha/IES/Diploma-Thesis" 
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+PROJECT_ROOT="$(dirname"#SCRIPT_DIR")"
 
 # Source files
-MODEL_FILE_PATH="$BASE_PATH/R/custom_user_params/user_parameters_model.yaml"
-TWIN_FILE_PATH="$BASE_PATH/R/custom_user_params/user_parameters_twins.yaml"
-TERKA_FILE_PATH="$BASE_PATH/R/custom_user_params/user_parameters_terka.yaml"
-GREEN_FILE_PATH="$BASE_PATH/R/custom_user_params/user_parameters_green.yaml"
-VANY_FILE_PATH="$BASE_PATH/R/custom_user_params/user_parameters_vany.yaml"
+MODEL_FILE_PATH="$PROJECT_ROOT/R/custom_user_params/user_parameters_model.yaml"
+TWIN_FILE_PATH="$PROJECT_ROOT/R/custom_user_params/user_parameters_twins.yaml"
+TERKA_FILE_PATH="$PROJECT_ROOT/R/custom_user_params/user_parameters_terka.yaml"
+GREEN_FILE_PATH="$PROJECT_ROOT/R/custom_user_params/user_parameters_green.yaml"
+VANY_FILE_PATH="$PROJECT_ROOT/R/custom_user_params/user_parameters_vany.yaml"
 
 #### MAIN SCRIPT START ####
 
-cd $BASE_PATH
+cd $PROJECT_ROOT
 
 # Paths to sourcefiles
 SOURCE_FILE_PATHS=(
