@@ -19,7 +19,7 @@ run_this:
   bpe: true 					
   bpe_graphs: true
   bpe_summary_stats: true
-  robma: true 	# Computationally expensive
+  robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:

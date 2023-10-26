@@ -20,7 +20,7 @@ set.seed(123) # Results reproduction, stochastic functions to deterministic for 
  
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
-user_param_file <- "custom_user_params/user_parameters_vany.yaml" # File with user parameters
+user_param_file <- "user_parameters.yaml" # File with user parameters
 
 # Working directory - change only if the script is being ran interactively
 if(interactive()) {
@@ -100,7 +100,7 @@ loadPackages(packages)
 # Load user parameters and unlist for easier fetching
 user_params <- yaml::read_yaml(user_param_file) 
 source_file_params <- user_params$source_file_params # Parameters of the source data file
-run_this <- user_params$run_this # Which parts of the scipt to run
+run_this <- user_params$run_this # Which parts of the script to run
 adj_params <- user_params$adjustable_parameters # Various parameters
 data_files <- user_params$data_files # Data files (only files names)
 script_files <- user_params$script_files # Script files (only file names)

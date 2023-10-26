@@ -22,6 +22,8 @@ The project is structured as follows:
 │   └── temp/
 ├── pckg/
 │   └── LowRankQP/
+├── resources/
+│   └── user_parameters_model.yaml
 ├── results/
 │   ├── graphic/
 │   ├── numeric/
@@ -43,6 +45,8 @@ The project is structured as follows:
   - `source/` -> Put your `.xlsx` or `.xlsm` source data file here. In the distributed folder, there is a placeholder file called `data_set_master_thesis_cala.xlsm`.
   - `temp/` - > This folder will automatically get created upon script run. Here will be the `.csv` files created from the sheets of your data set. This allows reproducibility and consistency within the script.
 * `pckg/` -> Folder with external packages that are not available online anymore, such as `LowRankQP`.
+* `resources/` -> Folder with various resources.
+  - `user_parameters_model.yaml` -> Customizable parameters. This file should be copied into the project roote, renamed to `user_parameters.yaml`, and modified to fit the user preferences. Any modifications can be done by opening the file using any text editor, such as `Notepad`. Alternatively, you may want to edit this file using fancier text editors, such as [Sublime Text](https://www.sublimetext.com/docs/vintage.html), or [VIM](https://www.vim.org/).
 * `results/` -> Folder with all results. A `.zip` file with all results will be automatically created here.
   - `graphic/` -> All graphic results will be automatically stored here.
   - `numeric/` -> All numeric results will be automatically stored here as `.csv` files.
@@ -57,10 +61,10 @@ The project is structured as follows:
 * `source_master_thesis_cala.R` -> Source script with all the functions. This script is not meant to be ran. Virtaully any function called from the main script is located here. Every function (hopefully) has a docstring explaining its *functionality* (pun intended). Navigate the script using function names.
 * `script_runner_master_thesis_cala.R` -> Script for running the code in an aesthetic way. Calls the main script using the `source` command, which omits redundant code. This script is most useful when working with RStudio. When working with a terminal, calling this script is exactly the same as calling the main script.
 * `README.md` -> This README file.
-* `user_parameters.yaml` -> Script customizable parameters. Modify this file by opening it using any text editor, such as `Notepad`. Alternatively, you may want to edit this file using fancier text editors, such as [Sublime Text](https://www.sublimetext.com/docs/vintage.html), or [VIM](https://www.vim.org/).
 
-Running the main script (directly or using the script runner) will also create these temporary folders:
+Running the main script (directly or using the script runner) will also create these temporary folders/files:
 * `_cache/` -> Temporary cache files will be stored here.
+* `user_parameters.yaml` -> File with customizable parameters. See `resources/user_parameters_model.yaml` for explanation of how to use.
 
 Furthermore, the existence of all folders will be verified. Note that some do not appear in the repository, as there is nothing to distribute within these folders. All results (along with the folders) will be created and updated automatically.
 
@@ -76,10 +80,10 @@ Furthermore, the existence of all folders will be verified. Note that some do no
 	cd Diploma-Thesis
 	```
  5. In case you wish to only test the functionality of the script using placeholder data within the data folder, skip to the **How to run** section below. If you wish, on the other hand, to run your own analysis, make sure to follow the next steps as well.
- 6. If you wish to customize the source file names (such as scripts, result folders, etc.), you may do so by modifying the `user_parameters.yaml` file. **Do not to modify the names of the user parameters themselves, as these are immutable!** Modify only the values.
+ 6. If you wish to customize the source file names (such as scripts, result folders, etc.), you may do so by modifying the `user_parameters.yaml` file. This file is not distributed through the repository, but rather should be created as a copy of the model file `resources/user_parameters_model.yaml`. You can either do this manually by copying the model file to the project root and renaming it to `user_parameters.yaml`, or by running the script, which will do this automatically. After the file is present in the project root (and named `user_parameters.yaml`, it can be modified to your liking. However, **when modifying the user parameters file, make sure to follow instructions from step 2 of the [How to run](#how-to-run) section.**
  7. Place your data file into the `data/source/` folder, right next to the placeholder data file. In case you modified the path to this folder, make sure to place the data file into that folder instead. You may delete the placeholder file in case you do not need it.
  8. The file with data must contain two sheets - `data_set` and `var_list` (these are modifiable within the user parameter file). The former should contain all your data that satisfies the conditions described in step 9, while the latter should contain information about variables of the dataset, as described in step 10.
- 9. The data frame must contain several specific columns, named **Required columns**, and there are also several columns that are optional - **Optional Columns**. If your dataset does not contain the required columns, make sure to add them. If it does contain them, but they are named differently in your data, simply change their names in the `required_cols` section of the `user_parameters.yaml` file. This is the list of the required and optional columns:
+ 10. The data frame must contain several specific columns, named **Required columns**, and there are also several columns that are optional - **Optional Columns**. If your dataset does not contain the required columns, make sure to add them. If it does contain them, but they are named differently in your data, simply change their names in the `required_cols` section of the `user_parameters.yaml` file. This is the list of the required and optional columns:
    * Required columns:
       - **obs_id** - Unique ID of the observation.
       - **study_name** - Name of the study, such as *Einstein et al. (1935)*.

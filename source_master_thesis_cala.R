@@ -5335,6 +5335,14 @@ getRoBMAVerbose <- function(res,...){
 
 ######################### CACHE HANDLING #########################
 
+#' Determine whether a function call is being made in a debug more or not
+#' 
+#' @return [boolean] TRUE if the function call is being made in a debug mode,
+#'  FALSE otherwise.
+is_debugging <- function() {
+  any(sapply(sys.calls(), function (x) as.character(x)[[1]] %in% c("browser", "debug")))
+}
+
 #' Cache a function using the memoise package if so desired
 #' 
 #' Input a function and memoise it based on disk cache if caching is on.
@@ -5391,6 +5399,11 @@ runCachedFunction <- function(f, user_params, verbose_function, ...){
   use_cache <- user_params$cache_handling$use_cache
   cache_folder <- user_params$folder_paths$cache_folder
   cache_age <- user_params$cache_handling$cache_age
+  if (!use_cache) {
+    # Do not capture output if caching is turned off (e.g., when debugging)
+    res <- f(...)
+    return(res)
+  }
   # Define the function to call based on cache information
   f <- cacheIfNeeded(f, use_cache, cache_folder, cache_age)
   # Capture verbose output to print in case it gets silenced
