@@ -31,50 +31,50 @@ if(interactive()) {
   }
 }
 
-# Required packages
-packages <- c(
-  "AER", # Applied econometrics with R
-  "BMS", # bayesian model averaging
-  "DescTools", # Descriptive statistics and data analysis
-  "bayesm", # bayesian modeling and inference
-  "cachem", # Cache system - creating and deleting cache files
-  "car", # Variance Inflation Factor
-  "corrplot", # Graphical display of correlation matrices
-  "data.table", # Fast data manipulation and aggregation
-  "devtools", # Loading local packages
-  "ddpcr", # Analysis of Droplet Digital PCR (ddPCR) data
-  "fdrtool", # Elliott et al. (2022)
-  "foreign", # Reading and writing data stored by other statistical software
-  "gdata", # Elliott et al. (2022)
-  "grDevices", # Elliott et al. (2022)
-  "ggtext", # ggplot axis text without warnings
-  "haven", # Importing and exporting data from SAS, SPSS, and Stata
-  "lmtest", # Hypothesis testing and diagnostics for linear regression models
-  "memoise", # Cache system - speeding up deterministic function calls
-  "meta", # Meta-analysis package
-  "metafor", # Conducting meta-analyses
-  "multcomp", # Simultaneous inference for general linear hypotheses
-  "multiwayvcov", # Computing clustered covariance matrix estimators
-  "NlcOptim", # Elliott et al. (2022) - CoxShi
-  "plm", # Random Effects, Between Effects
-  "plotly", # Interactive plots
-  "png", # PNG plots
-  "puniform", # Computing the density, distribution function, and quantile function of the uniform distribution
-  "pracma", # MAIVE Estimator, Elliott et al. (2022)
-  "RColorBrewer", # Plot colors
-  "rddensity", # Elliott et al. (2022)
-  "readxl", # Reading Excel files
-  "RoBMA", # Robust BMA, Bartos et al. (2021)
-  "sandwich", # Computing robust covariance matrix estimators, MAIVE estimator
-  "shiny", # Andrew & Kasy (2019) Selection model
-  "spatstat", # Elliott et al. (2022)
-  "stats", # Statistical analysis and modeling
-  "testthat", # Unit testing for R
-  "tidyverse", # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
-  "varhandle", # MAIVE estimator
-  "xfun", # Proper ggplot label display
-  "xtable", # Creating tables in LaTeX or HTML
-  "yaml" # User parameters
+# Required packages - NA <=> fetch latest version (see 'loadPackages')
+packages <- list(
+  "AER" = NA, # Applied econometrics with R
+  "BMS" = NA, # bayesian model averaging
+  "DescTools" = NA, # Descriptive statistics and data analysis
+  "bayesm" = NA, # bayesian modeling and inference
+  "cachem" = NA, # Cache system - creating and deleting cache files
+  "car" = NA, # Variance Inflation Factor
+  "corrplot" = NA, # Graphical display of correlation matrices
+  "data.table" = NA, # Fast data manipulation and aggregation
+  "devtools" = NA, # Loading local packages
+  "ddpcr" = NA, # Analysis of Droplet Digital PCR (ddPCR) data
+  "fdrtool" = NA, # Elliott et al. (2022)
+  "foreign" = NA, # Reading and writing data stored by other statistical software
+  "gdata" = NA, # Elliott et al. (2022)
+  "grDevices" = NA, # Elliott et al. (2022)
+  "ggtext" = NA, # ggplot axis text without warnings
+  "haven" = NA, # Importing and exporting data from SAS, SPSS, and Stata
+  "lmtest" = NA, # Hypothesis testing and diagnostics for linear regression models
+  "memoise" = NA, # Cache system - speeding up deterministic function calls
+  "meta" = NA, # Meta-analysis package
+  "metafor" = NA, # Conducting meta-analyses
+  "multcomp" = NA, # Simultaneous inference for general linear hypotheses
+  "multiwayvcov" = NA, # Computing clustered covariance matrix estimators
+  "NlcOptim" = NA, # Elliott et al. (2022) - CoxShi
+  "plm" = NA, # Random Effects, Between Effects
+  "plotly" = NA, # Interactive plots
+  "png" = NA, # PNG plots
+  "puniform" = '0.2.2', # Computing the density, distribution function, and quantile function of the uniform distribution
+  "pracma" = NA, # MAIVE Estimator, Elliott et al. (2022)
+  "RColorBrewer" = NA, # Plot colors
+  "rddensity" = NA, # Elliott et al. (2022)
+  "readxl" = NA, # Reading Excel files
+  "RoBMA" = NA, # Robust BMA, Bartos et al. (2021)
+  "sandwich" = NA, # Computing robust covariance matrix estimators, MAIVE estimator
+  "shiny" = NA, # Andrew & Kasy (2019) Selection model
+  "spatstat" = NA, # Elliott et al. (2022)
+  "stats" = NA, # Statistical analysis and modeling
+  "testthat" = NA, # Unit testing for R
+  "tidyverse" = NA, # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
+  "varhandle" = NA, # MAIVE estimator
+  "xfun" = NA, # Proper ggplot label display
+  "xtable" = NA, # Creating tables in LaTeX or HTML
+  "yaml" = NA # User parameters
 )
 
 ##### PREPARATION #####
@@ -93,6 +93,9 @@ if (!file.exists(user_param_file)){
 
 # Load the source script
 source(source_file)
+
+# Load devtools for package loading
+if (!require('devtools')) install.packages('devtools'); library('devtools')
 
 # Load packages
 loadPackages(packages)

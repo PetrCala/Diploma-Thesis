@@ -7,12 +7,12 @@ run_this:
   variable_summary_stats: false
   effect_summary_stats: false
   prima_facie_graphs: false
-  box_plot: true
+  box_plot: false
   funnel_plot: false
   t_stat_histogram: false
   linear_tests: false
   nonlinear_tests: false
-  exo_tests: false
+  exo_tests: true
   p_hacking_tests: false
   bma: false
   fma: false 					

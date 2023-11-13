@@ -333,39 +333,51 @@ quietPackages <- function(expr) {
 #' or loading process, the function stops execution and displays an error message.
 #'
 #' @param package_list [character] A character vector of package names.
+#' @param verbose [boolean] If TRUE, print out verbose output about the package loading.
 #'
 #' @return A message indicating that all packages were loaded successfully or an error message if the process fails.
-loadPackages <- function(package_list) {
-  # Install packages not yet installed
-  installed_packages <- package_list %in% rownames(installed.packages())
-  if (any(installed_packages == FALSE)) {
-    print(paste("Installing package ", package_list[!installed_packages], "...", sep = ""))
-    tryCatch(
-      {
-        quietPackages(
-          install.packages(package_list[!installed_packages])
-        )
-      },
-      error = function(e) {
-        message("Package installation failed. Exiting the function...")
-        stop(customError("Package installation failed"))
-      }
-    )
+
+loadPackages <- function(package_list, verbose=TRUE) {
+  # Check if package_list is a named list and if not, convert to a named list with NULL versions
+  if (!is.list(package_list) || is.null(names(package_list))) {
+    package_list <- setNames(as.list(rep(NA, length(package_list))), package_list)
   }
-  # Package loading
-  print("Attempting to load the packages...")
-  tryCatch(
-    {
-      quietPackages(
-        invisible(lapply(package_list, library, character.only = TRUE))
-      )
-    },
-    error = function(e) {
-      message("Package loading failed. Exiting the function...")
-      stop(customError("Package loading failed"))
+  
+  # Iterate through each package
+  for (pkg in names(package_list)) {
+    version <- package_list[[pkg]]
+    # Check if the package is installed and if the version matches (if specified)
+    if (!pkg %in% rownames(installed.packages()) || (!is.na(version) && packageVersion(pkg) != version)) {
+      print(paste("Installing package", pkg, if (!is.na(version)) paste("version", version) else "", "..."))
+      tryCatch({
+        # Install specific version if provided, else install the latest version
+        if (!is.na(version)) {
+          devtools::install_version(pkg, version = version)
+        } else {
+          install.packages(pkg)
+        }
+      }, error = function(e) {
+        message("Package installation failed for ", pkg, ". Exiting the function...")
+        stop("Package installation failed: ", e$message)
+      })
     }
-  )
-  print("All packages loaded successfully")
+  }
+  
+  # Loading packages
+  if (verbose) {
+    print("Attempting to load the packages...")
+  }
+  
+  tryCatch({
+    lapply(names(package_list), function(pkg) library(pkg, character.only = TRUE))
+  }, error = function(e) {
+    message("Package loading failed. Exiting the function...")
+    stop("Package loading failed: ", e$message)
+  })
+  
+  if (verbose) {
+    print("All packages loaded successfully")
+  }
 }
 
 #' @title Load External Packages

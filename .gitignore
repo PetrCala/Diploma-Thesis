@@ -20,7 +20,7 @@ R/temp_*.R
 # Shell temp files
 **/*.sh~
 **/*.sh.un~
-**.sh.swp
+**.swp
 
 # Excel temp files
 **/~$*.xlsx
