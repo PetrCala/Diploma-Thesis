@@ -49,6 +49,7 @@ packages <- list(
   "grDevices" = NA, # Elliott et al. (2022)
   "ggtext" = NA, # ggplot axis text without warnings
   "haven" = NA, # Importing and exporting data from SAS, SPSS, and Stata
+  "ivmodel" = NA, # Instrumental variable confidence interval (Anderson-Rubin)
   "lmtest" = NA, # Hypothesis testing and diagnostics for linear regression models
   "memoise" = NA, # Cache system - speeding up deterministic function calls
   "meta" = NA, # Meta-analysis package
