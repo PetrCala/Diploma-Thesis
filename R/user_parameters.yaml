@@ -12,8 +12,8 @@ run_this:
   t_stat_histogram: false
   linear_tests: false
   nonlinear_tests: false
-  exo_tests: true
-  p_hacking_tests: false
+  exo_tests: false
+  p_hacking_tests: true
   bma: false
   fma: false 					
   ma_variables_description_table: false 	

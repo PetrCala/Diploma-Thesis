@@ -3287,7 +3287,6 @@ getExoTests <- function(input_data, puni_params, iv_instrument = "automatic", ad
     puni_params
   )
   # Get coefficients
-  browser()
   iv_list <- getIVResults(input_data, iv_instrument = iv_instrument, add_significance_marks = add_significance_marks,
                               effect_present = T, pub_bias_present = T, verbose_coefs = T)
   p_uni_res <- do.call(getPUniResults, all_puni_params)
