@@ -437,6 +437,7 @@ if (run_this$p_hacking_tests){
     data,
     thresholds = adj_params$caliper_thresholds,
     widths = adj_params$caliper_widths,
+    display_ratios = adj_params$caliper_display_ratios,
     verbose = adj_params$caliper_verbose,
     add_significance_marks = adj_params$caliper_add_significance_marks
   )
