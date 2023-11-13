@@ -333,39 +333,51 @@ quietPackages <- function(expr) {
 #' or loading process, the function stops execution and displays an error message.
 #'
 #' @param package_list [character] A character vector of package names.
+#' @param verbose [bool] If TRUE, print out verbose output about the package loading.
 #'
 #' @return A message indicating that all packages were loaded successfully or an error message if the process fails.
-loadPackages <- function(package_list) {
-  # Install packages not yet installed
-  installed_packages <- package_list %in% rownames(installed.packages())
-  if (any(installed_packages == FALSE)) {
-    print(paste("Installing package ", package_list[!installed_packages], "...", sep = ""))
-    tryCatch(
-      {
-        quietPackages(
-          install.packages(package_list[!installed_packages])
-        )
-      },
-      error = function(e) {
-        message("Package installation failed. Exiting the function...")
-        stop(customError("Package installation failed"))
-      }
-    )
+
+loadPackages <- function(package_list, verbose=TRUE) {
+  # Check if package_list is a named list and if not, convert to a named list with NULL versions
+  if (!is.list(package_list) || is.null(names(package_list))) {
+    package_list <- setNames(as.list(rep(NA, length(package_list))), package_list)
   }
-  # Package loading
-  print("Attempting to load the packages...")
-  tryCatch(
-    {
-      quietPackages(
-        invisible(lapply(package_list, library, character.only = TRUE))
-      )
-    },
-    error = function(e) {
-      message("Package loading failed. Exiting the function...")
-      stop(customError("Package loading failed"))
+  
+  # Iterate through each package
+  for (pkg in names(package_list)) {
+    version <- package_list[[pkg]]
+    # Check if the package is installed and if the version matches (if specified)
+    if (!pkg %in% rownames(installed.packages()) || (!is.na(version) && packageVersion(pkg) != version)) {
+      print(paste0("Installing package ", pkg, if (!is.na(version)) paste("version", version) else "", "..."))
+      tryCatch({
+        # Install specific version if provided, else install the latest version
+        if (!is.na(version)) {
+          devtools::install_version(pkg, version = version)
+        } else {
+          install.packages(pkg)
+        }
+      }, error = function(e) {
+        message("Package installation failed for ", pkg, ". Exiting the function...")
+        stop("Package installation failed: ", e$message)
+      })
     }
-  )
-  print("All packages loaded successfully")
+  }
+  
+  # Loading packages
+  if (verbose) {
+    print("Attempting to load the packages...")
+  }
+  
+  tryCatch({
+    lapply(names(package_list), function(pkg) library(pkg, character.only = TRUE))
+  }, error = function(e) {
+    message("Package loading failed. Exiting the function...")
+    stop("Package loading failed: ", e$message)
+  })
+  
+  if (verbose) {
+    print("All packages loaded successfully")
+  }
 }
 
 #' @title Load External Packages
@@ -3083,8 +3095,8 @@ findBestInstrument <- function(input_data, instruments, instruments_verbose){
 #' instrument automatically.
 #' @inheritDotParams ... additional arguments to be passed to extractExoCoefs
 #'
-#' @return A list with a numeric vector containing the extracted coefficients from the IV regression
-#' and the name of the instrument used.
+#' @return A list with a numeric vector containing the extracted coefficients from the IV regression,
+#' the name of the instrument used, and the Anderson-Rubin F-statistic.
 #'
 #' @details The function defines a list of instruments to use, and finds the best instrument
 #' by running a function called findBestInstrument. If multiple best instruments are identified,
@@ -3124,6 +3136,9 @@ getIVResults <- function(data, iv_instrument = "automatic", ...){
   iv_formula <- as.formula("effect ~ se | instr_temp")
   model <- ivreg(formula = iv_formula, data = data)
   model_summary <- summary(model, vcov = vcovHC(model, cluster = c(data$study_id)), diagnostics=T)
+  # Run the ivmodel regression for fetching of the AR (Anderson-Rubin) test statistic
+  model_ar <- ivmodel(Y=data$effect, D = data$se, Z = data$instr_temp)
+  fstat <- model_ar$AR$Fstat
   # Get the coefficients
   all_coefs <- model_summary$coefficients
   IV_coefs_vec <- c(
@@ -3136,7 +3151,13 @@ getIVResults <- function(data, iv_instrument = "automatic", ...){
   # Extract the coefficients and return as a vector
   total_obs <- nrow(data)
   iv_coefs_out <- extractExoCoefs(iv_coefs_mat, total_obs, ...) 
-  return(list(iv_coefs_out, best_instrument))
+  # Out list
+  iv_out <- list(
+    res = iv_coefs_out,
+    best_instrument = best_instrument,
+    fstat = fstat
+  )
+  return(iv_out)
 }
 
 ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
@@ -3266,33 +3287,33 @@ getExoTests <- function(input_data, puni_params, iv_instrument = "automatic", ad
     puni_params
   )
   # Get coefficients
-  iv_res_list <- getIVResults(input_data, iv_instrument = iv_instrument, add_significance_marks = add_significance_marks,
+  iv_list <- getIVResults(input_data, iv_instrument = iv_instrument, add_significance_marks = add_significance_marks,
                               effect_present = T, pub_bias_present = T, verbose_coefs = T)
-  iv_res <- iv_res_list[[1]] # Coefficients
-  iv_best_instrument <- iv_res_list[[2]]
   p_uni_res <- do.call(getPUniResults, all_puni_params)
+  # Get results - append F-stat row (extra)
+  iv_df <- append(iv_list$res, round(iv_list$fstat, 3))
+  p_uni_df = append(p_uni_res, "")
   # Combine the results into a data frame
   results <- data.frame(
-    iv_df = iv_res,
-    p_uni_df = p_uni_res)
+    iv_df = iv_df,
+    p_uni_df = p_uni_df)
   # Label names
-  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)", "Total observations")
+  rownames(results) <- c("Publication Bias", "(PB SE)", "Effect Beyond Bias", "(EBB SE)", "Total observations", "F-test")
   colnames(results) <- c("IV", "p-Uniform")
   # Print the results into the console and return
-  out_list <- list(results, iv_best_instrument)
+  out_list <- list(
+    res = results,
+    best_instrument = iv_list$best_instrument
+  )
   getExoTestsVerbose(out_list)
   return(out_list) 
 }
 
 #' Verbose output for the getExoTests function
 getExoTestsVerbose <- function(result_list, ...){
-  # Unlist
-  res <- result_list[[1]]
-  best_instrument <- result_list[[2]]
-  # Print out info
-  print(paste("Instrument used in the IV regression:", best_instrument))
+  print(paste("Instrument used in the IV regression:", result_list$best_instrument))
   print("Results of the tests relaxing exogeneity, clustered by study:")
-  print(res)
+  print(result_list$res)
   cat("\n\n")
 }
 
@@ -3364,6 +3385,9 @@ runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05, add_signi
 #'                   Defaults to c(0, 1.96, 2.58).
 #' @param widths [vector] A numeric vector containing the caliper widths at which the tests are to be run. 
 #'               Defaults to c(0.05, 0.1, 0.2).
+#' @param display_ratios [bool] A logical value indicating whether to display ratios of the number of estimates
+#'  found on each side of the interval. The alternative is to display the sum of numbers (occurances) within
+#'  the whole interval. Defaults to FALSE.
 #' @param verbose [bool] A logical value indicating whether the results should be printed to the console. 
 #'                Defaults to TRUE.
 #' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
@@ -3372,8 +3396,14 @@ runCaliperTest <- function(input_data, threshold = 1.96, width = 0.05, add_signi
 #' @return A data frame with dimensions nrow = length(widths) * 3 and ncol = length(thresholds),
 #'         where the rows are named with the caliper width and its estimate, standard error, and n1/n2 ratio,
 #'         and the columns are named with the corresponding thresholds.
-getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths = c(0.05, 0.1, 0.2),
-                              verbose = T, add_significance_marks = T){
+getCaliperResults <- function(
+    input_data, 
+    thresholds = c(0, 1.96, 2.58), 
+    widths = c(0.05, 0.1, 0.2),
+    display_ratios = F,
+    verbose = T, 
+    add_significance_marks = T
+){
   # Validate the input
   stopifnot(
     is.data.frame(input_data),
@@ -3381,6 +3411,7 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
     is.vector(widths),
     is.numeric(thresholds),
     is.numeric(widths),
+    is.logical(display_ratios),
     is.logical(verbose),
     is.logical(add_significance_marks)
   )
@@ -3394,7 +3425,7 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
     rows <- c(
       paste0("Caliper width ", width, " - Estimate"),
       paste0("Caliper width ", width, " - SE"),
-      paste0("Caliper width ", width, " - n1/n2")
+      paste0("Caliper width ", width, ifelse(display_ratios, " - n1/n2", " - n total"))
     )
     rownames_vec <- append(rownames_vec, rows)
   }
@@ -3404,9 +3435,12 @@ getCaliperResults <- function(input_data, thresholds = c(0, 1.96, 2.58), widths 
     for (j in 1:num_widths){
       caliper_res <- runCaliperTest(input_data, threshold = thresholds[i], width = widths[j],
                                     add_significance_marks = add_significance_marks)
+      lcount <- as.numeric(caliper_res[3]) # Left interval
+      rcount <- as.numeric(caliper_res[4]) # Right interval
+      ncount <- ifelse(display_ratios, paste0(lcount, "/", rcount), as.character(sum(lcount, rcount))) # Count in intervals
       result_df[j*3-2, i] <- caliper_res[1] # Estimate
       result_df[j*3-1, i] <- paste0("(", caliper_res[2], ")") # Standard Error
-      result_df[j*3, i] <- paste0(caliper_res[3], "/", caliper_res[4]) # n1/n2
+      result_df[j*3, i] <- ncount # n1/n2 or  n1+n2
     }
   }
   # Verbose output
