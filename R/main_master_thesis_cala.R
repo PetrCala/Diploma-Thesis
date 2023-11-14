@@ -399,6 +399,7 @@ if (run_this$nonlinear_tests){
     export_graphics = export_options$export_graphics,
     export_path = folder_paths$graphic_results_folder,
     graph_scale = adj_params$non_linear_stem_graph_scale,
+    stem_representative_sample = adj_params$non_linear_stem_representative_sample,
     stem_legend_pos = adj_params$non_linear_stem_legend_position
   )
   if (export_options$export_results){

@@ -2626,13 +2626,17 @@ getTop10Results <- function(data, ...){
 #' should include the necessary columns for the STEM method, and the output will be a numeric
 #' vector containing the estimated coefficients.
 #'
-#' @param data A data frame containing the necessary columns for the STEM-based method
-#' @param script_path Full path to the source script.
-#' @param print_plot If TRUE, print out the STEM plot.
-#' @param theme Theme for the graphics. Defaults to "blue".
-#' @param export_graphics If TRUE, export the STEM plot.
-#' @param export_path Path to the export folder. Deafults to ./results/graphic.
-#' @param graph_scale Numeric, scale the graph by this number. Defaults to 5.
+#' @param data [data.frame] A data frame containing the necessary columns for the STEM-based method
+#' @param script_path [character] Full path to the source script.
+#' @param representative_sample [character] Representative data sample to choose. One of
+#'  "medians", "first", NULL. If set to NULL, use the whole data set. Defaults to "medians".
+#' @param print_plot [bool] If TRUE, print out the STEM plot.
+#' @param theme [character] Theme for the graphics. Defaults to "blue".
+#' @param export_graphics [bool] If TRUE, export the STEM plot.
+#' @param export_path [character] Path to the export folder. Deafults to ./results/graphic.
+#' @param graph_scale [numeric] Numeric, scale the graph by this number. Defaults to 5.
+#' @param legend_pos [character] String specifying where the legend should be placed in the graph.
+#'  Defaults to 'topleft'.
 #' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
 #' for formatting the output.
 #'
@@ -2640,9 +2644,38 @@ getTop10Results <- function(data, ...){
 #' in the usual format.
 #' 
 #' @import stem_method_master_thesis_cala.R
-getStemResults <- function(data, script_path, print_plot = T, theme = "blue", 
-                           export_graphics = T, export_path = "./results/graphic",
-                           graph_scale = 5, legend_pos = "topleft", ...){
+getStemResults <- function(
+    data, 
+    script_path, 
+    representative_sample = "medians",
+    print_plot = T, 
+    theme = "blue", 
+    export_graphics = T, 
+    export_path = "./results/graphic",
+    graph_scale = 5, 
+    legend_pos = "topleft", 
+    ...
+ ){
+  # stopifnot(
+    # Make this check string|NULL reliably (is.na() evaluates to TRUE)
+  #   any(c(representative_sample %in% c("medians", "first"), is.null(representative_sample)))
+  # )
+  # Subset the data to the representative sample only
+  stem_data <- switch(representative_sample,
+    'medians' = list(
+      effect=getMedians(data, 'effect'),
+      se=getMedians(data, 'se')
+    ),
+    'first' = list(
+      effect=getFirst(data, 'effect'),
+      se=getFirst(data, 'se')
+    ),
+    list(
+      effect = data$effect,
+      se = data$se
+    )
+  )
+  
   source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
@@ -2651,10 +2684,10 @@ getStemResults <- function(data, script_path, print_plot = T, theme = "blue",
   )
   
   # Estimation
-  est_stem <- stem(data$effect, data$se, stem_param)$estimates # Actual esimation
+  est_stem <- stem(stem_data$effect, stem_data$se, stem_param)$estimates # Actual esimation
   # Stem plot
   funnel_stem_call <- bquote(
-    stem_funnel(data$effect, data$se, est_stem, theme = .(theme), legend_pos = .(legend_pos))
+    stem_funnel(stem_data$effect, stem_data$se, est_stem, theme = .(theme), legend_pos = .(legend_pos))
   )
   # Print and export the plot 
   if (print_plot){
@@ -2670,7 +2703,7 @@ getStemResults <- function(data, script_path, print_plot = T, theme = "blue",
     dev.off()
   }
   # Save results
-  nobs_total <- nrow(data)
+  nobs_total <- length(stem_data$effect)
   stem_coefs <- extractNonlinearCoefs(est_stem, nobs_total, ...)
   return(stem_coefs)
 }
@@ -2845,11 +2878,16 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' @param export_graphics If TRUE, export various graphs into the graphics folder.
 #' @param export_path Path to the export folder. Defaults to ./results/graphic.
 #' @param graph_scale Numeric, scale the graph by this number. Defaults to 5.
+#' @param representative_sample [character] Representative data sample to choose. One of
+#'  "medians", "first", NULL. If set to NULL, use all data. Defaults to NULL.
+#' @param stem_legend_pos [character] String specifying where the legend should be placed in the graph.
+#'  Defaults to 'topleft'.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
                               add_significance_marks = T, theme = "blue",
                               export_graphics = T, export_path = './results/graphic',
-                              graph_scale = 5, stem_legend_pos = "topleft") {
+                              graph_scale = 5, stem_representative_sample = "medians", 
+                              stem_legend_pos = "topleft") {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -2880,6 +2918,7 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
     list(
       input_data,
       stem_script_path,
+      representative_sample = stem_representative_sample,
       print_plot = T,
       theme = theme,
       export_graphics = export_graphics,
@@ -3162,29 +3201,6 @@ getIVResults <- function(data, iv_instrument = "automatic", ...){
 
 ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
 
-#' getMedians - Calculates the vector of medians for effect
-#' Input the data frame, and the name of the column to calculate a vector of medians for,
-#'  grouped by the study levels.
-#' 
-#' @param input_data [data.frame] Main data frame.
-#' @param mec_col [str] Name of the column to compute the medians for. Must be in colnames
-#'  of the input data frame.
-#' @return [vector] Vector of medians by levels of the data frame studies.
-getMedians <- function(input_data, med_col){
-  # Validation
-  stopifnot(all(c(med_col, 'study_name') %in% colnames(input_data)))
-  # Preparation
-  med_vec <- c()
-  study_levels <- levels(as.factor(input_data$study_name)) # Names of studies as levels
-  # Calculation
-  for (study in study_levels) {
-    col_data_numeric <- as.numeric(unlist(input_data[input_data$study_name == study,med_col]))
-    med <- median(col_data_numeric)
-    med_vec <- append(med_vec, med)
-  }
-  stopifnot(length(med_vec) == length(study_levels)) # Calculated median for all studies
-  return(med_vec)
-}
 
 #' getPUniResults - Calculates publication bias test results using the p-uniform method
 #'
@@ -5808,4 +5824,53 @@ intOrDecimal <- function(x) {
 exportHtmlGraph <- function(graph_object, export_path){
   plotly_img <- ggplotly(graph_object)
   htmlwidgets::saveWidget(plotly_img, export_path)
+}
+
+#################### DATA HANDLING #################### 
+
+#' getMedians - Calculates the vector of medians for effect
+#' Input the data frame, and the name of the column to calculate a vector of medians for,
+#'  grouped by the study levels.
+#' 
+#' @param input_data [data.frame] Main data frame.
+#' @param mec_col [str] Name of the column to compute the medians for. Must be in colnames
+#'  of the input data frame.
+#' @return [vector] Vector of medians by levels of the data frame studies.
+getMedians <- function(input_data, med_col){
+  # Validation
+  stopifnot(all(c(med_col, 'study_name') %in% colnames(input_data)))
+  # Preparation
+  med_vec <- c()
+  study_levels <- levels(as.factor(input_data$study_name)) # Names of studies as levels
+  # Calculation
+  for (study in study_levels) {
+    col_data_numeric <- as.numeric(unlist(input_data[input_data$study_name == study,med_col]))
+    med <- median(col_data_numeric)
+    med_vec <- append(med_vec, med)
+  }
+  stopifnot(length(med_vec) == length(study_levels)) # Calculated median for all studies
+  return(med_vec)
+}
+
+#' getFirst - subsets a column of a data frame to the first occurance only, grouped
+#' by the study levels
+#' 
+#' @param input_data [data.frame] Main data frame.
+#' @param mec_col [str] Name of the column to fetch the first value for. Must be in colnames
+#'  of the input data frame.
+#' @return [vector] Vector of first occurances by levels of the data frame studies.
+getFirst <- function(input_data, colname){
+  # Validation
+  stopifnot(all(c(colname, 'study_name') %in% colnames(input_data)))
+  # Preparation
+  out_vec <- c()
+  study_levels <- levels(as.factor(input_data$study_name)) # Names of studies as levels
+  # Calculation
+  for (study in study_levels) {
+    col_data_numeric <- as.numeric(unlist(input_data[input_data$study_name == study,colname]))
+    val <- col_data_numeric[1]
+    out_vec <- append(out_vec, val)
+  }
+  stopifnot(length(out_vec) == length(study_levels)) # Calculated values for all studies
+  return(out_vec)
 }
