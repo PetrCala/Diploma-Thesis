@@ -5,7 +5,7 @@
 
 run_this:
   variable_summary_stats: false
-  effect_summary_stats: false
+  effect_summary_stats: true
   prima_facie_graphs: false
   box_plot: false
   funnel_plot: false
@@ -14,10 +14,10 @@ run_this:
   nonlinear_tests: false
   exo_tests: false
   p_hacking_tests: false
-  bma: true
-  fma: true 					
-  ma_variables_description_table: true 	
-  bpe: true 					
+  bma: false
+  fma: false 					
+  ma_variables_description_table: false 	
+  bpe: false 					
   bpe_graphs: false
   bpe_summary_stats: false 					
   robma: false 	# Computationally expensive

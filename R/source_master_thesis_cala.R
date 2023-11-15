@@ -331,24 +331,28 @@ quietPackages <- function(expr) {
 #' This function checks if the specified packages are installed, installs any missing
 #' packages, and then loads all of them. If an error occurs during the installation
 #' or loading process, the function stops execution and displays an error message.
+#' 
+#' Include a progress bar to track the loading process.
 #'
 #' @param package_list [character] A character vector of package names.
 #' @param verbose [bool] If TRUE, print out verbose output about the package loading.
 #'
 #' @return A message indicating that all packages were loaded successfully or an error message if the process fails.
-
-loadPackages <- function(package_list, verbose=TRUE) {
-  # Check if package_list is a named list and if not, convert to a named list with NULL versions
+loadPackages <- function(package_list, verbose = TRUE) {
+  # Convert package_list to a named list with NULL versions if necessary
   if (!is.list(package_list) || is.null(names(package_list))) {
     package_list <- setNames(as.list(rep(NA, length(package_list))), package_list)
   }
   
-  # Iterate through each package
-  for (pkg in names(package_list)) {
-    version <- package_list[[pkg]]
+  # Function to install and check each package
+  install_and_check <- function(pkg, version) {
+    if (verbose) {
+      message <- paste0("Processing package: ", pkg, if (!is.na(version)) paste0(" (version ", version, ")") else "")
+      cat(sprintf("%-100s", message)) # Add enough whitespace to make sure the whole line is cleared
+      flush.console()
+    }
     # Check if the package is installed and if the version matches (if specified)
     if (!pkg %in% rownames(installed.packages()) || (!is.na(version) && packageVersion(pkg) != version)) {
-      print(paste0("Installing package ", pkg, if (!is.na(version)) paste("version", version) else "", "..."))
       tryCatch({
         # Install specific version if provided, else install the latest version
         if (!is.na(version)) {
@@ -357,26 +361,24 @@ loadPackages <- function(package_list, verbose=TRUE) {
           install.packages(pkg)
         }
       }, error = function(e) {
-        message("Package installation failed for ", pkg, ". Exiting the function...")
-        stop("Package installation failed: ", e$message)
+        stop("\nPackage installation failed for ", pkg, ": ", e$message)
       })
     }
+    
+    # Load the package
+    suppressPackageStartupMessages(library(pkg, character.only = TRUE))
   }
   
   # Loading packages
   if (verbose) {
-    print("Attempting to load the packages...")
-  }
+    cat("Loading packages...\n")
+  } 
   
-  tryCatch({
-    lapply(names(package_list), function(pkg) suppressPackageStartupMessages(library(pkg, character.only = TRUE)))
-  }, error = function(e) {
-    message("Package loading failed. Exiting the function...")
-    stop("Package loading failed: ", e$message)
-  })
+  # Applying the function to each package with a progress bar
+  pbapply::pblapply(names(package_list), function(pkg) install_and_check(pkg, package_list[[pkg]]))
   
   if (verbose) {
-    print("All packages loaded successfully")
+    cat("\rAll packages loaded successfully\n")
   }
 }
 

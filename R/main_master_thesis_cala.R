@@ -17,7 +17,7 @@
 rm(list = ls())
 options(scipen=999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
- 
+
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
 user_param_file <- "user_parameters.yaml" # File with user parameters
@@ -33,13 +33,13 @@ if(interactive()) {
   }
 }
 
-# Load devtools for package loading
+# Load devtools and pbapply for package loading
 if (!require('devtools')) install.packages('devtools'); suppressPackageStartupMessages(library('devtools'))
+if (!require('pbapply')) install.packages('pbapply'); suppressPackageStartupMessages(library('pbapply'))
 
 ##### PREPARATION #####
 
 ### Validate the existence of source files and load them
-
 source_file_list <- list("Source file" = source_file, 
                        "Package file" = package_file)
 
@@ -48,7 +48,7 @@ verify_file_existence <- function(file_name, file_path) {
   if (!file.exists(file_path)) {
     stop(paste("Please make sure to place the", file_name, file_path, "in the working directory first."))
   } else {
-    print(paste(file_name, "located."))
+    cat(paste(file_name, "located.\n"))
   }
 }
 
@@ -62,16 +62,16 @@ source(source_file)
 source(package_file)
 
 # Load packages
-loadPackages(packages)
+loadPackages(packages, verbose=TRUE)
 
 ### Validate the existence of the user parameter file and recreate it if it does not exist
 
 # Check if the new file already exists
 if (!file.exists(user_param_file)) {
   file.copy(user_param_model_file, user_param_file) # Copy the model file to create the new file
-  cat("User parameter file not found.\nRecreating the file from user_parameters_model.yaml...")
+  cat("User parameter file not found.\nRecreating the file from user_parameters_model.yaml...\n")
 } else {
-  cat("User parameter file located.")
+  cat("User parameter file located.\n")
 }
 
 # Load user parameters and unlist for easier fetching
