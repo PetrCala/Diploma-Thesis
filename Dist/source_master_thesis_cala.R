@@ -2208,15 +2208,17 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
 #' @param input_list [list] A list containing the information about the t-stat bounds, desired t-stat values to
 #'  highlight, and whether to highlight mean.
 #' A numeric vector of length 5, containing the lower bound, upper bound, mean value, and the t-stats.
+#' @param minimum_distance_between_ticks [numeric] Distance within which no two ticks should be placed. Defaults to 2.
 #' @param theme [character] Type of theme to use
 #' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values, the mean value,
 #'         and the t-statistics values, and "x_axis_tick_text", a character vector of the same length as "output_vec",
 #'         with "red" indicating the positions of the t-statistics values, "darkoran
-generateHistTicks <- function(input_list, theme = "blue") {
+generateHistTicks <- function(input_list, minimum_distance_between_ticks = 2, theme = "blue") {
   # Validate input
   expected_input_names <- c("bounds", "mean", "t_stats")
   stopifnot(
     is(input_list, "list"),
+    is.numeric(minimum_distance_between_ticks),
     is.character(theme),
     all(expected_input_names %in% names(input_list)),
     length(input_list$bounds) == 2,
@@ -2233,10 +2235,10 @@ generateHistTicks <- function(input_list, theme = "blue") {
   }
   # Exclude lower or upper bound if they are closer than 2 to any of the t-statistics values
   ticks <- c()
-  if (all(abs(lower_bound - t_stats) >= 2)){
+  if (all(abs(lower_bound - t_stats) >= minimum_distance_between_ticks)){
     ticks <- c(ticks, lower_bound)
   }
-  if (all(abs(upper_bound - t_stats) >= 2)){
+  if (all(abs(upper_bound - t_stats) >= minimum_distance_between_ticks)){
     ticks <- c(ticks, upper_bound)
   }
   # Get the base vector with bounds and t_stats
@@ -2269,7 +2271,7 @@ generateHistTicks <- function(input_list, theme = "blue") {
   
   while (current_tick < upper_bound) {
     # If not too close to bounds/t-stats/mean, add the tick to tick list
-    if (all(abs(current_tick - base_ticks) >= 2)) {
+    if (all(abs(current_tick - base_ticks) >= minimum_distance_between_ticks)) {
       ticks <- c(ticks, round(current_tick, 2))
     }
     current_tick <- current_tick + step_length
@@ -2303,6 +2305,8 @@ generateHistTicks <- function(input_list, theme = "blue") {
 #' @param highlight_mean Boolean, if TRUE, highlight the mean t-statistic of the data in the plot.
 #' @param add_density Boolean, if TRUE, add a density line into the plot.
 #' @param t_stats A vector with t-statistic values that should be highlighted in the plot.
+#' @param minimum_distance_between_ticks Numeric, specifies the distance within which no two ticks should be places.
+#'  Defaults is 2.
 #' @param theme Theme to use. Defaults to "blue".
 #' @param verbose If TRUE, print out the plot. Defaults to TRUE.
 #' @param export_graphics If TRUE, export the plot to a png object into the graphics folder. Defaults to TRUE.
@@ -2310,9 +2314,32 @@ generateHistTicks <- function(input_list, theme = "blue") {
 #' @param graph_scale Numeric, scale the graph by this number. Defaults to 6.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
-getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, highlight_mean = T,
-                         add_density = T, t_stats = c(-1.96, 1.96), theme = "blue", verbose = T,
-                         export_graphics = T, output_path = NA, graph_scale = 6){
+getTstatHist <- function(
+    input_data, 
+    lower_cutoff = -120, 
+    upper_cutoff = 120, 
+    highlight_mean = T,
+    add_density = T, 
+    minimum_distance_between_ticks = 2,
+    t_stats = c(-1.96, 1.96), 
+    theme = "blue", 
+    verbose = T,
+    export_graphics = T, 
+    output_path = NA, 
+    graph_scale = 6
+){
+  stopifnot(
+    is.numeric(lower_cutoff),
+    is.numeric(upper_cutoff),
+    is.logical(highlight_mean),
+    is.logical(add_density),
+    is.numeric(minimum_distance_between_ticks),
+    is.vector(t_stats),
+    is.character(theme),
+    is.logical(verbose),
+    is.logical(export_graphics),
+    is.numeric(graph_scale)
+  )
   # Specify a cutoff filter
   t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
   hist_data <- input_data[t_hist_filter,]
@@ -2333,7 +2360,11 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, hi
     t_stats = t_stats
   )
   # Generate and extract variable visual information
-  hist_visual_info <- generateHistTicks(base_hist_ticks, theme = theme)
+  hist_visual_info <- generateHistTicks(
+    base_hist_ticks, 
+    minimum_distance_between_ticks = minimum_distance_between_ticks, 
+    theme = theme
+  )
   hist_ticks <- hist_visual_info$hist_ticks
   hist_ticks_text <- hist_visual_info$x_axis_tick_text
   # Get the theme to use
@@ -5844,18 +5875,27 @@ exportHtmlGraph <- function(graph_object, export_path){
 #'  of the input data frame.
 #' @return [vector] Vector of medians by levels of the data frame studies.
 getMedians <- function(input_data, med_col){
-  # Validation
-  stopifnot(all(c(med_col, 'study_name') %in% colnames(input_data)))
-  # Preparation
-  med_vec <- c()
-  study_levels <- levels(as.factor(input_data$study_name)) # Names of studies as levels
-  # Calculation
-  for (study in study_levels) {
-    col_data_numeric <- as.numeric(unlist(input_data[input_data$study_name == study,med_col]))
-    med <- median(col_data_numeric)
-    med_vec <- append(med_vec, med)
+  # Input validation
+  required_cols <- c(med_col, "study_name")
+  if (!all(required_cols %in% colnames(input_data))) {
+    stop("input_data must contain columns: ", paste(required_cols, collapse = ", "))
   }
-  stopifnot(length(med_vec) == length(study_levels)) # Calculated median for all studies
+  
+  # Use lapply for efficient calculation
+  study_levels <- levels(factor(input_data$study_name))
+  med_vec <- lapply(study_levels, function(study) {
+      study_data <- input_data[input_data$study_name == study, med_col, drop = FALSE]
+      median(as.numeric(study_data[[med_col]]), na.rm = TRUE)
+  })
+
+  # Convert list to vector
+  med_vec <- unlist(med_vec)
+
+  # Post-calculation check
+  if (length(med_vec) != length(study_levels)) {
+      stop("Number of medians calculated does not match the number of study levels")
+  }
+
   return(med_vec)
 }
 

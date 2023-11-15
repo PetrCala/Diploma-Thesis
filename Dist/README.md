@@ -23,6 +23,7 @@ The project is structured as follows:
 ├── pckg/
 │   └── LowRankQP/
 ├── resources/
+│   ├── packages.R
 │   └── user_parameters_model.yaml
 ├── results/
 │   ├── graphic/
@@ -46,6 +47,7 @@ The project is structured as follows:
   - `temp/` - > This folder will automatically get created upon script run. Here will be the `.csv` files created from the sheets of your data set. This allows reproducibility and consistency within the script.
 * `pckg/` -> Folder with external packages that are not available online anymore, such as `LowRankQP`.
 * `resources/` -> Folder with various resources.
+  - `packages.R` -> An R script containing an object with all packages used for the project, along with their versions.
   - `user_parameters_model.yaml` -> Customizable parameters. This file should be copied into the project roote, renamed to `user_parameters.yaml`, and modified to fit the user preferences. Any modifications can be done by opening the file using any text editor, such as `Notepad`. Alternatively, you may want to edit this file using fancier text editors, such as [Sublime Text](https://www.sublimetext.com/docs/vintage.html), or [VIM](https://www.vim.org/).
 * `results/` -> Folder with all results. A `.zip` file with all results will be automatically created here.
   - `graphic/` -> All graphic results will be automatically stored here.
