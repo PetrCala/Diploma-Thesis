@@ -2310,9 +2310,19 @@ generateHistTicks <- function(input_list, theme = "blue") {
 #' @param graph_scale Numeric, scale the graph by this number. Defaults to 6.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
-getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, highlight_mean = T,
-                         add_density = T, t_stats = c(-1.96, 1.96), theme = "blue", verbose = T,
-                         export_graphics = T, output_path = NA, graph_scale = 6){
+getTstatHist <- function(
+    input_data, 
+    lower_cutoff = -120, 
+    upper_cutoff = 120, 
+    highlight_mean = T,
+    add_density = T, 
+    t_stats = c(-1.96, 1.96), 
+    theme = "blue", 
+    verbose = T,
+    export_graphics = T, 
+    output_path = NA, 
+    graph_scale = 6
+){
   # Specify a cutoff filter
   t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
   hist_data <- input_data[t_hist_filter,]
