@@ -367,6 +367,7 @@ loadPackages <- function(package_list, verbose = TRUE) {
     
     # Load the package
     suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+    
   }
   
   # Loading packages
