@@ -331,24 +331,28 @@ quietPackages <- function(expr) {
 #' This function checks if the specified packages are installed, installs any missing
 #' packages, and then loads all of them. If an error occurs during the installation
 #' or loading process, the function stops execution and displays an error message.
+#' 
+#' Include a progress bar to track the loading process.
 #'
 #' @param package_list [character] A character vector of package names.
 #' @param verbose [bool] If TRUE, print out verbose output about the package loading.
 #'
 #' @return A message indicating that all packages were loaded successfully or an error message if the process fails.
-
-loadPackages <- function(package_list, verbose=TRUE) {
-  # Check if package_list is a named list and if not, convert to a named list with NULL versions
+loadPackages <- function(package_list, verbose = TRUE) {
+  # Convert package_list to a named list with NULL versions if necessary
   if (!is.list(package_list) || is.null(names(package_list))) {
     package_list <- setNames(as.list(rep(NA, length(package_list))), package_list)
   }
   
-  # Iterate through each package
-  for (pkg in names(package_list)) {
-    version <- package_list[[pkg]]
+  # Function to install and check each package
+  install_and_check <- function(pkg, version) {
+    if (verbose) {
+      message <- paste0("Processing package: ", pkg, if (!is.na(version)) paste0(" (version ", version, ")") else "")
+      cat(sprintf("%-100s", message)) # Add enough whitespace to make sure the whole line is cleared
+      flush.console()
+    }
     # Check if the package is installed and if the version matches (if specified)
     if (!pkg %in% rownames(installed.packages()) || (!is.na(version) && packageVersion(pkg) != version)) {
-      print(paste0("Installing package ", pkg, if (!is.na(version)) paste("version", version) else "", "..."))
       tryCatch({
         # Install specific version if provided, else install the latest version
         if (!is.na(version)) {
@@ -357,26 +361,24 @@ loadPackages <- function(package_list, verbose=TRUE) {
           install.packages(pkg)
         }
       }, error = function(e) {
-        message("Package installation failed for ", pkg, ". Exiting the function...")
-        stop("Package installation failed: ", e$message)
+        stop("\nPackage installation failed for ", pkg, ": ", e$message)
       })
     }
+    
+    # Load the package
+    suppressPackageStartupMessages(library(pkg, character.only = TRUE))
   }
   
   # Loading packages
   if (verbose) {
-    print("Attempting to load the packages...")
-  }
+    cat("Loading packages...\n")
+  } 
   
-  tryCatch({
-    lapply(names(package_list), function(pkg) suppressPackageStartupMessages(library(pkg, character.only = TRUE)))
-  }, error = function(e) {
-    message("Package loading failed. Exiting the function...")
-    stop("Package loading failed: ", e$message)
-  })
+  # Applying the function to each package with a progress bar
+  pbapply::pblapply(names(package_list), function(pkg) install_and_check(pkg, package_list[[pkg]]))
   
   if (verbose) {
-    print("All packages loaded successfully")
+    cat("\rAll packages loaded successfully\n")
   }
 }
 
@@ -3579,7 +3581,7 @@ getElliottResults <- function(input_data, script_path, temp_data_path, data_subs
   elliott_source_file <- paste0(temp_data_path, "elliott_data_temp.csv")
   # On the first run, create a cached file of CDFs (large in memory)
   if (!file.exists(elliott_source_file)){
-    print(paste0("Creating a temporary file in the",temp_data_path,"folder for the Elliott et al. (2022) method..."))
+    print(paste0("Creating a temporary file in the '",temp_data_path,"' folder for the Elliott et al. (2022) method..."))
     cdfs <- getCDFs() # Generate the file from scratch (takes time)
     write.table(cdfs, elliott_source_file, col.names = "cdfs", row.names = F)
   }
@@ -4268,7 +4270,7 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
 
 #' Verbose output for the extractBMAResults function
 extractBMAResultsVerbose <- function(...){
-  # Todo
+  # TODO
 }
 
 graphBMAComparison <- function(bma_models, input_var_list, theme = "blue", verbose = T, export_graphics = T,
@@ -4727,7 +4729,6 @@ runBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
   # Input preprocessing
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) # Extract the coefficients
   bma_vars <- rownames(bma_coefs) # Variables used in the BMA
-   
   
   # Get the BPE estimate
   # Get formula as a string - ((intercept) + coefs * values)
@@ -4796,6 +4797,7 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
                          "Author",
                          as.character(input_data$study_name[input_data$study_id == study_id][1]))
     # BPE estimation
+    #TODO this should be called on data of the single study - will fix the whole issue very likely
     bpe_result <- runBPE(input_data, input_var_list, bma_model, bma_formula, bma_data, study_id,
                          include_intercept = TRUE,
                          study_info_verbose = study_info_verbose, # Information about study names
@@ -5848,13 +5850,6 @@ getColors <- function(theme, method, submethod = NA, ...){
   return(colors)
 }
 
-#' Return a number as either an integer if it is one, or a decimal if it is not
-#' 
-#' Used when plotting graphs for prettier tick labels (10, 20, 25.243, 30,...)
-intOrDecimal <- function(x) {
-  ifelse(x == floor(x), as.integer(x), x)
-}
-
 #' Export the graph into an HTML file using the plotly package
 #' 
 #' @param graph_object The object generated by ggplot
@@ -5865,6 +5860,14 @@ exportHtmlGraph <- function(graph_object, export_path){
 }
 
 #################### DATA HANDLING #################### 
+
+#' Return a number as either an integer if it is one, or a decimal if it is not
+#' 
+#' Used when plotting graphs for prettier tick labels (10, 20, 25.243, 30,...)
+intOrDecimal <- function(x) {
+  ifelse(x == floor(x), as.integer(x), x)
+}
+
 
 #' getMedians - Calculates the vector of medians for effect
 #' Input the data frame, and the name of the column to calculate a vector of medians for,
