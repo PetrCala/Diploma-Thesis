@@ -29,7 +29,7 @@ if(interactive()) {
   if (!require('rstudioapi')) install.packages('rstudioapi'); suppressPackageStartupMessages(library('rstudioapi'))
   if (! getwd() == dirname(getActiveDocumentContext()$path)){
     newdir <- dirname(getActiveDocumentContext()$path)
-    cat(glue('Setting the working directory to: {newdir} \n'))
+    cat(sprintf('Setting the working directory to: %s \n', newdir))
     setwd(newdir) # Set WD to the current file location
   }
 }

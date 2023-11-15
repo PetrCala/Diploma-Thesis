@@ -160,8 +160,10 @@ adjustable_parameters:
   #     will be used to construct the default BMA model, used later in BPE, economic significance, etc.
   bma_param_burn: 10000 						# Burn-ins (def 1e5)
   bma_param_iter: 30000 						# Draws (def 3e5)
-  bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
-  bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
+  # bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
+  # bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
+  bma_param_g: ["UIP"] 				# g-Prior
+  bma_param_mprior: ["dilut"] 		# Model Prior
   bma_param_nmodel: 20000 						# Number of models (def 50000)
   bma_param_mcmc: "bd" 							# Markov Chain Monte Carlo
   # Frequentist Model Averaging parameters
