@@ -21,6 +21,7 @@ set.seed(123) # Results reproduction, stochastic functions to deterministic for 
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
 user_param_file <- "user_parameters.yaml" # File with user parameters
+user_param_model_file <- "resources/user_parameters_model.yaml" # Model user parameters file
 package_file <- "resources/packages.R" # Package file
 
 # Working directory - change only if the script is being ran interactively
@@ -37,10 +38,9 @@ if (!require('devtools')) install.packages('devtools'); suppressPackageStartupMe
 
 ##### PREPARATION #####
 
-# Verify the existence of the main source files exist
+### Validate the existence of source files and load them
 
-files_to_check <- list("Source file" = source_file, 
-                       "User parameter file" = user_param_file, 
+source_file_list <- list("Source file" = source_file, 
                        "Package file" = package_file)
 
 # Function to verify file existence
@@ -53,7 +53,7 @@ verify_file_existence <- function(file_name, file_path) {
 }
 
 # Check each file's existence using lapply
-invisible(lapply(names(files_to_check), function(name) verify_file_existence(name, files_to_check[[name]])))
+invisible(lapply(names(source_file_list), function(name) verify_file_existence(name, source_file_list[[name]])))
 
 # Load the source script
 source(source_file)
@@ -63,6 +63,16 @@ source(package_file)
 
 # Load packages
 loadPackages(packages)
+
+### Validate the existence of the user parameter file and recreate it if it does not exist
+
+# Check if the new file already exists
+if (!file.exists(user_param_file)) {
+  file.copy(user_param_model_file, user_param_file) # Copy the model file to create the new file
+  cat("User parameter file not found.\nRecreating the file from user_parameters_model.yaml...")
+} else {
+  cat("User parameter file located.")
+}
 
 # Load user parameters and unlist for easier fetching
 user_params <- yaml::read_yaml(user_param_file) 
