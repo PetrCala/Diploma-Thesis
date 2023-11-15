@@ -95,6 +95,7 @@ adjustable_parameters:
   # Linear test parameters
   linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks
   # Nonlinear parameters - only selection model parametrizable
+  non_linear_stem_representative_sample: "medians" # Sample of data to use. One of "medians", "first", NULL. NULL == all data.
   non_linear_stem_graph_scale: 5 		# Numeric, scale the graph by this number
   non_linear_stem_legend_position: "topright" 	# Position of the STEM plot legend
   non_linear_param_selection_cutoffs: [1.96]
