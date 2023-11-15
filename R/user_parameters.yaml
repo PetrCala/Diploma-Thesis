@@ -9,9 +9,9 @@ run_this:
   prima_facie_graphs: false
   box_plot: false
   funnel_plot: false
-  t_stat_histogram: false
+  t_stat_histogram: true
   linear_tests: false
-  nonlinear_tests: true
+  nonlinear_tests: false
   exo_tests: false
   p_hacking_tests: false
   bma: false
@@ -92,8 +92,13 @@ adjustable_parameters:
   t_hist_upper_cutoff: 120 		# Upper cutoff point for t-statistics
   t_hist_highlight_mean: true		# If T, higlight the mean in the graph also
   t_hist_add_density: false		# If T, add a density line into the graph
+  t_hist_minimum_distance_between_ticks: 2 # Place no two ticks within this distance
   t_hist_t_stats: [-1.96, 1.96]		# A vector of t-statistics to highlight in the graph. Must be a vector.
   t_hist_graph_scale: 6 		# Numeric, scale the graph by this number
+  t_hist_close_up_use: true   # If T, add another histogram with a close-up of a t-stat range specified below
+  t_hist_close_up_lower_cutoff: -0.8 # Lower cutoff point for the close-up histogram
+  t_hist_close_up_upper_cutoff: 4 # Upper cutoff point for the close-up histogram
+  t_hist_close_up_minimum_distance_between_ticks: 0.5 # Place no two ticks within this distance for the close up graph
   # Linear test parameters
   linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks
   # Nonlinear test parameters - only selection model parametrizable

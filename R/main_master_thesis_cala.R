@@ -343,22 +343,44 @@ if (run_this$funnel_plot){
 ###### HISTOGRAM OF T-STATISTICS ######
 
 if (run_this$t_stat_histogram){
+  run_cached_t_stat_histogram <- function(lower_cutoff, upper_cutoff, minimum_distance_between_ticks, graph_name){
+    return ( 
+      runCachedFunction(
+        getTstatHist, user_params,
+        verbose_function = nullVerboseFunction,
+        data,
+        lower_cutoff = lower_cutoff,
+        upper_cutoff = upper_cutoff,
+        highlight_mean = adj_params$t_hist_highlight_mean,
+        add_density = adj_params$t_hist_add_density,
+        minimum_distance_between_ticks = minimum_distance_between_ticks,
+        t_stats = adj_params$t_hist_t_stats,
+        theme = export_options$theme,
+        verbose = TRUE,
+        export_graphics = export_options$export_graphics,
+        output_path = graph_name,
+        graph_scale = adj_params$t_hist_graph_scale
+      )
+    )
+  }
+  # Main t-stat historam
   t_hist_path <- paste0(folder_paths$graphic_results_folder, "t_hist.png")
-  t_hist_plot <- runCachedFunction( # Plot only if input changes
-    getTstatHist, user_params,
-    verbose_function = nullVerboseFunction,
-    data,
-    lower_cutoff = adj_params$t_hist_lower_cutoff,
-    upper_cutoff = adj_params$t_hist_upper_cutoff,
-    highlight_mean = adj_params$t_hist_highlight_mean,
-    add_density = adj_params$t_hist_add_density,
-    t_stats = adj_params$t_hist_t_stats,
-    theme = export_options$theme,
-    verbose = TRUE, # Print into console
-    export_graphics = export_options$export_graphics,
-    output_path = t_hist_path,
-    graph_scale = adj_params$t_hist_graph_scale
+  t_hist_plot <- run_cached_t_stat_histogram(
+    lower_cutoff = adj_params$t_hist_lower_cutoff, 
+    upper_cutoff = adj_params$t_hist_upper_cutoff, 
+    minimum_distance_between_ticks = adj_params$t_hist_minimum_distance_between_ticks,
+    graph_name=t_hist_path
   )
+  # Closeup histogram
+  if (adj_params$t_hist_close_up_use) {
+    t_hist_closeup_path <- paste0(folder_paths$graphic_results_folder, "t_hist_closeup.png")
+    t_hist_closeup_plot <- run_cached_t_stat_histogram(
+      lower_cutoff = adj_params$t_hist_close_up_lower_cutoff,
+      upper_cutoff = adj_params$t_hist_close_up_upper_cutoff,
+      minimum_distance_between_ticks = adj_params$t_hist_close_up_minimum_distance_between_ticks,
+      graph_name=t_hist_closeup_path
+    )
+  }
 }
 
 ######################### LINEAR TESTS ######################### 
