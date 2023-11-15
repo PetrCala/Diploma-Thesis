@@ -4095,7 +4095,11 @@ runBMA <- function(bma_data, bma_params){
     ),
     bma_params
   )
-  dev.off() # Reset the graphics device
+  tryCatch({
+    dev.off() # Reset the graphics device
+  }, error = function(e){
+    message("Could not turn off the null device when plotting the BMA graph")
+  })
   # Actual estimation with inhereted parameters
   quiet(
     bma_model <- do.call(bms, all_bma_params)
@@ -4792,8 +4796,8 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     study_ids <- seq(from = 0, to = max(input_data$study_id), by = 1)
     study_info_verbose <- F # Silence individual study message
   }
-  # Loop through study ids
-  for (study_id in study_ids) {
+  # Helper function for getting a single study BPE data frame
+  getStudyBPE <- function(study_id, res_df) {
     study_name <- ifelse(study_id == 0,
                          "Author",
                          as.character(input_data$study_name[input_data$study_id == study_id][1]))
@@ -4819,14 +4823,17 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     }
     # Join together
     row.names(temp_df) <- study_name
-    res_df <- rbind(res_df, temp_df)
+    return(temp_df)
   }
+  # Iterate over all study IDs and combine the results into a single data frame
+  res_df <- rbind(res_df, do.call(rbind, pbapply::pblapply(study_ids, getStudyBPE)))
+  
   # Replace NAs with median SE
   if (all(is.na(res_df$ci_95_lower)) || all(is.na(res_df$ci_95_lower))){
     stop("All best-practice estimates yielded missing standard errors. Stopping the code.")
   }
-  temp_df$ci_95_lower[is.na(temp_df$ci_95_lower)] <- median(temp_df$ci_95_lower, na.rm=T)
-  temp_df$ci_95_higher[is.na(temp_df$ci_95_higher)] <- median(temp_df$ci_95_higher, na.rm=T)
+  res_df$ci_95_lower[is.na(res_df$ci_95_lower)] <- median(res_df$ci_95_lower, na.rm=T)
+  res_df$ci_95_higher[is.na(res_df$ci_95_higher)] <- median(res_df$ci_95_higher, na.rm=T)
   # Get an arbitrary formula to print out in case of verbose output
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) 
   bpe_formula <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
