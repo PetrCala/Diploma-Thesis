@@ -9,11 +9,11 @@ run_this:
   prima_facie_graphs: false
   box_plot: false
   funnel_plot: false
-  t_stat_histogram: true
-  linear_tests: false
-  nonlinear_tests: false
-  exo_tests: false
-  p_hacking_tests: false
+  t_stat_histogram: false
+  linear_tests: true
+  nonlinear_tests: true
+  exo_tests: true
+  p_hacking_tests: true
   bma: false
   fma: false 					
   ma_variables_description_table: false 	

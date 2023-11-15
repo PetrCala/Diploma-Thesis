@@ -1,4 +1,7 @@
-# Required packages - NA <=> fetch latest version (see 'loadPackages')
+#' A list of packages to use in the project. If you wish to specify a package version,
+#' set the list value to a string that corresponds to that version. Otherwise put NA,
+#' which will make R automatically fetch the latest version of the package.
+#' For more details, see 'source_master_thesis_cala.R::loadPackages'
 packages <- list(
   "AER" = NA, # Applied econometrics with R
   "BMS" = NA, # bayesian model averaging

@@ -3579,7 +3579,7 @@ getElliottResults <- function(input_data, script_path, temp_data_path, data_subs
   elliott_source_file <- paste0(temp_data_path, "elliott_data_temp.csv")
   # On the first run, create a cached file of CDFs (large in memory)
   if (!file.exists(elliott_source_file)){
-    print(paste0("Creating a temporary file in the",temp_data_path,"folder for the Elliott et al. (2022) method..."))
+    print(paste0("Creating a temporary file in the '",temp_data_path,"' folder for the Elliott et al. (2022) method..."))
     cdfs <- getCDFs() # Generate the file from scratch (takes time)
     write.table(cdfs, elliott_source_file, col.names = "cdfs", row.names = F)
   }
