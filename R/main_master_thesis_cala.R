@@ -28,8 +28,9 @@ package_file <- "resources/packages.R" # Package file
 if(interactive()) {
   if (!require('rstudioapi')) install.packages('rstudioapi'); suppressPackageStartupMessages(library('rstudioapi'))
   if (! getwd() == dirname(getActiveDocumentContext()$path)){
-    setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
-    print(paste0('Setting the working directory to: ', getwd()))
+    newdir <- dirname(getActiveDocumentContext()$path)
+    cat(glue('Setting the working directory to: {newdir} \n'))
+    setwd(newdir) # Set WD to the current file location
   }
 }
 
@@ -69,7 +70,7 @@ loadPackages(packages, verbose=TRUE)
 # Check if the new file already exists
 if (!file.exists(user_param_file)) {
   file.copy(user_param_model_file, user_param_file) # Copy the model file to create the new file
-  cat("User parameter file not found.\nRecreating the file from user_parameters_model.yaml...\n")
+  cat(glue("User parameter file not found.\nRecreating the file from '{user_param_model_file}'...\n"))
 } else {
   cat("User parameter file located.\n")
 }

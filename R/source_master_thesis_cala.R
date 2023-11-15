@@ -407,7 +407,7 @@ loadExternalPackages <- function(pckg_folder){
   # Iterate over the package folders
   installed_packages <- package_names %in% rownames(installed.packages())
   if (any(installed_packages == FALSE)) {
-    print(paste("Installing an external package ", package_names[!installed_packages], "...", sep = ""))
+    cat(paste("Installing an external package ", package_names[!installed_packages], "...\n", sep = ""))
     tryCatch(
       {
         quietPackages(
@@ -421,7 +421,7 @@ loadExternalPackages <- function(pckg_folder){
     )
   }
   # Package loading
-  print("Attempting to load the external packages...")
+  cat("Attempting to load the external packages...\n")
   tryCatch(
     {
       quietPackages(
@@ -433,7 +433,7 @@ loadExternalPackages <- function(pckg_folder){
       stop(customError("External package loading failed"))
     }
   )
-  print("All external packages loaded successfully")
+  cat("All external packages loaded successfully\n")
 }
 
 
@@ -2694,7 +2694,7 @@ getStemResults <- function(
   valid_values <- c("medians", "first", NA)
   if (!representative_sample %in% valid_values) {
     valid_values_str <- paste(valid_values, collapse = ", ")
-    stop(sprintf("'representative_sample' must be one of %s.", valid_values_str))
+    stop(glue("'representative_sample' must be one of {valid_values_str}."))
   }
   
   # Subset the data to the representative sample only
@@ -4287,7 +4287,7 @@ graphBMAComparison <- function(bma_models, input_var_list, theme = "blue", verbo
     mprior <- bma_model$mprior.info$origargs$mpmode
     prior_info_verbose <- paste(gprior,"and",mprior)
     # Construct and save the partial call
-    model_call <- sprintf('"%s"=bma_models[[%s]]', prior_info_verbose, i)
+    model_call <- glue('"{prior_info_verbose}"=bma_models[[{i}]]')
     bma_model_calls <- append(bma_model_calls, model_call)
   }
   # Construct the final call string
