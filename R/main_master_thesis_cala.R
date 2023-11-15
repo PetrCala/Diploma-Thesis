@@ -24,7 +24,7 @@ user_param_file <- "user_parameters.yaml" # File with user parameters
 
 # Working directory - change only if the script is being ran interactively
 if(interactive()) {
-  if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
+  if (!require('rstudioapi')) install.packages('rstudioapi'); suppressPackageStartupMessages(library('rstudioapi'))
   if (! getwd() == dirname(getActiveDocumentContext()$path)){
     setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
     print(paste0('Setting the working directory to: ', getwd()))
@@ -96,7 +96,7 @@ if (!file.exists(user_param_file)){
 source(source_file)
 
 # Load devtools for package loading
-if (!require('devtools')) install.packages('devtools'); library('devtools')
+if (!require('devtools')) install.packages('devtools'); suppressPackageStartupMessages(library('devtools'))
 
 # Load packages
 loadPackages(packages)

@@ -369,7 +369,7 @@ loadPackages <- function(package_list, verbose=TRUE) {
   }
   
   tryCatch({
-    lapply(names(package_list), function(pkg) library(pkg, character.only = TRUE))
+    lapply(names(package_list), function(pkg) suppressPackageStartupMessages(library(pkg, character.only = TRUE)))
   }, error = function(e) {
     message("Package loading failed. Exiting the function...")
     stop("Package loading failed: ", e$message)
@@ -2656,12 +2656,15 @@ getStemResults <- function(
     legend_pos = "topleft", 
     ...
  ){
-  # stopifnot(
-    # Make this check string|NULL reliably (is.na() evaluates to TRUE)
-  #   any(c(representative_sample %in% c("medians", "first"), is.null(representative_sample)))
-  # )
+  # Ensure that 'representative_sample' is a valid value
+  valid_values <- c("medians", "first", NA)
+  if (!representative_sample %in% valid_values) {
+    valid_values_str <- paste(valid_values, collapse = ", ")
+    stop(sprintf("'representative_sample' must be one of %s.", valid_values_str))
+  }
+  
   # Subset the data to the representative sample only
-  stem_data <- switch(representative_sample,
+  stem_data <- switch(as.character(representative_sample),
     'medians' = list(
       effect=getMedians(data, 'effect'),
       se=getMedians(data, 'se')
@@ -2670,11 +2673,15 @@ getStemResults <- function(
       effect=getFirst(data, 'effect'),
       se=getFirst(data, 'se')
     ),
-    list(
+    'NA' = list(
       effect = data$effect,
       se = data$se
-    )
+    ),
+    NULL
   )
+  if (!is(stem_data, "list")) {
+    stop("The STEM method data selection switch failed to assign a value")
+  }
   
   source(script_path) #github.com/Chishio318/stem-based_method
   
