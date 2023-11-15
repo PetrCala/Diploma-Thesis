@@ -5844,18 +5844,27 @@ exportHtmlGraph <- function(graph_object, export_path){
 #'  of the input data frame.
 #' @return [vector] Vector of medians by levels of the data frame studies.
 getMedians <- function(input_data, med_col){
-  # Validation
-  stopifnot(all(c(med_col, 'study_name') %in% colnames(input_data)))
-  # Preparation
-  med_vec <- c()
-  study_levels <- levels(as.factor(input_data$study_name)) # Names of studies as levels
-  # Calculation
-  for (study in study_levels) {
-    col_data_numeric <- as.numeric(unlist(input_data[input_data$study_name == study,med_col]))
-    med <- median(col_data_numeric)
-    med_vec <- append(med_vec, med)
+  # Input validation
+  required_cols <- c(med_col, "study_name")
+  if (!all(required_cols %in% colnames(input_data))) {
+    stop("input_data must contain columns: ", paste(required_cols, collapse = ", "))
   }
-  stopifnot(length(med_vec) == length(study_levels)) # Calculated median for all studies
+  
+  # Use lapply for efficient calculation
+  study_levels <- levels(factor(input_data$study_name))
+  med_vec <- lapply(study_levels, function(study) {
+      study_data <- input_data[input_data$study_name == study, med_col, drop = FALSE]
+      median(as.numeric(study_data[[med_col]]), na.rm = TRUE)
+  })
+
+  # Convert list to vector
+  med_vec <- unlist(med_vec)
+
+  # Post-calculation check
+  if (length(med_vec) != length(study_levels)) {
+      stop("Number of medians calculated does not match the number of study levels")
+  }
+
   return(med_vec)
 }
 
