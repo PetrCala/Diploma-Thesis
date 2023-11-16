@@ -16,6 +16,7 @@ packages <- list(
   "fdrtool" = NA, # Elliott et al. (2022)
   "foreign" = NA, # Reading and writing data stored by other statistical software
   "gdata" = NA, # Elliott et al. (2022)
+  "glue" = NA, # Python-like f-strings
   "grDevices" = NA, # Elliott et al. (2022)
   "ggtext" = NA, # ggplot axis text without warnings
   "haven" = NA, # Importing and exporting data from SAS, SPSS, and Stata

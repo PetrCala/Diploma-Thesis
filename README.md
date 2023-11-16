@@ -66,7 +66,7 @@ The project is structured as follows:
 
 Running the main script (directly or using the script runner) will also create these temporary folders/files:
 * `_cache/` -> Temporary cache files will be stored here.
-* `user_parameters.yaml` -> File with customizable parameters. See `resources/user_parameters_model.yaml` for explanation of how to use.
+* `user_parameters.yaml` -> File with customizable parameters. See step 5 of the [Prerequisites section](#prerequisites) for explanation.
 
 Furthermore, the existence of all folders will be verified. Note that some do not appear in the repository, as there is nothing to distribute within these folders. All results (along with the folders) will be created and updated automatically.
 
@@ -82,10 +82,10 @@ Furthermore, the existence of all folders will be verified. Note that some do no
 	cd Diploma-Thesis
 	```
  5. In case you wish to only test the functionality of the script using placeholder data within the data folder, skip to the **How to run** section below. If you wish, on the other hand, to run your own analysis, make sure to follow the next steps as well.
- 6. If you wish to customize the source file names (such as scripts, result folders, etc.), you may do so by modifying the `user_parameters.yaml` file. This file is not distributed through the repository, but rather should be created as a copy of the model file `resources/user_parameters_model.yaml`. You can either do this manually by copying the model file to the project root and renaming it to `user_parameters.yaml`, or by running the script, which will do this automatically. After the file is present in the project root (and named `user_parameters.yaml`, it can be modified to your liking. However, **when modifying the user parameters file, make sure to follow instructions from step 2 of the [How to run](#how-to-run) section.**
+ 6. Parameter modification is handled through the `user_parameters.yaml` file. Upon cloning the repository, this file does not exist. It will automatically be created upon running any of the main scripts, where the scripts create this file in the project root with the contents of the model parameter file `resources/user_parameters_model.yaml`. Alternatively, you can manually copy this file to the project root yourself. If you do so, make sure to name it `user_parameters.yaml`. After the file is present in the project root (and named `user_parameters.yaml`, it can be modified to your liking. However, **when modifying the user parameters file, make sure to follow instructions from step 2 of the [How to run](#how-to-run) section.**
  7. Place your data file into the `data/source/` folder, right next to the placeholder data file. In case you modified the path to this folder, make sure to place the data file into that folder instead. You may delete the placeholder file in case you do not need it.
  8. The file with data must contain two sheets - `data_set` and `var_list` (these are modifiable within the user parameter file). The former should contain all your data that satisfies the conditions described in step 9, while the latter should contain information about variables of the dataset, as described in step 10.
- 10. The data frame must contain several specific columns, named **Required columns**, and there are also several columns that are optional - **Optional Columns**. If your dataset does not contain the required columns, make sure to add them. If it does contain them, but they are named differently in your data, simply change their names in the `required_cols` section of the `user_parameters.yaml` file. This is the list of the required and optional columns:
+ 9. The data frame must contain several specific columns, named **Required columns**, and there are also several columns that are optional - **Optional Columns**. If your dataset does not contain the required columns, make sure to add them. If it does contain them, but they are named differently in your data, simply change their names in the `required_cols` section of the `user_parameters.yaml` file. This is the list of the required and optional columns:
    * Required columns:
       - **obs_id** - Unique ID of the observation.
       - **study_name** - Name of the study, such as *Einstein et al. (1935)*.
@@ -132,7 +132,7 @@ Furthermore, the existence of all folders will be verified. Note that some do no
      for each **dummy**/**perc** group.
    * **to_log_for_bma** - Boolean. If `TRUE`, this variable will be converted to logarithm during the 
      Bayesian model averaging.
-   * **bpe** - If set to any value, this value will be used when evaluating the best practice estimate. Can also be one of the following: `mean`, `median`, `max`, `min`. If you do not wish to use this variable in the best practice estimate, set its value to `stop`, **not** `FALSE`.
+   * **bpe** - If set to any value, this value will be used when evaluating the best practice estimate. Can also be one of the following: `mean`, `median`, `max`, `min`. If you do not wish to use this variable in the best practice estimate, set its value to `stop`. Be careful **not to set the value to** `FALSE`, as that will raise an error.
 
 ## How to Run
 To run the code, follow these steps:
