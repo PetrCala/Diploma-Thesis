@@ -24,19 +24,24 @@ user_param_file <- "user_parameters.yaml" # File with user parameters
 user_param_model_file <- "resources/user_parameters_model.yaml" # Model user parameters file
 package_file <- "resources/packages.R" # Package file
 
+# Load several packages necessary for the environment preparation
+initial_packages <- list('rstudioapi', 'devtools', 'pbapply')
+
+load_initial_package <- function(pkg, quietly=T) {
+  if (!require(pkg, quietly = quietly, character.only=T)) install.packages(pkg)
+  library(pkg, quietly = quietly, character.only=T)
+}
+
+invisible(lapply(initial_packages, function(x) suppressPackageStartupMessages(load_initial_package(x))))
+
 # Working directory - change only if the script is being ran interactively
 if(interactive()) {
-  if (!require('rstudioapi')) install.packages('rstudioapi'); suppressPackageStartupMessages(library('rstudioapi'))
   if (! getwd() == dirname(getActiveDocumentContext()$path)){
     newdir <- dirname(getActiveDocumentContext()$path)
     cat(sprintf('Setting the working directory to: %s \n', newdir))
     setwd(newdir) # Set WD to the current file location
   }
 }
-
-# Load devtools and pbapply for package loading
-if (!require('devtools')) install.packages('devtools'); suppressPackageStartupMessages(library('devtools'))
-if (!require('pbapply')) install.packages('pbapply'); suppressPackageStartupMessages(library('pbapply'))
 
 ##### PREPARATION #####
 
