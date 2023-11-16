@@ -24,18 +24,24 @@ user_param_file <- "user_parameters.yaml" # File with user parameters
 user_param_model_file <- "resources/user_parameters_model.yaml" # Model user parameters file
 package_file <- "resources/packages.R" # Package file
 
-# Working directory - change only if the script is being ran interactively
-if(interactive()) {
-  if (!require('rstudioapi')) install.packages('rstudioapi'); suppressPackageStartupMessages(library('rstudioapi'))
-  if (! getwd() == dirname(getActiveDocumentContext()$path)){
-    setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
-    print(paste0('Setting the working directory to: ', getwd()))
-  }
+# Load several packages necessary for the environment preparation
+initial_packages <- list('rstudioapi', 'devtools', 'pbapply')
+
+load_initial_package <- function(pkg, quietly=T) {
+  if (!require(pkg, quietly = quietly, character.only=T)) install.packages(pkg)
+  library(pkg, quietly = quietly, character.only=T)
 }
 
-# Load devtools and pbapply for package loading
-if (!require('devtools')) install.packages('devtools'); suppressPackageStartupMessages(library('devtools'))
-if (!require('pbapply')) install.packages('pbapply'); suppressPackageStartupMessages(library('pbapply'))
+invisible(lapply(initial_packages, function(x) suppressPackageStartupMessages(load_initial_package(x))))
+
+# Working directory - change only if the script is being ran interactively
+if(interactive()) {
+  if (! getwd() == dirname(getActiveDocumentContext()$path)){
+    newdir <- dirname(getActiveDocumentContext()$path)
+    cat(sprintf('Setting the working directory to: %s \n', newdir))
+    setwd(newdir) # Set WD to the current file location
+  }
+}
 
 ##### PREPARATION #####
 
@@ -69,7 +75,7 @@ loadPackages(packages, verbose=TRUE)
 # Check if the new file already exists
 if (!file.exists(user_param_file)) {
   file.copy(user_param_model_file, user_param_file) # Copy the model file to create the new file
-  cat("User parameter file not found.\nRecreating the file from user_parameters_model.yaml...\n")
+  cat(glue("User parameter file not found.\nRecreating the file from '{user_param_model_file}'...\n"))
 } else {
   cat("User parameter file located.\n")
 }

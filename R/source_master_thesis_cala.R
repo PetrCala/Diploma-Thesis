@@ -4101,7 +4101,7 @@ runBMA <- function(bma_data, bma_params){
   tryCatch({
     dev.off() # Reset the graphics device
   }, error = function(e){
-    message("Could not turn off the null device when plotting the BMA graph")
+    # message("Could not turn off the null device when plotting the BMA graph") # Does not break anything
   })
   # Actual estimation with inhereted parameters
   quiet(
