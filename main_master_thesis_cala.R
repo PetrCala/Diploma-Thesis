@@ -17,89 +17,68 @@
 rm(list = ls())
 options(scipen=999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
- 
+
 # Static 
 source_file <- "source_master_thesis_cala.R" # Main source file
 user_param_file <- "user_parameters.yaml" # File with user parameters
+user_param_model_file <- "resources/user_parameters_model.yaml" # Model user parameters file
+package_file <- "resources/packages.R" # Package file
+
+# Load several packages necessary for the environment preparation
+initial_packages <- list('rstudioapi', 'devtools', 'pbapply')
+
+load_initial_package <- function(pkg, quietly=T) {
+  if (!require(pkg, quietly = quietly, character.only=T)) install.packages(pkg)
+  library(pkg, quietly = quietly, character.only=T)
+}
+
+invisible(lapply(initial_packages, function(x) suppressPackageStartupMessages(load_initial_package(x))))
 
 # Working directory - change only if the script is being ran interactively
 if(interactive()) {
-  if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi')
   if (! getwd() == dirname(getActiveDocumentContext()$path)){
-    setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
-    print(paste0('Setting the working directory to: ', getwd()))
+    newdir <- dirname(getActiveDocumentContext()$path)
+    cat(sprintf('Setting the working directory to: %s \n', newdir))
+    setwd(newdir) # Set WD to the current file location
   }
 }
 
-# Required packages - NA <=> fetch latest version (see 'loadPackages')
-packages <- list(
-  "AER" = NA, # Applied econometrics with R
-  "BMS" = NA, # bayesian model averaging
-  "DescTools" = NA, # Descriptive statistics and data analysis
-  "bayesm" = NA, # bayesian modeling and inference
-  "cachem" = NA, # Cache system - creating and deleting cache files
-  "car" = NA, # Variance Inflation Factor
-  "corrplot" = NA, # Graphical display of correlation matrices
-  "data.table" = NA, # Fast data manipulation and aggregation
-  "devtools" = NA, # Loading local packages
-  "ddpcr" = NA, # Analysis of Droplet Digital PCR (ddPCR) data
-  "fdrtool" = NA, # Elliott et al. (2022)
-  "foreign" = NA, # Reading and writing data stored by other statistical software
-  "gdata" = NA, # Elliott et al. (2022)
-  "grDevices" = NA, # Elliott et al. (2022)
-  "ggtext" = NA, # ggplot axis text without warnings
-  "haven" = NA, # Importing and exporting data from SAS, SPSS, and Stata
-  "ivmodel" = NA, # Instrumental variable confidence interval (Anderson-Rubin)
-  "lmtest" = NA, # Hypothesis testing and diagnostics for linear regression models
-  "memoise" = NA, # Cache system - speeding up deterministic function calls
-  "meta" = NA, # Meta-analysis package
-  "metafor" = NA, # Conducting meta-analyses
-  "multcomp" = NA, # Simultaneous inference for general linear hypotheses
-  "multiwayvcov" = NA, # Computing clustered covariance matrix estimators
-  "NlcOptim" = NA, # Elliott et al. (2022) - CoxShi
-  "plm" = NA, # Random Effects, Between Effects
-  "plotly" = NA, # Interactive plots
-  "png" = NA, # PNG plots
-  "puniform" = '0.2.2', # Computing the density, distribution function, and quantile function of the uniform distribution
-  "pracma" = NA, # MAIVE Estimator, Elliott et al. (2022)
-  "RColorBrewer" = NA, # Plot colors
-  "rddensity" = NA, # Elliott et al. (2022)
-  "readxl" = NA, # Reading Excel files
-  "RoBMA" = NA, # Robust BMA, Bartos et al. (2021)
-  "sandwich" = NA, # Computing robust covariance matrix estimators, MAIVE estimator
-  "shiny" = NA, # Andrew & Kasy (2019) Selection model
-  "spatstat" = NA, # Elliott et al. (2022)
-  "stats" = NA, # Statistical analysis and modeling
-  "testthat" = NA, # Unit testing for R
-  "tidyverse" = NA, # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble
-  "varhandle" = NA, # MAIVE estimator
-  "xfun" = NA, # Proper ggplot label display
-  "xtable" = NA, # Creating tables in LaTeX or HTML
-  "yaml" = NA # User parameters
-)
-
 ##### PREPARATION #####
 
-# Verify the existence of the two main source files exist
-if (!file.exists(source_file)){
-  stop(paste("Please make sure to place the source file", source_file, "in the working directory first."))
-} else {
-  "Source file located."
+### Validate the existence of source files and load them
+source_file_list <- list("Source file" = source_file, 
+                       "Package file" = package_file)
+
+# Function to verify file existence
+verify_file_existence <- function(file_name, file_path) {
+  if (!file.exists(file_path)) {
+    stop(paste("Please make sure to place the", file_name, file_path, "in the working directory first."))
+  } else {
+    cat(paste(file_name, "located.\n"))
+  }
 }
-if (!file.exists(user_param_file)){
-  stop(paste("Please make sure to place the user parameter file",user_param_file,"in the working directory first."))
-} else {
-  "User parameter file located."
-}
+
+# Check each file's existence using lapply
+invisible(lapply(names(source_file_list), function(name) verify_file_existence(name, source_file_list[[name]])))
 
 # Load the source script
 source(source_file)
 
-# Load devtools for package loading
-if (!require('devtools')) install.packages('devtools'); library('devtools')
+# Load the package file
+source(package_file)
 
 # Load packages
-loadPackages(packages)
+loadPackages(packages, verbose=TRUE)
+
+### Validate the existence of the user parameter file and recreate it if it does not exist
+
+# Check if the new file already exists
+if (!file.exists(user_param_file)) {
+  file.copy(user_param_model_file, user_param_file) # Copy the model file to create the new file
+  cat(glue("User parameter file not found.\nRecreating the file from '{user_param_model_file}'...\n"))
+} else {
+  cat("User parameter file located.\n")
+}
 
 # Load user parameters and unlist for easier fetching
 user_params <- yaml::read_yaml(user_param_file) 
@@ -343,22 +322,44 @@ if (run_this$funnel_plot){
 ###### HISTOGRAM OF T-STATISTICS ######
 
 if (run_this$t_stat_histogram){
+  run_cached_t_stat_histogram <- function(lower_cutoff, upper_cutoff, minimum_distance_between_ticks, graph_name){
+    return ( 
+      runCachedFunction(
+        getTstatHist, user_params,
+        verbose_function = nullVerboseFunction,
+        data,
+        lower_cutoff = lower_cutoff,
+        upper_cutoff = upper_cutoff,
+        highlight_mean = adj_params$t_hist_highlight_mean,
+        add_density = adj_params$t_hist_add_density,
+        minimum_distance_between_ticks = minimum_distance_between_ticks,
+        t_stats = adj_params$t_hist_t_stats,
+        theme = export_options$theme,
+        verbose = TRUE,
+        export_graphics = export_options$export_graphics,
+        output_path = graph_name,
+        graph_scale = adj_params$t_hist_graph_scale
+      )
+    )
+  }
+  # Main t-stat historam
   t_hist_path <- paste0(folder_paths$graphic_results_folder, "t_hist.png")
-  t_hist_plot <- runCachedFunction( # Plot only if input changes
-    getTstatHist, user_params,
-    verbose_function = nullVerboseFunction,
-    data,
-    lower_cutoff = adj_params$t_hist_lower_cutoff,
-    upper_cutoff = adj_params$t_hist_upper_cutoff,
-    highlight_mean = adj_params$t_hist_highlight_mean,
-    add_density = adj_params$t_hist_add_density,
-    t_stats = adj_params$t_hist_t_stats,
-    theme = export_options$theme,
-    verbose = TRUE, # Print into console
-    export_graphics = export_options$export_graphics,
-    output_path = t_hist_path,
-    graph_scale = adj_params$t_hist_graph_scale
+  t_hist_plot <- run_cached_t_stat_histogram(
+    lower_cutoff = adj_params$t_hist_lower_cutoff, 
+    upper_cutoff = adj_params$t_hist_upper_cutoff, 
+    minimum_distance_between_ticks = adj_params$t_hist_minimum_distance_between_ticks,
+    graph_name=t_hist_path
   )
+  # Closeup histogram
+  if (adj_params$t_hist_close_up_use) {
+    t_hist_closeup_path <- paste0(folder_paths$graphic_results_folder, "t_hist_closeup.png")
+    t_hist_closeup_plot <- run_cached_t_stat_histogram(
+      lower_cutoff = adj_params$t_hist_close_up_lower_cutoff,
+      upper_cutoff = adj_params$t_hist_close_up_upper_cutoff,
+      minimum_distance_between_ticks = adj_params$t_hist_close_up_minimum_distance_between_ticks,
+      graph_name=t_hist_closeup_path
+    )
+  }
 }
 
 ######################### LINEAR TESTS ######################### 
@@ -366,11 +367,16 @@ if (run_this$t_stat_histogram){
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
 
 if (run_this$linear_tests){
+  if (adj_params$linear_verbose) {
+    print("Running linear tests...")
+  }
   linear_tests_results <- runCachedFunction(
     getLinearTests, user_params,
     verbose_function = getLinearTestsVerbose,
     data,
-    add_significance_marks = adj_params$linear_add_significance_marks
+    add_significance_marks = adj_params$linear_add_significance_marks,
+    R = adj_params$bootstrap_r,
+    verbose = adj_params$linear_verbose
   )
   if (export_options$export_results){
     exportTable(linear_tests_results, user_params, "linear_tests")
@@ -399,6 +405,7 @@ if (run_this$nonlinear_tests){
     export_graphics = export_options$export_graphics,
     export_path = folder_paths$graphic_results_folder,
     graph_scale = adj_params$non_linear_stem_graph_scale,
+    stem_representative_sample = adj_params$non_linear_stem_representative_sample,
     stem_legend_pos = adj_params$non_linear_stem_legend_position
   )
   if (export_options$export_results){

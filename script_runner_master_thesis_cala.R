@@ -15,12 +15,19 @@
 rm(list = ls()) 
 
 # Load packages
-if (!require('rstudioapi')) install.packages('rstudioapi'); library('rstudioapi') # Working directory
+invisible({
+  if (!require('rstudioapi', quietly=T)) install.packages('rstudioapi')
+  suppressPackageStartupMessages(library('rstudioapi', quietly=T))
+})
 
 # Working directory
 if (! getwd() == dirname(getActiveDocumentContext()$path)){
-  setwd(dirname(getActiveDocumentContext()$path)) # Set WD to the current file location
-  print(paste0('Setting the working directory to: ', getwd()))
+  newdir <- dirname(getActiveDocumentContext()$path)
+  if (newdir == ""){
+    stop("Setting the working directory failed. Try running the script again.")
+  }
+  cat(sprintf('Setting the working directory to: %s\n', newdir))
+  setwd(newdir) # Set WD to the current file location
 }
 
 # Time the script run

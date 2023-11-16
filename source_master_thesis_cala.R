@@ -331,24 +331,28 @@ quietPackages <- function(expr) {
 #' This function checks if the specified packages are installed, installs any missing
 #' packages, and then loads all of them. If an error occurs during the installation
 #' or loading process, the function stops execution and displays an error message.
+#' 
+#' Include a progress bar to track the loading process.
 #'
 #' @param package_list [character] A character vector of package names.
 #' @param verbose [bool] If TRUE, print out verbose output about the package loading.
 #'
 #' @return A message indicating that all packages were loaded successfully or an error message if the process fails.
-
-loadPackages <- function(package_list, verbose=TRUE) {
-  # Check if package_list is a named list and if not, convert to a named list with NULL versions
+loadPackages <- function(package_list, verbose = TRUE) {
+  # Convert package_list to a named list with NULL versions if necessary
   if (!is.list(package_list) || is.null(names(package_list))) {
     package_list <- setNames(as.list(rep(NA, length(package_list))), package_list)
   }
   
-  # Iterate through each package
-  for (pkg in names(package_list)) {
-    version <- package_list[[pkg]]
+  # Function to install and check each package
+  install_and_check <- function(pkg, version) {
+    if (verbose) {
+      message <- paste0("Processing package: ", pkg, if (!is.na(version)) paste0(" (version ", version, ")") else "")
+      cat(sprintf("%-100s", message)) # Add enough whitespace to make sure the whole line is cleared
+      flush.console()
+    }
     # Check if the package is installed and if the version matches (if specified)
     if (!pkg %in% rownames(installed.packages()) || (!is.na(version) && packageVersion(pkg) != version)) {
-      print(paste0("Installing package ", pkg, if (!is.na(version)) paste("version", version) else "", "..."))
       tryCatch({
         # Install specific version if provided, else install the latest version
         if (!is.na(version)) {
@@ -357,26 +361,28 @@ loadPackages <- function(package_list, verbose=TRUE) {
           install.packages(pkg)
         }
       }, error = function(e) {
-        message("Package installation failed for ", pkg, ". Exiting the function...")
-        stop("Package installation failed: ", e$message)
+        stop("\nPackage installation failed for ", pkg, ": ", e$message)
       })
     }
+    
+    # Load the package
+    suppressPackageStartupMessages(library(pkg, character.only = TRUE))
+    
+    # Reset the cursor to the start of the line for the progress bar
+    cat("\r")
+    
   }
   
   # Loading packages
   if (verbose) {
-    print("Attempting to load the packages...")
-  }
+    cat("Loading packages...\n")
+  } 
   
-  tryCatch({
-    lapply(names(package_list), function(pkg) library(pkg, character.only = TRUE))
-  }, error = function(e) {
-    message("Package loading failed. Exiting the function...")
-    stop("Package loading failed: ", e$message)
-  })
+  # Applying the function to each package with a progress bar
+  pbapply::pblapply(names(package_list), function(pkg) install_and_check(pkg, package_list[[pkg]]))
   
   if (verbose) {
-    print("All packages loaded successfully")
+    cat("\rAll packages loaded successfully\n")
   }
 }
 
@@ -404,7 +410,7 @@ loadExternalPackages <- function(pckg_folder){
   # Iterate over the package folders
   installed_packages <- package_names %in% rownames(installed.packages())
   if (any(installed_packages == FALSE)) {
-    print(paste("Installing an external package ", package_names[!installed_packages], "...", sep = ""))
+    cat(paste("Installing an external package ", package_names[!installed_packages], "...\n", sep = ""))
     tryCatch(
       {
         quietPackages(
@@ -418,7 +424,7 @@ loadExternalPackages <- function(pckg_folder){
     )
   }
   # Package loading
-  print("Attempting to load the external packages...")
+  cat("Attempting to load the external packages...\n")
   tryCatch(
     {
       quietPackages(
@@ -430,7 +436,7 @@ loadExternalPackages <- function(pckg_folder){
       stop(customError("External package loading failed"))
     }
   )
-  print("All external packages loaded successfully")
+  cat("All external packages loaded successfully\n")
 }
 
 
@@ -2208,15 +2214,17 @@ getFunnelPlot <- function(input_data, precision_to_log = F, effect_proximity=0.2
 #' @param input_list [list] A list containing the information about the t-stat bounds, desired t-stat values to
 #'  highlight, and whether to highlight mean.
 #' A numeric vector of length 5, containing the lower bound, upper bound, mean value, and the t-stats.
+#' @param minimum_distance_between_ticks [numeric] Distance within which no two ticks should be placed. Defaults to 2.
 #' @param theme [character] Type of theme to use
 #' @return A list with two elements: "output_vec", a sorted numeric vector containing the generated tick values, the mean value,
 #'         and the t-statistics values, and "x_axis_tick_text", a character vector of the same length as "output_vec",
 #'         with "red" indicating the positions of the t-statistics values, "darkoran
-generateHistTicks <- function(input_list, theme = "blue") {
+generateHistTicks <- function(input_list, minimum_distance_between_ticks = 2, theme = "blue") {
   # Validate input
   expected_input_names <- c("bounds", "mean", "t_stats")
   stopifnot(
     is(input_list, "list"),
+    is.numeric(minimum_distance_between_ticks),
     is.character(theme),
     all(expected_input_names %in% names(input_list)),
     length(input_list$bounds) == 2,
@@ -2233,10 +2241,10 @@ generateHistTicks <- function(input_list, theme = "blue") {
   }
   # Exclude lower or upper bound if they are closer than 2 to any of the t-statistics values
   ticks <- c()
-  if (all(abs(lower_bound - t_stats) >= 2)){
+  if (all(abs(lower_bound - t_stats) >= minimum_distance_between_ticks)){
     ticks <- c(ticks, lower_bound)
   }
-  if (all(abs(upper_bound - t_stats) >= 2)){
+  if (all(abs(upper_bound - t_stats) >= minimum_distance_between_ticks)){
     ticks <- c(ticks, upper_bound)
   }
   # Get the base vector with bounds and t_stats
@@ -2269,7 +2277,7 @@ generateHistTicks <- function(input_list, theme = "blue") {
   
   while (current_tick < upper_bound) {
     # If not too close to bounds/t-stats/mean, add the tick to tick list
-    if (all(abs(current_tick - base_ticks) >= 2)) {
+    if (all(abs(current_tick - base_ticks) >= minimum_distance_between_ticks)) {
       ticks <- c(ticks, round(current_tick, 2))
     }
     current_tick <- current_tick + step_length
@@ -2303,6 +2311,8 @@ generateHistTicks <- function(input_list, theme = "blue") {
 #' @param highlight_mean Boolean, if TRUE, highlight the mean t-statistic of the data in the plot.
 #' @param add_density Boolean, if TRUE, add a density line into the plot.
 #' @param t_stats A vector with t-statistic values that should be highlighted in the plot.
+#' @param minimum_distance_between_ticks Numeric, specifies the distance within which no two ticks should be places.
+#'  Defaults is 2.
 #' @param theme Theme to use. Defaults to "blue".
 #' @param verbose If TRUE, print out the plot. Defaults to TRUE.
 #' @param export_graphics If TRUE, export the plot to a png object into the graphics folder. Defaults to TRUE.
@@ -2310,9 +2320,32 @@ generateHistTicks <- function(input_list, theme = "blue") {
 #' @param graph_scale Numeric, scale the graph by this number. Defaults to 6.
 #' @return A histogram plot of the T-statistic values with density overlay and mean, as well as vertical
 #'  lines indicating the critical values of a two-tailed T-test with a significance level of 0.05.
-getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, highlight_mean = T,
-                         add_density = T, t_stats = c(-1.96, 1.96), theme = "blue", verbose = T,
-                         export_graphics = T, output_path = NA, graph_scale = 6){
+getTstatHist <- function(
+    input_data, 
+    lower_cutoff = -120, 
+    upper_cutoff = 120, 
+    highlight_mean = T,
+    add_density = T, 
+    minimum_distance_between_ticks = 2,
+    t_stats = c(-1.96, 1.96), 
+    theme = "blue", 
+    verbose = T,
+    export_graphics = T, 
+    output_path = NA, 
+    graph_scale = 6
+){
+  stopifnot(
+    is.numeric(lower_cutoff),
+    is.numeric(upper_cutoff),
+    is.logical(highlight_mean),
+    is.logical(add_density),
+    is.numeric(minimum_distance_between_ticks),
+    is.vector(t_stats),
+    is.character(theme),
+    is.logical(verbose),
+    is.logical(export_graphics),
+    is.numeric(graph_scale)
+  )
   # Specify a cutoff filter
   t_hist_filter <- (input_data$t_stat > lower_cutoff & input_data$t_stat < upper_cutoff) #removing the outliers from the graph
   hist_data <- input_data[t_hist_filter,]
@@ -2333,7 +2366,11 @@ getTstatHist <- function(input_data, lower_cutoff = -120, upper_cutoff = 120, hi
     t_stats = t_stats
   )
   # Generate and extract variable visual information
-  hist_visual_info <- generateHistTicks(base_hist_ticks, theme = theme)
+  hist_visual_info <- generateHistTicks(
+    base_hist_ticks, 
+    minimum_distance_between_ticks = minimum_distance_between_ticks, 
+    theme = theme
+  )
   hist_ticks <- hist_visual_info$hist_ticks
   hist_ticks_text <- hist_visual_info$x_axis_tick_text
   # Get the theme to use
@@ -2421,6 +2458,10 @@ add_asterisks <- function(coef, se) { # Switch does not really work here as far 
 #' - Intercept, Intercept SE, Slope, Slope SE
 #' 
 #' @param coeftest_object Coeftest object from the linear test
+#' @param boot_ci_list [list|NA] A list containing the information about the bounds of the wild bootstrap
+#'  confidence interval. The list is nested with the first level indicating the effect type (se, constant),
+#'  and the second containing the confidence interval bounds info. If the method does not use bootstrapped
+#'  CI, set to NA.
 #' @param nobs_total [numeric] Number of observations used to estimate the model. Usually the number
 #'  of rows in the main data frame.
 #' @param verbose_coefs [bool] If F, return coefs as numeric. If F, return
@@ -2428,7 +2469,7 @@ add_asterisks <- function(coef, se) { # Switch does not really work here as far 
 #' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
 #'  Defaults to T.
 #' @return [vector] - Vector of len 4, with the coefficients
-extractLinearCoefs <- function(coeftest_object, nobs_total, add_significance_marks = T, verbose_coefs=T){
+extractLinearCoefs <- function(coeftest_object, boot_ci_list, nobs_total, add_significance_marks = T, verbose_coefs=T){
   # Check validity of the coeftest object
   stopifnot(
     is.numeric(nobs_total),
@@ -2439,6 +2480,24 @@ extractLinearCoefs <- function(coeftest_object, nobs_total, add_significance_mar
     colnames(coeftest_object)[1] == "Estimate",
     colnames(coeftest_object)[2] == "Std. Error"
   )
+  # Handle bootstrapped CI input
+  boot_ci_is_na <- is.null(boot_ci_list) || all(is.na(boot_ci_list)) # There is no bootsrapping in this method
+  if (boot_ci_is_na) {
+    # The method does not use bootstrap CI
+    pub_bias_boot_ci <- ""
+    effect_boot_ci <- ""
+  } else {
+    # The method uses bootstrap CI - check the input validity
+    if (!all(c("pub_bias", "effect") %in% names(boot_ci_list))){
+      stop('The bootstrap CI must be a list that contains the information about the publication bias (se) and the effect (constant).')
+    }
+    if (!all(c("upper_bound", "lower_bound") %in% names(boot_ci_list$pub_bias))){
+      stop('The publication bias bootstrap CI does not contain info about the CI bounds.')
+    }
+    if (!all(c("upper_bound", "lower_bound") %in% names(boot_ci_list$effect))){
+      stop('The effect bootstrap CI does not contain info about the CI bounds.')
+    }
+  }
   # Extract coefficients
   pub_bias_coef <- round(coeftest_object[2,"Estimate"], 3)
   pub_bias_se <- round(coeftest_object[2,"Std. Error"], 3)
@@ -2453,12 +2512,97 @@ extractLinearCoefs <- function(coeftest_object, nobs_total, add_significance_mar
     pub_bias_se <- paste0("(", pub_bias_se, ")")
     effect_se <- paste0("(", effect_se, ")")
   }
+  
+  # Round elements of a nested list (in case of bootstrapping-method)
+  if (!boot_ci_is_na) {
+    boot_ci_list <- rapply(boot_ci_list, function(x) round(x, 3), how = "replace")
+    # Extract the bootstrap CI information (always verbose)
+    pub_bias_boot_ci <- paste0("[", boot_ci_list$pub_bias$lower_bound, ", ", boot_ci_list$pub_bias$upper_bound, "]")
+    effect_boot_ci <- paste0("[", boot_ci_list$effect$lower_bound, ", ", boot_ci_list$effect$upper_bound, "]")
+  } else {
+    pub_bias_boot_ci <- ""
+    effect_boot_ci <- ""
+  }
+  
   # Group and return quietly
-  lin_coefs <- c(pub_bias_coef, pub_bias_se, effect_coef, effect_se, nobs_total)
+  lin_coefs <- c(pub_bias_coef, pub_bias_se, pub_bias_boot_ci,
+                 effect_coef, effect_se, effect_boot_ci,
+                 nobs_total)
   invisible(lin_coefs)
 }
 
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
+
+### Helper functions
+
+#' getLinearModelFitFunction
+#' 
+#' Fetch a fit function for one of the several available linear methods.
+#' Return this function to be called in other methods.
+#' 
+#' @param model_type [character] Name of the linear method to fetch the fit function for.
+#' Should be one of "ols", "fe", "be", "re", "ols_w_study", "ols_w_precision".
+#' 
+#' @returns [function] The fit function for the given type of linear method.
+getLinearModelFitFunction <- function(model_type) {
+  fit_model_function <- switch(model_type,
+   "ols" = function(lm_data) lm(formula = effect ~ se, data = lm_data),
+   "fe" = function(lm_data) plm(formula = effect ~ se, model = "within", index = "study_id", data = lm_data),
+   "be" = function(lm_data) plm(formula = effect ~ se, model = "between", index = "study_id", data = lm_data),
+   "re" = function(lm_data) plm(effect ~ se, model = "random", index = "study_id", data = lm_data),
+   "ols_w_study" = function(lm_data) lm(formula = effect ~ se, data = lm_data, weight = (lm_data$study_size*lm_data$study_size)),
+   "ols_w_precision" = function(lm_data) lm(formula = effect ~ se, data = lm_data, weight = c(lm_data$precision*lm_data$precision)),
+   stop("Invalid model type")
+  )
+  
+  return(fit_model_function)
+}
+
+#' getLinearModelBootCI
+#' 
+#' Compute wild bootstrap confidence intervals for a linear method based on its name
+#' and a data frame. Return the result as a list containing the confidence intervals
+#' for the slope and the intercept.
+#' 
+#' @param model_type [character] Type of the linear model to estimate. Should be one of
+#'  "ols", "fe", "be", "re", "ols_w_study", "ols_w_precision".
+#' @param data [data.frame] A data frame to run the estimation on.
+#' @param R [integer] The number of bootstrap replications to perform. This parameter determines 
+#' how many times the bootstrap resampling is repeated. Default is 100.
+#' 
+#' @returns [list] A nested list that contains two named elements - pub_bias, and effect.
+#'  Each contains information about the wild bootstrap confidence interval in terms
+#'  of its bounds - "upper_bound" and "lower_bound".
+#'  
+#' @examples
+#' ols_boot_ci_list <- getLinearModelBootCI("ols", some_data_frame, R = 500)
+#' print(ols_boot_ci_list$pub_bias$lower_bound) # 5
+#' print(ols_boot_ci_list$pub_bias$upper_bound) # *
+getLinearModelBootCI <- function(model_type, data, R = 100) {
+  
+  fit_model <- getLinearModelFitFunction(model_type)
+  
+  fit_model_intercept <- function(boot_data) {
+    fit <- fit_model(boot_data)
+    return(coef(fit)[1]) # Return the intercept
+  }
+  # Function to fit the model and return the slope
+  fit_model_slope <- function(boot_data) {
+    fit <- fit_model(boot_data)
+    return(coef(fit)[2]) # Return the slope (coefficient of x)
+  }
+  
+  # Get the wild bootstrap confidence intervals
+  boot_ci_intercept <- getBootstrappedCI(data, fit_model_intercept, R = R)
+  boot_ci_slope <- getBootstrappedCI(data, fit_model_slope, R = R)
+  
+  boot_ci_list <- list(
+    pub_bias = boot_ci_slope,
+    effect = boot_ci_intercept
+  )
+  
+  return(boot_ci_list)
+}
 
 #' Run all the linear tests on data, and return a matrix of results.
 #' These tests are ran: OLS, FE, BE, RE, Weighted OLS (by study size),
@@ -2468,56 +2612,124 @@ extractLinearCoefs <- function(coeftest_object, nobs_total, add_significance_mar
 #' @param data [data.frame] Input data
 #' @param add_significance_marks [logical] If TRUE, calculate significance levels and mark these in the tables.
 #'  Defaults to T.
-getLinearTests <- function(data, add_significance_marks = T) {
+#' @param R [integer] The number of bootstrap replications to perform. This parameter determines 
+#' how many times the bootstrap resampling is repeated. Default is 100.
+#' @param verbose [logical] If TRUE, print out verbose output about the tests run, including a progress bar.
+#'  Default is T.
+getLinearTests <- function(data, add_significance_marks = T, R = 100, verbose = T) {
   # Validate that the necessary columns are present
   required_cols <- getDefaultColumns()
   stopifnot(all(required_cols %in% names(data)))
-  # Save the data length as information in the output
   total_obs <- nrow(data)
   ### OLS
-  ols <- lm(formula = effect ~ se, data = data)
-  ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id)))
-  ols_coefs <- extractLinearCoefs(ols_res, total_obs, add_significance_marks)
-  ### Fixed effects
-  fe <- plm(effect ~ se, model = "within", index = "study_id", data = data)
-  fe_res <- coeftest(fe, vcov = vcov(fe, type = "fixed", cluster = c(data$study_id)))
-  # Calculate the intercept and extract the coefficients
-  fe_intercept <- within_intercept(fe, vcov = function(fe) {vcov(fe, type = "fixed", cluster = c(data$study_id))})
-  fe_effect_coef <- fe_intercept[[1]] # Coefficient
-  fe_effect_se <- attr(fe_intercept, "se") # SE
-  # Bind together the values into the existing coeftest object
-  names(fe_res) <- c("Estimate", "Str. Error")
-  new_row <- c(fe_effect_coef, fe_effect_se)
-  new_fe_res <- rbind(new_row, fe_res)
-  # Extract the coefficients
-  fe_coefs <- extractLinearCoefs(new_fe_res, total_obs, add_significance_marks)
+  getOLS <- function(){
+    fit_ols <- getLinearModelFitFunction("ols")
+    ols <- fit_ols(data)
+    ols_res <- coeftest(ols, vcov = vcovHC(ols, type = "HC0", cluster = c(data$study_id))) 
+    ols_boot_ci_list <- getLinearModelBootCI("ols", data, R = R)
+    ols_coefs <- extractLinearCoefs(ols_res, ols_boot_ci_list, total_obs, add_significance_marks) 
+    return(ols_coefs)
+  }
+  ### Fixed-effects
+  getFE <- function(){
+    fit_fe <- getLinearModelFitFunction("fe")
+    fe <- fit_fe(data)
+    fe_res <- coeftest(fe, vcov = vcov(fe, type = "fixed", cluster = c(data$study_id))) 
+    # Calculate the intercept and extract the coefficients
+    fe_intercept <- within_intercept(fe, vcov = function(fe) {vcov(fe, type = "fixed", cluster = c(data$study_id))})
+    fe_effect_coef <- fe_intercept[[1]] # Coefficient
+    fe_effect_se <- attr(fe_intercept, "se") # SE
+    # Bind together the values into the existing coeftest object
+    names(fe_res) <- c("Estimate", "Str. Error")
+    new_row <- c(fe_effect_coef, fe_effect_se)
+    new_fe_res <- rbind(new_row, fe_res)
+    # Extract the coefficients
+    # fe_boot_ci_list <- getLinearModelBootCI("fe", data)
+    fe_boot_ci_list <- NULL # Perhaps no bootstrapped intervals in Fixed-effects ??
+    fe_coefs <- extractLinearCoefs(new_fe_res, fe_boot_ci_list, total_obs, add_significance_marks) 
+    return(fe_coefs)
+  }
   ### Between effects
-  be <- plm(effect ~ se, model = "between", index = "study_id", data = data)
-  be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
-  be_coefs <- extractLinearCoefs(be_res, total_obs, add_significance_marks)
+  getBE <- function(){
+    fit_be <- getLinearModelFitFunction("be")
+    be <- fit_be(data)
+    be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
+    # be_boot_ci_list <- getLinearModelBootCI("be", data, R = R)
+    be_boot_ci_list <- NA # Not sure about whether to use the bootstrap CI here ?? 
+    be_coefs <- extractLinearCoefs(be_res, be_boot_ci_list, total_obs, add_significance_marks) 
+    return(be_coefs)
+  }
   ### Random Effects
-  re <- plm(effect ~ se, model = "random", index = "study_id", data = data)
-  re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
-  re_coefs <- extractLinearCoefs(re_res, total_obs, add_significance_marks)
+  getRE <- function(){
+    fit_re <- getLinearModelFitFunction("re")
+    re <- fit_re(data)
+    re_res <- coeftest(re, vcov = vcov(re, type = "fixed", cluster = c(data$study_id)))
+    re_boot_ci_list <- getLinearModelBootCI("re", data, R = R)
+    re_coefs <- extractLinearCoefs(re_res, re_boot_ci_list, total_obs, add_significance_marks)
+    return(re_coefs)
+  }
   ### Weighted by number of observations per study
-  ols_w_study <- lm(formula = effect ~ se, data = data, weight = (data$study_size*data$study_size))
-  ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
-  ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res, total_obs, add_significance_marks)
+  getOLSWStudy <- function(){
+    fit_ols_w_study <- getLinearModelFitFunction("ols_w_study")
+    ols_w_study <- fit_ols_w_study(data)
+    ols_w_study_res <- coeftest(ols_w_study, vcov = vcovHC(ols_w_study, type = "HC0", cluster = c(data$study_id)))
+    ols_w_study_boot_ci_list <- getLinearModelBootCI("ols_w_study", data, R = R)
+    ols_w_study_coefs <- extractLinearCoefs(ols_w_study_res, ols_w_study_boot_ci_list, total_obs, add_significance_marks)
+    return(ols_w_study_coefs)
+  }
   ### Weighted by precision
-  ols_w_precision <- lm(formula = effect ~ se, data = data, weight = c(data$precision*data$precision))
-  ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
-  ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res, total_obs, add_significance_marks)
+  getOLSWPrecision <- function(){
+    fit_ols_w_precision <- getLinearModelFitFunction("ols_w_precision")
+    ols_w_precision <- fit_ols_w_precision(data)
+    ols_w_precision_res <- coeftest(ols_w_precision, vcov = vcovHC(ols_w_precision, type = "HC0", cluster = c(data$study_id)))
+    ols_w_precision_boot_ci_list <- getLinearModelBootCI("ols_w_precision", data, R = R)
+    ols_w_precision_coefs <- extractLinearCoefs(ols_w_precision_res, ols_w_precision_boot_ci_list, total_obs, add_significance_marks)
+    return(ols_w_precision_coefs)
+  }
+  linear_methods_list <- list(
+    "ols" = getOLS,
+    "fe" = getFE,
+    "be" = getBE,
+    "re" = getRE,
+    "ols_w_study" = getOLSWStudy,
+    "ols_w_precision" = getOLSWPrecision
+  )
+  
+  # Call a single method function
+  run_linear_method <- function(fit_function, method_name){
+    res <- fit_function()
+    
+    if (verbose){
+      message <- paste0("Running method: ", method_name)
+      cat(sprintf("%-100s", message)) # Add enough whitespace to make sure the whole line is cleared
+      flush.console()
+      
+      cat("\r")
+    }
+    
+    return(res)
+  }
+  
+  # Call each method in a progress bar lapply loop
+  res_list <- pbapply::pblapply(names(linear_methods_list), function(method_name) {
+    run_linear_method(linear_methods_list[[method_name]], method_name) # No args means easier use but environment reliancy
+  })
+  names(res_list) <- names(linear_methods_list) # Restore the original names
+  
   # Combine the results into a data frame
   results <- data.frame(
-    OLS = ols_coefs,
-    FE = fe_coefs,
-    BE = be_coefs,
-    RE = re_coefs,
-    OLS_weighted_study = ols_w_study_coefs,
-    OLS_weighted_precision = ols_w_precision_coefs
+    OLS = res_list$ols,
+    FE = res_list$fe,
+    BE = res_list$be,
+    RE = res_list$re,
+    OLS_weighted_study = res_list$ols_w_study,
+    OLS_weighted_precision = res_list$ols_w_precision
   )
-  rownames(results) <- c("Publication Bias", "(Standard Error)", "Effect Beyond Bias", "(Constant)", "Total observations")
-  colnames(results) <- c("OLS", "Fixed Effects", "Between Effects", "Random Effects", "Study weighted OLS", "Precision weighted OLS")
+  rownames(results) <- c("Publication Bias", "(Standard Error)", "Bootstrapped CI (PB)", 
+                         "Effect Beyond Bias", "(Constant)", "Bootstrapped CI (Constant)", 
+                         "Total observations")
+  colnames(results) <- c("OLS", "Fixed Effects", "Between Effects", 
+                         "Random Effects", "Study weighted OLS", "Precision weighted OLS")
   # Print the results into the console and return
   getLinearTestsVerbose(results)
   return(results) 
@@ -2626,13 +2838,17 @@ getTop10Results <- function(data, ...){
 #' should include the necessary columns for the STEM method, and the output will be a numeric
 #' vector containing the estimated coefficients.
 #'
-#' @param data A data frame containing the necessary columns for the STEM-based method
-#' @param script_path Full path to the source script.
-#' @param print_plot If TRUE, print out the STEM plot.
-#' @param theme Theme for the graphics. Defaults to "blue".
-#' @param export_graphics If TRUE, export the STEM plot.
-#' @param export_path Path to the export folder. Deafults to ./results/graphic.
-#' @param graph_scale Numeric, scale the graph by this number. Defaults to 5.
+#' @param data [data.frame] A data frame containing the necessary columns for the STEM-based method
+#' @param script_path [character] Full path to the source script.
+#' @param representative_sample [character] Representative data sample to choose. One of
+#'  "medians", "first", NULL. If set to NULL, use the whole data set. Defaults to "medians".
+#' @param print_plot [bool] If TRUE, print out the STEM plot.
+#' @param theme [character] Theme for the graphics. Defaults to "blue".
+#' @param export_graphics [bool] If TRUE, export the STEM plot.
+#' @param export_path [character] Path to the export folder. Deafults to ./results/graphic.
+#' @param graph_scale [numeric] Numeric, scale the graph by this number. Defaults to 5.
+#' @param legend_pos [character] String specifying where the legend should be placed in the graph.
+#'  Defaults to 'topleft'.
 #' @param ... Additional arguments to be passed to the \code{extractNonlinearCoefs} function
 #' for formatting the output.
 #'
@@ -2640,9 +2856,45 @@ getTop10Results <- function(data, ...){
 #' in the usual format.
 #' 
 #' @import stem_method_master_thesis_cala.R
-getStemResults <- function(data, script_path, print_plot = T, theme = "blue", 
-                           export_graphics = T, export_path = "./results/graphic",
-                           graph_scale = 5, legend_pos = "topleft", ...){
+getStemResults <- function(
+    data, 
+    script_path, 
+    representative_sample = "medians",
+    print_plot = T, 
+    theme = "blue", 
+    export_graphics = T, 
+    export_path = "./results/graphic",
+    graph_scale = 5, 
+    legend_pos = "topleft", 
+    ...
+ ){
+  # Ensure that 'representative_sample' is a valid value
+  valid_values <- c("medians", "first", NA)
+  if (!representative_sample %in% valid_values) {
+    valid_values_str <- paste(valid_values, collapse = ", ")
+    stop(glue("'representative_sample' must be one of {valid_values_str}."))
+  }
+  
+  # Subset the data to the representative sample only
+  stem_data <- switch(as.character(representative_sample),
+    'medians' = list(
+      effect=getMedians(data, 'effect'),
+      se=getMedians(data, 'se')
+    ),
+    'first' = list(
+      effect=getFirst(data, 'effect'),
+      se=getFirst(data, 'se')
+    ),
+    'NA' = list(
+      effect = data$effect,
+      se = data$se
+    ),
+    NULL
+  )
+  if (!is(stem_data, "list")) {
+    stop("The STEM method data selection switch failed to assign a value")
+  }
+  
   source(script_path) #github.com/Chishio318/stem-based_method
   
   stem_param <- c(
@@ -2651,10 +2903,10 @@ getStemResults <- function(data, script_path, print_plot = T, theme = "blue",
   )
   
   # Estimation
-  est_stem <- stem(data$effect, data$se, stem_param)$estimates # Actual esimation
+  est_stem <- stem(stem_data$effect, stem_data$se, stem_param)$estimates # Actual esimation
   # Stem plot
   funnel_stem_call <- bquote(
-    stem_funnel(data$effect, data$se, est_stem, theme = .(theme), legend_pos = .(legend_pos))
+    stem_funnel(stem_data$effect, stem_data$se, est_stem, theme = .(theme), legend_pos = .(legend_pos))
   )
   # Print and export the plot 
   if (print_plot){
@@ -2670,7 +2922,7 @@ getStemResults <- function(data, script_path, print_plot = T, theme = "blue",
     dev.off()
   }
   # Save results
-  nobs_total <- nrow(data)
+  nobs_total <- length(stem_data$effect)
   stem_coefs <- extractNonlinearCoefs(est_stem, nobs_total, ...)
   return(stem_coefs)
 }
@@ -2845,11 +3097,16 @@ getEndoKinkResults <- function(data, script_path, ...){
 #' @param export_graphics If TRUE, export various graphs into the graphics folder.
 #' @param export_path Path to the export folder. Defaults to ./results/graphic.
 #' @param graph_scale Numeric, scale the graph by this number. Defaults to 5.
+#' @param representative_sample [character] Representative data sample to choose. One of
+#'  "medians", "first", NULL. If set to NULL, use all data. Defaults to NULL.
+#' @param stem_legend_pos [character] String specifying where the legend should be placed in the graph.
+#'  Defaults to 'topleft'.
 #' @return A data frame containing the results of the non-linear tests, clustered by study.
 getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
                               add_significance_marks = T, theme = "blue",
                               export_graphics = T, export_path = './results/graphic',
-                              graph_scale = 5, stem_legend_pos = "topleft") {
+                              graph_scale = 5, stem_representative_sample = "medians", 
+                              stem_legend_pos = "topleft") {
   # Validate the input
   
   required_cols <- getDefaultColumns()
@@ -2880,6 +3137,7 @@ getNonlinearTests <- function(input_data, script_paths, selection_params = NULL,
     list(
       input_data,
       stem_script_path,
+      representative_sample = stem_representative_sample,
       print_plot = T,
       theme = theme,
       export_graphics = export_graphics,
@@ -3162,29 +3420,6 @@ getIVResults <- function(data, iv_instrument = "automatic", ...){
 
 ###### PUBLICATION BIAS - p-uniform* (van Aert & van Assen, 2019) ######
 
-#' getMedians - Calculates the vector of medians for effect
-#' Input the data frame, and the name of the column to calculate a vector of medians for,
-#'  grouped by the study levels.
-#' 
-#' @param input_data [data.frame] Main data frame.
-#' @param mec_col [str] Name of the column to compute the medians for. Must be in colnames
-#'  of the input data frame.
-#' @return [vector] Vector of medians by levels of the data frame studies.
-getMedians <- function(input_data, med_col){
-  # Validation
-  stopifnot(all(c(med_col, 'study_name') %in% colnames(input_data)))
-  # Preparation
-  med_vec <- c()
-  study_levels <- levels(as.factor(input_data$study_name)) # Names of studies as levels
-  # Calculation
-  for (study in study_levels) {
-    col_data_numeric <- as.numeric(unlist(input_data[input_data$study_name == study,med_col]))
-    med <- median(col_data_numeric)
-    med_vec <- append(med_vec, med)
-  }
-  stopifnot(length(med_vec) == length(study_levels)) # Calculated median for all studies
-  return(med_vec)
-}
 
 #' getPUniResults - Calculates publication bias test results using the p-uniform method
 #'
@@ -3525,7 +3760,7 @@ getElliottResults <- function(input_data, script_path, temp_data_path, data_subs
   elliott_source_file <- paste0(temp_data_path, "elliott_data_temp.csv")
   # On the first run, create a cached file of CDFs (large in memory)
   if (!file.exists(elliott_source_file)){
-    print(paste0("Creating a temporary file in the",temp_data_path,"folder for the Elliott et al. (2022) method..."))
+    print(paste0("Creating a temporary file in the '",temp_data_path,"' folder for the Elliott et al. (2022) method..."))
     cdfs <- getCDFs() # Generate the file from scratch (takes time)
     write.table(cdfs, elliott_source_file, col.names = "cdfs", row.names = F)
   }
@@ -4038,7 +4273,11 @@ runBMA <- function(bma_data, bma_params){
     ),
     bma_params
   )
-  dev.off() # Reset the graphics device
+  tryCatch({
+    dev.off() # Reset the graphics device
+  }, error = function(e){
+    # message("Could not turn off the null device when plotting the BMA graph") # Does not break anything
+  })
   # Actual estimation with inhereted parameters
   quiet(
     bma_model <- do.call(bms, all_bma_params)
@@ -4214,7 +4453,7 @@ extractBMAResults <- function(bma_model, bma_data, input_var_list, print_results
 
 #' Verbose output for the extractBMAResults function
 extractBMAResultsVerbose <- function(...){
-  # Todo
+  # TODO
 }
 
 graphBMAComparison <- function(bma_models, input_var_list, theme = "blue", verbose = T, export_graphics = T,
@@ -4230,7 +4469,7 @@ graphBMAComparison <- function(bma_models, input_var_list, theme = "blue", verbo
     mprior <- bma_model$mprior.info$origargs$mpmode
     prior_info_verbose <- paste(gprior,"and",mprior)
     # Construct and save the partial call
-    model_call <- sprintf('"%s"=bma_models[[%s]]', prior_info_verbose, i)
+    model_call <- glue('"{prior_info_verbose}"=bma_models[[{i}]]')
     bma_model_calls <- append(bma_model_calls, model_call)
   }
   # Construct the final call string
@@ -4526,9 +4765,8 @@ getBMACoefValue <- function(coef_name, bma_coefs, value_type = "Post Mean"){
 #'
 #' @param input_data [data.frame] Main data frame.
 #' @param input_var_list [data.frame] Data frame with variable information.
-#' @param bma_model Main model on which to evaluate the BPE on.
-#' @param bma_formula Formula used to generate the BMA model
-#' @param bma_data [data.frame] Data frame used to generate the BMA model
+#' @param bma_data [data.frame] BMA data frame.
+#' @param bma_coefs [any] All BMA coefficients. A data frame with 5 columns.
 #' @param study_id [numeric] ID of the study for which to run the BPE for. If equal
 #'  to 0, the variable list BPE information is used (author's BPE). Defaults to 0.
 #' @param include_intercept [logical] If TRUE, include intercept in the BPE.
@@ -4545,7 +4783,7 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
     is.data.frame(bma_data),
     is.numeric(study_id),
     is.logical(include_intercept),
-    nrow(input_data)==nrow(bma_data) # Input data used for indexing BMA data
+    nrow(input_data) == nrow(bma_data)
   )
   # Define static variables
   allowed_characters <- c('mean', 'median', 'min', 'max')
@@ -4558,47 +4796,46 @@ constructBPEFormula <- function(input_data, input_var_list, bma_data, bma_coefs,
   # Initialize the bpe_est_string with (Intercept), or its value in case of BPE est
   bpe_string_base <- ifelse(get_se, "(Intercept)", getBMACoefValue("(Intercept)", bma_coefs)) # Value for estimate
   bpe_est_string <- ifelse(include_intercept, bpe_string_base, "") # Empty for no intercept
+  # Get the current study data
+  if (!study_id == 0) {
+    bma_data <- bma_data[input_data$study_id == study_id,] # Current study only
+  }
   # Iterate over the bma_vars and add the corresponding coefficients from input_var_list
   for (bma_var in bma_vars) {
     if (!bma_var %in% c("(Intercept)","se")){
-      # Use a study
-      if (study_id != 0){
-        coef <- median(bma_data[input_data$study_id==study_id,bma_var]) # Actual data from the study - use median in case of varying data
-      } else {
-        # Use author's BPE - variable list information
-        coef <- input_var_list$bpe[input_var_list$var_name == bma_var] # Automatically coerced to character - RRRRRR
-      }
+      # Get the suggested best-practice for this variable from the input variable list
+      var_bpe <- input_var_list$bpe[input_var_list$var_name == bma_var] # Automatically coerced to character - RRRRRR
       # Handle unassigned variables
-      if (coef == "stop"){
+      if (var_bpe == "stop"){
         stop("Make sure to assign values to all variables that appear in the BMA model.")
       }
       # Handle numeric coefficients
       quiet(
-        numeric_var <- !is.na(as.numeric(coef)) # Recognize numeric values based on lack of error - not ideal
-      )
-      if(numeric_var){
-        coef <- as.numeric(coef) # To numeric
-        if (coef == 0){ # Do not add to the formula
-          next
-        }
-        coef <- round(coef, 3)
-      } else { # char
-        # Handle character coefficients
-        stopifnot(is.character(coef)) # Should never occur (non-numeric values autoamtically read as characters)
-        if (!coef %in% allowed_characters){
+        numeric_bpe <- !is.na(as.numeric(var_bpe)) # Recognize numeric values based on lack of error - not ideal
+    )
+      if(numeric_bpe){
+        var_bpe <- as.numeric(var_bpe) # To numeric
+        if (var_bpe == 0) next # Do not add to the formula
+        var_bpe <- round(var_bpe, 3)
+      } else {
+        # Handle character coefficients (determine the BPE value within the data of the study)
+        stopifnot(is.character(var_bpe)) # Should never occur (non-numeric values autoamtically read as characters)
+        if (!var_bpe %in% allowed_characters){
           # Invalid bpe specification for this varaiable
           message(paste0(
             "Invalid BPE specification for the variable '", bma_var, "'. \n",
-            "Current specification: '", coef,"'.\n",
+            "Current specification: '", var_bpe,"'.\n",
             "Must be one of the following: ", 
             paste(allowed_characters, collapse = ", "), "."
           )
           )
           stop("Invalid BPE specification.")
         }
-        func <- get(coef) # Get the function to evaluate the value with - mean, median,...
-        coef <- func(bma_data[[bma_var]], na.rm=TRUE) # Evaluate on BMA data column of this variable
-        coef <- as.character(round(coef, 3)) # Back to character
+        func <- get(var_bpe) # Get the function to evaluate the value with - mean, median,...
+        coef <- func(bma_data[[bma_var]], na.rm=TRUE) # Evaluate the expression within the study data
+        coef <- round(coef, 3)
+        if (coef == 0) next
+        coef <- as.character(coef) # Back to character
       }
       # Handle output different than static numbers
       output_var_name <- ifelse(get_se, bma_var, getBMACoefValue(bma_var, bma_coefs)) # Var name for SE, value for EST
@@ -4646,18 +4883,22 @@ getBPEData <- function(input_data, bma_data){
 #' @param bma_data [data.frame] Data frame used to generate the BMA model
 #' @param study_id [numeric] ID of the study to run the BPE on. If set to 0,
 #'  run the author's BPE (using the variable information DF). Defaults to 0.
+#' @param single_study_data_only [logical] If TRUE, subset the data to the current study only.
+#'  If the author's BPE is estimated, do nothing.
 #' @param include_intercept [logical] If TRUE, include intercept in the equation.
 #' Defaults to TRUE.
 #' @param verbose_output [logical] If TRUE, print out the output information into the console.
 #' Defaults to TRUE.
 runBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
-                   study_id = 0, include_intercept = TRUE, study_info_verbose = TRUE, verbose_output = TRUE){
+                   study_id = 0, single_study_data_only = TRUE,include_intercept = TRUE, 
+                   study_info_verbose = TRUE, verbose_output = TRUE){
   # Check input
   stopifnot(
     is.data.frame(input_data),
     is.data.frame(input_var_list),
     is.data.frame(bma_data),
     is.numeric(study_id),
+    is.logical(single_study_data_only),
     is.logical(include_intercept),
     is.logical(verbose_output)
   )
@@ -4670,10 +4911,20 @@ runBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
       print(paste("Running the best practice estimate for",study_name))
     }
   }
+  
+  # Get data for this study only (do nothing for author)
+  # if (single_study_data_only && !study_id == 0) {
+  #   bpe_input_data <- bma_data[input_data$study_id == study_id,] # Use the BMA data, subset to current study
+  #   if (nrow(bpe_input_data) == 0) {
+  #     stop(glue("There is no data for study with id {study_id}"))
+  #   }
+  # } else {
+  #   bpe_input_data <- copy(bma_data)
+  # }
+  
   # Input preprocessing
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) # Extract the coefficients
   bma_vars <- rownames(bma_coefs) # Variables used in the BMA
-   
   
   # Get the BPE estimate
   # Get formula as a string - ((intercept) + coefs * values)
@@ -4687,7 +4938,7 @@ runBPE <- function(input_data, input_var_list, bma_model, bma_formula, bma_data,
                                      study_id, include_intercept, get_se = TRUE)
   bpe_ols <- lm(formula = bma_formula, data = bma_data) # Constructing an OLS model
   bpe_glht <- glht(bpe_ols, linfct = c(bpe_formula_se), # GLHT
-                   vcov = vcovHC(bpe_ols, type = "HC0", cluster = c(input_data$study_id)))
+                   vcov = vcovHC(bpe_ols, type = "HC0", cluster = c(input_data$study_id))) # Perhaps eval on study-data only??
   # Prone to errors, so use tryCatch instead
   bpe_se <- tryCatch({
     as.numeric(summary(bpe_glht)$test$sigma) # Extract output
@@ -4736,13 +4987,14 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     study_ids <- seq(from = 0, to = max(input_data$study_id), by = 1)
     study_info_verbose <- F # Silence individual study message
   }
-  # Loop through study ids
-  for (study_id in study_ids) {
+  # Helper function for getting a single study BPE data frame
+  getStudyBPE <- function(study_id, res_df) {
     study_name <- ifelse(study_id == 0,
                          "Author",
-                         as.character(input_data$study_name[input_data$study_id == study_id][1]))
+                         as.character(input_data$study_name[which(input_data$study_id == study_id)][1]))
     # BPE estimation
     bpe_result <- runBPE(input_data, input_var_list, bma_model, bma_formula, bma_data, study_id,
+                         single_study_data_only = TRUE, # For each BPE, use the data of the relevant study only
                          include_intercept = TRUE,
                          study_info_verbose = study_info_verbose, # Information about study names
                          verbose_output = FALSE) # Individual study outcomes into console - keep FALSE
@@ -4762,16 +5014,20 @@ generateBPEResultTable <- function(study_ids, input_data, input_var_list, bma_mo
     }
     # Join together
     row.names(temp_df) <- study_name
-    res_df <- rbind(res_df, temp_df)
+    return(temp_df)
   }
+  # Iterate over all study IDs and combine the results into a single data frame
+  res_df <- rbind(res_df, do.call(rbind, pbapply::pblapply(study_ids, getStudyBPE)))
+  
   # Replace NAs with median SE
   if (all(is.na(res_df$ci_95_lower)) || all(is.na(res_df$ci_95_lower))){
     stop("All best-practice estimates yielded missing standard errors. Stopping the code.")
   }
-  temp_df$ci_95_lower[is.na(temp_df$ci_95_lower)] <- median(temp_df$ci_95_lower, na.rm=T)
-  temp_df$ci_95_higher[is.na(temp_df$ci_95_higher)] <- median(temp_df$ci_95_higher, na.rm=T)
+  res_df$ci_95_lower[is.na(res_df$ci_95_lower)] <- median(res_df$ci_95_lower, na.rm=T)
+  res_df$ci_95_higher[is.na(res_df$ci_95_higher)] <- median(res_df$ci_95_higher, na.rm=T)
   # Get an arbitrary formula to print out in case of verbose output
   bma_coefs <- coef(bma_model,order.by.pip= F, exact=T, include.constant=T) 
+  # Construct the BPE formula on full (bma) data
   bpe_formula <- constructBPEFormula(input_data, input_var_list, bma_data, bma_coefs,
                                      study_ids[1], include_intercept = TRUE, get_se = TRUE)
   # Return the output
@@ -5211,7 +5467,7 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
 #' @return [data.frame] A data frame with the summary statistics
 #' 
 #' @export
-getBPESummaryStats <- function (bpe_df, input_data, input_var_list, bpe_factors = NULL, conf.level = 0.95) {
+getBPESummaryStats <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, conf.level = 0.95) {
   # Validate input
   stopifnot(
     is.data.frame(bpe_df),
@@ -5794,13 +6050,6 @@ getColors <- function(theme, method, submethod = NA, ...){
   return(colors)
 }
 
-#' Return a number as either an integer if it is one, or a decimal if it is not
-#' 
-#' Used when plotting graphs for prettier tick labels (10, 20, 25.243, 30,...)
-intOrDecimal <- function(x) {
-  ifelse(x == floor(x), as.integer(x), x)
-}
-
 #' Export the graph into an HTML file using the plotly package
 #' 
 #' @param graph_object The object generated by ggplot
@@ -5808,4 +6057,135 @@ intOrDecimal <- function(x) {
 exportHtmlGraph <- function(graph_object, export_path){
   plotly_img <- ggplotly(graph_object)
   htmlwidgets::saveWidget(plotly_img, export_path)
+}
+
+#################### DATA HANDLING #################### 
+
+#' Return a number as either an integer if it is one, or a decimal if it is not
+#' 
+#' Used when plotting graphs for prettier tick labels (10, 20, 25.243, 30,...)
+intOrDecimal <- function(x) {
+  ifelse(x == floor(x), as.integer(x), x)
+}
+
+
+#' getBootstrappedCI
+#'
+#' Performs bootstrap resampling on a given dataset using a user-defined model fitting function 
+#' and computes confidence intervals for the model's statistics.
+#'
+#' @param input_data [data.frame] The dataset on which bootstrap resampling is to be performed. 
+#' @param fit_model [function] A user-defined function that takes a dataset as input and returns 
+#' a fitted model or a specific statistic from the model. This function defines how the model is fitted to each bootstrap sample.
+#' @param R [integer] The number of bootstrap replications to perform. This parameter determines 
+#' how many times the bootstrap resampling is repeated. Default is 100.
+#'
+#' @return Returns a list of containing the bootstrap confidence interval bounds.
+#'
+#' @example
+#' # Define a dataset
+#' data <- data.frame(y = rnorm(100), x = rnorm(100), z = rnorm(100))
+#'
+#' # Define a model fitting function
+#' fit_model <- function(data) {
+#'   model <- lm(y ~ x, data = data)
+#'   return(coef(model))
+#' }
+#'
+#' # Get bootstrapped confidence intervals
+#' boot_ci_list <- getBootstrappedCI(data, fit_model)
+#' print(boot_ci_list$lower_bound) # 6.4
+#' print(boot_ci_list$upper_bound) # 6.8
+#'
+#' @export
+getBootstrappedCI <- function(
+    input_data,
+    fit_model,
+    R = 100
+){
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(R)
+  )
+  
+  # Define a function for bootstrapping
+  boot_function <- function(data, indices, fit_model) {
+    # Create a bootstrap sample using the indices
+    bootstrap_sample <- data[indices, ]
+    # Fit the model using the provided function
+    fit <- fit_model(bootstrap_sample)
+    # Return the statistic of interest
+    return(fit)
+  }
+  
+  # Perform the bootstrap
+  set.seed(123) # Make deterministic for cache usage
+  results <- boot::boot(data, boot_function, R = R, fit_model = fit_model)
+  
+  # Construct the bootstrap confidence interval
+  ci_results <- boot.ci(results, type = "perc") # For percentile intervals
+  
+  # Extract and return the 95% confidence interval bounds
+  res <- list(
+    lower_bound = ci_results$percent[4],
+    upper_bound = ci_results$percent[5]
+  )
+  return(res)
+}
+
+#' getMedians - Calculates the vector of medians for effect
+#' Input the data frame, and the name of the column to calculate a vector of medians for,
+#'  grouped by the study levels.
+#' 
+#' @param input_data [data.frame] Main data frame.
+#' @param mec_col [str] Name of the column to compute the medians for. Must be in colnames
+#'  of the input data frame.
+#' @return [vector] Vector of medians by levels of the data frame studies.
+getMedians <- function(input_data, med_col){
+  # Input validation
+  required_cols <- c(med_col, "study_name")
+  if (!all(required_cols %in% colnames(input_data))) {
+    stop("input_data must contain columns: ", paste(required_cols, collapse = ", "))
+  }
+  
+  # Use lapply for efficient calculation
+  study_levels <- levels(factor(input_data$study_name))
+  med_vec <- lapply(study_levels, function(study) {
+      study_data <- input_data[input_data$study_name == study, med_col, drop = FALSE]
+      median(as.numeric(study_data[[med_col]]), na.rm = TRUE)
+  })
+
+  # Convert list to vector
+  med_vec <- unlist(med_vec)
+
+  # Post-calculation check
+  if (length(med_vec) != length(study_levels)) {
+      stop("Number of medians calculated does not match the number of study levels")
+  }
+
+  return(med_vec)
+}
+
+#' getFirst - subsets a column of a data frame to the first occurance only, grouped
+#' by the study levels
+#' 
+#' @param input_data [data.frame] Main data frame.
+#' @param mec_col [str] Name of the column to fetch the first value for. Must be in colnames
+#'  of the input data frame.
+#' @return [vector] Vector of first occurances by levels of the data frame studies.
+getFirst <- function(input_data, colname){
+  # Validation
+  stopifnot(all(c(colname, 'study_name') %in% colnames(input_data)))
+  # Preparation
+  out_vec <- c()
+  study_levels <- levels(as.factor(input_data$study_name)) # Names of studies as levels
+  # Calculation
+  for (study in study_levels) {
+    col_data_numeric <- as.numeric(unlist(input_data[input_data$study_name == study,colname]))
+    val <- col_data_numeric[1]
+    out_vec <- append(out_vec, val)
+  }
+  stopifnot(length(out_vec) == length(study_levels)) # Calculated values for all studies
+  return(out_vec)
 }
