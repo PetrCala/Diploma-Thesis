@@ -6120,6 +6120,7 @@ getBootstrappedCI <- function(
   }
   
   # Perform the bootstrap
+  set.seed(123) # Make deterministic for cache usage
   results <- boot::boot(data, boot_function, R = R, fit_model = fit_model)
   
   # Construct the bootstrap confidence interval
