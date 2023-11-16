@@ -368,7 +368,7 @@ if (run_this$t_stat_histogram){
 
 if (run_this$linear_tests){
   if (adj_params$linear_verbose) {
-    cat("Running linear tests...\n")
+    print("Running linear tests...")
   }
   linear_tests_results <- runCachedFunction(
     getLinearTests, user_params,

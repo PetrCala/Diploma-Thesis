@@ -10,8 +10,8 @@ run_this:
   box_plot: false
   funnel_plot: false
   t_stat_histogram: false
-  linear_tests: true
-  nonlinear_tests: false
+  linear_tests: false
+  nonlinear_tests: true
   exo_tests: false
   p_hacking_tests: false
   bma: false
@@ -239,7 +239,7 @@ export_options:
   export_log_file_path: "main_results.txt" 	# Console log as a text file
   export_zip_name: "results_all"	 	# Zip file with all results
   export_bma_data: false 			# If TRUE, export the data used for BMA into the temporary data folder
-  theme: "green" 				# One of "blue", "yellow", "green", "red", "purple"
+  theme: "blue" 				# One of "blue", "yellow", "green", "red", "purple"
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
