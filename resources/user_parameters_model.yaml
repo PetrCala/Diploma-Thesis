@@ -96,6 +96,8 @@ adjustable_parameters:
   t_hist_close_up_lower_cutoff: -3 # Lower cutoff point for the close-up histogram
   t_hist_close_up_upper_cutoff: 3 # Upper cutoff point for the close-up histogram
   t_hist_close_up_minimum_distance_between_ticks: 0.5 # Place no two ticks within this distance for the close up graph
+  # Bootstrapping parameters
+  bootstrap_r: 100 # Number of bootstrap replicates
   # Linear test parameters
   linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks
   # Nonlinear parameters - only selection model parametrizable

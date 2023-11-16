@@ -4,6 +4,7 @@
 #' For more details, see 'source_master_thesis_cala.R::loadPackages'
 packages <- list(
   "AER" = NA, # Applied econometrics with R
+  "boot" = NA, # Wild bootstrap confidence intervals
   "BMS" = NA, # bayesian model averaging
   "DescTools" = NA, # Descriptive statistics and data analysis
   "bayesm" = NA, # bayesian modeling and inference
