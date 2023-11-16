@@ -367,11 +367,16 @@ if (run_this$t_stat_histogram){
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
 
 if (run_this$linear_tests){
+  if (adj_params$linear_verbose) {
+    cat("Running linear tests...\n")
+  }
   linear_tests_results <- runCachedFunction(
     getLinearTests, user_params,
     verbose_function = getLinearTestsVerbose,
     data,
-    add_significance_marks = adj_params$linear_add_significance_marks
+    add_significance_marks = adj_params$linear_add_significance_marks,
+    R = adj_params$bootstrap_r,
+    verbose = adj_params$linear_verbose
   )
   if (export_options$export_results){
     exportTable(linear_tests_results, user_params, "linear_tests")

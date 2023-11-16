@@ -10,7 +10,7 @@ run_this:
   box_plot: false
   funnel_plot: false
   t_stat_histogram: false
-  linear_tests: false
+  linear_tests: true
   nonlinear_tests: false
   exo_tests: false
   p_hacking_tests: false
@@ -103,6 +103,7 @@ adjustable_parameters:
   bootstrap_r: 100 # Number of bootstrap replicates
   # Linear test parameters
   linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks
+  linear_verbose: true # If TRUE, print the verbose output during the linear tests run
   # Nonlinear test parameters - only selection model parametrizable
   non_linear_stem_representative_sample: "medians" # Sample of data to use. One of "medians", "first", NULL. NULL == all data.
   non_linear_stem_graph_scale: 5 		# Numeric, scale the graph by this number
@@ -242,5 +243,5 @@ export_options:
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache: false 	# Store intermediate output in a cache in the /_cache/ folder.
+  use_cache: true 	# Store intermediate output in a cache in the /_cache/ folder.
   cache_age: 3600 	# In seconds - an hour 
