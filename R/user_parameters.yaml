@@ -14,12 +14,12 @@ run_this:
   nonlinear_tests: false
   exo_tests: false
   p_hacking_tests: false
-  bma: true
-  fma: true 					
-  ma_variables_description_table: true 	
-  bpe: true 					
-  bpe_graphs: true
-  bpe_summary_stats: true 					
+  bma: false
+  fma: false 					
+  ma_variables_description_table: false 	
+  bpe: false 					
+  bpe_graphs: false
+  bpe_summary_stats: false 					
   robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
@@ -99,6 +99,8 @@ adjustable_parameters:
   t_hist_close_up_lower_cutoff: -0.8 # Lower cutoff point for the close-up histogram
   t_hist_close_up_upper_cutoff: 4 # Upper cutoff point for the close-up histogram
   t_hist_close_up_minimum_distance_between_ticks: 0.5 # Place no two ticks within this distance for the close up graph
+  # Bootstrapping parameters
+  bootstrap_r: 100 # Number of bootstrap replicates
   # Linear test parameters
   linear_add_significance_marks: true	# If TRUE, print out also significance level asterisks
   # Nonlinear test parameters - only selection model parametrizable
@@ -236,7 +238,7 @@ export_options:
   export_log_file_path: "main_results.txt" 	# Console log as a text file
   export_zip_name: "results_all"	 	# Zip file with all results
   export_bma_data: false 			# If TRUE, export the data used for BMA into the temporary data folder
-  theme: "blue" 				# One of "blue", "yellow", "green", "red", "purple"
+  theme: "green" 				# One of "blue", "yellow", "green", "red", "purple"
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly

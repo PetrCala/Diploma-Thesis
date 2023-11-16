@@ -5894,6 +5894,70 @@ intOrDecimal <- function(x) {
 }
 
 
+#' getBootstrappedCI
+#'
+#' Performs bootstrap resampling on a given dataset using a user-defined model fitting function 
+#' and computes confidence intervals for the model's statistics.
+#'
+#' @param input_data [data.frame] The dataset on which bootstrap resampling is to be performed. 
+#' @param fit_model [function] A user-defined function that takes a dataset as input and returns 
+#' a fitted model or a specific statistic from the model. This function defines how the model is fitted to each bootstrap sample.
+#' @param R [integer] The number of bootstrap replications to perform. This parameter determines 
+#' how many times the bootstrap resampling is repeated. Default is 1000.
+#'
+#' @return Returns a list of containing the bootstrap confidence interval bounds.
+#'
+#' @example
+#' # Define a dataset
+#' data <- data.frame(y = rnorm(100), x = rnorm(100), z = rnorm(100))
+#'
+#' # Define a model fitting function
+#' fit_model <- function(data) {
+#'   model <- lm(y ~ x, data = data)
+#'   return(coef(model))
+#' }
+#'
+#' # Get bootstrapped confidence intervals
+#' boot_ci_list <- getBootstrappedCI(data, fit_model)
+#' print(boot_ci_list$lower_bound) # 6.4
+#' print(boot_ci_list$upper_bound) # 6.8
+#'
+#' @export
+getBootstrappedCI <- function(
+    input_data,
+    fit_model,
+    R = 1000
+){
+  # Validate the input
+  stopifnot(
+    is.data.frame(input_data),
+    is.numeric(R)
+  )
+  
+  # Define a function for bootstrapping
+  boot_function <- function(data, indices, fit_model) {
+    # Create a bootstrap sample using the indices
+    bootstrap_sample <- data[indices, ]
+    # Fit the model using the provided function
+    fit <- fit_model(bootstrap_sample)
+    # Return the statistic of interest
+    return(fit)
+  }
+  
+  # Perform the bootstrap
+  results <- boot::boot(data, boot_function, R = R, fit_model = fit_model)
+  
+  # Construct the bootstrap confidence interval
+  ci_results <- boot.ci(results, type = "perc") # For percentile intervals
+  
+  # Extract and return the 95% confidence interval bounds
+  res <- list(
+    lower_bound = ci_results$percent[4],
+    upper_bound = ci_results$percent[5]
+  )
+  return(res)
+}
+
 #' getMedians - Calculates the vector of medians for effect
 #' Input the data frame, and the name of the column to calculate a vector of medians for,
 #'  grouped by the study levels.

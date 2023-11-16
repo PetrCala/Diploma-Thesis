@@ -15,7 +15,10 @@
 rm(list = ls()) 
 
 # Load packages
-if (!require('rstudioapi')) install.packages('rstudioapi'); suppressPackageStartupMessages(library('rstudioapi')) # Working directory
+invisible({
+  if (!require('rstudioapi', quietly=T)) install.packages('rstudioapi')
+  suppressPackageStartupMessages(library('rstudioapi', quietly=T))
+})
 
 # Working directory
 if (! getwd() == dirname(getActiveDocumentContext()$path)){
