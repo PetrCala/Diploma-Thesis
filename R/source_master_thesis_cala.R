@@ -368,6 +368,9 @@ loadPackages <- function(package_list, verbose = TRUE) {
     # Load the package
     suppressPackageStartupMessages(library(pkg, character.only = TRUE))
     
+    # Reset the cursor to the start of the line for the progress bar
+    cat("\r")
+    
   }
   
   # Loading packages
@@ -376,10 +379,7 @@ loadPackages <- function(package_list, verbose = TRUE) {
   } 
   
   # Applying the function to each package with a progress bar
-  pbapply::pblapply(names(package_list), function(pkg) {
-    install_and_check(pkg, package_list[[pkg]])
-    cat("\r") # Reset the cursor to the start of the line for the progress bar
-  }) 
+  pbapply::pblapply(names(package_list), function(pkg) install_and_check(pkg, package_list[[pkg]]))
   
   if (verbose) {
     cat("\rAll packages loaded successfully\n")
