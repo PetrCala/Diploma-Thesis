@@ -1651,7 +1651,8 @@ generateGroupColumn <- function(var_data, input_var_list){
 
 #' @param input_data [data.frame] A data frame containing the main data.
 #' @param input_var_list [data.frame] A data frame with variable information.
-#' @param prima_factors [numeric] A vector of numeric values specifying the variable groups to factor by.
+#' @param prima_factors [list[character,numeric]] A list where names are custom group names 
+#' (graphs stored under this name) and values represent the variable groups to factor by.
 #' If NULL, the function will stop and return an error message. Defaults to NULL.
 #' @param prima_type [character] One of "density", "histogram", "automatic". Graph the graph either as densities, or
 #'  using histograms. If set to automatic, the script will automatically determine the optimal type. Defaults to "automatic".
@@ -1674,7 +1675,7 @@ generateGroupColumn <- function(var_data, input_var_list){
 #' @examples
 #' \dontrun{
 #' # Assuming appropriate input data is available
-#' prima_facie_graphs = getPrimaFacieGraphs(data, var_list, bpe_factors = c(1,2,3), theme = "blue",
+#' prima_facie_graphs = getPrimaFacieGraphs(data, var_list, prima_factors = c(1,2,3), theme = "blue",
 #' export_graphics = TRUE, graphic_results_folder_path = "path/to/folder", prima_scale = 5)
 #' }
 #'
@@ -1698,27 +1699,34 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
     nrow(input_data) > 0, # At least some data
     prima_bins > 0
   )
-  if (length(prima_factors) < 1){
-    stop("You must specify at least one factor to group the BPE plots by.")
-  }
-  if (all(is.na(prima_factors))){
-    stop("Please specify at least one non-NA BPE graph grouping factor.")
-  }
-  if (!all(is.numeric(prima_factors))){
-    stop("All BPE graph factors must be numeric values spectifying the variable groups to factor by.")
-  }
   if (!prima_type %in% c("density", "histogram", "automatic")){
     stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"histogram\", \"automatic\""))
   }
+  # Check the 'prima_factors' list
+  if (!is(prima_factors, "list")) {
+    stop("You must specify the BPE group factors through a single list. Names should be strings, values should be numbers.")
+  }
+  if (length(prima_factors) < 1) {
+    stop("You must specify at least one factor to group the BPE plots by.")
+  } 
+  for (i in seq_along(prima_factors)) {
+    if (!is.numeric(prima_factors[[i]]) || !is.character(names(prima_factors)[i])) {
+      stop(paste("You provided an incorrect form of the BPE graph factor specification list.",
+                 "All names must be characters, such as 'gender', 'age', 'experiment_type', etc.",
+                 "All values must be numeric, specifying the group number in the 'var_list' data, such as 1, 4, 6, etc.",
+                 sep = "\n"))
+    }
+  } 
   # Get the theme to use
   current_theme <- getTheme(theme) +
     getTopRightLegend(text_size = prima_legend_font_size)
   # Get the information about graphs to use
   clean_data <- input_data
-  prima_names <- paste0("prima_facie_", seq(length(prima_factors))) # prima_facie_1, prima_facie_2,...
-  prima_names_counter <- 1
   prima_graphs <- list()  
-  for (prima_factor in prima_factors){
+  for (i in seq_along(prima_factors)) {
+    prima_name <- names(prima_factors)[i] # Simple string, such as 'ability', 'age',...
+    prima_graph_name <- paste0("prima_facie_", prima_name) # prima_facie_ability, prima_facie_age,...
+    prima_factor <- prima_factors[[i]] # Numeric, represents the variable group
     prima_df <- copy(clean_data) # Each iteration with a clean dataset - sorting shuffles the data otherwise
     vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == prima_factor])
     # Construct an auxiliary group column
@@ -1762,10 +1770,8 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
       current_theme
     # Drop the auxiliary group column
     prima_df$group <- NULL
-    # Save the graph and its name
-    current_prima_name <- prima_names[prima_names_counter]
-    prima_graphs[[current_prima_name]] <- prima_graph
-    prima_names_counter <- prima_names_counter + 1
+    # Save the graph under the full name
+    prima_graphs[[prima_graph_name]] <- prima_graph
   }
   # Print the output - do not reprint during cache runs
   for (prima_graph in prima_graphs){
@@ -1776,12 +1782,13 @@ getPrimaFacieGraphs <- function(input_data, input_var_list, prima_factors = NULL
     if (is.na(graphic_results_folder_path)){
       stop("You must specify a path to the graphic results folder.")
     }
-    for (name in prima_names){
+    for (i in seq_along(prima_graphs)) {
+      name <- names(prima_graphs)[i]
+      graph_object <- prima_graphs[[i]]
       # Check the path to the graph
       full_graph_path <- paste0(graphic_results_folder_path, name,'.png')
       hardRemoveFile(full_graph_path)
       # Fetch the graph object from the graphs list object and graph the object
-      graph_object <- prima_graphs[[name]]
       suppressWarnings(
         ggsave(filename = full_graph_path, plot = graph_object,
                width = 800*prima_scale, height = 666*prima_scale, units = "px")
@@ -4279,6 +4286,7 @@ runBMA <- function(bma_data, bma_params){
     # message("Could not turn off the null device when plotting the BMA graph") # Does not break anything
   })
   # Actual estimation with inhereted parameters
+  set.seed(123) # Cache replicability guarantee
   quiet(
     bma_model <- do.call(bms, all_bma_params)
   )
@@ -5349,18 +5357,24 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
     is.numeric(bpe_graphs_scale),
     nrow(bpe_df) > 0 # At least some data
   )
-  if (length(bpe_factors) < 1){
-    stop("You must specify at least one factor to group the BPE plots by.")
-  }
-  if (all(is.na(bpe_factors))){
-    stop("Please specify at least one non-NA BPE grouping factor.")
-  }
-  if (!all(is.numeric(bpe_factors))){
-    stop("All BPE factors must be numeric values spectifying the variable groups to factor by.")
-  }
   if (!graph_type %in% c("density", "miracle")){
     stop(paste("Please choose a BPE graph type from one of the following: \"density\", \"miracle\""))
   }
+  # Check the 'bpe_factors' list
+  if (!is(bpe_factors, "list")) {
+    stop("You must specify the BPE group factors through a single list. Names should be strings, values should be numbers.")
+  }
+  if (length(bpe_factors) < 1) {
+    stop("You must specify at least one factor to group the BPE plots by.")
+  } 
+  for (i in seq_along(bpe_factors)) {
+    if (!is.numeric(bpe_factors[[i]]) || !is.character(names(bpe_factors)[i])) {
+      stop(paste("You provided an incorrect form of the BPE graph factor specification list.",
+                 "All names must be characters, such as 'gender', 'age', 'experiment_type', etc.",
+                 "All values must be numeric, specifying the group number in the 'var_list' data, such as 1, 4, 6, etc.",
+                 sep = "\n"))
+    }
+  } 
   # Shuffle the author BPE somewhere into the middle of the estimates
   author_row_bool <- rownames(bpe_df) == "Author"
   if (sum(author_row_bool) == 1){
@@ -5376,10 +5390,12 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
   tstat_line_color <- ifelse(theme %in% c("blue", "green"), "#D10D0D", "#0d4ed1") # Make v-line contrast with the theme
   # Get the information about graphs to use
   clean_bpe_df <- bpe_df
-  bpe_names <- paste0("bpe_", seq(length(bpe_factors))) # bpe_1, bpe_2,...
-  bpe_names_counter <- 1
   bpe_graphs <- list()  
-  for (bpe_factor in bpe_factors){
+  
+  for (i in seq_along(bpe_factors)){
+    bpe_name <- names(bpe_factors)[i] # Simple string
+    bpe_graph_name <- paste0("bpe_", bpe_name) # bpe_ability, bpe_age,...
+    bpe_factor <- bpe_factors[[i]]
     bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
     vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
     # Construct and add an auxiliary group column
@@ -5411,21 +5427,20 @@ graphBPE <- function(bpe_df, input_data, input_var_list, bpe_factors = NULL, gra
     # Drop the auxiliary group column
     bpe_df$group <- NULL
     # Save the graph and its name
-    current_bpe_name <- bpe_names[bpe_names_counter]
-    bpe_graphs[[current_bpe_name]] <- bpe_graph
-    bpe_names_counter <- bpe_names_counter + 1
+    bpe_graphs[[bpe_graph_name]] <- bpe_graph
   }
   # Export the graphs
   if (export_graphics){
     if (is.na(graphic_results_folder_path)){
       stop("You must specify a path to the graphic results folder.")
     }
-    for (name in bpe_names){
+    for (i in seq_along(bpe_graphs)){
+      name <- names(bpe_graphs)[i]
+      graph_object <- bpe_graphs[[i]]
       # Check the path to the graph
       full_graph_path <- paste0(graphic_results_folder_path, name,'.png')
       hardRemoveFile(full_graph_path)
       # Fetch the graph object from the graphs list object and graph the object
-      graph_object <- bpe_graphs[[name]]
       suppressWarnings(
         ggsave(filename = full_graph_path, plot = graph_object,
                width = 800*bpe_graphs_scale, height = 666*bpe_graphs_scale, units = "px")
@@ -5478,18 +5493,24 @@ getBPESummaryStats <- function(bpe_df, input_data, input_var_list, bpe_factors =
     conf.level < 1,
     all(colnames(bpe_df) == c("estimate", "ci_95_lower", "ci_95_higher"))
   )
-  if (length(bpe_factors) < 1){
-    stop("You must specify at least one factor to group the BPE plots by.")
-  }
-  if (all(is.na(bpe_factors))){
-    stop("Please specify at least one non-NA BPE grouping factor.")
-  }
-  if (!all(is.numeric(bpe_factors))){
-    stop("All BPE factors must be numeric values spectifying the variable groups to factor by.")
-  }
   if (nrow(bpe_df) < 2){
     stop("There are not enough estimates to compute summary statistics. Please specify at least two studies to run the BPE for.")
   }
+  # Check the 'bpe_factors' list
+  if (!is(bpe_factors, "list")) {
+    stop("You must specify the BPE group factors through a single list. Names should be strings, values should be numbers.")
+  }
+  if (length(bpe_factors) < 1) {
+    stop("You must specify at least one factor to group the BPE plots by.")
+  } 
+  for (i in seq_along(bpe_factors)) {
+    if (!is.numeric(bpe_factors[[i]]) || !is.character(names(bpe_factors)[i])) {
+      stop(paste("You provided an incorrect form of the BPE graph factor specification list.",
+                 "All names must be characters, such as 'gender', 'age', 'experiment_type', etc.",
+                 "All values must be numeric, specifying the group number in the 'var_list' data, such as 1, 4, 6, etc.",
+                 sep = "\n"))
+    }
+  } 
   # Constants
   z <- qnorm((1 - conf.level)/2, lower.tail = FALSE) # Z value for conf. int. calculation
   # Output columns
@@ -5537,7 +5558,8 @@ getBPESummaryStats <- function(bpe_df, input_data, input_var_list, bpe_factors =
   bpe_df <- bpe_df[rownames(bpe_df) != "Author",] # Do not use author, as the method is preocupied with literature instead
   clean_bpe_df <- bpe_df
   bpe_studies <- rownames(bpe_df)
-  for (bpe_factor in bpe_factors){
+  for (i in seq_along(bpe_factors)){
+    bpe_factor <- bpe_factors[[i]]
     bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
     vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
     # Construct and add an auxiliary group column

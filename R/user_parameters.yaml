@@ -4,22 +4,22 @@
 #	after running BPE.
 
 run_this:
-  variable_summary_stats: true
-  effect_summary_stats: true
+  variable_summary_stats: false
+  effect_summary_stats: false
   prima_facie_graphs: false
-  box_plot: true
-  funnel_plot: true
-  t_stat_histogram: true
-  linear_tests: true
-  nonlinear_tests: true
-  exo_tests: true
-  p_hacking_tests: true
+  box_plot: false
+  funnel_plot: false
+  t_stat_histogram: false
+  linear_tests: false
+  nonlinear_tests: false
+  exo_tests: false
+  p_hacking_tests: false
   bma: true
   fma: true 					
   ma_variables_description_table: true 	
   bpe: true 					
-  bpe_graphs: false
-  bpe_summary_stats: false 					
+  bpe_graphs: true
+  bpe_summary_stats: true 					
   robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
@@ -72,9 +72,9 @@ dataset_specific_parameters:
     citations: 36
   # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
   bpe_studies: 
-    # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, use "all".
+    # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, include "all".
     - "all"
-    - 0 	# Author
+    # - 0 	# Author
     #- 2 	# Bartlolj et al. (2013) - Most years of schooling
     #- 112 	# Staiger et al. (1997) - Most citations
     #- 7 	# Webbink (2004) - Random, unpublished, uncited work
@@ -196,8 +196,10 @@ adjustable_parameters:
   #     will be used to construct the default BMA model, used later in BPE, economic significance, etc.
   bma_param_burn: 10000 						# Burn-ins (def 1e5)
   bma_param_iter: 30000 						# Draws (def 3e5)
-  bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
-  bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
+  # bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
+  # bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
+  bma_param_g: ["UIP"] 				# g-Prior
+  bma_param_mprior: ["dilut"] 		# Model Prior
   bma_param_nmodel: 20000 						# Number of models (def 50000)
   bma_param_mcmc: "bd" 							# Markov Chain Monte Carlo
   # Frequentist Model Averaging parameters

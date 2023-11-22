@@ -71,9 +71,9 @@ dataset_specific_parameters:
     citations: 36
   # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
   bpe_studies: 
-    # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, use "all".
+    # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, include "all".
     - "all"
-    - 0 	# Author
+    #- 0 	# Author
     #- 2 	# Bartlolj et al. (2013) - Most years of schooling
     #- 112 	# Staiger et al. (1997) - Most citations
     #- 7 	# Webbink (2004) - Random, unpublished, uncited work
