@@ -4,23 +4,23 @@
 #	after running BPE.
 
 run_this:
-  variable_summary_stats: false
-  effect_summary_stats: false
-  prima_facie_graphs: false
-  box_plot: false
-  funnel_plot: false
-  t_stat_histogram: false
-  linear_tests: false
-  nonlinear_tests: false
-  exo_tests: false
-  p_hacking_tests: false
+  variable_summary_stats: true
+  effect_summary_stats: true
+  prima_facie_graphs: true
+  box_plot: true
+  funnel_plot: true
+  t_stat_histogram: true
+  linear_tests: true
+  nonlinear_tests: true
+  exo_tests: true
+  p_hacking_tests: true
   bma: true
   fma: true 					
   ma_variables_description_table: true 	
   bpe: true 					
   bpe_graphs: true
   bpe_summary_stats: true 					
-  robma: false 	# Computationally expensive
+  robma: true 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
@@ -196,10 +196,8 @@ adjustable_parameters:
   #     will be used to construct the default BMA model, used later in BPE, economic significance, etc.
   bma_param_burn: 10000 						# Burn-ins (def 1e5)
   bma_param_iter: 30000 						# Draws (def 3e5)
-  # bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
-  # bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
-  bma_param_g: ["UIP"] 				# g-Prior
-  bma_param_mprior: ["dilut"] 		# Model Prior
+  bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
+  bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
   bma_param_nmodel: 20000 						# Number of models (def 50000)
   bma_param_mcmc: "bd" 							# Markov Chain Monte Carlo
   # Frequentist Model Averaging parameters
@@ -267,5 +265,5 @@ export_options:
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache: true 	# Store intermediate output in a cache in the /_cache/ folder.
+  use_cache: false 	# Store intermediate output in a cache in the /_cache/ folder.
   cache_age: 3600 	# In seconds - an hour 

@@ -16,6 +16,7 @@ R/data/temp/*
 R/graphics/*
 R/*_debug.R
 R/temp_*.R
+R/user_parameters.yaml
 
 # Shell temp files
 **/*.sh~
