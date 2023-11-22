@@ -1,0 +1,53 @@
+Variables present in the master set but not in the twin data set:
+
+Estimate: Sub-region
+Estimate: Continent
+Wage: Log Monthly
+Wage: Annual Earnings
+Micro Data
+No Education
+Primary Education
+Secondary Education
+Higher Education
+Sector: Private
+Sector: Public
+Sector: Rural
+Sector: Urban
+Reg: Advanced Econ.
+Reg: E. Asia & Pacific
+Reg: Europe and C. Asia
+Reg: Lat. Am. and Car.
+Reg: M. East and N. Af.
+Reg: South Africa
+Reg: Sub Sah. Africa
+Income: Low
+Method: Cohort/FE
+Method: 2SLS
+Method: Heckman
+Method: Probit
+Ability: Direct
+Ability: Proxied
+Ability: Uncontrolled
+Ability: Unmentioned
+Instrument: Parents Education
+Instrument: Distance to School
+Control: Experience^2
+Control: Health
+Control: Occupation
+
+Variables present in the twin set but not in the master data set:
+
+Wage: Log Monthly/Annual
+White
+Non-White
+Married
+Unmarried
+Twins: Identical
+Twins: Non-Identical
+Twins: None
+Method: GLS
+Method: Selection/FE
+Method: First Differences
+Method: IV First-Differenced
+Instrument: Sibling Education
+Instument: Smoking
