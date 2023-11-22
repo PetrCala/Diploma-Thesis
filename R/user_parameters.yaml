@@ -4,20 +4,20 @@
 #	after running BPE.
 
 run_this:
-  variable_summary_stats: false
-  effect_summary_stats: false
+  variable_summary_stats: true
+  effect_summary_stats: true
   prima_facie_graphs: false
-  box_plot: false
-  funnel_plot: false
-  t_stat_histogram: false
-  linear_tests: false
+  box_plot: true
+  funnel_plot: true
+  t_stat_histogram: true
+  linear_tests: true
   nonlinear_tests: true
-  exo_tests: false
-  p_hacking_tests: false
-  bma: false
-  fma: false 					
-  ma_variables_description_table: false 	
-  bpe: false 					
+  exo_tests: true
+  p_hacking_tests: true
+  bma: true
+  fma: true 					
+  ma_variables_description_table: true 	
+  bpe: true 					
   bpe_graphs: false
   bpe_summary_stats: false 					
   robma: false 	# Computationally expensive
@@ -43,19 +43,57 @@ required_cols:
   study_size: "study_size" 	# Number of estimates reported per study (optional)
   reg_df: "reg_df" 		# Degrees of Freedom in the regression (optional)
   precision: .na 		# A measure of precision (optional) - handle during winsorization
-
-# ADJUSTABLE PARAMETERS - modify the values of these as you see fit
-adjustable_parameters:
+  
+# DATASET SPECIFIC PARAMETERS - modify the values of these as you see fit (you may need to)
+dataset_specific_parameters:
   # Effect name
   effect_name: "years of schooling on wage" 	# A verbose name of what the effect represents
-  # Formal output
-  formal_output_on: true 			# If TRUE, return tables in a form presentable in text
   # Data subsetting conditions
   # Note - if you do not with to use any conditions, set ANY condition to NA. The data will not subset.
   # Example usage -  "data_subset_condition_1" = "column_name1 > <some_value>"
   data_subset_condition_1: .na
   data_subset_condition_2: "ability_uncontrolled == 1"
   # "data_subset_condition_X" = X 		# Add more conditions in this manner - up to 20
+  # Box plot parameters
+  box_plot_group_by_factor_1: "study_name" 	# Group by study name
+  box_plot_group_by_factor_2: "country" 	# Group by country
+  # "box_plot_group_by_factor_X" = X 		# Add more factors in this manner - up to 20
+  # Prima facie graphs parameters
+  prima_factors:
+    # A named list where names are custom group names (graphs stored under this name) and values represent
+    #     the number of the variable group (in var_list) to graph in the prima facie graphs
+    years_levels: 12
+    data_type: 15
+    education: 17
+    gender: 20
+    ability: 23
+    income: 26
+    method: 31
+    citations: 36
+  # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
+  bpe_studies: 
+    # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, use "all".
+    - "all"
+    - 0 	# Author
+    #- 2 	# Bartlolj et al. (2013) - Most years of schooling
+    #- 112 	# Staiger et al. (1997) - Most citations
+    #- 7 	# Webbink (2004) - Random, unpublished, uncited work
+  bpe_factors:
+    # A named list where names are custom group names (graphs stored under this name) and values represent
+    #     the number of the variable group (in var_list) to graph in the BPE graphs
+    years_levels: 12
+    data_type: 15
+    education: 17
+    gender: 20
+    ability: 23
+    income: 26
+    method: 31
+    citations: 36
+
+# ADJUSTABLE PARAMETERS - modify the values of these as you see fit
+adjustable_parameters:
+  # Formal output
+  formal_output_on: true 			# If TRUE, return tables in a form presentable in text
   # Data winsorization characteristics
   data_winsorization_level: 0.01 		# Between 0 and 1 (excluding)
   data_precision_type: "1/SE" 			# Precision measure - one of "1/SE", "DoF" - latter is sqrt(DoF)
@@ -66,17 +104,12 @@ adjustable_parameters:
   # Effect summary statistics confidence level
   effect_summary_stats_conf_level: 0.95 	# Between 0 and 1 (excluding)
   # Prima facie graphs parameters
-  prima_factors: [10, 11, 12, 14, 15, 17, 19, 20, 22, 23, 25, 26, 27, 28, 30, 31, 32, 35, 36, 37] # A numeric vector with ids of variable groups to graph
-  #prima_factors: [10, 31, 32] 			# A numeric vector with ids of variable groups to graph
   prima_type: "automatic"      			# Type of the prima facie graphs. One of "density", "histogram", "automatic".
   prima_hide_outliers: true			# If TRUE, outliers (equal to the outermost histogram bins) will be hidden
   prima_bins: 80				# Number of bins to use in the histogram.
   prima_scale: 3             			# A number to scale the prima facie graphs by.
   prima_legend_font_size: 18			# Size of the font in the prima facie graphs.
   # Box plot parameters
-  box_plot_group_by_factor_1: "study_name" 	# Group by study name
-  box_plot_group_by_factor_2: "country" 	# Group by country
-  # "box_plot_group_by_factor_X" = X 		# Add more factors in this manner - up to 20
   box_plot_max_boxes: 60 			# Maximum number of boxes to display per single plot - more plots otherwise
   box_plot_graph_scale: 4 			# Numeric, scale the graph by this number
   box_plot_verbose: true 			# Get information about the plots being printed
@@ -163,10 +196,8 @@ adjustable_parameters:
   #     will be used to construct the default BMA model, used later in BPE, economic significance, etc.
   bma_param_burn: 10000 						# Burn-ins (def 1e5)
   bma_param_iter: 30000 						# Draws (def 3e5)
-  # bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
-  # bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
-  bma_param_g: ["UIP"] 				# g-Prior
-  bma_param_mprior: ["dilut"] 		# Model Prior
+  bma_param_g: ["UIP", "UIP", "BRIC", "HQ"] 				# g-Prior
+  bma_param_mprior: ["uniform", "dilut", "random", "random"] 		# Model Prior
   bma_param_nmodel: 20000 						# Number of models (def 50000)
   bma_param_mcmc: "bd" 							# Markov Chain Monte Carlo
   # Frequentist Model Averaging parameters
@@ -176,20 +207,11 @@ adjustable_parameters:
   ma_variables_description_table_verbose: false 	# If TRUE, print out the BMA variable desc table into console
   ma_variables_description_table_clip: false  		# If TRUE, copy the table toa clipboard
   # Best practice estimate parameters - for econ. significance, estimate of first study in vector is used
-  bpe_studies: 
-    # Vector of study indexes for which to run the BPE. For author's BPE, use 0. For all studies, use "all".
-    - "all"
-    - 0 	# Author
-    #- 2 	# Bartlolj et al. (2013) - Most years of schooling
-    #- 112 	# Staiger et al. (1997) - Most citations
-    #- 7 	# Webbink (2004) - Random, unpublished, uncited work
   bpe_use_ci: true 				# If TRUE, display confidence intervals in BPE output. If FALSE, display SEs instead.
   bpe_study_info: true 				# If TRUE, print out information about individual studies being estimated
   bpe_result_table_verbose: true 		# If TRUE, print out the table into the console along with the functional BPE form
   bpe_econ_sig_large_pip_only: true 		# If TRUE, display econ. significance for variables with PIP >= 0.5
   bpe_econ_sig_verbose: true 			# If TRUE, print out the economic significance table into the console
-  bpe_factors: [10, 11, 12, 14, 15, 17, 19, 20, 22, 23, 25, 26, 27, 28, 30, 31, 32, 35, 36, 37] # A numeric vector with ids of variable groups to use for BPE graphs/summary stats
-  #bpe_factors: [10, 31, 32]		 	# A numeric vector with ids of variable groups to use for BPE graphs/summary stats
   bpe_graphs_type: "density"			# Type of the BPE graphs. One of "density", "miracle".
   bpe_graphs_scale: 3				# A number to scale the BPE graphs by. Defaults to 3.
   bpe_summary_stats_conf_level: 0.95		# Confidence level for the BPE summary statistics table
