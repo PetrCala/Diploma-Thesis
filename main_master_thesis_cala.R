@@ -23,6 +23,7 @@ source_file <- "source_master_thesis_cala.R" # Main source file
 user_param_file <- "user_parameters.yaml" # File with user parameters
 user_param_model_file <- "resources/user_parameters_model.yaml" # Model user parameters file
 package_file <- "resources/packages.R" # Package file
+table_templates_file <- "resources/table_templates.yaml" # Table templates file
 
 # Load several packages necessary for the environment preparation
 initial_packages <- list('rstudioapi', 'devtools', 'pbapply')
@@ -46,8 +47,11 @@ if(interactive()) {
 ##### PREPARATION #####
 
 ### Validate the existence of source files and load them
-source_file_list <- list("Source file" = source_file, 
-                       "Package file" = package_file)
+source_file_list <- list(
+  "Source file" = source_file, 
+  "Package file" = package_file,
+  "Table templates file" = table_templates_file
+)
 
 # Function to verify file existence
 verify_file_existence <- function(file_name, file_path) {
@@ -69,6 +73,9 @@ source(package_file)
 
 # Load packages
 loadPackages(packages, verbose=TRUE)
+
+# Load the table templates
+table_templates <- yaml::read_yaml(table_templates_file) 
 
 ### Validate the existence of the user parameter file and recreate it if it does not exist
 
@@ -97,6 +104,7 @@ modifiable_folders <- c(
   folder_paths$temp_data_folder,
   folder_paths$graphic_results_folder,
   folder_paths$numeric_results_folder,
+  # folder_paths$tex_results_folder,
   folder_paths$all_results_folder
 )
 unmodifiable_folders <- c(
@@ -109,6 +117,7 @@ invisible(sapply(unmodifiable_folders, validateFolderExistence, require_existenc
 # Clean result and data folders
 folders_to_clean_forcefully <- c(
   folder_paths$numeric_results_folder
+  # folder_paths$tex_results_folder
 )
 folders_to_clean_old_files_only <- c(
   folder_paths$graphic_results_folder,
@@ -183,7 +192,7 @@ if (run_this$variable_summary_stats){
   )
   variable_sum_stats <- variable_sum_stats_list[[1]] # Also missing data information
   if (export_options$export_results){
-    exportTable(variable_sum_stats, user_params, "variable_summary_stats")
+    exportResults(variable_sum_stats, user_params, "variable_summary_stats", result_type = "num")
   }
 }
 
@@ -243,7 +252,7 @@ if (run_this$effect_summary_stats){
   )
   effect_sum_stats <- effect_sum_stats_list[[1]] # Also missing variable info
   if (export_options$export_results){
-    exportTable(effect_sum_stats, user_params, "effect_summary_stats")
+    exportResults(effect_sum_stats, user_params, "effect_summary_stats", result_type = "num")
   }
 }
 
@@ -380,7 +389,7 @@ if (run_this$linear_tests){
     verbose = adj_params$linear_verbose
   )
   if (export_options$export_results){
-    exportTable(linear_tests_results, user_params, "linear_tests")
+    exportResults(linear_tests_results, user_params, "linear_tests", result_type = "num")
   }
 }
 
@@ -410,7 +419,12 @@ if (run_this$nonlinear_tests){
     stem_legend_pos = adj_params$non_linear_stem_legend_position
   )
   if (export_options$export_results){
-    exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
+    exportResults(nonlinear_tests_results, user_params, "nonlinear_tests", result_type = "num")
+  }
+  if (export_options$export_tex){
+    exportResults(nonlinear_tests_results, user_params, "nonlinear_tests", result_type = "tex",
+                  table_template = table_templates$nonlinear_tests
+    )
   }
 }
 
@@ -431,7 +445,7 @@ if (run_this$exo_tests){
   )
   exo_tests_results <- exo_tests_results_list[[1]]
   if (export_options$export_results){
-    exportTable(exo_tests_results, user_params, "exo_tests")
+    exportResults(exo_tests_results, user_params, "exo_tests", result_type = "num")
   }
 }
 
@@ -479,9 +493,9 @@ if (run_this$p_hacking_tests){
     add_significance_marks = adj_params$maive_add_significance_marks
   )
   if (export_options$export_results){
-     exportTable(caliper_results, user_params, "p_hacking_tests_caliper")
-     exportTable(elliott_results, user_params, "p_hacking_tests_elliott")
-     exportTable(maive_results, user_params, "p_hacking_tests_maive")
+     exportResults(caliper_results, user_params, "p_hacking_tests_caliper", result_type = "num")
+     exportResults(elliott_results, user_params, "p_hacking_tests_elliott", result_type = "num")
+     exportResults(maive_results, user_params, "p_hacking_tests_maive", result_type = "num")
   }
 }
 
@@ -591,7 +605,7 @@ if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs"))
     bma_coefs, fma_coefs, var_list
   )
   if (export_options$export_results){
-     exportTable(ma_res_table, user_params, "ma")
+     exportResults(ma_res_table, user_params, "ma", result_type = "num")
    }
 }
 
@@ -614,7 +628,7 @@ if (run_this$ma_variables_description_table){
     verbose = adj_params$ma_variables_description_table_verbose # Use View(...) for best viewing experience
   )
   if (export_options$export_results){
-     exportTable(ma_var_desc_table, user_params, "ma_variables_description_table")
+     exportResults(ma_var_desc_table, user_params, "ma_variables_description_table", result_type = "num")
    }
 }
 
@@ -651,8 +665,8 @@ if (run_this$bpe){
   # Export
   if (export_options$export_results){
     bpe_res_name <- ifelse("all" %in% bpe_study_ids, "bpe_res_all_studies", "bpe_res")
-    exportTable(bpe_df, user_params, bpe_res_name)
-    exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
+    exportResults(bpe_df, user_params, bpe_res_name, result_type = "num")
+    exportResults(bpe_econ_sig, user_params, "bpe_econ_sig", result_type = "num")
   }
 }
 
@@ -687,7 +701,7 @@ if (run_this$bpe_summary_stats){
     conf.level = adj_params$bpe_summary_stats_conf_level
   )
   if (export_options$export_results){
-    exportTable(bpe_sum_stats, user_params, "bpe_summary_stats")
+    exportResults(bpe_sum_stats, user_params, "bpe_summary_stats", result_type = "num")
   }
 }
 
@@ -707,8 +721,8 @@ if (run_this$robma){
   )
   # Export
   if (export_options$export_results){
-     exportTable(robma_res$Components, user_params, "robma_components")
-     exportTable(robma_res$Estimates, user_params, "robma_estimates")
+     exportResults(robma_res$Components, user_params, "robma_components", result_type = "num")
+     exportResults(robma_res$Estimates, user_params, "robma_estimates", result_type = "num")
   }
 }
 
@@ -723,6 +737,7 @@ if (export_options$export_results){
     folder_paths$temp_data_folder,
     folder_paths$graphic_results_folder,
     folder_paths$numeric_results_folder,
+    # folder_paths$tex_results_folder,
     log_file_path
   )
 }

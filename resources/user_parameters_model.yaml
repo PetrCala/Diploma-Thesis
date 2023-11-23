@@ -224,6 +224,7 @@ folder_paths:
   numeric_results_folder: './results/numeric/' 	# Store results here
   ext_package_folder: './pckg/' 		# Store external packages here
   graphic_results_folder: './results/graphic/' 	# Store graphical output here
+  tex_results_folder: './results/tex/'   # Store LaTeX tables here
   scripts_folder: './scripts/' 			# Store R scripts here
   all_results_folder: "./results/" 		# Store the zip files with all results here
 
@@ -237,6 +238,7 @@ script_files:
 export_options:
   export_results: true 		# If TRUE, export all numeric into the numeric results folder
   export_graphics: true 	# If TRUE, save the graphs into the graphic results folder
+  export_tex: false        # If TRUE, generate .tex code files for LaTeX display in the tex results folder
   export_methods: 
     # Verbose names of all allowed export methods
     variable_summary_stats: "Variable summary stats"
