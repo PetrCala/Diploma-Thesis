@@ -106,7 +106,7 @@ readExcelAndWriteCsv <- function(xlsx_path, source_sheets, csv_suffix = "master_
       df_xlsx[df_xlsx == '.'] <- NA
       # Overwrite the CSV file
       hardRemoveFile(new_data_path)
-      write_csv(df_xlsx, new_data_path)
+      write.table(df_xlsx, new_data_path, row.names = F, sep = ";", dec = ".")
       return(df_xlsx)
     })
   )
@@ -138,11 +138,14 @@ identifyCsvSeparators <- function(source_path){
     }
     stop("No rows with numeric values identified in the data. Error in reading data.")
   }
+  # Use custom grouping marks for this script
+  return(list(decimal_mark = '.', grouping_mark = ';'))
   # Infer decimal mark and grouping mark
-  decimal_mark <- ifelse(grepl("\\.", first_data_line), ".", ",")
-  grouping_mark <- ifelse(grepl(",", first_data_line), ",", ".")
-  out_list <- list(decimal_mark = decimal_mark, grouping_mark = grouping_mark)
-  return(out_list)
+  # if (';' %in% first_data_line) {
+  #   return(list(decimal_mark = ',', grouping_mark = ';')) # Default Europe setting
+  # } else {
+  #   return(list(decimal_mark = '.', grouping_mark = ',')) # Probable other default setting
+  # }
 }
 
 #' readDataCustom function
@@ -3769,9 +3772,9 @@ getElliottResults <- function(input_data, script_path, temp_data_path, data_subs
   if (!file.exists(elliott_source_file)){
     print(paste0("Creating a temporary file in the '",temp_data_path,"' folder for the Elliott et al. (2022) method..."))
     cdfs <- getCDFs() # Generate the file from scratch (takes time)
-    write.table(cdfs, elliott_source_file, col.names = "cdfs", row.names = F)
+    write.table(cdfs, elliott_source_file, col.names = "cdfs", row.names = F, sep = ";", dec = ".")
   }
-  cdfs <- read.csv(elliott_source_file, col.names = "cdfs") # Read the cached file
+  cdfs <- read.csv(elliott_source_file, col.names = "cdfs", sep = ";", dec = ".") # Read the cached file
   cdfs <- as.numeric(cdfs[,1]) # To a numeric vector
   # Run the estimation for all data subsets
   for (data_col in data_colnames){
@@ -5778,7 +5781,7 @@ writeCsvIfNotIdentical <- function(object_name, file_name, use_rownames, force_o
   # A temp function for code efficiency
   overwrite <- function(x = object_name, file = file_name, row.names = use_rownames){
     hardRemoveFile(file) # Remove if exists
-    write.csv(x, file, row.names = row.names, fileEncoding = "UTF-8")
+    write.table(x, file, row.names = row.names, sep = ";", dec = ".")
   }
   # Force overwrite
   if (force_overwrite){
@@ -5791,7 +5794,7 @@ writeCsvIfNotIdentical <- function(object_name, file_name, use_rownames, force_o
     return(FALSE)
   }
   # Read the existing CSV file
-  content <- read.csv(file_name, stringsAsFactors = FALSE)
+  content <- read.csv(file_name, stringsAsFactors = FALSE, sep = ";", dec = ".")
   # Handle the rownames column
   if ("X" %in% colnames(content)){
     content <- content[, -(colnames(content) == "X")] # Discard row names
