@@ -41,6 +41,7 @@ packages <- list(
   "sandwich" = NA, # Computing robust covariance matrix estimators, MAIVE estimator
   "shiny" = NA, # Andrew & Kasy (2019) Selection model
   "spatstat" = NA, # Elliott et al. (2022)
+  "stargazer" = NA, # LaTeX table generation
   "stats" = NA, # Statistical analysis and modeling
   "testthat" = NA, # Unit testing for R
   "tidyverse" = NA, # A collection of R packages designed for data science, including ggplot2, dplyr, tidyr, readr, purrr, and tibble

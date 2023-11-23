@@ -1,0 +1,80 @@
+\chapter{Notes on progress}
+
+\begin{itemize}
+    \item Original paper (\cite{psacharopoulos2018meta}) literature check - gathered all unique papers (271) from which the 1120 estimates were collected. From these, 245 comprised only single estimates, and 26 comprised cooed estimates. Out of these 26, six studies were only cooed (did not have any standalone estimate in the original data set).
+    In total, this made for 251 unique studies, out of which the estimates were collected. I gathered these, and downloaded. (update the numbers)
+    \item Actually only downloaded the downloadable studies (228), which left 22 studies un-downloadable - how did I handle these? (probably skip, as the omission should not be systematic)
+    \item Constructed a P\&P all study title frequency table using Python. Took titles of all 228 downloadable/traceable studies, and extracted 10 of the most common words (excluding filler words such as 'a', 'for', 'and', etc.). Ended up with the list: Education, Returns, Schooling, Evidence, Earnings, Return, Human, Capital, Wage, Economic.
+    \item Bowles? - prolly no access to data, so no use in considering
+    \item Here realized what I want to do - collect only private returns - will go onto screening the P\&P dataset and from there make new statistics
+    \item Also subsetted the P\&P dataset only onto mincerian equation, private, and full discounting private - this discrepancy (as the methods are not directly comparable), will be later treated with the use of PCC (as in \cite{ma2021meta})
+    \item Preprocessing the original data went like:
+        \begin{enumerate}
+            \item Remove the discounting method data, leave only the mincerian private returns
+            \item Remove data without years of schooling
+            \item Put each estimate on a single row, regardless of its nature (overall, gender, public,...)
+        \end{enumerate}
+    \item Obtained - 768 estimates from 186 unique/co studies, grouped (1 estimate means one row, which could contain number for overall, men, women, etc.
+    \item When put one-estimate==one-row, obtained 1785 estimates, from these 186 studies
+    \item I characterized a ton of prelimiary variables:
+        \begin{enumerate}
+            \item For the original data variables from P\&P, I created a dummification. When using these in the estimation, they can either be subset upon, or treated as several independent variables, where the control for the dummy is every other part of the dummification group -> ex. prim/sec/higher, control is unspecified/mix, which is in case all 3 (prim/sec/higher) are 0
+        \end{enumerate}
+    \item Preliminary variable categories: estimate type, data characteristics, spatial/structural variation, estimation method, publication characteristics
+    \item Noted down journal impact factors in time (january 2023)
+    \item Removed observations from uncollectible studies - got 1672 estimates (113 un-collectible) from 174 studies (12 un-collectible)
+    \item Got to the actual collection
+    \item When denoting the percentage of workers with various attained levels of education, always aggregate per country (more granular data mostly not available is the argument) - saves ton of time, and more granularity is honestly unattainable
+    \item Realized mid-way, that none (really, none) of the works, or their Mincer equations, capture a satisfactory measure of innate ability (intelligence, cognitive skill), but only workplace experience
+    \item Scrapped data collection of P\&P, tried making a new, unique query to target only experiments with direct proxy for intelligence. Failed miserably.
+    \item Had an existential crisis and rethought the whole work
+    \item Realized, that there are indeed a ton of studies observing, measuring, and estimating the relationship between cognitive ability and labour market results (wage), but I have not been targeting these studies well -> need for a better query, try to let go of the idea of recreating the P\&P work, as they deal with a completely different issue - maybe keep it for future reference, if you should compare the cognitive ability studies to those, that do not capture cognitive ability at all
+    \item Thinking that the P\&P dataset might still be used as a good baseline later on, particularly for measuring the publication bias - heterogeneity should the be ran at the cognitive set, and that set should also serve as a main, without a doubt
+    \item Revamped the dataset, added the variables had thought not usable before, ran the query again (593 hits, looking aight, jan 25, 2023), started collecting - ("ability bias" OR "intelligence bias") AND ("private returns") AND ("income" OR "earnings") AND ("schooling" OR "education") 
+    \item Search turned out fine, made a new study list, and started downloading
+    \item Realized, that what most studies do, when it comes to ability bias, is acknowledge its presence, reason that the omission of variables (such as ability, or motivation, family connections) may introduce endogeneity in the schooling variable. So they treat it with an instrumental variable. I guess it could be done that you would have two samples - one with the IV, and one purely OLS, and obtain the ability bias from there
+    \item If, and only if, the subset of studies of class 1 (those who directly include ability in their mincer equation) is large enough, then this could serve as the base data set instead of the IV/OLS split, but I reckon such split would make sense in either case, and once you are done with the class 1 studies, forming a baseline data set of pure OLS, ability untreated studies makes a lot of sense
+    \item Realize that the twin data might make a really cool data set to observe - downloaded 14 studies with twin data or similar (using branching), might use this sample later
+    \item Finished going through the first 200 studies in the query, and got to collecting anew; so ideally I would be aiming for 3 data sets - baseline, controlling for ability in some way, twin (controlling for innate ability directly)
+    \item To see how twins experiment data can be incorporated into the thesis as just an extra cool argument, see
+    Harmon, Colm, Hessel Oosterbeek, and Ian Walker. "The returns to education: Microeconomics." Journal of economic surveys 17, no. 2 (2003): 115-156. (link in the Literature file)
+    \item Formula for calculating the returns from OLS coefficients is either (EXP (coef1)-EXP(coef2))/ (years1-years2), or the one used in Bartolj
+    \item This problem arises, because a number of studies (Sackey, 2008, Leigh (2008), Bartolj, et al., 2013) report levels of schooling, instead of years of schooling, and we want to transform the metric to return to a year of additional schooling for all studies.
+        For the exact formula check Clark, Andrew. The Returns and
+Implications of Human Capital
+Investment in a Transition Economy:
+An Empirical Analysis for Russia,
+1994-98 Discussion Paper
+2000/02, Centre for Economic
+Research and Transformation.,
+2000.
+        Further, feel free to check out Sackey 2008, who cites Patrinos
+    and Sakellariou (2006), Kimenyi et al. (2006), Schultz (2003), and Cohen and House (1994).
+    \item Deleted several variables along the collection due to the lack of variation - e.g. mincer/discounting, field (stem, medicine, ...)
+    \item On the other hand added a few as well - rural vs. urban, schooling years vs. schooling levels
+    \item When experience is missing, following the recommendation of Mincer, we use the formula EXP=AGE-SCHOOLING\_YEARS-6 to calculate the potential experience
+    \item When both levels of schooling and schooling years were available (and the regression was virtually the same), ended up using the years of schooling only. If the results were for something different, took them ofc.
+    \item Ran a lot of code automatic methods, MAIVE, stuff.
+    \item Downloaded data for median household expenditure and minimum wage around year 2000 using AI - will be using this data for all countries
+    \item When transforming the impact factor, used 0 if study was not published, and then used median of all other observations, if it was
+    \item For pub\_year, used the difference between the pub year of the study (or release year if it was not published) minus the earliest published study
+    \item Defined a list of variables which will be transformed to logarithms during BMA (can be found in main DF sheet var\_list)
+    \item Removed the variable School Type (private/public). After data preprocessing, found out, that more than 80\% of the observations were missing, so just excluded it 
+    \item Removed the variable Latin America and Carribean - 0 observations across over 800 estimates
+    \item Had the update call, went to check up the suggestions such as weird 2SLS results - these seem to be correct, see Mishra \& Smyth (2012) for more, where they themselves note that they report estimates which are twice the size of the usual OLS
+    \item Added marital status control information as a new variable
+    \item Added minwage\\medexp info on country-year level for all data.
+    \item Added snowballing literature - now 1762 observations across 115 studies. Results look aight. Out of 55 snowballed, added 41, which is virtually exactly 75\%, so snowballing literature was quite spot-on.
+    \item Decided to use square root of the sample size (DoF) instead of 1/SE as a measure of precision for the funnel plot. In the words of Stanley (2005): "First, the square root of the sample size, sqrt(n) (or degrees of freedom), may be substituted for 1/SEi. Recall that, statistical theory relates publication bias tosample size (Begg and Berlin, 1988). Thus, the use of the square root of the sample size in equation (2) may supply more defensible estimates of publication bias."
+    \item Added Academic Freedom index data (via files in the main folder, or mail communication).
+    \item Updated funnel plot with the new measure of precision, new linear tests results (weighting by precision)
+    \item Tried RoBMA, but did not manage to find a reasonable setup that would allow to input my data - left open
+    \item Updated the GitHub workflow so that there is an automatic distributable Dist folder/package without having to link the github (I mean, almost automatic, some readme is still manual)
+    \item Changed the automatic workflow to a shell script
+    \item Added BPE - code for any studies any time
+    \item Merged "Instrument - Spouse Education" and "Instrument - Marital Status" into "Instrument - Other"
+    \item Merged Fixed and Cohort into one variable
+    
+    
+\end{itemize}
+

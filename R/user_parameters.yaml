@@ -1,4 +1,4 @@
-#UN THESE PARTS OF THE MAIN SCRIPT
+#RUN THESE PARTS OF THE MAIN SCRIPT
 # Note: The parts "fma", "ma_variables_description_table", and "bpe" are only executable
 #	after running BMA. The parts "bpe_graphs" and "bpe_summary_stats" can be ran only
 #	after running BPE.
@@ -13,14 +13,14 @@ run_this:
   linear_tests: true
   nonlinear_tests: true
   exo_tests: true
-  p_hacking_tests: true
-  bma: true
-  fma: true 					
-  ma_variables_description_table: true 	
-  bpe: true 					
-  bpe_graphs: true
-  bpe_summary_stats: true 					
-  robma: true 	# Computationally expensive
+  p_hacking_tests: false
+  bma: false
+  fma: false 					
+  ma_variables_description_table: false 	
+  bpe: false 					
+  bpe_graphs: false
+  bpe_summary_stats: false 					
+  robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
@@ -227,6 +227,7 @@ folder_paths:
   numeric_results_folder: './results/numeric/' 	# Store results here
   ext_package_folder: './pckg/' 		# Store external packages here
   graphic_results_folder: './results/graphic/' 	# Store graphical output here
+  tex_results_folder: './results/tex/'   # Store LaTeX tables here
   scripts_folder: './scripts/' 			# Store R scripts here
   all_results_folder: "./results/" 		# Store the zip files with all results here
 
@@ -240,6 +241,7 @@ script_files:
 export_options:
   export_results: true 		# If TRUE, export all numeric into the numeric results folder
   export_graphics: true 	# If TRUE, save the graphs into the graphic results folder
+  export_tex: false        # (WIP) If TRUE, generate .tex code files for LaTeX display in the tex results folder
   export_methods: 
     # Verbose names of all allowed export methods
     variable_summary_stats: "Variable summary stats"
@@ -265,5 +267,5 @@ export_options:
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache: false 	# Store intermediate output in a cache in the /_cache/ folder.
+  use_cache: true 	# Store intermediate output in a cache in the /_cache/ folder.
   cache_age: 3600 	# In seconds - an hour 

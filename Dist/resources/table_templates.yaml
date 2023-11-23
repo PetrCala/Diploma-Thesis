@@ -1,0 +1,13 @@
+# WIP
+
+# Here you can modify the .tex form of the result tables. 
+# 
+# Similar to `user_parameters.yaml`, each table is stored under a single list,
+#     and contains information that helps specify the template form for the `stargazer` package.
+
+nonlinear_tests:
+  title: "Nonlinear tests for publication bias"
+  label: "tab:N-L"
+  src_column_labels: ["WAAP", "Top10", "Stem", "Hierarch", "Selection", "Endogenous Kink"]
+  new_column_labels: ["", "WAAP", "Top10", "Stem", "Hier", "AK", "Kink"]
+  notes: "The table reports estimates of the effect beyond bias using six non-linear methods and estimates of the publication bias obtained using two of these methods. WAAP = Weighted Average of the Adequately Powered. Top10 = Top10 method. Stem = the stem-based method where P represents the probability of results insignificant at 5\\% being published relative to the probability of the significant ones at the same level. Hier = Hierarchical Bayes model. AK = Selection model. Kink = Endogenous kink model. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1"

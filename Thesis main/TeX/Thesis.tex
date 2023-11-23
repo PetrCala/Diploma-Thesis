@@ -1,0 +1,175 @@
+%-----<<<<<<<<<<<< START >>>>>>>>>>>>-----
+\documentclass [a4paper,12pt]{report}  
+\usepackage[a-2u]{pdfx}      		
+\usepackage[cp1250]{inputenc}																	%cp1250 for Czechoslovak characters, utf8
+\usepackage{lmodern}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+
+
+%-----<<< --------------------------------- >>>-----
+
+%-----<<<<<<<<<<<< DEFINITIONS >>>>>>>>>>>>----- % for special characters of Czech/Slovak lang. use LaTeX commands only such as accute accent \'{o}, caron over the letter \v{s}, etc..
+\def \BookName {Diploma Thesis}
+\def \Bookname {Ability bias in the returns to schooling: How large it is and why it matters}
+\def \BooknameCZ {Dovednostn\'{i} zkreslen\'{i} v n\'{a}vratnosti do vzd\v{e}l\'{a}n\'{i}: Jak velk\'{e} je a pro\v{c} na tom z\'{a}le\v{z}\'{i}?} 
+\def \AutorDP {Petr \v{C}ala}													
+\def \AuthorDP {Petr Cala} 			%here use just English characters!
+\def \FirstNameDP {Petr} 				
+\def \LastNameDP {Cala} 							
+\def \Email {61505008@fsv.cuni.cz}
+\def \Year {2024}
+\def \Place {Prague}
+\def \Subject {TBA}
+\def \Keywords {TBA}
+\def \Klic {TBA} 			
+\def \JEL {TBA							
+}	
+\def \Thesisweb {}		%thesis webpage
+\def \AcademicYear {2023/2024}
+\def \Supervisor {doc.\ PhDr.\ Zuzana Havr\'{a}nkov\'{a}, Ph.D.}
+\def \StudyProgram {Economics and Finance}
+\def \EmailSup {zuzana.havrankova@fsv.cuni.cz}
+\def \CUNI {Charles University}
+\def \FSS {Faculty of Social Sciences}
+\def \IES {Institute of Economic Studies}
+%-----<<< --------------------------------- >>>-----
+
+%-----<<< METADATA >>>-----%filecontents must be in form of text, do not put definition reference like ``\AuthorDP'' inside
+%\usepackage{filecontents}
+%\begin{filecontents*}{Thesis.xmpdata}
+%		\Author{Firstname Lastname} 
+%		\Title{The Price Elasticity of Gasoline Demand: A Meta-Analysis}
+%		\Keywords{keywordone, keywordtwo, keywordthree, keywordfour}
+%		\Subject{Price Elasticity of Gasoline Demand}
+%		\Publisher{Charles University} 
+%\end{filecontents*} 
+
+%-----<<<<<<<<<<<< STYLES >>>>>>>>>>>>-----      														
+\usepackage{Styles/Head}
+\usepackage{Styles/Mystyle}	
+%-----<<< --------------------------------- >>>-----
+
+
+%-----<<<<<<<<<<<< DOCUMENT >>>>>>>>>>>>-----
+\begin{document}
+\frontmatter                   									%lowercase roman pagination for front matter
+\clubpenalty 9999 															%not so many orphants
+\widowpenalty 9999 															%not so many widows
+
+
+%-----<<< HEAD >>>-----
+\pagestyle{empty}                       				%no visible pagination here                    
+\BookHead
+%-----<<< ---- >>>-----
+
+
+%-----<<< DECLARATION >>>-----
+\input{01_Frontmatter/decl.tex}        					%input file
+\clearpage
+%-----<<< ----------- >>>-----
+
+
+%-----<<< ABSTRACT >>>-----
+\phantomsection													 				%bookmark anchor
+\pdfbookmark[0]{Abstract}{abst}        	 				%add bookmark
+\input{01_Frontmatter/abst.tex}       					%input file
+\clearpage
+%-----<<< -------- >>>-----
+
+%-----<<< ACKNOWLEDGMENTS >>>-----
+\input{01_Frontmatter/ackn.tex}      						%input file
+\clearpage
+%-----<<< --------------- >>>-----
+
+%-----<<< TABLE OF CONTENTS >>>-----
+\pagestyle{fancy} 											 				%headers style
+\fancyhead[LO]{\sffamily Contents}			 				%headers in sans serif and not in uppercase
+\phantomsection													 				%bookmark anchor
+\pdfbookmark[0]{Contents}{toc}        	 				%add bookmark
+\tableofcontents
+\label{toc}
+\clearpage
+%-----<<< ----------------- >>>-----
+
+%-----<<< LIST OF TABLES >>>-----
+\fancyhead[LO]{\sffamily List of Tables}				%headers in sans serif and not in uppercase
+\phantomsection																	%bookmark anchor
+\addcontentsline{toc}{chapter}{List of Tables}	%add LofT to the Table of Contents
+\listoftables
+\clearpage
+%-----<<< --------------- >>>-----
+
+%-----<<< LIST OF FIGURES >>>-----  
+\fancyhead[LO]{\sffamily List of Figures}
+\phantomsection																	%bookmark anchor
+\addcontentsline{toc}{chapter}{List of Figures}	%add LofF to the Table of Contents
+\listoffigures
+\clearpage
+%-----<<< ---------------- >>>-----
+
+%-----<<< ACRONYMS >>>-----   
+\fancyhead[LO]{\sffamily Acronyms}
+\phantomsection																	%bookmark anchor
+\addcontentsline{toc}{chapter}{Acronyms}				%add Acronyms to the Table of Contents
+\input{01_Frontmatter/acro.tex}									%List of Acronyms
+\clearpage
+%-----<<< ---------------- >>>-----
+
+%-----<<< THESIS PROPOSAL >>>----- 
+%\fancyhead[LO]{\sffamily Master Thesis Proposal}
+%\phantomsection																	%bookmark anchor
+%\addcontentsline{toc}{chapter}{Thesis Proposal}	%add Proposal to the Table of Contents
+%\input{01_Frontmatter/prop.tex}									%Thesis proposal
+%\clearpage
+%-----<<< ---------------- >>>-----
+
+%-----<<< MAIN MATTER >>>-----
+\mainmatter                   									%start arabic pagination from 1
+\autohdr																				%automatic headers for main matter
+\input{02_Mainmatter/01_Intro.tex}              %input field
+\input{02_Mainmatter/02_Literature.tex}
+\input{02_Mainmatter/03_Data.tex}
+\input{02_Mainmatter/04_Bias.tex}
+\input{02_Mainmatter/05_Heterogeneity.tex}
+\input{02_Mainmatter/06_BPE.tex}
+\input{02_Mainmatter/07_Twins.tex}
+\input{02_Mainmatter/99_Concl.tex}
+\clearpage
+%-----<<< -------- >>>-----
+
+
+
+%-----<<< REFERENCES >>>-----
+\fancyhead[LO]{\sffamily Bibliography}					%headers in sans serif and not in uppercase
+
+\bibliographystyle{Styles/newapa.bst}							%style of literature, you can use e.g. newapa	instead of Styles/Stylebib
+
+\bibliography{Styles/Bibliography}							%bibliography database
+
+%input file
+\addcontentsline{toc}{chapter}{Bibliography} 		%Add bibliography to the table of contents
+\clearpage
+%-----<<< ---------- >>>-----
+
+
+%-----<<< APPENDIXES >>>-----
+\backmatter	
+
+%uppercase roman pagination for back matter; appendices start
+
+\autohdr																				%automatic headers     
+               %file with references
+\input{03_Backmatter/01App_Literature}           			%List of studies
+\input{03_Backmatter/03App_BMA}
+\input{03_Backmatter/04App_BPE}
+%\input{03_Backmatter/05App_twins}
+\clearpage
+%-----<<< --------- >>>-----
+
+
+\end{document}
+%-----<<<<<<<<< END OF DOCUMENT >>>>>>>>>-----
+
+
+

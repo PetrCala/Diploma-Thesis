@@ -5757,7 +5757,7 @@ nullVerboseFunction <- function(res,... ){NULL}
 
 ######################### EXPORT AND CACHES #########################
 
-#' writeIfNotIdentical
+#' writeCsvIfNotIdentical
 #' 
 #' This function compares the contents of an R object in the environment with an existing file.
 #' If the contents are different, or if the file does not exist, it overwrites or creates
@@ -5774,7 +5774,7 @@ nullVerboseFunction <- function(res,... ){NULL}
 #' @return [logical] Returns TRUE if the contents of the object and the file were identical
 #' and no write operation was needed. Returns FALSE if the file was created or overwritten.
 #' 
-writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_overwrite = FALSE){
+writeCsvIfNotIdentical <- function(object_name, file_name, use_rownames, force_overwrite = FALSE){
   # A temp function for code efficiency
   overwrite <- function(x = object_name, file = file_name, row.names = use_rownames){
     hardRemoveFile(file) # Remove if exists
@@ -5813,55 +5813,121 @@ writeIfNotIdentical <- function(object_name, file_name, use_rownames, force_over
   return(TRUE)
 }
 
+#' writeTxtIfNotIdentical
+#'
+#' This function compares the contents of a text string with an existing .txt file.
+#' If the contents are different, or if the file does not exist, it overwrites or creates
+#' the file with the content of the text string. If 'force_overwrite' is TRUE, the function will
+#' overwrite the file regardless of the comparison result.
+#'
+#' @param text_content [character] The text content to be compared with the file content and possibly written to the file.
+#' @param file_name [character] The name (and path) of the .txt file to be compared with the text content and possibly overwritten.
+#' @param force_overwrite [logical] A flag that forces the function to overwrite the file regardless of the comparison result. Default is FALSE.
+#' @return [logical] Returns TRUE if the contents of the text and the file were identical and no write operation was needed. Returns FALSE if the file was created or overwritten.
+#'
+writeTxtIfNotIdentical <- function(text_content, file_name, force_overwrite = FALSE) {
+  overwrite <- function(text = text_content, file = file_name) {
+    writeLines(text, file)
+  }
+  
+  if (force_overwrite) {
+    overwrite()
+    return(FALSE)
+  }
+  
+  if (!file.exists(file_name)) {
+    overwrite()
+    return(FALSE)
+  }
+  
+  existing_content <- readLines(file_name, warn = FALSE)
+  if (length(existing_content) != length(text_content) || !all(existing_content == text_content)) {
+    overwrite()
+    return(FALSE)
+  }
+  
+  return(TRUE)
+}
 
-#' exportTable
-#' 
-#' This function exports a given results table as a CSV file into a specified directory.
-#' The directory is determined based on the 'export_path' item in the 'user_params' list,
-#' and the filename is constructed from the 'method_name' argument. If the directory does not exist,
-#' the function will create it. The function also prints a message to inform the user about the location of the exported file.
-#' The file will not export if the same file already exists under the specified path.
-#' 
-#' @param results_table [data.frame] The data frame to be exported as a CSV file.
-#' @param user_params [list] A list of user parameters. It should contain an 'numeric_results' item,
-#' which specifies the directory to export the file, and an 'export_methods' item, which is a
-#' named list where the names correspond to valid 'method_name' values and the values are used for verbose output.
-#' @param method_name [character] A character string that specifies the export method. 
-#' It should be present in the names of 'user_params$export_options$export_methods' and is used to construct the filename
-#' of the exported CSV file.
-#' 
-#' @return No explicit return value. The function writes a CSV file to the file system.
-#' 
+#' exportResults
+#'
+#' This function exports a given results table as a CSV or TXT file into a specified directory.
+#' The directory and filename are determined based on the 'user_params' list and the 'method_name' argument.
+#' If the directory does not exist, the function will create it. The function also prints a message to inform
+#' the user about the location of the exported file. The file will not export if the same file already exists
+#' under the specified path.
+#'
+#' @param results_table [data.frame] The data to be exported as a CSV or TXT file.
+#' @param user_params [list] A list of user parameters, including directory and export method information.
+#' @param method_name [character] A character string specifying the export method, used in filename construction.
+#' @param result_type [character] Type of result file to be exported, either 'num' or 'tex'.
+#' @param table_template [list or NULL] The table template to use for .tex exports. Needs to be provided
+#'  only if the result_type is 'tex'. Defaults to NULL.
+#'
+#' @return No explicit return value. The function writes a file to the file system.
+#'
 #' @examples
 #' \dontrun{
-#'   exportTable(results_table, user_params, method_name)
+#'   exportResults(results_table, user_params, method_name, result_type)
 #' }
 #' @export
-exportTable <- function(results_table, user_params, method_name){
+exportResults <- function(
+  results_table, 
+  user_params, 
+  method_name, 
+  result_type,
+  table_template = NULL
+){
   # Validate input
   stopifnot(
     is.data.frame(results_table),
     is.list(user_params),
-    is.character(method_name)
+    is.character(method_name),
+    result_type %in% c('num', 'tex')
   )
+  # Get the file suffix
+  file_suffix <- switch(result_type,
+    "num" = "csv",
+    "tex" = "txt",
+    "error"
+  )
+  # Specify the name of the results folder for each results type
+  results_folder_name <- switch(result_type,
+    "num" = "numeric_results_folder",
+    "tex" = "tex_results_folder",
+    "error"
+  )
+  if (result_type == "tex" && is.null(table_template)) {
+    stop("You must provide a list of table templates if you wish to export the results to a .tex table.")
+  }
   # Define the export paths
-  numeric_results_folder <- user_params$folder_paths$numeric_results_folder # Export folder
-  validateFolderExistence(numeric_results_folder) # Create the export folder if not present in the working directory
-  results_path <- paste0(numeric_results_folder, method_name, ".csv") # numeric_results_folder/export_file.csv
+  results_folder_path <- user_params$folder_paths[[results_folder_name]]
+  validateFolderExistence(results_folder_path) # Create the export folder if not present
+  results_path <- paste0(results_folder_path, method_name, ".", file_suffix)
   
-  # Check whether the row names are sequential numbers (1,2,3,...) - do not use rows if they are
-  row_names <- rownames(results_table)
-  n <- nrow(results_table)
-  use_rownames <- !all(1:n == row_names) # Rows are sequential integers
   # Export the table if it does not exist
-  verbose_info <- user_params$export_options$export_methods[[method_name]] # Verbose name for the message
-  verbose_info <- ifelse(is.null(verbose_info), method_name, verbose_info) # Use non-verbose info if verbose not available
-  identical_file_exists <- writeIfNotIdentical(results_table, results_path, use_rownames)
+  verbose_info <- user_params$export_options$export_methods[[method_name]]
+  verbose_info <- ifelse(is.null(verbose_info), method_name, verbose_info)
+  
+  if (result_type == 'num') {
+    # Check whether the row names are sequential numbers
+    row_names <- rownames(results_table)
+    use_rownames <- !is_sequential_integer_vector(row_names) # Use row names if not sequential integers
+    identical_file_exists <- writeCsvIfNotIdentical(results_table, results_path, use_rownames)
+  } else if (result_type == 'tex'){ # tex
+    # Convert the data frame to a .tex type character object and write into a .txt file
+    tex_result <- generate_latex_table(results_table, table_template) # Provide the table templates list
+    identical_file_exists <- writeTxtIfNotIdentical(tex_result, results_path)
+  } else {
+    stop(paste0("Invalid result type", result_type))
+  }
+  
   if (!identical_file_exists){
-    print(paste("Writing the", tolower(verbose_info), "results into", results_path))
+    print(paste("Writing the", tolower(verbose_info), result_type, "results into", results_path))
     cat("\n")
   }
 }
+
 
 #' Remove a file from the system
 hardRemoveFile <- function(file_path){
@@ -6081,6 +6147,61 @@ exportHtmlGraph <- function(graph_object, export_path){
   htmlwidgets::saveWidget(plotly_img, export_path)
 }
 
+
+#################### (WIP) TABLE TEMPLATE HANDLING #################### 
+
+#' TODO
+#'
+#' @param data_frame [data.frame]
+#' @param table_template [list[character, character]]
+#' @param verbose [boolean]
+generate_latex_table <- function(
+  data_frame, 
+  table_template
+) {
+  # Validate the data frame
+  expected_names <- table_template$src_column_labels
+  if (!all(names(data_frame) %in% expected_names)) {
+    stop("Data frame does not match template requirements.")
+  }
+  
+  # Generate LaTeX code using stargazer
+  latex_code <- stargazer(data_frame, 
+                          type = "latex", 
+                          title = table_template$title,
+                          label = table_template$label,
+                          column.labels = table_template$new_column_labels,
+                          decimal.mark = ".",
+                          digit.separate = 3,
+                          digit.separator = ",",
+                          digits = 3,
+                          digits.extra = 0, # Extra digits if the rounded number is zero
+                          font.size = "footnotesize",
+                          header = FALSE,
+                          initial.zero = TRUE,
+                          # notes = table_template$notes,
+                          # notes.align = "l",
+                          # notes.append = ...
+                          # notes.label = "Note:",
+                          table.placement = "!b",
+                          summary = FALSE
+  )
+  
+  # Handle asterisks
+  replace_asterisks <- function(text){
+    text <- gsub("\\\\textasteriskcentered", "\\\\*", text)
+    text <- gsub("\\* \\* \\*", "${}^{***}$", text, fixed=TRUE)
+    text <- gsub("\\* \\*", "${}^{**}$", text, fixed=TRUE)
+    text <- gsub("\\*", "${}^{*}$", text, fixed=TRUE)
+    return(text) 
+  }
+  latex_code <- replace_asterisks(latex_code)
+  
+  # Return or save the LaTeX code
+  return(latex_code)
+}
+
+
 #################### DATA HANDLING #################### 
 
 #' Return a number as either an integer if it is one, or a decimal if it is not
@@ -6088,6 +6209,51 @@ exportHtmlGraph <- function(graph_object, export_path){
 #' Used when plotting graphs for prettier tick labels (10, 20, 25.243, 30,...)
 intOrDecimal <- function(x) {
   ifelse(x == floor(x), as.integer(x), x)
+}
+
+#' Check if a Vector is a Sequential Vector of Integers
+#'
+#' This function tests whether a given vector is a sequential vector of integers. 
+#' A vector is considered sequential if it consists solely of integers in a 
+#' continuous ascending order, with each element exactly one more than the previous element.
+#' Non-integer and non-numeric vectors, as well as vectors with gaps or 
+#' non-sequential values, will result in a FALSE return value.
+#'
+#' @param v A numeric vector. It is the vector to be tested for being a 
+#'          sequential vector of integers.
+#'
+#' @return Returns TRUE if the vector is a sequential vector of integers. 
+#'         Returns FALSE otherwise.
+#'
+#' @examples
+#' is_sequential_integer_vector(c(1, 2, 3, 4, 5)) # Returns TRUE
+#' is_sequential_integer_vector(c("1", "2", "3", "4", "5")) # Returns TRUE
+#' is_sequential_integer_vector(c(1, 3, 5, 7, 9)) # Returns FALSE
+#' is_sequential_integer_vector(c(1.5, 2.5, 3.5)) # Returns FALSE
+#' is_sequential_integer_vector(c("hello", "world")) # Returns FALSE
+#'
+#' @export
+is_sequential_integer_vector <- function(v) {
+  # Check if the input is a vector
+  if (!is.vector(v) || is.null(v)) {
+    return(FALSE)
+  }
+  
+  # Convert to numeric if vector elements are character representations of numbers
+  if (is.character(v)) {
+    if (any(!grepl("^[0-9]+$", v))) {
+      return(FALSE)
+    }
+    v <- as.numeric(v)
+  }
+  
+  # Check if the vector is numeric and contains integers only
+  if (!is.numeric(v) || any(v != floor(v))) {
+    return(FALSE)
+  }
+  
+  # Check for sequential order
+  return(all(diff(v) == 1))
 }
 
 
@@ -6210,4 +6376,5 @@ getFirst <- function(input_data, colname){
   }
   stopifnot(length(out_vec) == length(study_levels)) # Calculated values for all studies
   return(out_vec)
+  
 }

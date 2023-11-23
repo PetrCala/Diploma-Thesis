@@ -1,0 +1,114 @@
+\chapter{Private returns to education}
+\label{chap:two}
+% grammar checked (07-27)
+
+\section{Human capital theory and Mincer equation}
+\label{sec:mincer_eq}
+
+The backbone of research into the returns to schooling topic lies in the Human Capital Theory, conceptualized first by \cite{becker1962HCT}. The idea is simple - investments in education should improve one's productivity, resulting in increased income over time. The author bases the calculation on a simple cost-benefit relationship; if an individual puts time, effort, and money into their education, this investment should bring returns later on in the form of increased earnings. \cite{schultz1961investment} then argue that the crucial factor behind the increase in earnings is the heightened productivity of the individual gained during the years spent in school.
+
+Roughly a decade later, \cite{mincer1974schooling} proposed a vital extension to this theory, quantifying this relationship in a model called the \ac{HCEF}. In this equation, usually referred to as the \textit{Mincer equation}, the log of one's earnings can be expressed as an additive function of a linear education term and a quadratic experience term. Rigorously, we can write this semi-logarithmic relationship as
+
+
+\begin{equation}
+    \label{eq:mincer}
+    ln(Y_i) = \alpha + \beta S_i + \gamma_{1}X_i + \gamma_{2}X_{i}^2 + \epsilon_i,
+\end{equation}
+
+where $ln(Y_i)$ denotes the log of earnings of an individual $i$, $S_i$ represents their attained years of schooling, $X_i$ stands for the years of work experience of said individual, and $\epsilon_i$ captures the individual-specific error. In cases where the individual's experience is absent, \cite{mincer1974schooling} proposes using a measure of potential experience instead. This can be calculated as
+
+\begin{equation}
+    \label{eq:potential_exp}
+    X_i = A_i - S_i - 6,
+\end{equation}
+
+where $X_i$ denotes the potential experience, $A_i$ represents the individual's age, and $S_i$ stands for the completed years of schooling. Six is a constant; we assume that the individual starts their education at age six.
+
+Over the decades, this equation has been subjected to the scrutiny of many research papers \citep{ashenfelter1994estimates, heckman2006earnings, card1992does}; naturally, this scrutiny raised several questions regarding the functional form of the equation. 
+\cite{heckman2003fifty} subject the equation to a thorough analysis by relaxing the proposed functional form, and arrive at results that differ substantially from the ones drawn from the Mincer equation. As for specific extensions to the existing equation, \cite{card1999causal} proposed adding control variables to the Mincer equation, including race, geographic region, and union membership. Using these new controls, they highlighted the importance of an individual's location factors and their role in determining one's income. \cite{psacharopoulos2004returns} highlighted the importance of the individual's socioeconomic background as a predictor for earnings with findings that firmly back up their claim. \cite{belzil2004earnings} then extend the equation to account for individual heterogeneity by employing a dynamic programming model of schooling decisions.
+
+Among the many available methods for estimating this relationship, OLS is the most common approach \citep{ashenfelter1999review, card1999causal}. However, OLS estimates suffer from several estimation problems, including sample selectivity, omitted variable bias, and measurement error bias, as noted by \cite{aslam2007rates}, among others. Equations using year cohorts \citep{angrist2009mostly}, Heckman's correction for sample selectivity \citep{heckman1979sample}, or fixed-effects are among the several that tackle these issues.
+
+Still, there exists one other important issue in the literature that plenty of authors choose to avoid, one I firmly believe should be addressed - the issue of unobserved ability.
+
+\section{Ability bias in the Mincer regression}
+\label{sec:ability_bias_and_mincer}
+
+One variable stands out among the many that could be included in the Mincer regression, and the omission of which may lead to biased estimates - individual ability. There exists a plethora of research in psychology to show that general intelligence is one of the most reliable predictors of one's success \citep{gottfredson1997g, deary2007intelligence, deary2020intelligence, ozawa2022educational}. This measure can then be quantified; researchers refer to it as the g-factor. When this factor is included in the regression, other determinants of an individual's life outcomes suddenly lose their predictive power, coining the phrase \textit{"not much more than g"} \citep{ree1994predicting}. \cite{heckman2001importance} support this claim by examining the role of non-cognitive abilities in determining earnings and educational attainment, finding out that they serve as crucial predictors in these areas of economic development.
+
+Regarding policy making, the predictive analysis prevalent in psychology helps us only a little \citep{almlund2011personality}. While highly useful when placing an individual into the labor market, predictive analysis deals with correlations rather than causal effects, which are the focus of policy analysis. Indeed, without a way to assess the impact of the policy changes, evaluating the quality of said change is impossible. Undoubtedly, one of the major objectives of education policies lies in the improvement of one's capacity to succeed in the labor market. However, if the estimate of the returns to education is biased, these policies could quickly be rendered inefficient and misguided.
+
+\cite{herrnstein2010bell} bring these two issues together in a study that reveals how economic returns tend to rise with higher individual ability. \cite{bowles2001determinants} provide more evidence by showing that the returns to schooling in the Mincer equation tend to be inflated when ability (or other measure of cognitive performance) is omitted. Over the years, the term \textit{ability bias} that describes this phenomenon has been subjected to the scrutiny of research \citep{heckman2001identifying}. Multiple researchers attribute little to no importance to this issue \citep{ashenfelter1999schooling}. Apart from suggestions for its omission \citep{blackburn1993ols}, some claim that non-cognitive abilities hold no less predicting weight \citep{heckman2001importance}. \cite{griliches1977estimating}, for example, finds out that the bias is either small or negative, and \cite{patrinos2016estimating} argues that adding more variables to the equation will not solve the problem; instead, it may introduce new biases on its own.
+
+A whole new branch of research into ability bias lies within natural experiments. Some economists \citep{ashenfelter1994estimates, berman2003language}, for example, turned to twin studies to identify the role of education, as other factors (such as socioeconomic background, abilities, preferences, etc.) are nearly identical with twins. I must, however, address two points of criticism prevalent in the literature \citep{kenayathulla2013higher}. Firstly, there is no way to guarantee the exogeneity of ability. In other words, if ability would have both an individual and a family component, the latter would be endogenous to schooling, failing to a potentially still biased estimate. Secondly, measurement errors pose a particular threat to the result validity, as those errors could explain most twin-level differences across the population \citep{ashenfelter1999review}. Nonetheless, twin studies provide an intriguing alternative way to survey the ability bias issue from another perspective, although most authors overlook this possibility entirely.
+
+On balance, the ability bias issue lives in a niche spot of researchers' consciousness. On top of the lack of consensus on the theoretical side of the research, the practical side is just as discordant. A growing practice has had researchers choosing a proxy in their estimation to control for ability indirectly, usually with parental education, marital status, or distance to school, among others \citep{blundell2001estimating}. The authors often acknowledge that their estimates could be plagued by this bias but fail to obtain the data necessary for its treatment \citep{agrawal2012returns, debrauw2008reconciling}. Other times, the issue gets overlooked entirely, and the authors focus either on the simplest or a more complex form of the Mincer regression \citep{angrist1995economic, sinning2017gender}. Given the disunified practice, I proceed to answer the following questions. Does this ability bias matter? How large is it? If we control for this bias, how do the returns to education change?
+
+\section{Existing research}
+\label{sec:existing}
+
+Before answering the questions, it is crucial to look at and acknowledge the existing meta-analyses that have already tackled these issues before me. As of me writing this paper and to the best of my knowledge, these are all of the meta-analyses that have been conducted on the topic of returns to education thus far - \cite{ psacharopoulos1994meta, fleisher2005meta, churchill2018meta, psacharopoulos2018meta, patrinos2020meta, cui2021meta, iwasaki2021meta, ma2021meta, wincenciak2022meta, horie2023meta}. In \autoref{tab:meta_overview}, I outlined how each of these studies tackles the several main points of existing research.
+
+\begin{table}[!t]
+\centering
+\footnotesize
+\singlespace
+\caption{Existing meta-analyses choose to tackle different issues}
+\label{tab:meta_overview}
+\begin{tabular}{
+@{}
+l
+*{5}{c}
+@{}}
+\toprule
+\textbf{Study name} & \textbf{AB} & \textbf{AB*} & \textbf{PB} & \textbf{PB*} & \textbf{Method} \\
+\midrule
+\cite{psacharopoulos1994meta}& . & . & . & . & . \\
+\cite{fleisher2005meta} & . & . & . & . & \checkmark \\
+\cite{churchill2018meta} & . & . & \checkmark & \checkmark & \checkmark \\
+\cite{psacharopoulos2018meta} & . & . & . & . & . \\
+\cite{patrinos2020meta} & . & . & . & . & . \\
+\cite{cui2021meta} & . & . & \checkmark & \checkmark & \checkmark \\
+\cite{iwasaki2021meta} & . & . & \checkmark & . & \checkmark \\
+\cite{ma2021meta}  & . & . & \checkmark & \checkmark & \checkmark \\
+\cite{wincenciak2022meta} & \checkmark & \checkmark & . & . & \checkmark \\
+\cite{horie2023meta} & . & . & \checkmark & . & . \\
+\midrule
+Number of studies: & 1 & 1 & 5 & 3 & 6 \\
+Percentage of studies: & 10\% & 10\% & 50\% & 30\% & 60\% \\
+\bottomrule
+\multicolumn{6}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} This table lists (to my knowledge) all existing meta-analyses on the topic of returns to education, along with information about methodology each of them chooses to employ. A check-mark means the study does tackle the corresponding issue. The last two rows display the number of studies dealing with each issue in absolute and relative terms. AB = The study analyses ability bias as a predictor for returns to schooling, AB* = The study finds that ability bias is a strong predictor for returns to schooling, PB = The study addresses publication bias, PB* = The study finds publication bias in its data, Method = The study addresses the type of methodology used by the examined studies.
+}
+\end{tabular}
+\end{table}
+
+Out of these ten studies, only the paper by \cite{wincenciak2022meta} attempts to directly answer the role of ability in estimating returns to schooling. They find that ability is a significant predictor of returns to education (about 0.8-0.9\% points) when controlled for. They conclude that the omission of ability bias may lead to biased estimates of the discussed effect. As for other studies, \cite{fleisher2005meta} and \cite{patrinos2020meta} acknowledge the presence of ability as a potential predictor in the Mincer regression but either dismiss its validity or choose not to analyze the issue in depth.
+
+Five studies then deal in any form with publication bias (for brevity, I will not list them; refer to \autoref{tab:meta_overview} for detail). Three of these studies then find a presence of publication bias in the literature, while the other two do not.
+
+Lastly, six of the ten existing meta-analyses include control in any form for methodology in their approach. Mainly, this involves putting a single control such as \ac{IV} or \ac{OLS} into their models. None of the studies then compare more methods to each other.
+
+Indeed, no single study exists that would bring all these issues together and try to answer all of them. This, together with other vital points, should be the main focus of this thesis, as explained in the following section.
+
+\section{My contribution}
+\label{sec:contribution}
+
+What I hope to bring into the field with this thesis can be summarized in the following way.
+
+First, as outlined in \autoref{sec:existing}, only one meta-analysis on the role of ability bias in returns to education exists thus far (on top, this paper has been published only after conceptualizing this thesis). Although I may not be the first to consider ability bias as a significant predictor of the effect of education, it is far from feasible to claim that the ability bias issue has been explored - far from it. I hope to thoroughly examine how ability plays its part as a predictor of returns to schooling, observe whether it is statistically and economically significant and whether it should be treated for. Furthermore, the existence of a meta-analysis on the topic means that I can now compare my results with the existing ones, which should ultimately bring more credibility to the issue overall.
+
+Second, by clearing up the uncertainty regarding the influence of ability bias on one's future income, I can suggest more efficient ways to indirectly control for ability or even highlight the importance of obtaining data through which the researchers can control for this bias. Given the existing heterogeneity in the current research (especially regarding ability bias), this may help guide the authors in their estimation strategies and finally contribute to the quality of research findings in the future.
+
+Third, I hope to identify the individual effects that different estimation methods may systematically have on returns to education. Even though over half of the existing meta-analyses address this issue, none directly compares all of the available methodologies within the literature. Given that the dataset I will assemble and use to test for this relies primarily on a search query for the choice of studies, the literature set should provide the most representative form of the existing literature possible and capture nearly all methods used in practice.
+
+Fourth, I will focus thoroughly on the issue of publication bias to find systematic misuse of result reporting. By employing the most modern state-of-the-art methodology such as the MAIVE estimator \citep{irsova2023maive} or Robust Bayesian Model Averaging \citep{maier2022robust} in addition to the battery of the standard FAT-PEESE-PET tests and more, I attempt to bring the most robust results out of all existing analyses thus far. Looking at the results of the five that have tried to answer the issue, no consensus exists here either (three claim the presence of publication bias, while two argue for the lack thereof). More scrutiny should help clear out the uncertainty about publication bias and provide even more robustness to the results.
+
+Fifth, I will look at the role of individual variables regarding the effect behavior using novel technology such as Bayesian and Frequentist Model Averaging. Which variables are the most influential drivers of the returns to education effect? What is their economic significance? What would be the true effect if a best-practice effect could be derived from the literature that would correct for the aforementioned detected biases? None of the existing research tackles any of these questions, and I hope this approach will contribute to their clarification.
+
+Sixth, I will construct an entirely new dataset including only natural experiments conducted on twins (so-called \textit{twin studies}) and rerun the analysis using this dataset. By removing the differences in socioeconomic factors that usually exist in the subject sample, this approach should serve as a robustness check to more precisely identify education's role in affecting the twins' future earnings. Furthermore, I can observe how all the answers to the earlier mentioned questions regarding ability, publication bias, heterogeneity, and so on change when using this new twin study dataset. This should help me validate the robustness of my results and identify the most important ones.
+
+Next, I present several technical extensions as an improvement to the code quality of the analysis. As the first one, I provide R code for the Endogenous Kink method by \citep{Bom2019Kink}. So far, to the best of my knowledge, the code for this method only exists in the STATA software. I hope to facilitate research to a surely sizable pool of researchers who do not work with or hold the license to STATA by providing the code for said method purely in the programming language R. Several validity checks are also included in the new code to make sure it runs smoothly and without hiccups. Albeit a trifling task, I believe it will aid further researchers to shine a brighter light on their results.
+
+As the second technical extension, I upgrade the existing code of the STEM method \citep{Furukawa2019Stem} to work up to 35 times faster than the available source code.\footnote{Tested on the master dataset of length 1754, the improvement cuts down the source code run time of 99.52 seconds to only 2.84 seconds, averaged over ten runs.}
+
+As the last extension, I provide an all-encompassing R code in the form of several scripts that can be used together to replicate the whole analysis without effort.\footnote{Available at \href{https://github.com/PetrCala/Diploma-Thesis}{https://github.com/PetrCala/Diploma-Thesis}.} With over 6000 lines of code, the project allows the user to run, see, and customize every method within a single location. All results are automatically exported and saved in a single, small-sized, easily distributable \textit{.zip} file. With best-practice methods from software engineering, including tests, validation checks, a cache system, and much more, anyone can now access complex meta-analysis methods and run them all in seconds. Tested against code from my bachelor thesis that took 9 minutes to run, the cached version of this newly presented code can run in 2.31 seconds. This corresponds to an improvement factor of over 230x.
