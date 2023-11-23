@@ -23,6 +23,7 @@ source_file <- "source_master_thesis_cala.R" # Main source file
 user_param_file <- "user_parameters.yaml" # File with user parameters
 user_param_model_file <- "resources/user_parameters_model.yaml" # Model user parameters file
 package_file <- "resources/packages.R" # Package file
+table_templates_file <- "resources/table_templates.yaml" # Table templates file
 
 # Load several packages necessary for the environment preparation
 initial_packages <- list('rstudioapi', 'devtools', 'pbapply')
@@ -46,8 +47,11 @@ if(interactive()) {
 ##### PREPARATION #####
 
 ### Validate the existence of source files and load them
-source_file_list <- list("Source file" = source_file, 
-                       "Package file" = package_file)
+source_file_list <- list(
+  "Source file" = source_file, 
+  "Package file" = package_file,
+  "Table templates file" = table_templates_file
+)
 
 # Function to verify file existence
 verify_file_existence <- function(file_name, file_path) {
@@ -70,6 +74,9 @@ source(package_file)
 # Load packages
 loadPackages(packages, verbose=TRUE)
 
+# Load the table templates
+table_templates <- yaml::read_yaml(table_templates_file) 
+
 ### Validate the existence of the user parameter file and recreate it if it does not exist
 
 # Check if the new file already exists
@@ -84,6 +91,7 @@ if (!file.exists(user_param_file)) {
 user_params <- yaml::read_yaml(user_param_file) 
 source_file_params <- user_params$source_file_params # Parameters of the source data file
 run_this <- user_params$run_this # Which parts of the script to run
+dataset_params <- user_params$dataset_specific_parameters # Parameters unique to each dataset
 adj_params <- user_params$adjustable_parameters # Various parameters
 data_files <- user_params$data_files # Data files (only files names)
 script_files <- user_params$script_files # Script files (only file names)
@@ -96,6 +104,7 @@ modifiable_folders <- c(
   folder_paths$temp_data_folder,
   folder_paths$graphic_results_folder,
   folder_paths$numeric_results_folder,
+  # folder_paths$tex_results_folder,
   folder_paths$all_results_folder
 )
 unmodifiable_folders <- c(
@@ -108,6 +117,7 @@ invisible(sapply(unmodifiable_folders, validateFolderExistence, require_existenc
 # Clean result and data folders
 folders_to_clean_forcefully <- c(
   folder_paths$numeric_results_folder
+  # folder_paths$tex_results_folder
 )
 folders_to_clean_old_files_only <- c(
   folder_paths$graphic_results_folder,
@@ -182,7 +192,7 @@ if (run_this$variable_summary_stats){
   )
   variable_sum_stats <- variable_sum_stats_list[[1]] # Also missing data information
   if (export_options$export_results){
-    exportTable(variable_sum_stats, user_params, "variable_summary_stats")
+    exportResults(variable_sum_stats, user_params, "variable_summary_stats", result_type = "num")
   }
 }
 
@@ -222,7 +232,7 @@ data <- runCachedFunction(
 )
 
 # Subset data using the conditions specified in the customizable section
-subset_conditions <- getMultipleParams(adj_params, "data_subset_condition_", T) # Extract all the data subset conditions
+subset_conditions <- getMultipleParams(dataset_params, "data_subset_condition_", T) # Extract all the data subset conditions
 data <- runCachedFunction(
   applyDataSubsetConditions, user_params, 
   verbose_function = applyDataSubsetConditionsVerbose,
@@ -242,7 +252,7 @@ if (run_this$effect_summary_stats){
   )
   effect_sum_stats <- effect_sum_stats_list[[1]] # Also missing variable info
   if (export_options$export_results){
-    exportTable(effect_sum_stats, user_params, "effect_summary_stats")
+    exportResults(effect_sum_stats, user_params, "effect_summary_stats", result_type = "num")
   }
 }
 
@@ -253,7 +263,7 @@ if (run_this$prima_facie_graphs){
     getPrimaFacieGraphs, user_params,
     verbose_function = nullVerboseFunction,
     data, var_list,
-    prima_factors = adj_params$prima_factors,
+    prima_factors = dataset_params$prima_factors,
     prima_type = adj_params$prima_type,
     prima_hide_outliers = adj_params$prima_hide_outliers,
     prima_bins = adj_params$prima_bins,
@@ -268,7 +278,7 @@ if (run_this$prima_facie_graphs){
 ###### BOX PLOT ######
 if (run_this$box_plot){
   # Parameters
-  factor_names <- getMultipleParams(adj_params, "box_plot_group_by_factor_")
+  factor_names <- getMultipleParams(dataset_params, "box_plot_group_by_factor_")
   factor_names <- factor_names[!is.na(factor_names)] # Only non-NA factors
   # Run box plots for all these factors iteratively
   for (factor_name in factor_names){
@@ -283,7 +293,7 @@ if (run_this$box_plot){
       graph_scale = adj_params$box_plot_graph_scale,
       output_folder = folder_paths$graphic_results_folder,
       factor_by = factor_name,
-      effect_name = adj_params$effect_name,
+      effect_name = dataset_params$effect_name,
       theme = export_options$theme,
       verbose = F # Internal function parameter - no doubling
     )
@@ -379,7 +389,7 @@ if (run_this$linear_tests){
     verbose = adj_params$linear_verbose
   )
   if (export_options$export_results){
-    exportTable(linear_tests_results, user_params, "linear_tests")
+    exportResults(linear_tests_results, user_params, "linear_tests", result_type = "num")
   }
 }
 
@@ -409,7 +419,12 @@ if (run_this$nonlinear_tests){
     stem_legend_pos = adj_params$non_linear_stem_legend_position
   )
   if (export_options$export_results){
-    exportTable(nonlinear_tests_results, user_params, "nonlinear_tests")
+    exportResults(nonlinear_tests_results, user_params, "nonlinear_tests", result_type = "num")
+  }
+  if (export_options$export_tex){
+    exportResults(nonlinear_tests_results, user_params, "nonlinear_tests", result_type = "tex",
+                  table_template = table_templates$nonlinear_tests
+    )
   }
 }
 
@@ -430,7 +445,7 @@ if (run_this$exo_tests){
   )
   exo_tests_results <- exo_tests_results_list[[1]]
   if (export_options$export_results){
-    exportTable(exo_tests_results, user_params, "exo_tests")
+    exportResults(exo_tests_results, user_params, "exo_tests", result_type = "num")
   }
 }
 
@@ -478,9 +493,9 @@ if (run_this$p_hacking_tests){
     add_significance_marks = adj_params$maive_add_significance_marks
   )
   if (export_options$export_results){
-     exportTable(caliper_results, user_params, "p_hacking_tests_caliper")
-     exportTable(elliott_results, user_params, "p_hacking_tests_elliott")
-     exportTable(maive_results, user_params, "p_hacking_tests_maive")
+     exportResults(caliper_results, user_params, "p_hacking_tests_caliper", result_type = "num")
+     exportResults(elliott_results, user_params, "p_hacking_tests_elliott", result_type = "num")
+     exportResults(maive_results, user_params, "p_hacking_tests_maive", result_type = "num")
   }
 }
 
@@ -590,7 +605,7 @@ if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs"))
     bma_coefs, fma_coefs, var_list
   )
   if (export_options$export_results){
-     exportTable(ma_res_table, user_params, "ma")
+     exportResults(ma_res_table, user_params, "ma", result_type = "num")
    }
 }
 
@@ -613,7 +628,7 @@ if (run_this$ma_variables_description_table){
     verbose = adj_params$ma_variables_description_table_verbose # Use View(...) for best viewing experience
   )
   if (export_options$export_results){
-     exportTable(ma_var_desc_table, user_params, "ma_variables_description_table")
+     exportResults(ma_var_desc_table, user_params, "ma_variables_description_table", result_type = "num")
    }
 }
 
@@ -623,7 +638,7 @@ if (run_this$bpe){
     stop("You must create these three objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
   }
   # Parameters
-  bpe_study_ids <- getMultipleParams(adj_params, "bpe_studies")
+  bpe_study_ids <- getMultipleParams(dataset_params, "bpe_studies")
   if ("all" %in% bpe_study_ids){
     print("Running the best practice estimate for all studies. This may take some time...")
   }
@@ -650,8 +665,8 @@ if (run_this$bpe){
   # Export
   if (export_options$export_results){
     bpe_res_name <- ifelse("all" %in% bpe_study_ids, "bpe_res_all_studies", "bpe_res")
-    exportTable(bpe_df, user_params, bpe_res_name)
-    exportTable(bpe_econ_sig, user_params, "bpe_econ_sig")
+    exportResults(bpe_df, user_params, bpe_res_name, result_type = "num")
+    exportResults(bpe_econ_sig, user_params, "bpe_econ_sig", result_type = "num")
   }
 }
 
@@ -664,7 +679,7 @@ if (run_this$bpe_graphs){
     graphBPE, user_params,
     verbose_function = nullVerboseFunction,
     bpe_df, data, var_list,
-    bpe_factors = adj_params$bpe_factors,
+    bpe_factors = dataset_params$bpe_factors,
     graph_type = adj_params$bpe_graphs_type,
     theme = export_options$theme,
     export_graphics = export_options$export_graphics,
@@ -682,11 +697,11 @@ if (run_this$bpe_summary_stats){
     getBPESummaryStats, user_params,
     verbose_function = getBPESummaryStatsVerbose,
     bpe_df, data, var_list,
-    bpe_factors = adj_params$bpe_factors,
+    bpe_factors = dataset_params$bpe_factors,
     conf.level = adj_params$bpe_summary_stats_conf_level
   )
   if (export_options$export_results){
-    exportTable(bpe_sum_stats, user_params, "bpe_summary_stats")
+    exportResults(bpe_sum_stats, user_params, "bpe_summary_stats", result_type = "num")
   }
 }
 
@@ -706,8 +721,8 @@ if (run_this$robma){
   )
   # Export
   if (export_options$export_results){
-     exportTable(robma_res$Components, user_params, "robma_components")
-     exportTable(robma_res$Estimates, user_params, "robma_estimates")
+     exportResults(robma_res$Components, user_params, "robma_components", result_type = "num")
+     exportResults(robma_res$Estimates, user_params, "robma_estimates", result_type = "num")
   }
 }
 
@@ -722,6 +737,7 @@ if (export_options$export_results){
     folder_paths$temp_data_folder,
     folder_paths$graphic_results_folder,
     folder_paths$numeric_results_folder,
+    # folder_paths$tex_results_folder,
     log_file_path
   )
 }

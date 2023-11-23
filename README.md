@@ -24,6 +24,7 @@ The project is structured as follows:
 │   └── LowRankQP/
 ├── resources/
 │   ├── packages.R
+│   ├── table_templates.yaml
 │   └── user_parameters_model.yaml
 ├── results/
 │   ├── graphic/
@@ -48,10 +49,12 @@ The project is structured as follows:
 * `pckg/` -> Folder with external packages that are not available online anymore, such as `LowRankQP`.
 * `resources/` -> Folder with various resources.
   - `packages.R` -> An R script containing an object with all packages used for the project, along with their versions.
+  - `table_templates.yaml` -> Store TeX table templates here in form of nested lists. User-modifiable.
   - `user_parameters_model.yaml` -> Customizable parameters. This file should be copied into the project roote, renamed to `user_parameters.yaml`, and modified to fit the user preferences. Any modifications can be done by opening the file using any text editor, such as `Notepad`. Alternatively, you may want to edit this file using fancier text editors, such as [Sublime Text](https://www.sublimetext.com/docs/vintage.html), or [VIM](https://www.vim.org/).
 * `results/` -> Folder with all results. A `.zip` file with all results will be automatically created here.
   - `graphic/` -> All graphic results will be automatically stored here.
   - `numeric/` -> All numeric results will be automatically stored here as `.csv` files.
+  - `text/` -> All TeX table code will be automatically stored here. This code is directly pasteable into .tex files for compilation (may require packages such as *longtable*,...).
   - `main_results.txt` -> An R console log file where all numeric/tabular results are stored in a presentable form.
 * `scripts/` -> Source scripts for various external methods.
   - `elliott_master_thesis_cala.R` -> Source code for the p-hacking tests developed by Elliott et al. (2022).
@@ -150,7 +153,7 @@ To run the code, follow these steps:
 	Furthermore, modify any other source file parameters so that they fit your data. These include the file name, sheet names, file suffix, and the suffix you wish to attach to the created `.csv` files. If you do not modify these, your data may be read incorrectly.
 4. After modifying any paramters as you see fit, run either the script runner or the main script. Note that running the script runner executes virtually the same job as running the main script, only less redundant code will be printed into the console, so I personally recommend this approach.
 5. You may encounter errors caused by mismatching file names, package incompatibility, etc. The script will automatically attempt to install all the necessary packages (if they are not installed on your local machine), so in case there are any conflicts, make sure to check that you have fulfilled all prerequisites from the prerequisites section. If you, however, wish to run the code line by line, working with the main script may prove more suitable.
-5. If all goes well, you should see the output in the console, and in the results folder. In the folder `results/numeric/`, you will find for numerical and text-based output, while the folder and `results/graphics/` holds graphical output. Furthermore, a file called `main_results.txt`, containing the console log with numerous clean and formatted results, will be created in the `results/` folder. Any existing files within these folders will likely be overwritten upon running the script, so make sure to save any desired files outside these folders after they are generated.
+5. If all goes well, you should see the output in the console, and in the results folder. In the folder `results/numeric/`, you will find for numerical and text-based output, while the folder and `results/graphics/` holds graphical output. In the folder `results/tex`, you will (in the future) find .tex type code representing all result tables generated during the script run. If you wish to modify the form of these tables, see the file `resources/table_templates.yaml`. Furthermore, a file called `main_results.txt`, containing the console log with numerous clean and formatted results, will be created in the `results/` folder. Any existing files within these folders will likely be overwritten upon running the script, so make sure to save any desired files outside these folders after they are generated.
 6. If you wish to look under the hood of the code, see the file `source_master_thesis_cala.R`, which contains all the technical functions, preprocessing, and validation, that is hidden in the main file.
 
 ## List of available methods
