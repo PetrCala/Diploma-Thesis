@@ -1,0 +1,33 @@
+% Linear tests
+\begin{table}[!t]
+\centering
+\footnotesize
+\singlespace
+\caption{Linear tests for publication bias}
+\label{tab:PB-FAT}
+\begin{tabular}{
+@{\hskip\tabcolsep\extracolsep}
+l*{5}{c}} %one left column, five center (*{} makes the cols inherit attributes)
+\toprule
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{c}{\textbf{OLS}} & 
+  \multicolumn{1}{c}{\textbf{FE}} &
+  \multicolumn{1}{c}{\textbf{RE}} & 
+  \multicolumn{1}{c}{\textbf{Study}} &
+  \multicolumn{1}{c}{\textbf{Precision}} \\
+\midrule
+
+Publication Bias & 0.832*** & 0.746*** & 0.752*** & 0.747*** & 1.169*** & 0.262 \\
+\emph{\hspace{0.2cm}(Standard Error)} & (0.097) & (0.06) & (0.244) & (0.058) & (0.121) & (0.425) \\
+\emph{\hspace{0.2cm}Bootstrapped CI (PB)} & [0.624, 1.035] &  &  & [0.514, 0.995] & [0.92, 1.405] & [-0.833, 1.091] \\
+\addlinespace[0.5em]
+Effect Beyond Bias & 6.408*** & 6.517*** & 6.741*** & 6.708*** & 6.294*** & 6.54*** \\
+\emph{\hspace{0.2cm}(Constant)} & (0.118) & (0.107) & (0.418) & (0.294) & (0.153) & (0.168) \\
+\emph{\hspace{0.2cm}Bootstrapped CI (EBB)} & [6.164, 6.639] &  &  & [6.398, 6.965] & [6.04, 6.645] & [6.189, 6.918] \\
+\addlinespace[0.5em]
+Observations & 1754 & 1754 & 1754 & 1754 & 1754 & 1754 \\
+    
+\bottomrule
+\multicolumn{6}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} OLS = Ordinary Least Squares. FE = Fixed Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1}
+\end{tabular}
+\end{table}

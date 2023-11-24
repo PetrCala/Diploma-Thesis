@@ -1,0 +1,19 @@
+\begin{table}[!htbp]
+\centering
+\scriptsize
+\singlespace
+\caption{Mean statistics across various subsets of data}
+\label{tab:sum}
+\begin{tabular}{
+@{}
+l % Description
+*{6}{c} % Middle columns
+>{\centering\arraybackslash}p{1cm} % Last column with fixed width
+@{}
+}
+\toprule
+   & \multicolumn{3}{c}{Unweighted} &   \multicolumn{3}{c}{Weighted} & \\
+   \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+   & Mean & \multicolumn{2}{c}{95\% conf. int.} & Mean & \multicolumn{2}{c}{95\% conf. int.} & N. obs\\
+  
+\midrule

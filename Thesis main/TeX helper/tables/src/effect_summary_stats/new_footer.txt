@@ -1,0 +1,4 @@
+\bottomrule                                               
+\multicolumn{8}{>{\scriptsize}p{0.88\linewidth}}{\emph{Note:} This table presents basic summary statistics of the returns to an additional year of schooling coefficient calculated on various subsets of the data. Unweighted = Original dataset is used. Weighted = Estimates are weighted by the inverse number of estimates reported by each study. OLS = Ordinary Least Squares. For cutoff points, medians are used except for dummy variables, where the cutoffs are 0.5.}
+\end{tabular}
+\end{table}
