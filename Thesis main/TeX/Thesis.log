@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.1)  24 NOV 2023 10:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.11.1)  24 NOV 2023 12:47
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -182,29 +182,15 @@ Package: stringenc 2019/11/29 v1.12 Convert strings between diff. encodings (HO)
 Package hyperref Info: Option `psdextra' set `true' on input line 1465.
  (c:/tools/TinyTeX/texmf-dist/tex/latex/hyperref/psdextra.def
 File: psdextra.def 2023-10-21 v7.01c Hyperref: Additions to PDF string support
-)
-
-Package pdfx Warning: The 'colorprofiles' package is not installed correctly.
- File 'colorprofiles.tex' is missing. Proceeding without it.  on input line 1705.
-
-(c:/tools/TinyTeX/texmf-dist/tex/generic/stringenc/se-pdfdoc.def
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/colorprofiles/colorprofiles.sty
+Package: colorprofiles 2018/11/01 v1.0.1 color profiles for PDF/X and PDF/A support
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/colorprofiles/colorprofiles.tex)) (c:/tools/TinyTeX/texmf-dist/tex/generic/stringenc/se-pdfdoc.def
 File: se-pdfdoc.def 2019/11/29 v1.12 stringenc: PDFDocEncoding
 ) (c:/tools/TinyTeX/texmf-dist/tex/latex/pdfx/AdobeColorProfiles.tex) (c:/tools/TinyTeX/texmf-dist/tex/latex/pdfx/8bit.def
 File: 8bit.def 2008/03/30 v1.1d Input encoding file
 )
 ** pdfx: No file Thesis.xmpdata . Metadata will be incomplete!
-
-c:/tools/TinyTeX/texmf-dist/tex/latex/pdfx/pdfx.sty:2088: Package pdfx Error: No color profile sRGB_IEC61966-2-1_black_scaled.icc found to use for RGB screen colors..
-
-See the pdfx package documentation for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.2088  }
-         % end of \IfFileExists for RGB
-Is this the correct directory:  ?
-
-(c:/tools/TinyTeX/texmf-dist/tex/latex/pdfx/8bit.def
+<<sRGB.icc>> (c:/tools/TinyTeX/texmf-dist/tex/latex/pdfx/8bit.def
 File: 8bit.def 2008/03/30 v1.1d Input encoding file
 )
 Package hyperref Info: Option `unicode' set `true' on input line 2411.
@@ -379,28 +365,1038 @@ Package graphics Info: Driver file: pdftex.def on input line 107.
 )
 \Gin@req@height=\dimen154
 \Gin@req@width=\dimen155
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/acronym/acronym.sty
+Package: acronym 2020/04/17 v1.47 Support for acronyms (Tobias Oetiker)
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/bigfoot/suffix.sty
+Package: suffix 2006/07/15 1.5a Variant command support
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/xstring/xstring.sty (c:/tools/TinyTeX/texmf-dist/tex/generic/xstring/xstring.tex
+\xs_counta=\count286
+\xs_countb=\count287
 )
+Package: xstring 2023/08/22 v1.86 String manipulations (CT)
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/relsize/relsize.sty
+Package: relsize 2013/03/29 ver 4.1
+)
+\AC@clearlist=\toks33
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/float/float.sty
+Package: float 2001/11/08 v1.3d Float enhancements (AL)
+\c@float@type=\count288
+\float@exts=\toks34
+\float@box=\box53
+\@float@everytoks=\toks35
+\@floatcapt=\box54
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/caption/caption.sty
+Package: caption 2023/08/05 v3.6o Customizing captions (AR)
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/caption/caption3.sty
+Package: caption3 2023/07/31 v2.4d caption3 kernel (AR)
+\caption@tempdima=\dimen156
+\captionmargin=\dimen157
+\caption@leftmargin=\dimen158
+\caption@rightmargin=\dimen159
+\caption@width=\dimen160
+\caption@indent=\dimen161
+\caption@parindent=\dimen162
+\caption@hangindent=\dimen163
+Package caption Info: Standard document class detected.
+)
+\c@caption@flags=\count289
+\c@continuedfloat=\count290
+Package caption Info: float package is loaded.
+Package caption Info: hyperref package is loaded.
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/natbib/natbib.sty
+Package: natbib 2010/09/13 8.31b (PWD, AO)
+\bibhang=\skip66
+\bibsep=\skip67
+LaTeX Info: Redefining \cite on input line 694.
+\c@NAT@ctr=\count291
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/titlesec/titlesec.sty
+Package: titlesec 2023/10/27 v2.16 Sectioning titles
+\ttl@box=\box55
+\beforetitleunit=\skip68
+\aftertitleunit=\skip69
+\ttl@plus=\dimen164
+\ttl@minus=\dimen165
+\ttl@toksa=\toks36
+\titlewidth=\dimen166
+\titlewidthlast=\dimen167
+\titlewidthfirst=\dimen168
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/boxedminipage/boxedminipage.sty
+Package: boxedminipage 2020/04/19 v1.1 Boxed LaTeX2e minipages
+\bmp@box=\box56
+\bmp@width=\skip70
+\bmp@height=\skip71
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/booktabs/booktabs.sty
+Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
+\heavyrulewidth=\dimen169
+\lightrulewidth=\dimen170
+\cmidrulewidth=\dimen171
+\belowrulesep=\dimen172
+\belowbottomsep=\dimen173
+\aboverulesep=\dimen174
+\abovetopsep=\dimen175
+\cmidrulesep=\dimen176
+\cmidrulekern=\dimen177
+\defaultaddspace=\dimen178
+\@cmidla=\count292
+\@cmidlb=\count293
+\@aboverulesep=\dimen179
+\@belowrulesep=\dimen180
+\@thisruleclass=\count294
+\@lastruleclass=\count295
+\@thisrulewidth=\dimen181
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/tools/enumerate.sty
+Package: enumerate 2015/07/23 v3.00 enumerate extensions (DPC)
+\@enLab=\toks37
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/sidecap/sidecap.sty
+Package: sidecap 2023/01/24 v1.7a SideCap Package (RN/HjG)
+\SC@BOXWD=\dimen182
+\SC@CAPWD=\dimen183
+\SC@tempdima=\dimen184
+\SC@tempdimb=\dimen185
+\c@SC@C=\count296
+\SC@BOX=\box57
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/wrapfig/wrapfig.sty
+\wrapoverhang=\dimen186
+\WF@size=\dimen187
+\c@WF@wrappedlines=\count297
+\WF@box=\box58
+\WF@everypar=\toks38
+Package: wrapfig 2003/01/31  v 3.6
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/setspace/setspace.sty
+Package: setspace 2022/12/04 v6.7b set line spacing
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/graphics/lscape.sty
+Package: lscape 2020/05/28 v3.02 Landscape Pages (DPC)
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/totpages/totpages.sty
+Package: totpages 2005/09/19 v2.00 Totpages Package (muewi)
+)
+Package hyperref Info: Option `colorlinks' set `false' on input line 29.
+Package hyperref Info: Option `breaklinks' set `false' on input line 29.
+Package hyperref Info: Option `unicode' set `true' on input line 29.
+Package hyperref Info: Option `bookmarksnumbered' set `true' on input line 29.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/tools/array.sty
+Package: array 2022/09/04 v2.5g Tabular extension package (FMi)
+\col@sep=\dimen188
+\ar@mcellbox=\box59
+\extrarowheight=\dimen189
+\NC@list=\toks39
+\extratabsurround=\skip72
+\backup@length=\skip73
+\ar@cellbox=\box60
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/tools/longtable.sty
+Package: longtable 2021-09-01 v4.17 Multi-page Table package (DPC)
+\LTleft=\skip74
+\LTright=\skip75
+\LTpre=\skip76
+\LTpost=\skip77
+\LTchunksize=\count298
+\LTcapwidth=\dimen190
+\LT@head=\box61
+\LT@firsthead=\box62
+\LT@foot=\box63
+\LT@lastfoot=\box64
+\LT@gbox=\box65
+\LT@cols=\count299
+\LT@rows=\count300
+\c@LT@tables=\count301
+\c@LT@chunks=\count302
+\LT@p@ftn=\toks40
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/caption/subcaption.sty
+Package: subcaption 2023/07/28 v1.6b Sub-captions (AR)
+Package caption Info: New subtype `subfigure' on input line 238.
+\c@subfigure=\count303
+Package caption Info: New subtype `subtable' on input line 238.
+\c@subtable=\count304
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/multirow/multirow.sty
+Package: multirow 2021/03/15 v2.8 Span multiple rows of a table
+\multirow@colwidth=\skip78
+\multirow@cntb=\count305
+\multirow@dima=\skip79
+\bigstrutjot=\dimen191
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/tools/multicol.sty
+Package: multicol 2023/03/30 v1.9f multicolumn formatting (FMi)
+\c@tracingmulticols=\count306
+\mult@box=\box66
+\multicol@leftmargin=\dimen192
+\c@unbalance=\count307
+\c@collectmore=\count308
+\doublecol@number=\count309
+\multicoltolerance=\count310
+\multicolpretolerance=\count311
+\full@width=\dimen193
+\page@free=\dimen194
+\premulticols=\dimen195
+\postmulticols=\dimen196
+\multicolsep=\skip80
+\multicolbaselineskip=\skip81
+\partial@page=\box67
+\last@line=\box68
+\mc@boxedresult=\box69
+\maxbalancingoverflow=\dimen197
+\mult@rightbox=\box70
+\mult@grightbox=\box71
+\mult@firstbox=\box72
+\mult@gfirstbox=\box73
+\@tempa=\box74
+\@tempa=\box75
+\@tempa=\box76
+\@tempa=\box77
+\@tempa=\box78
+\@tempa=\box79
+\@tempa=\box80
+\@tempa=\box81
+\@tempa=\box82
+\@tempa=\box83
+\@tempa=\box84
+\@tempa=\box85
+\@tempa=\box86
+\@tempa=\box87
+\@tempa=\box88
+\@tempa=\box89
+\@tempa=\box90
+\@tempa=\box91
+\@tempa=\box92
+\@tempa=\box93
+\@tempa=\box94
+\@tempa=\box95
+\@tempa=\box96
+\@tempa=\box97
+\@tempa=\box98
+\@tempa=\box99
+\@tempa=\box100
+\@tempa=\box101
+\@tempa=\box102
+\@tempa=\box103
+\@tempa=\box104
+\@tempa=\box105
+\@tempa=\box106
+\@tempa=\box107
+\@tempa=\box108
+\@tempa=\box109
+\c@minrows=\count312
+\c@columnbadness=\count313
+\c@finalcolumnbadness=\count314
+\last@try=\dimen198
+\multicolovershoot=\dimen199
+\multicolundershoot=\dimen256
+\mult@nat@firstbox=\box110
+\colbreak@box=\box111
+\mc@col@check@num=\count315
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/tools/afterpage.sty
+Package: afterpage 2014/10/28 v1.08 After-Page Package (DPC)
+\AP@output=\toks41
+\AP@partial=\box112
+\AP@footins=\box113
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/tools/tabularx.sty
+Package: tabularx 2020/01/15 v2.11c `tabularx' package (DPC)
+\TX@col@width=\dimen257
+\TX@old@table=\dimen258
+\TX@old@col=\dimen259
+\TX@target=\dimen260
+\TX@delta=\dimen261
+\TX@cols=\count316
+\TX@ftn=\toks42
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/needspace/needspace.sty
+Package: needspace 2010/09/12 v1.3d reserve vertical space
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/graphics/rotating.sty
+Package: rotating 2016/08/11 v2.16d rotated objects in LaTeX
+\c@r@tfl@t=\count317
+\rotFPtop=\skip82
+\rotFPbot=\skip83
+\rot@float@box=\box114
+\rot@mess@toks=\toks43
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/quoting/quoting.sty
+Package: quoting 2014/01/28 v0.1c Consolidated environment for displayed text
+\quo@toppartop=\skip84
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/blindtext/blindtext.sty
+Package: blindtext 2012/01/06 V2.0 blindtext-Package
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/tools/xspace.sty
+Package: xspace 2014/10/28 v1.13 Space after command names (DPC,MH)
+)
+\c@blindtext=\count318
+\c@Blindtext=\count319
+\c@blind@countparstart=\count320
+\blind@countxx=\count321
+\blindtext@numBlindtext=\count322
+\blind@countyy=\count323
+\c@blindlist=\count324
+\c@blindlistlevel=\count325
+\c@blindlist@level=\count326
+\blind@listitem=\count327
+\c@blind@listcount=\count328
+\c@blind@levelcount=\count329
+\blind@mathformula=\count330
+\blind@Mathformula=\count331
+\c@blind@randomcount=\count332
+\c@blind@randommax=\count333
+\c@blind@pangramcount=\count334
+\c@blind@pangrammax=\count335
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/frontendlayer/tikz.sty (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/basiclayer/pgf.sty (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/utilities/pgfrcs.sty (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfutil-common.tex
+\pgfutil@everybye=\toks44
+\pgfutil@tempdima=\dimen262
+\pgfutil@tempdimb=\dimen263
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfutil-latex.def
+\pgfutil@abb=\box115
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfrcs.code.tex (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/pgf.revision.tex)
+Package: pgfrcs 2023-01-15 v3.1.10 (3.1.10)
+))
+Package: pgf 2023-01-15 v3.1.10 (3.1.10)
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/basiclayer/pgfcore.sty (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/systemlayer/pgfsys.sty (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsys.code.tex
+Package: pgfsys 2023-01-15 v3.1.10 (3.1.10)
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex
+\pgfkeys@pathtoks=\toks45
+\pgfkeys@temptoks=\toks46
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfkeyslibraryfiltered.code.tex
+\pgfkeys@tmptoks=\toks47
+))
+\pgf@x=\dimen264
+\pgf@y=\dimen265
+\pgf@xa=\dimen266
+\pgf@ya=\dimen267
+\pgf@xb=\dimen268
+\pgf@yb=\dimen269
+\pgf@xc=\dimen270
+\pgf@yc=\dimen271
+\pgf@xd=\dimen272
+\pgf@yd=\dimen273
+\w@pgf@writea=\write4
+\r@pgf@reada=\read3
+\c@pgf@counta=\count336
+\c@pgf@countb=\count337
+\c@pgf@countc=\count338
+\c@pgf@countd=\count339
+\t@pgf@toka=\toks48
+\t@pgf@tokb=\toks49
+\t@pgf@tokc=\toks50
+\pgf@sys@id@count=\count340
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgf.cfg
+File: pgf.cfg 2023-01-15 v3.1.10 (3.1.10)
+)
+Driver file for pgf: pgfsys-pdftex.def
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-pdftex.def
+File: pgfsys-pdftex.def 2023-01-15 v3.1.10 (3.1.10)
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsys-common-pdf.def
+File: pgfsys-common-pdf.def 2023-01-15 v3.1.10 (3.1.10)
+))) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsyssoftpath.code.tex
+File: pgfsyssoftpath.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfsyssoftpath@smallbuffer@items=\count341
+\pgfsyssoftpath@bigbuffer@items=\count342
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/systemlayer/pgfsysprotocol.code.tex
+File: pgfsysprotocol.code.tex 2023-01-15 v3.1.10 (3.1.10)
+)) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcore.code.tex
+Package: pgfcore 2023-01-15 v3.1.10 (3.1.10)
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathutil.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathparser.code.tex
+\pgfmath@dimen=\dimen274
+\pgfmath@count=\count343
+\pgfmath@box=\box116
+\pgfmath@toks=\toks51
+\pgfmath@stack@operand=\toks52
+\pgfmath@stack@operation=\toks53
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.basic.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.trigonometric.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.random.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.comparison.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.base.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.round.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.misc.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfunctions.integerarithmetics.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathcalc.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmathfloat.code.tex
+\c@pgfmathroundto@lastzeros=\count344
+)) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfint.code.tex) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepoints.code.tex
+File: pgfcorepoints.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@picminx=\dimen275
+\pgf@picmaxx=\dimen276
+\pgf@picminy=\dimen277
+\pgf@picmaxy=\dimen278
+\pgf@pathminx=\dimen279
+\pgf@pathmaxx=\dimen280
+\pgf@pathminy=\dimen281
+\pgf@pathmaxy=\dimen282
+\pgf@xx=\dimen283
+\pgf@xy=\dimen284
+\pgf@yx=\dimen285
+\pgf@yy=\dimen286
+\pgf@zx=\dimen287
+\pgf@zy=\dimen288
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathconstruct.code.tex
+File: pgfcorepathconstruct.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@path@lastx=\dimen289
+\pgf@path@lasty=\dimen290
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathusage.code.tex
+File: pgfcorepathusage.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@shorten@end@additional=\dimen291
+\pgf@shorten@start@additional=\dimen292
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorescopes.code.tex
+File: pgfcorescopes.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfpic=\box117
+\pgf@hbox=\box118
+\pgf@layerbox@main=\box119
+\pgf@picture@serial@count=\count345
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoregraphicstate.code.tex
+File: pgfcoregraphicstate.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgflinewidth=\dimen293
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransformations.code.tex
+File: pgfcoretransformations.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@pt@x=\dimen294
+\pgf@pt@y=\dimen295
+\pgf@pt@temp=\dimen296
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorequick.code.tex
+File: pgfcorequick.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreobjects.code.tex
+File: pgfcoreobjects.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepathprocessing.code.tex
+File: pgfcorepathprocessing.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorearrows.code.tex
+File: pgfcorearrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfarrowsep=\dimen297
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreshade.code.tex
+File: pgfcoreshade.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@max=\dimen298
+\pgf@sys@shading@range@num=\count346
+\pgf@shadingcount=\count347
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreimage.code.tex
+File: pgfcoreimage.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoreexternal.code.tex
+File: pgfcoreexternal.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfexternal@startupbox=\box120
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorelayers.code.tex
+File: pgfcorelayers.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcoretransparency.code.tex
+File: pgfcoretransparency.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorepatterns.code.tex
+File: pgfcorepatterns.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/basiclayer/pgfcorerdf.code.tex
+File: pgfcorerdf.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/modules/pgfmoduleshapes.code.tex
+File: pgfmoduleshapes.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfnodeparttextbox=\box121
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/modules/pgfmoduleplot.code.tex
+File: pgfmoduleplot.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-0-65.sty
+Package: pgfcomp-version-0-65 2023-01-15 v3.1.10 (3.1.10)
+\pgf@nodesepstart=\dimen299
+\pgf@nodesepend=\dimen300
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/compatibility/pgfcomp-version-1-18.sty
+Package: pgfcomp-version-1-18 2023-01-15 v3.1.10 (3.1.10)
+)) (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/utilities/pgffor.sty (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/utilities/pgfkeys.sty (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgfkeys.code.tex)) (c:/tools/TinyTeX/texmf-dist/tex/latex/pgf/math/pgfmath.sty (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/math/pgfmath.code.tex)) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/utilities/pgffor.code.tex
+Package: pgffor 2023-01-15 v3.1.10 (3.1.10)
+\pgffor@iter=\dimen301
+\pgffor@skip=\dimen302
+\pgffor@stack=\toks54
+\pgffor@toks=\toks55
+)) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+Package: tikz 2023-01-15 v3.1.10 (3.1.10)
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/libraries/pgflibraryplothandlers.code.tex
+File: pgflibraryplothandlers.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgf@plot@mark@count=\count348
+\pgfplotmarksize=\dimen303
+)
+\tikz@lastx=\dimen304
+\tikz@lasty=\dimen305
+\tikz@lastxsaved=\dimen306
+\tikz@lastysaved=\dimen307
+\tikz@lastmovetox=\dimen308
+\tikz@lastmovetoy=\dimen309
+\tikzleveldistance=\dimen310
+\tikzsiblingdistance=\dimen311
+\tikz@figbox=\box122
+\tikz@figbox@bg=\box123
+\tikz@tempbox=\box124
+\tikz@tempbox@bg=\box125
+\tikztreelevel=\count349
+\tikznumberofchildren=\count350
+\tikznumberofcurrentchild=\count351
+\tikz@fig@count=\count352
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/modules/pgfmodulematrix.code.tex
+File: pgfmodulematrix.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfmatrixcurrentrow=\count353
+\pgfmatrixcurrentcolumn=\count354
+\pgf@matrix@numberofcolumns=\count355
+)
+\tikz@expandcount=\count356
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarytopaths.code.tex
+File: tikzlibrarytopaths.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarypositioning.code.tex
+File: tikzlibrarypositioning.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrarychains.code.tex
+File: tikzlibrarychains.code.tex 2023-01-15 v3.1.10 (3.1.10)
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/geometry/geometry.sty
+Package: geometry 2020/01/02 v5.9 Page Geometry
+ (c:/tools/TinyTeX/texmf-dist/tex/generic/iftex/ifvtex.sty
+Package: ifvtex 2019/10/25 v1.7 ifvtex legacy package. Use iftex instead.
+)
+\Gm@cnth=\count357
+\Gm@cntv=\count358
+\c@Gm@tempcnt=\count359
+\Gm@bindingoffset=\dimen312
+\Gm@wd@mp=\dimen313
+\Gm@odd@mp=\dimen314
+\Gm@even@mp=\dimen315
+\Gm@layoutwidth=\dimen316
+\Gm@layoutheight=\dimen317
+\Gm@layouthoffset=\dimen318
+\Gm@layoutvoffset=\dimen319
+\Gm@dimlist=\toks56
+)
+\c@defin=\count360
+\c@ass=\count361
+\c@prop=\count362
+\c@lemma=\count363
+\c@exam=\count364
+\c@Listi=\count365
+\c@Lista=\count366
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/fancybox/fancybox.sty
+Package: fancybox 2010/05/15 1.4
 
-! LaTeX Error: File `acronym.sty' not found.
+Style option: `fancybox' v1.4 <2010/05/15> (tvz)
+\@fancybox=\box126
+\shadowsize=\dimen320
+\@Sbox=\box127
+\do@VerbBox=\toks57
+\the@fancyput=\toks58
+\this@fancyput=\toks59
+\EndVerbatimTokens=\toks60
+\Verbatim@Outfile=\write5
+\Verbatim@Infile=\read4
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/tools/verbatim.sty
+Package: verbatim 2022-07-02 v1.5u LaTeX2e package for verbatim enhancements
+\every@verbatim=\toks61
+\verbatim@line=\toks62
+\verbatim@in@stream=\read5
+)) (c:/tools/TinyTeX/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+File: l3backend-pdftex.def 2023-10-23 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count367
+\l__pdf_internal_box=\box128
+) (./Thesis.aux)
+\openout1 = `Thesis.aux'.
 
-Type X to quit or <RETURN> to proceed,
-or enter new name. (Default extension: sty)
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 55.
+LaTeX Font Info:    ... okay on input line 55.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 55.
+LaTeX Font Info:    ... okay on input line 55.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 55.
+LaTeX Font Info:    ... okay on input line 55.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 55.
+LaTeX Font Info:    ... okay on input line 55.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 55.
+LaTeX Font Info:    ... okay on input line 55.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 55.
+LaTeX Font Info:    ... okay on input line 55.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 55.
+LaTeX Font Info:    ... okay on input line 55.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 55.
+LaTeX Font Info:    ... okay on input line 55.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 55.
+LaTeX Font Info:    ... okay on input line 55.
+ (c:/tools/TinyTeX/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
+[Loading MPS to PDF converter (version 2006.09.02).]
+\scratchcounter=\count368
+\scratchdimen=\dimen321
+\scratchbox=\box129
+\nofMPsegments=\count369
+\nofMParguments=\count370
+\everyMPshowfont=\toks63
+\MPscratchCnt=\count371
+\MPscratchDim=\dimen322
+\MPnumerator=\count372
+\makeMPintoPDFobject=\count373
+\everyMPtoPDFconversion=\toks64
+) (c:/tools/TinyTeX/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
+Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
+Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 485.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/latexconfig/epstopdf-sys.cfg
+File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Live
+))
+Package hyperref Info: Link coloring OFF on input line 55.
+ (./Thesis.out) (./Thesis.out)
+\@outlinefile=\write6
+\openout6 = `Thesis.out'.
 
-Enter file name: 
-./Styles/Mystyle.sty:8: Emergency stop.
-<read *> 
-         
-l.8 \usepackage
-               {float}^^M
-*** (cannot \read from terminal in nonstop modes)
+Package caption Info: Begin \AtBeginDocument code.
+Package caption Info: longtable package is loaded.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/caption/ltcaption.sty
+Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
+)
+Package caption Info: rotating package is loaded.
+Package caption Info: sidecap package is loaded.
+Package caption Info: wrapfig package is loaded.
+Package caption Info: End \AtBeginDocument code.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/ragged2e/ragged2e.sty
+Package: ragged2e 2023/06/22 v3.6 ragged2e Package
+\CenteringLeftskip=\skip85
+\RaggedLeftLeftskip=\skip86
+\RaggedRightLeftskip=\skip87
+\CenteringRightskip=\skip88
+\RaggedLeftRightskip=\skip89
+\RaggedRightRightskip=\skip90
+\CenteringParfillskip=\skip91
+\RaggedLeftParfillskip=\skip92
+\RaggedRightParfillskip=\skip93
+\JustifyingParfillskip=\skip94
+\CenteringParindent=\skip95
+\RaggedLeftParindent=\skip96
+\RaggedRightParindent=\skip97
+\JustifyingParindent=\skip98
+)
+*geometry* driver: auto-detecting
+*geometry* detected driver: pdftex
+*geometry* verbose mode - [ preamble ] result:
+* driver: pdftex
+* paper: a4paper
+* layout: <same size as paper>
+* layoutoffset:(h,v)=(0.0pt,0.0pt)
+* modes: 
+* h-part:(L,W,R)=(105.2751pt, 401.18405pt, 91.04872pt)
+* v-part:(T,H,B)=(91.04872pt, 662.9494pt, 91.04872pt)
+* \paperwidth=597.50787pt
+* \paperheight=845.04684pt
+* \textwidth=401.18405pt
+* \textheight=662.9494pt
+* \oddsidemargin=33.00511pt
+* \evensidemargin=33.00511pt
+* \topmargin=-18.22127pt
+* \headheight=20.5pt
+* \headsep=25.0pt
+* \topskip=12.0pt
+* \footskip=30.0pt
+* \marginparwidth=35.0pt
+* \marginparsep=10.0pt
+* \columnsep=10.0pt
+* \skip\footins=10.8pt plus 4.0pt minus 2.0pt
+* \hoffset=0.0pt
+* \voffset=0.0pt
+* \mag=1000
+* \@twocolumnfalse
+* \@twosidefalse
+* \@mparswitchfalse
+* \@reversemarginfalse
+* (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
- 
+LaTeX Font Info:    Trying to load font information for T1+lmss on input line 63.
+(c:/tools/TinyTeX/texmf-dist/tex/latex/lm/t1lmss.fd
+File: t1lmss.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+<Figures/logouk.pdf, id=187, 541.39165pt x 541.38963pt>
+File: Figures/logouk.pdf Graphic file (type pdf)
+<use Figures/logouk.pdf>
+Package pdftex.def Info: Figures/logouk.pdf  used on input line 63.
+(pdftex.def)             Requested size: 113.81102pt x 113.81082pt.
+
+
+LaTeX Font Warning: Font shape `T1/lmss/bx/sc' undefined
+(Font)              using `T1/lmss/bx/n' instead on input line 63.
+
+[1.1
+
+{c:/tools/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ec.enc} <./Figures/logouk.pdf>] (./01_Frontmatter/decl.tex
+LaTeX Font Info:    Trying to load font information for OT1+lmr on input line 14.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/lm/ot1lmr.fd
+File: ot1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OML+lmm on input line 14.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/lm/omllmm.fd
+File: omllmm.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OMS+lmsy on input line 14.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/lm/omslmsy.fd
+File: omslmsy.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    Trying to load font information for OMX+lmex on input line 14.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/lm/omxlmex.fd
+File: omxlmex.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+)
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <12> on input line 14.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <8> on input line 14.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <6> on input line 14.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 14.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/amsfonts/umsa.fd
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+LaTeX Font Info:    Trying to load font information for U+msb on input line 14.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/amsfonts/umsb.fd
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+LaTeX Font Info:    Trying to load font information for U+lasy on input line 14.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/base/ulasy.fd
+File: ulasy.fd 1998/08/17 v2.2e LaTeX symbol font definitions
+)) [2.2] (./01_Frontmatter/abst.tex
+LaTeX Font Info:    Trying to load font information for T1+lmtt on input line 13.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/lm/t1lmtt.fd
+File: t1lmtt.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+) [3.3
+
+]
+Underfull \hbox (badness 1418) in paragraph at lines 32--33
+[]|\T1/lmr/m/n/12 Dovednostní zkreslení v návrat-nosti do
+ []
+
+) [4.4
+
+] (./01_Frontmatter/ackn.tex) [5.5
+
+] (./Thesis.toc [6.6
+
+
+])
+\tf@toc=\write7
+\openout7 = `Thesis.toc'.
+
+ [7.7] (./Thesis.lot)
+\tf@lot=\write8
+\openout8 = `Thesis.lot'.
+
+ [8.8
+
+
+] (./Thesis.lof
+Overfull \hbox (3.96545pt too wide) detected at line 26
+ []\T1/lmr/m/n/12 VIII
+ []
+
+)
+\tf@lof=\write9
+\openout9 = `Thesis.lof'.
+
+ [9.9
+
+
+] (./01_Frontmatter/acro.tex) [10.10
+
+
+] (./02_Mainmatter/01_Intro.tex
+Chapter 1.
+) (./02_Mainmatter/02_Literature.tex [1.11
+
+
+]
+Chapter 2.
+Package acronym Info: Label `acro:HCEF' newly defined as it shall be overridden
+although it is yet undefined on input line 10.
+[2.12
+
+{c:/tools/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathit.enc}{c:/tools/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-rm.enc}] [3.13{c:/tools/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-mathsy.enc}] [4.14]
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10> on input line 58.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <7> on input line 58.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <5> on input line 58.
+ [5.15]
+Package acronym Info: Label `acro:IV' newly defined as it shall be overridden
+although it is yet undefined on input line 89.
+Package acronym Info: Label `acro:OLS' newly defined as it shall be overridden
+although it is yet undefined on input line 89.
+ [6.16] [7.17]) (./02_Mainmatter/03_Data.tex [8.18] [9.19]
+Chapter 3.
+[10.20
+
+] [11.21] [12.22] [13.23]
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 71.
+ (c:/tools/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
+File: ts1lmr.fd 2015/05/01 v1.6.1 Font defs for Latin Modern
+) [14.24{c:/tools/TinyTeX/texmf-dist/fonts/enc/dvips/lm/lm-ts1.enc}] [15.25]
+<Figures/Prima Facie/prima_facie_years_levels.png, id=801, 578.16pt x 481.3182pt>
+File: Figures/Prima Facie/prima_facie_years_levels.png Graphic file (type png)
+<use Figures/Prima Facie/prima_facie_years_levels.png>
+Package pdftex.def Info: Figures/Prima Facie/prima_facie_years_levels.png  used on input line 202.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/Prima Facie/prima_facie_data_type.png, id=802, 578.16pt x 481.3182pt>
+File: Figures/Prima Facie/prima_facie_data_type.png Graphic file (type png)
+<use Figures/Prima Facie/prima_facie_data_type.png>
+Package pdftex.def Info: Figures/Prima Facie/prima_facie_data_type.png  used on input line 209.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/Prima Facie/prima_facie_education.png, id=803, 578.16pt x 481.3182pt>
+File: Figures/Prima Facie/prima_facie_education.png Graphic file (type png)
+<use Figures/Prima Facie/prima_facie_education.png>
+Package pdftex.def Info: Figures/Prima Facie/prima_facie_education.png  used on input line 217.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/Prima Facie/prima_facie_gender.png, id=804, 578.16pt x 481.3182pt>
+File: Figures/Prima Facie/prima_facie_gender.png Graphic file (type png)
+<use Figures/Prima Facie/prima_facie_gender.png>
+Package pdftex.def Info: Figures/Prima Facie/prima_facie_gender.png  used on input line 224.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/Prima Facie/prima_facie_income.png, id=805, 578.16pt x 481.3182pt>
+File: Figures/Prima Facie/prima_facie_income.png Graphic file (type png)
+<use Figures/Prima Facie/prima_facie_income.png>
+Package pdftex.def Info: Figures/Prima Facie/prima_facie_income.png  used on input line 232.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/Prima Facie/prima_facie_method.png, id=806, 578.16pt x 481.3182pt>
+File: Figures/Prima Facie/prima_facie_method.png Graphic file (type png)
+<use Figures/Prima Facie/prima_facie_method.png>
+Package pdftex.def Info: Figures/Prima Facie/prima_facie_method.png  used on input line 239.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/Prima Facie/prima_facie_ability.png, id=807, 578.16pt x 481.3182pt>
+File: Figures/Prima Facie/prima_facie_ability.png Graphic file (type png)
+<use Figures/Prima Facie/prima_facie_ability.png>
+Package pdftex.def Info: Figures/Prima Facie/prima_facie_ability.png  used on input line 247.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/Prima Facie/prima_facie_citations.png, id=808, 578.16pt x 481.3182pt>
+File: Figures/Prima Facie/prima_facie_citations.png Graphic file (type png)
+<use Figures/Prima Facie/prima_facie_citations.png>
+Package pdftex.def Info: Figures/Prima Facie/prima_facie_citations.png  used on input line 254.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+ [16.26] [17.27] [18.28 <./Figures/Prima Facie/prima_facie_years_levels.png> <./Figures/Prima Facie/prima_facie_data_type.png> <./Figures/Prima Facie/prima_facie_education.png> <./Figures/Prima Facie/prima_facie_gender.png> <./Figures/Prima Facie/prima_facie_income.png> <./Figures/Prima Facie/prima_facie_method.png> <./Figures/Prima Facie/prima_facie_ability.png> <./Figures/Prima Facie/prima_facie_citations.png>] [19.29]) (./02_Mainmatter/04_Bias.tex [20.30]
+<Figures/box_plot_study_name_1.png, id=873, 578.16pt x 794.97pt>
+File: Figures/box_plot_study_name_1.png Graphic file (type png)
+<use Figures/box_plot_study_name_1.png>
+Package pdftex.def Info: Figures/box_plot_study_name_1.png  used on input line 1.
+(pdftex.def)             Requested size: 361.06319pt x 496.45473pt.
+<Figures/box_plot_study_name_2.png, id=874, 578.16pt x 794.97pt>
+File: Figures/box_plot_study_name_2.png Graphic file (type png)
+<use Figures/box_plot_study_name_2.png>
+Package pdftex.def Info: Figures/box_plot_study_name_2.png  used on input line 1.
+(pdftex.def)             Requested size: 361.06319pt x 496.45473pt.
+ [21.31 <./Figures/box_plot_study_name_1.png>] [22.32 <./Figures/box_plot_study_name_2.png>]
+Chapter 4.
+[23.33
+
+
+]
+<Figures/funnel.png, id=916, 481.8pt x 443.256pt>
+File: Figures/funnel.png Graphic file (type png)
+<use Figures/funnel.png>
+Package pdftex.def Info: Figures/funnel.png  used on input line 33.
+(pdftex.def)             Requested size: 171.50444pt x 157.7797pt.
+<Figures/funnel_medians.png, id=917, 481.8pt x 443.256pt>
+File: Figures/funnel_medians.png Graphic file (type png)
+<use Figures/funnel_medians.png>
+Package pdftex.def Info: Figures/funnel_medians.png  used on input line 38.
+(pdftex.def)             Requested size: 171.50444pt x 157.7797pt.
+ [24.34]
+Package acronym Info: Label `acro:FAT-PET' newly defined as it shall be overridden
+although it is yet undefined on input line 54.
+ [25.35 <./Figures/funnel.png> <./Figures/funnel_medians.png>] [26.36]
+Package acronym Info: Label `acro:WAAP' newly defined as it shall be overridden
+although it is yet undefined on input line 107.
+Package acronym Info: Label `acro:WLS' newly defined as it shall be overridden
+although it is yet undefined on input line 107.
+ [27.37]
+<Figures/stem.png, id=972, 582.4962pt x 536.2434pt>
+File: Figures/stem.png Graphic file (type png)
+<use Figures/stem.png>
+Package pdftex.def Info: Figures/stem.png  used on input line 119.
+(pdftex.def)             Requested size: 200.59203pt x 184.6605pt.
+ [28.38 <./Figures/stem.png>]
+Package acronym Info: Label `acro:EK' newly defined as it shall be overridden
+although it is yet undefined on input line 162.
+ [29.39] [30.40] [31.41] [32.42]
+<Figures/t_hist.png, id=1058, 582.4962pt x 536.2434pt>
+File: Figures/t_hist.png Graphic file (type png)
+<use Figures/t_hist.png>
+Package pdftex.def Info: Figures/t_hist.png  used on input line 229.
+(pdftex.def)             Requested size: 280.8276pt x 258.53944pt.
+ [33.43 <./Figures/t_hist.png>]
+Package acronym Info: Label `acro:MAIVE' newly defined as it shall be overridden
+although it is yet undefined on input line 278.
+Package acronym Info: Label `acro:RoBMA' newly defined as it shall be overridden
+although it is yet undefined on input line 278.
+ [34.44] [35.45]) (./02_Mainmatter/05_Heterogeneity.tex [36.46] [37.47]
+Chapter 5.
+Package acronym Info: Label `acro:BMA' newly defined as it shall be overridden
+although it is yet undefined on input line 5.
+Package acronym Info: Label `acro:FMA' newly defined as it shall be overridden
+although it is yet undefined on input line 5.
+[38.48
+
+] [39.49] [40.50] [41.51] [42.52]
+Overfull \hbox (17.6236pt too wide) in paragraph at lines 162--163
+[]\T1/lmr/m/n/12 Some vari-ables, such as the ru-ral/urban sec-tor, are set up as ra-tios. []Paweenawat
+ []
+
+[43.53] [44.54]
+Package acronym Info: Label `acro:PMP' newly defined as it shall be overridden
+although it is yet undefined on input line 189.
+Package acronym Info: Label `acro:PIP' newly defined as it shall be overridden
+although it is yet undefined on input line 189.
+ [45.55]
+<Figures/bma_UIP_dilut_results.png, id=1260, 963.25586pt x 922.99115pt>
+File: Figures/bma_UIP_dilut_results.png Graphic file (type png)
+<use Figures/bma_UIP_dilut_results.png>
+Package pdftex.def Info: Figures/bma_UIP_dilut_results.png  used on input line 197.
+(pdftex.def)             Requested size: 401.18405pt x 384.4144pt.
+ [46.56 <./Figures/bma_UIP_dilut_results.png>] [47.57]
+LaTeX Font Info:    Calculating math sizes for size <7.71416> on input line 320.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <7.71416> on input line 320.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <5.39987> on input line 320.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <3.85707> on input line 320.
+
+
+LaTeX Font Warning: Font shape `U/lasy/m/n' in size <3.85707> not available
+(Font)              size <5> substituted on input line 320.
+
+[48.58] [49.59]
+<Figures/bma_comparison.png, id=1324, 417.56pt x 383.834pt>
+File: Figures/bma_comparison.png Graphic file (type png)
+<use Figures/bma_comparison.png>
+Package pdftex.def Info: Figures/bma_comparison.png  used on input line 330.
+(pdftex.def)             Requested size: 320.94846pt x 295.04353pt.
+) (./02_Mainmatter/06_BPE.tex [50.60 <./Figures/bma_comparison.png>]
+Chapter 6.
+[51.61
+
+] [52.62] [53.63]
+<Figures/BPE/bpe_years_levels.png, id=1359, 578.16pt x 481.3182pt>
+File: Figures/BPE/bpe_years_levels.png Graphic file (type png)
+<use Figures/BPE/bpe_years_levels.png>
+Package pdftex.def Info: Figures/BPE/bpe_years_levels.png  used on input line 159.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/BPE/bpe_data_type.png, id=1360, 578.16pt x 481.3182pt>
+File: Figures/BPE/bpe_data_type.png Graphic file (type png)
+<use Figures/BPE/bpe_data_type.png>
+Package pdftex.def Info: Figures/BPE/bpe_data_type.png  used on input line 166.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/BPE/bpe_education.png, id=1361, 578.16pt x 481.3182pt>
+File: Figures/BPE/bpe_education.png Graphic file (type png)
+<use Figures/BPE/bpe_education.png>
+Package pdftex.def Info: Figures/BPE/bpe_education.png  used on input line 174.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/BPE/bpe_gender.png, id=1362, 578.16pt x 481.3182pt>
+File: Figures/BPE/bpe_gender.png Graphic file (type png)
+<use Figures/BPE/bpe_gender.png>
+Package pdftex.def Info: Figures/BPE/bpe_gender.png  used on input line 181.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/BPE/bpe_income.png, id=1363, 578.16pt x 481.3182pt>
+File: Figures/BPE/bpe_income.png Graphic file (type png)
+<use Figures/BPE/bpe_income.png>
+Package pdftex.def Info: Figures/BPE/bpe_income.png  used on input line 189.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/BPE/bpe_method.png, id=1364, 578.16pt x 481.3182pt>
+File: Figures/BPE/bpe_method.png Graphic file (type png)
+<use Figures/BPE/bpe_method.png>
+Package pdftex.def Info: Figures/BPE/bpe_method.png  used on input line 196.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/BPE/bpe_ability.png, id=1365, 578.16pt x 481.3182pt>
+File: Figures/BPE/bpe_ability.png Graphic file (type png)
+<use Figures/BPE/bpe_ability.png>
+Package pdftex.def Info: Figures/BPE/bpe_ability.png  used on input line 204.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+<Figures/BPE/bpe_citations.png, id=1366, 578.16pt x 481.3182pt>
+File: Figures/BPE/bpe_citations.png Graphic file (type png)
+<use Figures/BPE/bpe_citations.png>
+Package pdftex.def Info: Figures/BPE/bpe_citations.png  used on input line 211.
+(pdftex.def)             Requested size: 144.82883pt x 120.56427pt.
+ [54.64] [55.65] [56.66 <./Figures/BPE/bpe_years_levels.png> <./Figures/BPE/bpe_data_type.png> <./Figures/BPE/bpe_education.png> <./Figures/BPE/bpe_gender.png> <./Figures/BPE/bpe_income.png> <./Figures/BPE/bpe_method.png> <./Figures/BPE/bpe_ability.png> <./Figures/BPE/bpe_citations.png>] [57.67]) (./02_Mainmatter/07_Twins.tex [58.68]
+Chapter 7.
+[59.69
+
+]
+Package acronym Info: Label `acro:GLS' newly defined as it shall be overridden
+although it is yet undefined on input line 17.
+ [60.70] [61.71] [62.72] [63.73] [64.74]
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10.95> on input line 176.
+ [65.75] [66.76
+
+]
+<Figures/twins_prima_method.png, id=1509, 578.16pt x 481.3182pt>
+File: Figures/twins_prima_method.png Graphic file (type png)
+<use Figures/twins_prima_method.png>
+Package pdftex.def Info: Figures/twins_prima_method.png  used on input line 225.
+(pdftex.def)             Requested size: 361.06319pt x 300.58078pt.
+) (./02_Mainmatter/99_Concl.tex [67.77
+
+ <./Figures/twins_prima_method.png>]
+Chapter 8.
+) [68.78
+
+] (./Thesis.bbl [69.79
+
+
+] [70.80] [71.81] [72.82] [73.83] [74.84] [75.85] [76.86] [77.87] [78.88] [79.89] [80.90] [81.91] [82.92] [83.93] [84.94]) [85.95] (./03_Backmatter/01App_Literature.tex
+Appendix A.
+[1.96
+
+
+] [2.97
+
+]
+<Figures/box_plot_country.png, id=1965, 578.16pt x 794.97pt>
+File: Figures/box_plot_country.png Graphic file (type png)
+<use Figures/box_plot_country.png>
+Package pdftex.def Info: Figures/box_plot_country.png  used on input line 169.
+(pdftex.def)             Requested size: 361.06319pt x 496.45473pt.
+) (./03_Backmatter/03App_BMA.tex [3.98] [4.99 <./Figures/box_plot_country.png>]
+Appendix B.
+<Figures/bma_UIP_uniform_results.png, id=1974, 963.25586pt x 922.99115pt>
+File: Figures/bma_UIP_uniform_results.png Graphic file (type png)
+<use Figures/bma_UIP_uniform_results.png>
+Package pdftex.def Info: Figures/bma_UIP_uniform_results.png  used on input line 8.
+(pdftex.def)             Requested size: 320.94846pt x 307.53151pt.
+<Figures/bma_BRIC_random_results.png, id=1979, 963.25586pt x 922.99115pt>
+File: Figures/bma_BRIC_random_results.png Graphic file (type png)
+<use Figures/bma_BRIC_random_results.png>
+Package pdftex.def Info: Figures/bma_BRIC_random_results.png  used on input line 20.
+(pdftex.def)             Requested size: 361.06319pt x 345.96591pt.
+<Figures/bma_Hannan-Quinn_random_results.png, id=1984, 963.25586pt x 922.99115pt>
+File: Figures/bma_Hannan-Quinn_random_results.png Graphic file (type png)
+<use Figures/bma_Hannan-Quinn_random_results.png>
+Package pdftex.def Info: Figures/bma_Hannan-Quinn_random_results.png  used on input line 31.
+(pdftex.def)             Requested size: 361.06319pt x 345.96591pt.
+<Figures/bma_corrplot.png, id=1989, 562.1pt x 537.207pt>
+File: Figures/bma_corrplot.png Graphic file (type png)
+<use Figures/bma_corrplot.png>
+Package pdftex.def Info: Figures/bma_corrplot.png  used on input line 44.
+(pdftex.def)             Requested size: 401.18405pt x 383.41974pt.
+) (./03_Backmatter/04App_BPE.tex [5.100
+
+
+ <./Figures/bma_UIP_uniform_results.png>] [6.101 <./Figures/bma_BRIC_random_results.png>] [7.102 <./Figures/bma_Hannan-Quinn_random_results.png>] [8.103 <./Figures/bma_corrplot.png (PNG copy)>]
+Appendix C.
+[9.104
+
+] [10.105]) [11.106] (./Thesis.aux)
+ ***********
+LaTeX2e <2023-06-01> patch level 1
+L3 programming layer <2023-10-23>
+ ***********
+
+
+LaTeX Font Warning: Size substitutions with differences
+(Font)              up to 1.14293pt have occurred.
+
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
+
+Package rerunfilecheck Info: File `Thesis.out' has not changed.
+(rerunfilecheck)             Checksum: F09F844AF0242BA778768C956F83F9F3;8667.
+ ) 
 Here is how much of TeX's memory you used:
- 13404 strings out of 476357
- 194746 string characters out of 5797302
- 1923036 words of memory out of 5000000
- 35063 multiletter control sequences out of 15000+600000
- 561366 words of font info for 38 fonts, out of 8000000 for 9000
- 14 hyphenation exceptions out of 8191
- 92i,0n,95p,652b,2380s stack positions out of 10000i,1000n,20000p,200000b,200000s
-./Styles/Mystyle.sty:8:  ==> Fatal error occurred, no output PDF file produced!
+ 31312 strings out of 476357
+ 560244 string characters out of 5797302
+ 1980036 words of memory out of 5000000
+ 52028 multiletter control sequences out of 15000+600000
+ 699579 words of font info for 128 fonts, out of 8000000 for 9000
+ 16 hyphenation exceptions out of 8191
+ 99i,16n,101p,1804b,2581s stack positions out of 10000i,1000n,20000p,200000b,200000s
+
+pdfTeX warning (dest): name{Hfootnote.9} has been referenced but does not exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{Hfootnote.8} has been referenced but does not exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{Hfootnote.7} has been referenced but does not exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{Hfootnote.6} has been referenced but does not exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{Hfootnote.5} has been referenced but does not exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{Hfootnote.4} has been referenced but does not exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{Hfootnote.3} has been referenced but does not exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{Hfootnote.2} has been referenced but does not exist, replaced by a fixed one
+
+
+pdfTeX warning (dest): name{Hfootnote.1} has been referenced but does not exist, replaced by a fixed one
+
+<c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx10.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx12.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbx8.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmbxi10.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi10.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi12.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi6.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmmi8.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr10.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr12.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr5.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr6.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr7.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmr8.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri10.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri12.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmri8.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmss12.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmss17.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmssbx10.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy10.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy6.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt12.pfb><c:/tools/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
+Output written on Thesis.pdf (106 pages, 6296477 bytes).
+PDF statistics:
+ 2245 PDF objects out of 2487 (max. 8388607)
+ 1997 compressed objects within 20 object streams
+ 440 named destinations out of 1000 (max. 500000)
+ 532 words of extra memory for PDF output out of 10000 (max. 10000000)
+
