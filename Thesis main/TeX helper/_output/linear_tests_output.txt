@@ -25,7 +25,7 @@ Effect Beyond Bias & 6.408*** & 6.517*** & 6.741*** & 6.708*** & 6.294*** & 6.54
 \emph{\hspace{0.2cm}(Constant)} & (0.118) & (0.107) & (0.418) & (0.294) & (0.153) & (0.168) \\
 \emph{\hspace{0.2cm}Bootstrapped CI (EBB)} & [6.164, 6.639] &  &  & [6.398, 6.965] & [6.04, 6.645] & [6.189, 6.918] \\
 \addlinespace[0.5em]
-Observations & 1754 & 1754 & 1754 & 1754 & 1754 & 1754 \\
+Total observations & 1754 & 1754 & 1754 & 1754 & 1754 & 1754 \\
     
 \bottomrule
 \multicolumn{6}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} OLS = Ordinary Least Squares. FE = Fixed Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1}

@@ -1,0 +1,103 @@
+%BMA+FMA table
+\afterpage{
+\begin{singlespace}
+\begin{notsotiny}
+\begin{longtable}{
+@{\hskip\tabcolsep\extracolsep\fill}
+l
+*{6}{c}
+}
+\caption{Model averaging results}  \label{tab:BMA}\\
+\toprule
+  \multicolumn{1}{l}{Response variable:} &   \multicolumn{3}{c}{Bayesian model averaging} & \multicolumn{3}{c}{Frequentist model averaging} \\
+  \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+  \multicolumn{1}{l}{Returns to Year of Schooling} & Post. mean & Post. SD & PIP & Coef. & SE & p-value \\
+\midrule
+\endfirsthead
+\caption[]{Model averaging results (continued)}\\
+\toprule
+  \multicolumn{1}{l}{Response variable:} &   \multicolumn{3}{c}{Bayesian model averaging} & \multicolumn{3}{c}{Frequentist model averaging} \\
+  \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+  \multicolumn{1}{l}{Returns to Year of Schooling} & Post. mean & Post. SD & PIP & Coef. & SE & p-value \\
+\midrule
+\endhead
+\bottomrule
+\multicolumn{7}{r}{{\scriptsize Continued on next page}} \\
+\endfoot
+\endlastfoot
+
+Constant & -2.324 & NaN & \textbf{1.000} & 4.895 & 350.548 & 0.989 \\
+Standard Error & 0.376 & 0.064 & \textbf{1.000} & 0.512 & 0.194 & 0.008 \\
+\midrule
+
+\multicolumn{7}{l}{\emph{Estimate characteristics}}\\
+Estimate: City & -0.008 & 0.100 & 0.009 & 0.000 & 1.109 & 0.000 \\
+Estimate: Sub-region & -1.481 & 0.350 & \textbf{1.000} & -0.686 & 1.606 & 0.669 \\
+Estimate: Region & -1.340 & 0.266 & \textbf{1.000} & -0.833 & 1.161 & 0.473 \\
+Estimate: Country & -0.044 & 0.184 & 0.073 & 0.000 & 0.909 & 0.000 \\
+\midrule
+
+\multicolumn{7}{l}{\emph{Data Characteristics}}\\
+Study Size & -0.002 & 0.025 & 0.010 & 0.000 & 0.373 & 0.000 \\
+Yrs. of Schooling & 0.000 & 0.003 & 0.007 & 0.000 & 0.003 & 0.000 \\
+Yrs. of Experience & 0.000 & 0.001 & 0.002 & 0.000 & 0.013 & 0.000 \\
+Education: Years & 1.155 & 0.221 & \textbf{1.000} & 1.211 & 0.638 & 0.058 \\
+Wage: Log Hourly & -0.414 & 0.465 & 0.487 & 0.000 & 0.713 & 0.000 \\
+Wage: Log Daily & -1.594 & 0.615 & \textbf{0.967} & -0.475 & 1.235 & 0.701 \\
+Wage: Log Monthly & -0.633 & 0.621 & \textbf{0.571} & 0.000 & 1.011 & 0.000 \\
+Micro Data & 1.386 & 0.303 & \textbf{0.997} & 0.804 & 0.729 & 0.270 \\
+Survey Data & -0.092 & 0.226 & 0.170 & 0.000 & 0.584 & 0.000 \\
+Cross-sectional Data & -0.001 & 0.019 & 0.006 & 0.000 & 0.122 & 0.000 \\
+Data Year & 0.847 & 5.833 & 0.030 & 0.000 & 46.426 & 0.000 \\
+\midrule
+
+\multicolumn{7}{l}{\emph{Spatial/structural variation}}\\
+Primary Education & 3.447 & 0.862 & \textbf{0.995} & 1.888 & 2.019 & 0.350 \\
+Secondary Education & -0.005 & 0.130 & 0.009 & 0.000 & 0.382 & 0.000 \\
+Higher Education & 5.412 & 0.607 & \textbf{1.000} & 4.032 & 1.728 & 0.020 \\
+Wage Earners & 0.887 & 0.789 & \textbf{0.625} & 0.000 & 1.411 & 0.000 \\
+Gender: Male & -1.206 & 0.273 & \textbf{1.000} & -0.706 & 0.682 & 0.301 \\
+Sector: Private & 0.890 & 0.965 & \textbf{0.519} & 0.000 & 2.073 & 0.000 \\
+Ethnicity: Caucasian & -1.455 & 0.258 & \textbf{1.000} & -1.081 & 0.543 & 0.047 \\
+Sector: Rural & -0.098 & 0.351 & 0.090 & 0.000 & 1.260 & 0.000 \\
+Median Expenditure & -0.005 & 0.029 & 0.033 & 0.000 & 0.164 & 0.000 \\
+Minimum Wage & -0.001 & 0.016 & 0.013 & 0.000 & 0.011 & 0.000 \\
+Academic Freedom Index & -0.024 & 0.146 & 0.035 & 0.000 & 0.098 & 0.000 \\
+\midrule
+
+\multicolumn{7}{l}{\emph{Estimation method}}\\
+Method: Cohort/FE & 0.006 & 0.068 & 0.014 & 0.000 & 0.240 & 0.000 \\
+Method: 2SLS & 1.529 & 0.415 & \textbf{0.994} & 0.511 & 1.073 & 0.634 \\
+Method: Heckman & -0.001 & 0.036 & 0.007 & 0.000 & 0.063 & 0.000 \\
+Method: Probit & 0.000 & 0.035 & 0.002 & 0.000 & 0.083 & 0.000 \\
+Method: IV & 2.643 & 0.350 & \textbf{1.000} & 1.731 & 0.861 & 0.044 \\
+Ability: Direct & -1.197 & 0.511 & \textbf{0.911} & -0.504 & 0.618 & 0.415 \\
+Ability: Proxied & 0.089 & 0.287 & 0.104 & 0.000 & 0.924 & 0.000 \\
+Ability: Uncontrolled & 0.488 & 0.415 & \textbf{0.681} & 0.000 & 0.950 & 0.000 \\
+Control: Age & -1.934 & 0.411 & \textbf{1.000} & -1.011 & 1.069 & 0.345 \\
+Control: Age$^2$ & 2.991 & 0.433 & \textbf{1.000} & 2.002 & 1.111 & 0.072 \\
+Control: Experience & -0.030 & 0.145 & 0.056 & 0.000 & 0.686 & 0.000 \\
+Control: Experience$^2$ & -0.001 & 0.024 & 0.006 & 0.000 & 0.185 & 0.000 \\
+Control: Ethnicity & 0.000 & 0.019 & 0.005 & 0.000 & 0.206 & 0.000 \\
+Control: Health & 0.044 & 0.178 & 0.072 & 0.000 & 0.600 & 0.000 \\
+Control: Gender & 0.000 & 0.016 & 0.006 & 0.000 & 0.241 & 0.000 \\
+Control: Marriage & 0.001 & 0.021 & 0.006 & 0.000 & 0.254 & 0.000 \\
+Control: Occupation & -0.007 & 0.068 & 0.017 & 0.000 & 0.005 & 0.000 \\
+Control: Firm Char. & -0.030 & 0.141 & 0.059 & 0.000 & 0.597 & 0.000 \\
+Control: Area & 1.783 & 0.234 & \textbf{1.000} & 1.032 & 0.899 & 0.251 \\
+Control: Macro Var. & 0.000 & 0.015 & 0.004 & 0.000 & 0.126 & 0.000 \\
+\midrule
+
+\multicolumn{7}{l}{\emph{Publication characteristics}}\\
+Impact Factor & -0.216 & 0.089 & \textbf{0.929} & -0.084 & 0.179 & 0.639 \\
+Citations & 0.000 & 0.007 & 0.009 & 0.000 & 0.111 & 0.000 \\
+Study: Published & -1.158 & 0.290 & \textbf{0.995} & -0.488 & 1.186 & 0.681 \\
+Publication Year & 0.000 & 0.019 & 0.004 & 0.000 & 0.044 & 0.000 \\
+\bottomrule
+\addlinespace[0.2em]
+
+\multicolumn{7}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the results of the Bayesian and Frequentist model averaging. Post. mean = Posterior Mean, Post. SD = Posterior Standard Deviation, PIP = Posterior Inclusion Probability, Coef. = Coefficient, SE = Standard Error, OLS = Ordinary Least Squares, FE = Fixed Effects, 2SLS = 2 Stage Least Squares. The variables with PIP > 0.5 are highlighted. For a detailed explanation of the variables, see table \ref{tab:var}.}
+\end{longtable}
+\end{notsotiny}
+\end{singlespace}
+}

@@ -1,0 +1,23 @@
+% Non-linear tests
+\begin{table}[!b]
+\centering
+\footnotesize
+\singlespace
+\caption{Nonlinear tests for publication bias}
+\label{tab:N-L}
+\begin{tabular}{
+@{\hskip\tabcolsep\extracolsep}
+l
+*{6}{c}
+@{}
+} %0.15 0.65
+\toprule
+  \addlinespace[0.5em]
+  \multicolumn{1}{c}{} &
+  \multicolumn{1}{c}{\textbf{WAAP}} & 
+  \multicolumn{1}{c}{\textbf{Top10}} &
+  \multicolumn{1}{c}{\textbf{Stem}} & 
+  \multicolumn{1}{c}{\textbf{Hier}} &
+  \multicolumn{1}{c}{\textbf{AK}} &
+  \multicolumn{1}{c}{\textbf{Kink}} \\
+\midrule

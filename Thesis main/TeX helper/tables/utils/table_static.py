@@ -8,7 +8,8 @@ TABLES = {
         "name": "Effect Summary Statistics",
         "colnames": ['Var Name', 'Mean', 'CI lower', 'CI upper', 'Weighted Mean', 'WM CI lower', 'WM CI upper', 'Obs'],
         "data_transformations": {
-            "handle_special": "all" # Set to "all" to apply to all columns
+            "handle_special": "all", # Set to "all" to apply to all columns
+            "fill_na": "all",
         },
         "string_transformations": {},
         "verbose": False,
@@ -17,12 +18,47 @@ TABLES = {
         "name": "Linear models",
         "colnames": ["Unnamed: 0", "OLS", "Fixed Effects", "Between Effects", "Random Effects", "Study weighted OLS","Precision weighted OLS"],
         "data_transformations": {
-            "handle_special": "all"
+            "handle_special": "all",
+            "fill_na": "all",
         },
         "string_transformations": {
-            "rename": [("Total observations", "Observations")],
+            # "rename": [("Total observations", "Observations")],
             "emphasize_rownames": ["Bootstrapped CI (PB)", "(Standard Error)", "Bootstrapped CI (EBB)", "(Constant)"],
-            "insert_linespace": ["Effect Beyond Bias", "Observations"]
+            "insert_linespace": ["Effect Beyond Bias", "Total observations"]
+        },
+        "verbose": False,
+    },
+    "ma": {
+        "name": "Model Averaging Results",
+        "colnames": ["Unnamed: 0", "BMA P.Mean", "BMA SD", "BMA PIP", "FMA Coef", "FMA SE", "FMA p-val"],
+        "data_transformations": {
+            "handle_special": "all",
+            "bold_if_pip_high": ["BMA PIP"],
+        },
+        "string_transformations": {
+            "rename": [("(Intercept)", "Constant")],
+            "insert_section": [
+                # format: (<insert-before-this-string>,<section-name>)
+                ("Estimate: City", "Estimate characteristics"),
+                ("Study Size", "Data Characteristics"),
+                ("Primary Education", "Spatial/structural variation"),
+                ("Method: Cohort/FE", "Estimation method"),
+                ("Impact Factor", "Publication characteristics")
+            ]
+
+        },
+        "verbose": False,
+    },
+    "nonlinear_tests": {
+        "name": "Non-linear models",
+        "colnames": ["Unnamed: 0", "WAAP", "Top10", "Stem", "Hierarch", "Selection", "Endogenous Kink"],
+        "data_transformations": {
+            "handle_special": "all",
+            "fill_na": "all",
+        },
+        "string_transformations": {
+            "emphasize_rownames": ["(PB SE)", "(EBB SE)"],
+            "insert_linespace": ["Effect Beyond Bias", "Total observations", "Model observations"]
         },
         "verbose": False,
     }

@@ -1,6 +1,6 @@
 ﻿import pandas as pd
 
-from .table_utils import handleSpecial, emphasizeRownames, boldIfPIPHigh, insertLinespace, renameLatex
+from .table_utils import handleSpecial, emphasizeRownames, boldIfPIPHigh, insertLinespace, renameLatex, fillNA, insertSection
 
 class TABLE_PROCESSOR:
     def __init__(
@@ -41,6 +41,9 @@ class TABLE_PROCESSOR:
 
     def subset_columns(self, cols_to_keep:list[str])->None:
         '''Given a list of columns as strings, subset the source DF to these columns only.'''
+        # Validate input
+        if len(cols_to_keep) < 1:
+            raise ValueError(f"You must specify at least one column to keep for table '{self.name}'")
         self.df = self.df[cols_to_keep]
 
     def validate_columns(self)->None:
@@ -73,12 +76,16 @@ class TABLE_PROCESSOR:
         if "handle_special" in transformations:
             cols_to_handle = transformations["handle_special"]
             cols_subset = self.df.columns if cols_to_handle == "all" else cols_to_handle
-            self.df[cols_subset] = self.df[cols_subset].apply(handleSpecial)
+            self.df.loc[:, cols_subset] = self.df.loc[:, cols_subset].apply(handleSpecial)
         # Bold if PIP high
         if "bold_if_pip_high" in transformations:
             cols_to_emphasize = transformations["bold_if_pip_high"]
-            cols_subset = self.df.columns if cols_to_handle == "all" else cols_to_emphasize
-            self.df[cols_subset] = self.df[cols_subset].apply(boldIfPIPHigh)
+            cols_subset = self.df.columns if cols_to_emphasize == "all" else cols_to_emphasize
+            self.df.loc[:, cols_subset] = self.df.loc[:, cols_subset].applymap(boldIfPIPHigh)
+        if "fill_na" in transformations:
+            cols_to_fill = transformations["fill_na"]
+            cols_subset = self.df.columns if cols_to_fill == "all" else cols_to_fill
+            self.df.loc[:, cols_subset] = self.df.loc[:,cols_subset].apply(fillNA)
         return
 
     def transform(
@@ -104,7 +111,7 @@ class TABLE_PROCESSOR:
         check_these = {"header": src_header, "footer": src_footer}
         for name, val in check_these.items():
             if not val in latex:
-                raise ValueError(f"The base table {name} is different than expected for table '{self.name}'. Check the static source files.")
+                raise ValueError(f"The base table {name} is different than expected for table '{self.name}'. Check the static source files. Here is the base LaTeX string:\n{latex}")
         latex = latex.replace(src_header, new_header)
         latex = latex.replace(src_footer, new_footer)
         latex = self.applyExtraTransformations(latex) # Returns unmodified string by default
@@ -137,4 +144,7 @@ class TABLE_PROCESSOR:
         if "insert_linespace" in transformations:
             strings_to_insert_before = transformations["insert_linespace"]
             latex = insertLinespace(latex, strings_to_insert_before)
+        if "insert_section" in transformations:
+            insert_info = transformations["insert_section"]
+            latex = insertSection(latex, insert_info, len(self.colnames))
         return latex

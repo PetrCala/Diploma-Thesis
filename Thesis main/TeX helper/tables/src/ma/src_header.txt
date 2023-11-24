@@ -1,0 +1,3 @@
+\begin{tabular}{lrrlrrr}
+\toprule
+\midrule

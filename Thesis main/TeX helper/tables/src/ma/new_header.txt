@@ -1,0 +1,27 @@
+%BMA+FMA table
+\afterpage{
+\begin{singlespace}
+\begin{notsotiny}
+\begin{longtable}{
+@{\hskip\tabcolsep\extracolsep\fill}
+l
+*{6}{c}
+}
+\caption{Model averaging results}  \label{tab:BMA}\\
+\toprule
+  \multicolumn{1}{l}{Response variable:} &   \multicolumn{3}{c}{Bayesian model averaging} & \multicolumn{3}{c}{Frequentist model averaging} \\
+  \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+  \multicolumn{1}{l}{Returns to Year of Schooling} & Post. mean & Post. SD & PIP & Coef. & SE & p-value \\
+\midrule
+\endfirsthead
+\caption[]{Model averaging results (continued)}\\
+\toprule
+  \multicolumn{1}{l}{Response variable:} &   \multicolumn{3}{c}{Bayesian model averaging} & \multicolumn{3}{c}{Frequentist model averaging} \\
+  \cmidrule(lr){2-4} \cmidrule(lr){5-7}
+  \multicolumn{1}{l}{Returns to Year of Schooling} & Post. mean & Post. SD & PIP & Coef. & SE & p-value \\
+\midrule
+\endhead
+\bottomrule
+\multicolumn{7}{r}{{\scriptsize Continued on next page}} \\
+\endfoot
+\endlastfoot

@@ -1,0 +1,8 @@
+\bottomrule
+\addlinespace[0.2em]
+
+\multicolumn{7}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the results of the Bayesian and Frequentist model averaging. Post. mean = Posterior Mean, Post. SD = Posterior Standard Deviation, PIP = Posterior Inclusion Probability, Coef. = Coefficient, SE = Standard Error, OLS = Ordinary Least Squares, FE = Fixed Effects, 2SLS = 2 Stage Least Squares. The variables with PIP > 0.5 are highlighted. For a detailed explanation of the variables, see table \ref{tab:var}.}
+\end{longtable}
+\end{notsotiny}
+\end{singlespace}
+}
