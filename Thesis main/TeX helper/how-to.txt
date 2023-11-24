@@ -1,5 +1,4 @@
-- Specify the source/ folder for the data files. This defaults to the R/_results/ folder from the main code part.
-	The tables are automatically loaded from there, so there is no need to move them anywhere if you do not wish to do so.
-- In "populate_tables_source.py", define the methods according to the TeX table forms you wish to use.
-- Run the "main.py" script. This will create .txt files in the _output/ folder for each method you have defined.
+- See the 'tables/src' folder. Each of the subfolders there contains the information about headers/footers expected for a given table. If you wish to modify any of the table output .tex code, start here by modifying the source .txt files. Do not move or rename the files.
+- Preprocessing steps for each table are defined in the `tables/utils/table_static.py` file. Here, each table is fully characterized by a single dictionary element, and the preprocessing/transformation steps are defined as method names. For available transformation methods, see the `tables/utils/classes.py` modules, where the preprocessing class is defined.
+- Run the "main.py" script. This will create .txt files in the _output/ folder for each table in the static TABLES object.
 - Simply take the contents of the .txt files and copy them into a TeX editor. Have fun.
