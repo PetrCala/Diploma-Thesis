@@ -62,13 +62,12 @@ Income: High & =1 if the study was conducted in a high income country (reference
 Median Expenditure & The logarithm of the median expenditure in the country in a given year. & 8.584 & 1.420 \\
 Minimum Wage & The logarithm of the minimum wage in the country in a given year. & 5.853 & 1.536 \\
 Academic Freedom Index & The academic freedom index reported for the country in a given year. & 0.712 & 0.266 \\
-Mean Age & The logarithm of the average age of the subjects. & 3.575 & 0.200 \\
-Method: OLS & =1 if the authors use Ordinary least squares. & 0.664 & 0.473 \\
+Method: OLS & =1 if the authors use Ordinary least squares (reference category). & 0.664 & 0.473 \\
 Method: Cohort/FE & =1 if the authors use Cohort-type or Fixed-effects estimation. & 0.058 & 0.234 \\
 Method: 2SLS & =1 if the authors use Two-Stage least squares estimation. & 0.095 & 0.294 \\
 Method: Heckman & =1 if the authors use Two-step estimation (Heckman and Polachek, 1974). & 0.062 & 0.240 \\
 Method: Probit & =1 if the authors use Probit estimation. & 0.022 & 0.147 \\
-Method: IV & =1 if the authors use Instrumental variables estimation (reference category). & 0.111 & 0.314 \\
+Method: IV & =1 if the authors use Instrumental variables estimation. & 0.111 & 0.314 \\
 Ability: Direct & =1 if the authors include a direct measure of ability in their study. & 0.135 & 0.341 \\
 Ability: Proxied & =1 if the authors use a proxy for ability in their study. & 0.204 & 0.403 \\
 Ability: Uncontrolled & =1 if the authors acknowledge, but do not control for ability in any way in their study. & 0.425 & 0.494 \\
