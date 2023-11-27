@@ -29,11 +29,11 @@ jobs:
       - name: Update Dist Branch
         run: |
           git subtree split --prefix=Distribute --branch temporary_branch
-          git checkout Dist
+          git checkout refs/heads/Dist
           git merge temporary_branch --allow-unrelated-histories -Xtheirs --no-edit
           git branch -D temporary_branch
 
       - name: Push to Dist Branch
         run: |
-          git checkout Dist
+          git checkout refs/heads/Dist
           git push origin Dist
