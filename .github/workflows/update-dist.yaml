@@ -28,7 +28,6 @@ jobs:
 
       - name: Create a Temporary Branch
         run: |
-          git fetch origin
           git checkout dev
           git subtree split --prefix=Distribute --branch dist_update
         
