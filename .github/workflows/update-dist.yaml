@@ -29,14 +29,14 @@ jobs:
       - name: Update the Dist Branch locally
         run: |
           git fetch origin
-          git checkout -b Dist
+          git checkout Dist
           git reset --hard origin/Dist
 
       - name: Update Dist Branch
         run: |
           git checkout dev
           git subtree split --prefix=Distribute --branch temporary_branch
-          git checkout -- Dist
+          git checkout Dist
           git merge temporary_branch --allow-unrelated-histories -Xtheirs --no-edit
           git branch -D temporary_branch
 
