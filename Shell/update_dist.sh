@@ -4,7 +4,7 @@
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 R_FOLDER_PATH="$PROJECT_ROOT/R"
-DIST_FOLDER_PATH="$PROJECT_ROOT/Dist"
+DIST_FOLDER_PATH="$PROJECT_ROOT/Distribute"
 
 # Base path
 
