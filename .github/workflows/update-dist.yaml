@@ -28,7 +28,7 @@ jobs:
 
       - name: Update Dist Branch
         run: |
-          git subtree split --prefix=Dist-Mirror --branch temporary_branch
+          git subtree split --prefix=Distribute --branch temporary_branch
           git checkout Dist
           git merge temporary_branch --allow-unrelated-histories -Xtheirs --no-edit
           git branch -D temporary_branch
