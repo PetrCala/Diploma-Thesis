@@ -18,7 +18,7 @@ run_this:
   ma_variables_description_table: true 	
   bpe: true 					
   bpe_graphs: true
-  bpe_summary_stats: true
+  bpe_summary_stats: false # Experimental
   robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH

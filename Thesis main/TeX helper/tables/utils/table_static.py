@@ -95,12 +95,6 @@ TABLES = {
         "verbose": False,
     }
     # The variable summary statistics table needs an overhaul in source code - var sum stats does not append the variable description
-    # "variable_summary_stats": {
-    #     "name": "Variable Summary Statistics",
-    #     "new_colnames": ['Var Name', 'Var Class', 'Mean', 'Median', 'Min', 'Max', 'SD', 'Obs', 'Missing Obs'],
-    #     "cols_to_drop": ['Var Name', 'Var Class', 'Mean', 'SD'],
-    #     "verbose": False,
-    # },
     # "": {
     #     "name": "",
     #     "new_colnames": [],

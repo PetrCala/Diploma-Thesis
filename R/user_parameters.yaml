@@ -14,9 +14,9 @@ run_this:
   nonlinear_tests: false
   exo_tests: false
   p_hacking_tests: false
-  bma: true
-  fma: true 					
-  ma_variables_description_table: true 	
+  bma: false
+  fma: false 					
+  ma_variables_description_table: false 	
   bpe: false 					
   bpe_graphs: false
   bpe_summary_stats: false 					
@@ -269,5 +269,5 @@ export_options:
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
-  use_cache: true 	# Store intermediate output in a cache in the /_cache/ folder.
+  use_cache: false 	# Store intermediate output in a cache in the /_cache/ folder.
   cache_age: 3600 	# In seconds - an hour 

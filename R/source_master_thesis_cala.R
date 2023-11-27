@@ -5562,6 +5562,7 @@ getBPESummaryStats <- function(bpe_df, input_data, input_var_list, bpe_factors =
   clean_bpe_df <- bpe_df
   bpe_studies <- rownames(bpe_df)
   for (i in seq_along(bpe_factors)){
+    # TODO - fill with values only for the desired subsets from the main data
     bpe_factor <- bpe_factors[[i]]
     bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
     vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
