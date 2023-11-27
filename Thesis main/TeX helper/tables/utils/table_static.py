@@ -15,6 +15,23 @@ TABLES = {
         "string_transformations": {},
         "verbose": False
     },
+    "p_hacking_tests_caliper": {
+        "name": "Caliper tests",
+        "colnames": ["Unnamed: 0", "Threshold 1.645", "Threshold 1.96", "Threshold 2.58"],
+        "data_transformations": {
+            "handle_special": "all",
+        },
+        "string_transformations": {
+            "rename": [
+                (r' - Estimate &', r' &'),
+                (r'\n.*?SE &', r'\n(SE) &'),
+                (r'\n.*?n total &', r'\n(Observations) &'),
+            ],
+            "insert_linespace": ["Caliper width 0.1 ", "Caliper width 0.15"],
+            "emphasize_rownames": ["(SE)", "(Observations)"]
+        },
+        "verbose": False
+    },
     "effect_summary_stats": {
         "name": "Effect Summary Statistics",
         "colnames": ['Var Name', 'Mean', 'CI lower', 'CI upper', 'Weighted Mean', 'WM CI lower', 'WM CI upper', 'Obs'],
@@ -50,7 +67,8 @@ TABLES = {
         },
         "string_transformations": {
             "rename": [("Total observations", "Observations")],
-            "insert_linespace": ["Effect Beyond Bias", "Observations", "F-test"]
+            "insert_linespace": ["Effect Beyond Bias", "Observations", "F-test"],
+            "emphasize_rownames": ["(PB SE)", "(EBB SE)"]
         },
         "verbose": False,
 

@@ -68,35 +68,53 @@ The results of the funnel asymmetry tests can be viewed in \autoref{tab:PB-FAT}.
 
 % Linear tests
 \begin{table}[!t]
-\centering
-\footnotesize
-\singlespace
-\caption{Linear tests for publication bias}
-\label{tab:PB-FAT}
-\begin{tabular}{
-@{\hskip\tabcolsep\extracolsep}
-l*{5}{c}} %one left column, five center (*{} makes the cols inherit attributes)
-\toprule
-  \multicolumn{1}{l}{} &
-  \multicolumn{1}{c}{\textbf{OLS}} & 
-  \multicolumn{1}{c}{\textbf{FE}} &
-  \multicolumn{1}{c}{\textbf{RE}} & 
-  \multicolumn{1}{c}{\textbf{Study}} &
-  \multicolumn{1}{c}{\textbf{Precision}} \\
-\midrule
+  \centering
+  \footnotesize
+  \singlespace
+  \caption{Linear tests for publication bias}
+  \label{tab:PB-FAT}
+  \begin{tabular}{
+  @{\hskip\tabcolsep\extracolsep}
+  l*{3}{c}} %one left column, three center (*{} makes the cols inherit attributes)
+  \toprule
+    \multicolumn{1}{l}{} &
+    \multicolumn{1}{c}{\textbf{OLS}} & 
+    \multicolumn{1}{c}{\textbf{Study}} &
+    \multicolumn{1}{c}{\textbf{Precision}} \\
+  \midrule
+  
+  Publication Bias & 0.832** &  1.169*** & 0.262 \\
+  \emph{\hspace{0.2cm}(Standard Error)} & (0.097) & (0.121) & (0.425) \\
+  \emph{\hspace{0.2cm}Bootstrapped CI (PB)} & [0.624, 1.035] & [0.92, 1.405] & [-0.833, 1.091] \\
+  \addlinespace[0.5em]
+  Effect Beyond Bias & 6.408*** & 6.294*** & 6.54*** \\
+  \emph{\hspace{0.2cm}(Constant)} & (0.118) &  (0.153) & (0.168) \\
+  \emph{\hspace{0.2cm}Bootstrapped CI (EBB)} & [6.164, 6.639] & [6.04, 6.645] & [6.189, 6.918] \\
+  \addlinespace[0.5em]
+  Total observations & 1,754 & 1,754 & 1,754 \\
 
-    Publication bias & 0.832*** & 0.746*** & 0.747*** & 1.169*** & 0.262 \\
-    \emph{\hspace{0.2cm}(Standard error)} & (0.097)  & (0.060) & (0.058) & (0.121) & (0.425) \\
-    \addlinespace[0.5em]
-    Effect beyond bias & 6.408*** & 6.517*** & 6.708*** & 6.294*** & 6.540*** \\
-    \emph{\hspace{0.2cm}(Constant)} & (0.118)  & (0.107) & (0.294) & (0.153) & (0.168) \\
-    \addlinespace[0.5em]
-    Observations & 1,754 & 1,754 & 1,754 & 1,754 & 1,754 \\
-    
-\bottomrule
-\multicolumn{6}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} OLS = Ordinary Least Squares. FE = Fixed Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1}
-\end{tabular}
-\end{table}
+  \midrule
+    \multicolumn{1}{l}{} &
+    \multicolumn{1}{c}{\textbf{FE}} &
+    \multicolumn{1}{c}{\textbf{BE}} &
+    \multicolumn{1}{c}{\textbf{RE}} \\
+  \midrule
+
+  Publication Bias & 0.746*** & 0.752*** & 0.747*** \\
+  \emph{\hspace{0.2cm}(Standard Error)} & (0.06) & (0.244) & (0.058) \\
+  \emph{\hspace{0.2cm}Bootstrapped CI (PB)} &  &  & [0.514, 0.995] \\
+  \addlinespace[0.5em]
+  Effect Beyond Bias & 6.517*** & 6.741*** & 6.708*** \\ 
+  \emph{\hspace{0.2cm}(Constant)} & (0.107) & (0.418) & (0.294) \\
+  \emph{\hspace{0.2cm}Bootstrapped CI (EBB)} &   &  & [6.398, 6.965] \\
+  \addlinespace[0.5em]
+  Total observations & 1,754 & 1,754 & 1,754 \\
+      
+  \bottomrule
+  \multicolumn{4}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} OLS = Ordinary Least Squares. FE = Fixed Effects. BE = Between Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1}
+  \end{tabular}
+  \end{table}
+  
 
 
 \section{Non-linear Tests}
@@ -144,13 +162,15 @@ l
   \multicolumn{1}{c}{\textbf{AK}} &
   \multicolumn{1}{c}{\textbf{Kink}} \\
 \midrule
-    Publication bias & & & & 0.503*** & P = 2.764 & 0.262 \\
-    & & & & (0.168) & (0.107) & (0.39)\\
-    \addlinespace[0.5em]
-    Effect beyond bias & 6.9*** & 6.439*** & 7.2*** & 6.801*** & 6.548*** & 6.54*** \\
-    & (0.092) & (0.548) & (1.186) & (0.266) & (0.091) & (0.054) \\
-    \addlinespace[0.5em]
-    Observations & 1,754 & 1,754 & 1,754 & 1,754 & 1,754 & 1,754 \\
+Publication Bias &  &  &  & 0.504*** & 2.764*** & 0.262 \\
+\emph{\hspace{0.2cm}(PB SE)} &  &  &  & (0.165) & (0.112) & (0.39) \\
+\addlinespace[0.5em]
+Effect Beyond Bias & 6.9*** & 6.439*** & 6.783*** & 6.801*** & 6.548*** & 6.54*** \\
+\emph{\hspace{0.2cm}(EBB SE)} & (0.092) & (0.146) & (1.055) & (0.269) & (0.091) & (0.054) \\
+\addlinespace[0.5em]
+Total Observations & 1,754 & 1,754 & 115 & 1,754 & 1,754 & 1,754 \\
+\addlinespace[0.5em]
+Model observations & 1,469 & 176 &  &  &  &  \\
 \bottomrule
 \multicolumn{7}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:}  The table reports estimates of the effect beyond bias using six non-linear methods and estimates of the publication bias obtained using two of these methods. WAAP = Weighted Average of the Adequately Powered \citep{Ioannidis2017Waap}. Top10 = Top10 method by \cite{Stanley2010Top}. Stem = the stem-based method by \cite{Furukawa2019Stem} where P represents the probability of results insignificant at 5\% being published relative to the probability of the significant ones at the same level. Hier = Hierarchical Bayes model \citep{Allenby2006Hier}. AK = \cite{Andrews2019Selection}'s Selection model. Kink = Endogenous kink model by \cite{Bom2019Kink}. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1 }
 \end{tabular}
@@ -176,6 +196,7 @@ First, the \ac{IV} regression, for which we need an instrument. The criteria for
 Still, which of these four proposed instruments is the best? To find out, I wrote a helper function in R that automatically detects the best-performing instruments based on the results of several specification tests. These are, namely, the Underidentification test, the Weak identification test, the Stock-Yogo weak ID test, and the Sargan statistic.\footnote{All of these specification tests are in-built into the \textit{ivreg} function of the {ivreg} R package, which I used to estimate this method. Source \href{https://cran.r-project.org/package=ivreg}{here}.} I omit the numeric results of these tests as they are not crucial for interpreting the results, and only mention that $\frac{1}{\sqrt{n_{\text{obs}}}}$ performed the best out of the four instruments. Using this instrument, the \ac{IV} regression gives 6.155\% as an estimate of returns to education, which coincides with the estimates computed up to this point.
 
 %Table with the results of the IV/p-uni* tests
+\afterpage{
 \begin{singlespace}
 \begin{footnotesize}
 \begin{longtable}[!htbp]{
@@ -189,21 +210,23 @@ l
   \multicolumn{1}{l}{} &
   \multicolumn{1}{c}{\centering{\textbf{IV}}} &
   \multicolumn{1}{c}{\centering{\textbf{p-uniform*}}} \\
-\midrule
-\endfirsthead
-    Publication bias    & 1.295*** & L = 9.439\\
-     & (0.281) & (p = 0.002)\\
-    \addlinespace[0.5em]
-    Effect beyond bias  & 5.813*** & 9.520***\\
-     & (0.354)  & (3.291)\\
-    \addlinespace[0.5em]
-    Observations & 1,754 & 1,754 \\
-    
-\bottomrule
+  \midrule
+  \endfirsthead
+  Publication Bias & 1.295*** & L = 9.439 \\
+  \emph{\hspace{0.2cm}(PB SE)} & (0.281) & (p = 0.002) \\
+  \addlinespace[0.5em]
+  Effect Beyond Bias & 5.813*** & 9.52*** \\
+  \emph{\hspace{0.2cm}(EBB SE)} & (0.354) & (3.291) \\
+  \addlinespace[0.5em]
+  Observations & 1,754 & 1,754 \\
+  \addlinespace[0.5em]
+  F-test & 29.153 &  \\
+  \bottomrule
 \multicolumn{3}{>{\scriptsize}p{0.5\linewidth}}{\emph{Note:} IV = Instrumental Variable Regression; one over the square root of the number of studies is used as an instrument for the standard error. Standard errors, reported in parentheses, are also clustered at the study level. p-uniform* = method proposed by \cite{vanAert2021puni}; L represents the publication bias test t-statistic; the corresponding p-value can be found in parentheses. ***p<0.01, **p<0.05, *p<0.1}
 \end{longtable}
 \end{footnotesize}
 \end{singlespace}
+}
 
 As another way of estimating the effect-error relationship without prior assumptions about its form, I turn to the p-uniform* method. This approach, proposed by \cite{vanAert2021puni}, builds on the p-uniform method \citep{van2016conducting}. The core idea stems from the principle that the p-values in the data should be uniformly distributed at the true effect size. This line of thinking requires no assumptions about the form nor correlation of the relationship and helps search for publication bias in a novel way. The p-uniform* method, then, improves the p-uniform approach in efficiency, precision, and between-study variance detection. In my data, this technique estimates the effect to be 9.52\% and indicates the presence of publication bias, both at high levels of significance. Results of both methods can be found in table \autoref{tab:IV-p}. 
 
@@ -219,16 +242,21 @@ Going into more detail, \cite{gerber2008caliper} suggest observing the number of
 
 In \autoref{fig:t_hist}, you may find the distribution of t-statistics in my data, while \autoref{tab:caliperA} reports the results of Caliper tests described in the previous paragraphs.
 
-
 %T-statistic distribution
-
 \begin{figure}[!b]
 \centering
 \caption{The distribution of t-statistics is heavily skewed}
 \label{fig:t_hist}
-\includegraphics[width=0.7\textwidth]{Figures/t_hist.png}
-\captionsetup{width=0.7\textwidth, font = scriptsize}
-\caption*{\emph{Note:} The figure depicts the distribution of t-statistics associated with estimates within the dataset. The two red lines mark the critical significance values -1.96 and 1.96 (from left to right) at the 95\% confidence level. The dotted orange line represents the mean t-statistic within the data. Outliers are hidden for clarity of presentation, but we included them in the calculations.}
+\begin{subfigure}[b]{0.45\textwidth}
+  \caption{All t-statistics}
+  \includegraphics[width=0.95\linewidth]{Figures/t_hist.png}
+\end{subfigure}
+\begin{subfigure}[b]{0.45\textwidth}
+  \caption{Close up around zero}
+  \includegraphics[width=0.95\linewidth]{Figures/t_hist_closeup.png}
+\end{subfigure}
+\captionsetup{width=0.85\textwidth, font = scriptsize}
+\caption*{\emph{Note:} The figure depicts the distribution of t-statistics associated with estimates within the dataset. Plot (a) shows all t-statistics in the dataset, while plot (b) focuses on a close up view around 0. The two red lines mark the critical significance values -1.96 and 1.96 (from left to right) at the 95\% confidence level. The dotted orange line represents the mean t-statistic within the data. Outliers are hidden for clarity of presentation, but we included them in the calculations.}
 \end{figure}
 
 
@@ -250,23 +278,24 @@ l
   \multicolumn{1}{c}{\centering{\textbf{Threshold 2.58}}} \\
 \midrule
 \endfirsthead
- Caliper width 0.05 & 0.517 & 0.243 & 0.152 \\
- & (0.084) & (0.063) & (0.046) \\
- \hspace{0.2cm}$n_{1}/n_{2}$ & 6 / 1 & 8 / 9 & 7 / 11 \\
- \addlinespace[0.5em]
- Caliper width 0.1 & 0.467 & 0.23 & 0.183 \\
- & (0.069) & (0.051) & (0.037) \\
- \hspace{0.2cm}$n_{1}/n_{2}$ & 10 / 3 & 11 / 14 & 13 / 15 \\
- \addlinespace[0.5em]
- Caliper width 0.2 & 0.455 & 0.241 & 0.162 \\
- & (0.036) & (0.033) & (0.025) \\
- \hspace{0.2cm}$n_{1}/n_{2}$ & 30 / 10 & 24 / 30 & 23 / 35 \\
+Caliper width 0.05 & 0.517*** & 0.243*** & 0.152*** \\
+\emph{\hspace{0.2cm}SE} & (0.084) & (0.063) & (0.046) \\
+\emph{\hspace{0.2cm}Observations} & 7 & 17 & 18 \\
+\addlinespace[0.5em]
+Caliper width 0.1 & 0.467*** & 0.23*** & 0.183*** \\
+\emph{\hspace{0.2cm}SE} & (0.069) & (0.051) & (0.037) \\
+\emph{\hspace{0.2cm}Observations} & 13 & 25 & 28 \\
+\addlinespace[0.5em]
+Caliper width 0.15 & 0.483*** & 0.269*** & 0.186*** \\
+\emph{\hspace{0.2cm}SE} & (0.042) & (0.041) & (0.028) \\
+\emph{\hspace{0.2cm}Observations} & 26 & 37 & 45 \\
 \bottomrule
-\multicolumn{4}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} The table shows the results of three sets of Caliper tests by \cite{gerber2008caliper} These sets are carried out around t-statistic thresholds of 1.645, 1.96 and 2.58, which correspond to the 1\%, 5\%, and 10\% t-statistic significance levels. Caliper width denotes the width of the interval around the t-statistic, e.g., Caliper width 0.05 for threshold 1.96 means $t\in<1.91;2.01>$. A test statistic of 0.243 means that roughly 74\% of estimates appear above the threshold and roughly 26\% below it. $n_1/n_2$  = number of observations above/below the threshold. Standard errors, clustered at the study level, are included in parentheses.}
+\multicolumn{4}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} The table shows the results of three sets of Caliper tests by \cite{gerber2008caliper} These sets are carried out around t-statistic thresholds of 1.645, 1.96 and 2.58, which correspond to the 1\%, 5\%, and 10\% t-statistic significance levels. Caliper width denotes the width of the interval around the t-statistic, e.g., Caliper width 0.05 for threshold 1.96 means $t\in<1.91;2.01>$. A test statistic of 0.243 means that roughly 74\% of estimates appear above the threshold and roughly 26\% below it. SE = Standard Error, Observations = Total number of observations in the interval around the threshold. Standard errors, clustered at the study level, are included in parentheses.}
 \end{longtable}
 \end{footnotesize}
 \end{singlespace}
 }
+
 
 Two quick notes about the results are in order. First, there are very few (only 34 out of the 1754 observations) estimates with negative t-statistics. Looking at the distribution from a purely statistical standpoint, it appears peculiar that the other 1730 are all associated with a positive t-statistic. From a practical perspective, however, this makes a lot of sense if we presume that the true effect indeed lies around 7\%. This assumption appears quite feasible, given the consistency of the tests carried out in the previous sections.
 
@@ -341,8 +370,8 @@ l
 \multicolumn{1}{c}{\centering{\textbf{0.025}}} &
 \multicolumn{1}{c}{\centering{\textbf{0.975}}}  \\
 \midrule
-Coefficient & 7.125* & 7.124* & 6.946* & 7.299* \\
-Standard Error & (3.505) & (3.504) & (3.371) & (3.645) \\
+Coefficient & 7.123** & 7.122** & 6.946** & 7.299** \\
+Standard Error & (3.506) & (3.504) & (3.373) & (3.645) \\
 Observations & 1,754 & 1,754 & 1,754 & 1,754 \\
 \addlinespace[0.1em]
 \hline

@@ -1,4 +1,6 @@
-﻿import pandas as pd
+﻿import re
+
+import pandas as pd
 import numpy as np
 
 # DATA TRANSFORMATIONS - possibly move to a separate file
@@ -43,7 +45,7 @@ def renameLatex(latex:str, to_rename:list[tuple])->str:
     Given the latex string and a list of tuples (from-to), rename each tuple's from to the tuples'to. Return the modified string.
     '''
     for rename_from, rename_to in to_rename: # Iterate over a list of tuples (length 2)
-        latex = latex.replace(rename_from, rename_to)
+        latex = re.sub(rename_from, rename_to, latex)
     return latex
 
 def emphasizeRownames(latex:str, strings_to_emphasize:list[str])->str:

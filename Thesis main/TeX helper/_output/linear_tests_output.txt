@@ -7,11 +7,12 @@
 \label{tab:PB-FAT}
 \begin{tabular}{
 @{\hskip\tabcolsep\extracolsep}
-l*{5}{c}} %one left column, five center (*{} makes the cols inherit attributes)
+l*{6}{c}} %one left column, six center (*{} makes the cols inherit attributes)
 \toprule
   \multicolumn{1}{l}{} &
   \multicolumn{1}{c}{\textbf{OLS}} & 
   \multicolumn{1}{c}{\textbf{FE}} &
+  \multicolumn{1}{c}{\textbf{BE}} &
   \multicolumn{1}{c}{\textbf{RE}} & 
   \multicolumn{1}{c}{\textbf{Study}} &
   \multicolumn{1}{c}{\textbf{Precision}} \\
@@ -28,6 +29,6 @@ Effect Beyond Bias & 6.408*** & 6.517*** & 6.741*** & 6.708*** & 6.294*** & 6.54
 Total observations & 1754 & 1754 & 1754 & 1754 & 1754 & 1754 \\
     
 \bottomrule
-\multicolumn{6}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} OLS = Ordinary Least Squares. FE = Fixed Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1}
+\multicolumn{7}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} OLS = Ordinary Least Squares. FE = Fixed Effects. BE = Between Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1}
 \end{tabular}
 \end{table}

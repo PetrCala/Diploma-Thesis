@@ -14,25 +14,28 @@ l
  & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
  & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
 \midrule
-Standard Error & 0.642 & 9.83\% & 3.437 & 52.65\% \\
-Estimate: Sub-region & -0.430 & -6.58\% & -1.437 & -22.01\% \\
-Estimate: Region & -0.616 & -9.44\% & -1.333 & -20.42\% \\
-Education: Years & 0.565 & 8.66\% & 1.174 & 17.98\% \\
-Wage: Log Daily & -0.410 & -6.28\% & -1.401 & -21.45\% \\
-Micro Data & 0.528 & 8.09\% & 1.383 & 21.18\% \\
-Primary Education & 0.534 & 8.18\% & 3.535 & 54.15\% \\
-Higher Education & 1.367 & 20.93\% & 5.522 & 84.59\% \\
-Male & -0.423 & -6.47\% & -1.208 & -18.5\% \\
-Ethnicity: Caucasian & -0.611 & -9.36\% & -1.457 & -22.31\% \\
-Method: 2SLS & 0.433 & 6.63\% & 1.475 & 22.59\% \\
-Method: IV & 0.825 & 12.64\% & 2.629 & 40.27\% \\
-Ability: Direct & -0.397 & -6.07\% & -1.162 & -17.8\% \\
-Ability: Uncontrolled & 0.260 & 3.99\% & 0.526 & 8.06\% \\
-Control: Age & -0.899 & -13.77\% & -1.891 & -28.97\% \\
-Control: Age$^2$ & 1.319 & 20.21\% & 2.954 & 45.25\% \\
-Control: Area & 0.877 & 13.44\% & 1.778 & 27.24\% \\
-Impact Factor & -0.301 & -4.61\% & -1.372 & -21.01\% \\
-Study: Published & -0.453 & -6.94\% & -1.066 & -16.33\% \\
+Standard Error & 0.635 & 9.78\% & 3.399 & 52.37\% \\
+Estimate: Sub-region & -0.442 & -6.81\% & -1.479 & -22.79\% \\
+Estimate: Region & -0.616 & -9.5\% & -1.334 & -20.55\% \\
+Education: Years & 0.554 & 8.53\% & 1.149 & 17.71\% \\
+Wage: Log Hourly & -0.216 & -3.32\% & -0.432 & -6.66\% \\
+Wage: Log Daily & -0.472 & -7.27\% & -1.611 & -24.81\% \\
+Wage: Log Monthly & -0.274 & -4.22\% & -0.671 & -10.34\% \\
+Micro Data & 0.525 & 8.09\% & 1.374 & 21.17\% \\
+Primary Education & 0.522 & 8.04\% & 3.455 & 53.23\% \\
+Higher Education & 1.336 & 20.58\% & 5.397 & 83.14\% \\
+Wage Earners & 0.181 & 2.78\% & 0.882 & 13.59\% \\
+Male & -0.420 & -6.48\% & -1.202 & -18.51\% \\
+Ethnicity: Caucasian & -0.612 & -9.43\% & -1.460 & -22.49\% \\
+Method: 2SLS & 0.449 & 6.91\% & 1.529 & 23.55\% \\
+Method: IV & 0.832 & 12.81\% & 2.651 & 40.84\% \\
+Ability: Direct & -0.416 & -6.41\% & -1.218 & -18.77\% \\
+Ability: Uncontrolled & 0.243 & 3.75\% & 0.492 & 7.58\% \\
+Control: Age & -0.913 & -14.07\% & -1.921 & -29.6\% \\
+Control: Age$^2$ & 1.336 & 20.58\% & 2.992 & 46.1\% \\
+Control: Area & 0.880 & 13.56\% & 1.784 & 27.48\% \\
+Impact Factor & -0.330 & -5.08\% & -1.501 & -23.13\% \\
+Study: Published & -0.491 & -7.57\% & -1.157 & -17.82\% \\
 \bottomrule
 \multicolumn{5}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} 
 %XXX REWRITE

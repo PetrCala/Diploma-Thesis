@@ -11,128 +11,119 @@ I constructed the dataset aiming to comprehensively capture the most important c
 
 %BMA+FMA variable description table
 \begin{singlespace}
-\begin{scriptsize}
-\begin{longtable}{
-@{\hskip\tabcolsep\extracolsep\fill}
-l
-%p{0.25\hsize}
-p{0.55\hsize}
-cc
-@{}
-} %0.15 0.65
-\caption{Definition and summary statistics of regression variables}  \label{tab:var}\\
-\toprule
-  \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
-\midrule
-\endfirsthead
-\caption[]{Definition and summary statistics of regression variables (continued)}\\
-\toprule
-  \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
-\midrule
-\endhead
-\bottomrule
-\multicolumn{4}{r}{{\scriptsize Continued on next page}} \\
-\endfoot
-\endlastfoot
-                 Effect &                                                                                       The effect of an additional year of schooling on logarithmic wage. &    7.476 &  4.439 \\
-         Standard Error &                                                                                                                   The standard error of the main effect. &    1.284 &  1.693 \\
-    \midrule
-    
-\multicolumn{4}{l}{\emph{Estimate characteristics}}\\	
-         Estimate: City &                                                                                  =1 if the estimates within the study can be aggregated on a city level. &    0.119 &  0.323 \\
-   Estimate: Sub-region &                                                                           =1 if the estimates within the study can be aggregated on a subregional level. &    0.099 &  0.299 \\
-       Estimate: Region &                                                                              =1 if the estimates within the study can be aggregated on a regional level. &    0.309 &  0.462 \\
-      Estimate: Country &                                                                               =1 if the estimates within the study can be aggregated on a country level. &    0.395 &  0.489 \\
-    Estimate: Continent &                                           =1 if the estimates within the study can not be aggregated on a country level or smaller (reference category). &    0.079 &  0.269 \\
-    \midrule 
-    
-\multicolumn{4}{l}{\emph{Data characteristics}}\\	
-             Study Size &                                                                                       The logarithm of the number of estimates collected from the study. &    2.942 &  0.637 \\
-      Yrs. of Schooling &                                                                                       The average number of years of schooling attained by the subjects. &   11.116 &  3.461 \\
-     Yrs. of Experience &                                                                                      The average number of years of experience attained by the subjects. &   18.351 &  7.450 \\
-       Education: Years &                                                                                                                 =1 if authors report schooling in years. &    0.634 &  0.482 \\
-      Education: Levels &                                                       =1 if the authors report schooling in levels (e.g., attained college degree) (reference category). &    0.366 &  0.482 \\
-       Wage: Log Hourly &                                                                                       =1 if the dependent variable in the regression is log hourly wage. &    0.531 &  0.499 \\
-        Wage: Log Daily &                                                                              =1 if the dependent variable in the regression is log daily or weekly wage. &    0.095 &  0.293 \\
-      Wage: Log Monthly &                                                                                      =1 if the dependent variable in the regression is log monthly wage. &    0.211 &  0.408 \\
-  Wage: Annual Earnings &                                                      =1 if the dependent variable in the regression is a log of mean annual earnings (reference category). &    0.162 &  0.369 \\
-             Micro Data &                                                                                                                         =1 if the study uses micro-type data. &    0.177 &  0.382 \\
-            Survey Data &                                                                                                                 =1 if the study uses data from a survey. &    0.534 &  0.499 \\
- National Register Data &                                                                                 =1 if the study uses data from a national register (reference category). &    0.289 &  0.453 \\
-   Cross-sectional Data &                                                                                                               =1 if the study uses cross-sectional data. &    0.361 &  0.481 \\
-             Panel Data &                                                                                                    =1 if the study uses panel data (reference category). &    0.639 &  0.481 \\
-              Data Year &                                                                                               The logarithm of the average year of the study's time span &    7.599 & 0.006 \\
-    \midrule 
-    
-\multicolumn{4}{l}{\emph{Spatial/structural variation}}\\
-           No Education &                                                                              The percentage of subjects that attained no education (reference category). &    0.126 &  0.148 \\
-      Primary Education &                                                                                         The percentage of subjects that attained only primary education. &    0.177 &  0.151 \\
-    Secondary Education &                                                                                       The percentage of subjects that attained only secondary education. &    0.388 &  0.196 \\
-       Higher Education &                                                                                   The percentage of subjects that attained higher education. &    0.309 &  0.247 \\
-           Wage Earners &                                            The ratio of wage earners to self-employed subjects in the study ( = 1 if wage earner, = 0 if self-employed). &    0.837 &  0.205 \\
-          Self-Employed &                       The ratio of self-employed to wage earners subjects in the study ( = 1 if self-employed, = 0 if wage earner) (reference category). &    0.163 &  0.205 \\
-           Gender: Male &                                                                         The ratio of male to female subjects in the study ( = 1 if male, = 0 if female). &    0.650 &  0.350 \\
-         Gender: Female &                                                    The ratio of female to male subjects in the study ( = 1 if female, = 0 if male) (reference category). &    0.350 &  0.350 \\
-        Sector: Private &                                                            The ratio of private to public sector workers ( = 1 if private sector worker, = 0 if public). &    0.596 &  0.163 \\
-         Sector: Public &                                       The ratio of public to private sector workers ( = 1 if public sector worker, = 0 if private) (reference category). &    0.404 &  0.163 \\
-   Ethnicity: Caucasian &                                                           The ratio of Caucasian to non-Caucasian subjects in the study ( = 1 if Caucasian, = 0 if not). &    0.227 &  0.419 \\
-       Ethnicity: Other &                            The ratio of non-Caucasian to Caucasian subjects in the study ( = 1 if non-Caucasian, = 0 if Caucasian) (reference category). &    0.773 &  0.419 \\
-          Sector: Rural &                                                                                The ratio of rural to urban workers ( = 1 if rural worker, = 0 if urban). &    0.297 &  0.191 \\
-          Sector: Urban &                                                           The ratio of urban to rural workers ( = 1 if urban worker, = 0 if rural) (reference category). &    0.703 &  0.191 \\
-    Reg: Advanced Econ. &                                                                      =1 if the study was conducted in a country with an advanced economy. (reference group) &    0.498 &  0.500 \\
-Reg: E. Asia \& Pacific &                                                                                       =1 if the study was conducted in the East Asia and Pacific region. &    0.213 &  0.409 \\
-Reg: Europe and C. Asia &                                                                                     =1 if the study was conducted in the Europe and Central Asia region. &    0.115 &  0.319 \\
- Reg: Lat. Am. and Car. &                                                                                 =1 if the study was conducted in the Latin America and Caribbean region. &    0.004 &  0.063 \\
-Reg: M. East and N. Af. &                                                                                =1 if the study was conducted in the Middle East and North Africa region. &    0.043 &  0.202 \\
-      Reg: South Africa &                                                                                               =1 if the study was conducted in the South African region. &    0.088 &  0.283 \\
-   Reg: Sub Sah. Africa &                                                                                       =1 if the study was conducted in the region of Sub-Saharan Africa. &    0.106 &  0.308 \\
-           Income: High &                                                                              =1 if the study was conducted in a high-income country (reference category) &    0.507 &  0.500 \\
-         Income: Middle &                                                                                                 =1 if the study was conducted in a middle-income country &    0.434 &  0.496 \\
-            Income: Low &                                                                                                    =1 if the study was conducted in a low-income country &    0.059 &  0.236 \\
-     Median Expenditure &                                                                                  The logarithm of the median expenditure in the country in a given year. &    8.584 &  1.420 \\
-           Minimum Wage &                                                                                        The logarithm of the minimum wage in the country in a given year. &    5.853 &  1.536 \\
- Academic Freedom Index &                                                                                     The academic freedom index reported for the country in a given year. &    0.712 &  0.266 \\
-               Mean Age &                                                                                                        The logarithm of the average age of the subjects. &    3.575 &  0.200 \\
-    \midrule 
-    
-\multicolumn{4}{l}{\emph{Estimation method}}\\    
-            Method: OLS &                                                                                                            =1 if the authors use Ordinary least squares (reference category). &    0.664 &  0.473 \\
-      Method: Cohort/FE &                                                                                           =1 if the authors use Cohort-type or Fixed-effects estimation. &    0.058 &  0.234 \\
-           Method: 2SLS &                                                                                                =1 if the authors use Two-Stage least squares estimation. &    0.095 &  0.294 \\
-        Method: Heckman &                                                                                  =1 if the authors use Two-step estimation \citep{heckman1974empirical}. &    0.062 &  0.240 \\
-         Method: Probit &                                                                                                                 =1 if the authors use Probit estimation. &    0.022 &  0.147 \\
-             Method: IV &                                                                            =1 if the authors use Instrumental variables estimation. &    0.111 &  0.314 \\
-        Ability: Direct &                                                                                    =1 if the authors include a direct measure of ability in their study. &    0.135 &  0.341 \\
-       Ability: Proxied &                                                                                                =1 if the authors use a proxy for ability in their study. &    0.204 &  0.403 \\
-  Ability: Uncontrolled &                                                                 =1 if the authors acknowledge but do not control for ability in any way in their study. &    0.425 &  0.494 \\
-   Ability: Unmentioned &                                                                   =1 if the authors do not mention ability anywhere in their study (reference category). &    0.223 &  0.417 \\
-           Control: Age &                                                                                                     =1 if the authors control for age in the regression. &    0.344 &  0.475 \\
-       Control: Age$^2$ &                                                                                   =1 if the authors control for age in the quadratic form in the regression. &    0.275 &  0.447 \\
-    Control: Experience &                                                                                              =1 if the authors control for experience in the regression. &    0.607 &  0.489 \\
-Control: Experience$^2$ &                                                                            =1 if the authors control for experience in the quadratic form in the regression. &    0.512 &  0.500 \\
-     Control: Ethnicity &                                                                                               =1 if the authors control for ethnicity in the regression. &    0.251 &  0.434 \\
-        Control: Health &                                                                                                  =1 if the authors control for health in the regression. &    0.135 &  0.342 \\
-        Control: Gender &                                                                                                  =1 if the authors control for gender in the regression. &    0.367 &  0.482 \\
-      Control: Marriage &                                                                                                =1 if the authors control for marriage in the regression. &    0.361 &  0.480 \\
-    Control: Occupation &                                                                              =1 if the authors control for the subjects' occupation in the regression. &    0.142 &  0.349 \\
-    Control: Firm Char. &                                                                                    =1 if the authors control for firm characteristics in the regression. &    0.149 &  0.357 \\
-          Control: Area &                                                                          =1 if the authors control for area type in the regression (e.g., urban, rural). &    0.418 &  0.493 \\
-    Control: Macro Var. &                                                                                 =1 if the authors control for macroeconomic variables in the regression. &    0.347 &  0.476 \\
-    \midrule
-    
-\multicolumn{4}{l}{\emph{Publication characteristics}}\\    
-          Impact Factor &                            The logarithm of the Journal Citations Report impact factor of the study (as of January 2023; = 0 in case of no publication). &   -0.906 &  1.533 \\
-              Citations & The logarithm of the mean number of Google Scholar citations received per year since the appearance of the study in Google Scholar (as of January 2023). &    4.029 &  2.177 \\
-       Study: Published &                                                                                                              =1 if the study was published in a journal. &    0.764 &  0.425 \\
-     Study: Unpublished &                                                                                     =1 if the study was not published in a journal (reference category). &    0.236 &  0.425 \\
-     Publication Year &  The logarithm of the years passed between this study's publication (or issuing) and the publication year of the earliest published study in the sample. & 3.332 & 0.339 \\
-
-\bottomrule
-   
- \multicolumn{4}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the summary statistics and descriptions for various study characteristics eligible for inclusion in Bayesian Model Averaging. Variables marked as \textit{reference categories} were automatically excluded from the procedure, as this would create a dummy variable trap. SD = standard deviation, OLS = Ordinary Least Squares, FE = Fixed Effects, 2SLS = 2 Stage Least Squares, IV = Instrumental Variable.}
-\end{longtable}
-\end{scriptsize}
-\end{singlespace}
+  \begin{scriptsize}
+  \begin{longtable}{
+  @{\hskip\tabcolsep\extracolsep\fill}
+  l
+  %p{0.25\hsize}
+  p{0.55\hsize}
+  cc
+  @{}
+  } %0.15 0.65
+  \caption{Definition and summary statistics of regression variables}  \label{tab:var}\\
+  \toprule
+    \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
+  \midrule
+  \endfirsthead
+  \caption[]{Definition and summary statistics of regression variables (continued)}\\
+  \toprule
+    \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
+  \midrule
+  \endhead
+  \bottomrule
+  \multicolumn{4}{r}{{\scriptsize Continued on next page}} \\
+  \endfoot
+  \endlastfoot
+  Effect & The effect of an additional year of schooling on logarithmic wage. & 7.476 & 4.439 \\
+  Standard Error & The standard error of the main effect. & 1.284 & 1.693 \\
+  \midrule
+  
+  \multicolumn{4}{l}{\emph{Estimate characteristics}}\\
+  Estimate: City & =1 if the estimates within the study can be aggregated on a city level. & 0.119 & 0.323 \\
+  Estimate: Sub-region & =1 if the estimates within the study can be aggregated on a subregional level. & 0.099 & 0.299 \\
+  Estimate: Region & =1 if the estimates within the study can be aggregated on a regional level. & 0.309 & 0.462 \\
+  Estimate: Country & =1 if the estimates within the study can be aggregated on a country level. & 0.395 & 0.489 \\
+  Estimate: Continent & =1 if the estimates within the study can not be aggregated on a country level or smaller (reference category). & 0.079 & 0.269 \\
+  \midrule
+  
+  \multicolumn{4}{l}{\emph{Data characteristics}}\\
+  Study Size & The logarithm of the number of estimates collected from the study. & 2.942 & 0.637 \\
+  Yrs. of Schooling & The average number of years of schooling attained by the subjects. & 11.116 & 3.461 \\
+  Yrs. of Experience & The average number of years of experience attained by the subjects. & 18.351 & 7.450 \\
+  Education: Years & =1 if authors report schooling in years. & 0.634 & 0.482 \\
+  Education: Levels & =1 if the authors report schooling in levels (e.g., attained college degree) (reference category). & 0.366 & 0.482 \\
+  Wage: Log Hourly & =1 if the dependent variable in the regression is log hourly wage. & 0.531 & 0.499 \\
+  Wage: Log Daily & =1 if the dependent variable in the regression is log daily or weekly wage. & 0.095 & 0.293 \\
+  Wage: Log Monthly & =1 if the dependent variable in the regression is log monthly wage. & 0.211 & 0.408 \\
+  Wage: Annual Earnings & =1 if the dependent variable in the regression is log of mean annual earnings (reference category). & 0.162 & 0.369 \\
+  Micro Data & =1 if the study uses micro data. & 0.177 & 0.382 \\
+  Survey Data & =1 if the study uses data from a survey. & 0.534 & 0.499 \\
+  National Register Data & =1 if the study uses data from a national register (reference category). & 0.289 & 0.453 \\
+  Cross-sectional Data & =1 if the study uses cross-sectional data. & 0.361 & 0.481 \\
+  Panel Data & =1 if the study uses panel data (reference category). & 0.639 & 0.481 \\
+  Data Year & The logarithm of the average year of the study's time span & 7.599 & 0.006 \\
+  \midrule
+  
+  \multicolumn{4}{l}{\emph{Spatial/structural variation}}\\
+  No Education & The percentage of subjects that attained no education (reference category). & 0.126 & 0.148 \\
+  Primary Education & The percentage of subjects that attained only primary education. & 0.177 & 0.151 \\
+  Secondary Education & The percentage of subjects that attained only secondary education. & 0.388 & 0.196 \\
+  Higher Education & The percentage of subjects that attained any form of higher education. & 0.309 & 0.247 \\
+  Wage Earners & The ratio of wage earners to self-employed subjects in the study ( = 1 if wage earner, = 0 if self-employed). & 0.837 & 0.205 \\
+  Self-Employed & The ratio of self-employed to wage earners subjects in the study ( = 1 if self-employed, = 0 if wage earner) (reference category). & 0.163 & 0.205 \\
+  Male & The ratio of male to female subjects in the study ( = 1 if male, = 0 if female). & 0.650 & 0.350 \\
+  Female & The ratio of female to male subjects in the study ( = 1 if female, = 0 if male) (reference category). & 0.350 & 0.350 \\
+  Private Sector & The ratio of private to public sector workers ( = 1 if private sector worker, = 0 if public). & 0.596 & 0.163 \\
+  Public Sector & The ratio of public to private sector workers ( = 1 if public sector worker, = 0 if private) (reference category). & 0.404 & 0.163 \\
+  Ethnicity: Caucasian & The ratio of Caucasian to non-Caucasian subjects in the study ( = 1 if Caucasian, = 0 if not). & 0.227 & 0.419 \\
+  Ethnicity: Other & The ratio of non-Caucasian to Caucasian subjects in the study ( = 1 if non-Caucasian, = 0 if Caucasian) (reference category). & 0.773 & 0.419 \\
+  Rural & The ratio of rural to urban workers ( = 1 if rural worker, = 0 if urban). & 0.297 & 0.191 \\
+  Urban & The ratio of urban to rural workers ( = 1 if urban worker, = 0 if rural) (reference category). & 0.703 & 0.191 \\
+  Reg: Advanced Econ. & =1 if the study was conducted in a country with advanced economy. (reference group) & 0.498 & 0.500 \\
+  High Income Countries & =1 if the study was conducted in a high income country (reference category) & 0.507 & 0.500 \\
+  Median Expenditure & The logarithm of the median expenditure in the country in a given year. & 8.584 & 1.420 \\
+  Minimum Wage & The logarithm of the minimum wage in the country in a given year. & 5.853 & 1.536 \\
+  Academic Freedom Index & The academic freedom index reported for the country in a given year. & 0.712 & 0.266 \\
+  \midrule
+  
+  \multicolumn{4}{l}{\emph{Estimation method}}\\
+  Method: OLS & =1 if the authors use Ordinary least squares (reference category). & 0.664 & 0.473 \\
+  Method: Cohort/FE & =1 if the authors use Cohort-type or Fixed-effects estimation. & 0.058 & 0.234 \\
+  Method: 2SLS & =1 if the authors use Two-Stage least squares estimation. & 0.095 & 0.294 \\
+  Method: Heckman & =1 if the authors use Two-step estimation (Heckman and Polachek, 1974). & 0.062 & 0.240 \\
+  Method: Probit & =1 if the authors use Probit estimation. & 0.022 & 0.147 \\
+  Method: IV & =1 if the authors use Instrumental variables estimation. & 0.111 & 0.314 \\
+  Ability: Direct & =1 if the authors include a direct measure of ability in their study. & 0.135 & 0.341 \\
+  Ability: Proxied & =1 if the authors use a proxy for ability in their study. & 0.204 & 0.403 \\
+  Ability: Uncontrolled & =1 if the authors acknowledge, but do not control for ability in any way in their study. & 0.425 & 0.494 \\
+  Ability: Unmentioned & =1 if the authors do not mention ability anywhere in their study (reference category). & 0.223 & 0.417 \\
+  Control: Age & =1 if the authors control for age in the regression. & 0.344 & 0.475 \\
+  Control: Age$^2$ & =1 if the authors control for age in quadratic form in the regression. & 0.275 & 0.447 \\
+  Control: Experience & =1 if the authors control for experience in the regression. & 0.607 & 0.489 \\
+  Control: Experience$^2$ & =1 if the authors control for experience in quadratic form in the regression. & 0.512 & 0.500 \\
+  Control: Ethnicity & =1 if the authors control for ethnicity in the regression. & 0.251 & 0.434 \\
+  Control: Health & =1 if the authors control for health in the regression. & 0.135 & 0.342 \\
+  Control: Gender & =1 if the authors control for gender in the regression. & 0.367 & 0.482 \\
+  Control: Marriage & =1 if the authors control for marriage in the regression. & 0.361 & 0.480 \\
+  Control: Occupation & =1 if the authors control for occupation of the subjects in the regression. & 0.142 & 0.349 \\
+  Control: Firm Char. & =1 if the authors control for firm characteristics in the regression. & 0.149 & 0.357 \\
+  Control: Area & =1 if the authors control for area type in the regression (e.g., urban, rural). & 0.418 & 0.493 \\
+  Control: Macro Var. & =1 if the authors control for macroeconomic variables in the regression. & 0.347 & 0.476 \\
+  \midrule
+  
+  \multicolumn{4}{l}{\emph{Publication characteristics}}\\
+  Impact Factor & The logarithm of the Journal Citations Report impact factor of the study (as of January 2023; = 0 in case of no publication). & -0.906 & 1.533 \\
+  Citations & The logarithm of the mean number of Google Scholar citations received per year since the appearance of the study in Google Scholar (as of January 2023). & 4.029 & 2.177 \\
+  Study: Published & =1 if the study was published in a journal. & 0.764 & 0.425 \\
+  Study: Unpublished & =1 if the study was not published in a journal (reference category). & 0.236 & 0.425 \\
+  Publication Year & The logarithm of the number of years between the publication (or issuing) of this study and the publication year of the earliest published study in the sample. & 3.332 & 0.339 \\
+  \bottomrule
+     
+   \multicolumn{4}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the summary statistics and descriptions for various study characteristics eligible for inclusion in Bayesian Model Averaging. Variables marked as \textit{reference categories} were automatically excluded from the procedure, as this would create a dummy variable trap. SD = standard deviation, OLS = Ordinary Least Squares, FE = Fixed Effects, 2SLS = 2 Stage Least Squares, IV = Instrumental Variable.}
+  \end{longtable}
+  \end{scriptsize}
+  \end{singlespace}
+  
 
 Let us take a closer look at five of the six\footnote{The statistical properties of the estimate have already been described in \autoref{chap:three}.} variable categories and try to understand the reasoning behind my choices of this particular variable setup.
 
@@ -194,7 +185,7 @@ I use a combination of the default Zellner's g-prior and the dilution prior for 
 \begin{center}
 \caption{Bayesian model averaging results}
 \label{fig:BMA}
-\includegraphics[width=1\textwidth]{Figures/bma_UIP_dilut_results.png}
+\includegraphics[width=1\textwidth]{Figures/BMA/bma_UIP_dilut_results.png}
 \end{center}\vspace{-0.5cm}
 \captionsetup{width=0.95\textwidth, font = scriptsize}
 \caption*{\emph{Note:} This figure shows the results of the Bayesian model averaging using the uniform g-prior and dilution prior. The response variable, percentage returns to a year of schooling, is measured on the horizontal axis as cumulative posterior model probabilities. The explanatory variables are ranked in descending order on the vertical axis according to their posterior inclusion probability. Purple color: the variable is included in the model and has a positive sign. Blue color: the variable is included in the model and has a negative sign. Numerical results of the estimation can be found in table \ref{tab:BMA}. For a detailed explanation of the variables, see table \ref{tab:var}.
@@ -235,82 +226,81 @@ l
 \endfoot
 \endlastfoot
 
-    Constant & -1.361 & NaN & \textbf{1.000} & 4.580 & 352.079 & 0.990 \\
-    Standard Error & 0.378 & 0.065 & \textbf{1.000} & 0.515 & 0.197 & 0.009 \\
-    \midrule
+(Constant) & -4.729 & NaN & \textbf{1.000} & 4.838 & 350.491 & 0.989 \\
+Standard Error & 0.375 & 0.064 & \textbf{1.000} & 0.516 & 0.201 & 0.010 \\
+\midrule
 
-\multicolumn{7}{l}{\emph{Estimate characteristics}}\\	
-    Estimate: City & -0.002 & 0.051 & 0.004 & 0.000 & 1.103 & 0.000 \\
-    Estimate: Sub-region & -1.434 & 0.366 & \textbf{0.994} & -0.575 & 1.711 & 0.737 \\
-    Estimate: Region & -1.328 & 0.262 & \textbf{1.000} & -0.695 & 1.292 & 0.591 \\
-    Estimate: Country & -0.020 & 0.121 & 0.037 & 0.000 & 0.905 & 0.000 \\
-     \midrule
-    
-\multicolumn{7}{l}{\emph{Data characteristics}}\\	
-    Study Size & -0.002 & 0.027 & 0.011 & 0.000 & 0.371 & 0.000 \\
-    Yrs. of Schooling & 0.000 & 0.003 & 0.004 & 0.000 & 0.002 & 0.000 \\
-    Yrs. of Experience & 0.000 & 0.001 & 0.003 & 0.000 & 0.015 & 0.000 \\
-    Education: Years & 1.175 & 0.225 & \textbf{1.000} & 1.354 & 0.630 & 0.032 \\
-    Wage: Log Hourly & -0.270 & 0.421 & 0.323 & 0.000 & 0.716 & 0.000 \\
-    Wage: Log Daily & -1.403 & 0.689 & \textbf{0.900} & -0.465 & 1.242 & 0.708 \\
-    Wage: Log Monthly & -0.443 & 0.591 & 0.408 & 0.000 & 1.016 & 0.000 \\
-    Micro Data & 1.383 & 0.313 & \textbf{0.993} & 0.703 & 0.790 & 0.374 \\
-    Survey Data & -0.091 & 0.233 & 0.160 & 0.000 & 0.583 & 0.000 \\
-    Cross-sectional Data & -0.001 & 0.016 & 0.004 & 0.000 & 0.117 & 0.000 \\
-    Data Year & 0.705 & 5.380 & 0.023 & 0.000 & 46.698 & 0.000 \\
-    \midrule
-    
+\multicolumn{7}{l}{\emph{Estimate characteristics}}\\
+Estimate: City & -0.006 & 0.081 & 0.013 & 0.000 & 1.109 & 0.000 \\
+Estimate: Sub-region & -1.479 & 0.346 & \textbf{1.000} & -0.612 & 1.677 & 0.715 \\
+Estimate: Region & -1.334 & 0.260 & \textbf{1.000} & -0.699 & 1.292 & 0.589 \\
+Estimate: Country & -0.030 & 0.146 & 0.055 & 0.000 & 0.909 & 0.000 \\
+\midrule
+
+\multicolumn{7}{l}{\emph{Data Characteristics}}\\
+Study Size & -0.002 & 0.029 & 0.014 & 0.000 & 0.373 & 0.000 \\
+Yrs. of Schooling & 0.000 & 0.003 & 0.007 & 0.000 & 0.003 & 0.000 \\
+Yrs. of Experience & 0.000 & 0.001 & 0.006 & 0.000 & 0.013 & 0.000 \\
+Education: Years & 1.149 & 0.219 & \textbf{1.000} & 1.328 & 0.619 & 0.032 \\
+Wage: Log Hourly & -0.432 & 0.465 & \textbf{0.511} & 0.000 & 0.713 & 0.000 \\
+Wage: Log Daily & -1.611 & 0.623 & \textbf{0.963} & -0.595 & 1.129 & 0.598 \\
+Wage: Log Monthly & -0.671 & 0.622 & \textbf{0.602} & 0.000 & 1.011 & 0.000 \\
+Micro Data & 1.374 & 0.309 & \textbf{0.997} & 0.612 & 0.820 & 0.455 \\
+Survey Data & -0.104 & 0.238 & 0.192 & 0.000 & 0.584 & 0.000 \\
+Cross-sectional Data & -0.001 & 0.017 & 0.005 & 0.000 & 0.122 & 0.000 \\
+Data Year & 1.172 & 6.961 & 0.037 & 0.000 & 46.426 & 0.000 \\
+\midrule
+
 \multicolumn{7}{l}{\emph{Spatial/structural variation}}\\
-    Primary Education & 3.561 & 0.836 & \textbf{0.999} & 2.112 & 1.995 & 0.290 \\
-    Secondary Education & 0.001 & 0.051 & 0.002 & 0.000 & 0.372 & 0.000 \\
-    Higher Education & 5.543 & 0.596 & \textbf{1.000} & 4.391 & 1.450 & 0.002 \\
-    Wage Earners & 0.691 & 0.790 & 0.486 & 0.000 & 1.410 & 0.000 \\
-    Gender: Male & -1.212 & 0.279 & \textbf{1.000} & -0.757 & 0.708 & 0.285 \\
-    Sector: Private & 0.721 & 0.937 & 0.419 & 0.000 & 2.079 & 0.000 \\
-    Ethnicity: Caucasian & -1.455 & 0.269 & \textbf{1.000} & -1.083 & 0.540 & 0.045 \\
-    Sector: Rural & -0.077 & 0.319 & 0.066 & 0.000 & 1.264 & 0.000 \\
-    Median Expenditure & -0.002 & 0.020 & 0.015 & 0.000 & 0.161 & 0.000 \\
-    Minimum Wage & -0.002 & 0.017 & 0.014 & 0.000 & 0.009 & 0.000 \\
-    Academic Freedom Index & -0.014 & 0.116 & 0.021 & 0.000 & 0.102 & 0.000 \\
-    \midrule
-    
-\multicolumn{7}{l}{\emph{Estimation method}}\\   
-    Mean Age & 0.000 & 0.017 & 0.001 & 0.000 & 0.087 & 0.000 \\
-    Method: Cohort/FE & 0.001 & 0.034 & 0.004 & 0.000 & 0.242 & 0.000 \\
-    Method: 2SLS & 1.481 & 0.461 & \textbf{0.976} & 0.467 & 1.079 & 0.665 \\
-    Method: Heckman & -0.001 & 0.030 & 0.005 & 0.000 & 0.062 & 0.000 \\
-    Method: Probit & 0.000 & 0.030 & 0.001 & 0.000 & 0.084 & 0.000 \\
-    Method: IV & 2.632 & 0.356 & \textbf{1.000} & 1.691 & 0.881 & 0.055 \\
-    Ability: Direct & -1.143 & 0.574 & \textbf{0.859} & -0.521 & 0.642 & 0.417 \\
-    Ability: Proxied & 0.148 & 0.385 & 0.146 & 0.000 & 0.919 & 0.000 \\
-    Ability: Uncontrolled & 0.554 & 0.481 & \textbf{0.685} & 0.000 & 0.947 & 0.000 \\
-    Control: Age & -1.881 & 0.422 & \textbf{0.998} & -0.960 & 1.109 & 0.387 \\
-    Control: Age$^2$ & 2.946 & 0.452 & \textbf{1.000} & 1.976 & 1.109 & 0.075 \\
-    Control: Experience & -0.015 & 0.105 & 0.027 & 0.000 & 0.678 & 0.000 \\
-    Control: Experience$^2$ & 0.000 & 0.013 & 0.002 & 0.000 & 0.182 & 0.000 \\
-    Control: Ethnicity & 0.000 & 0.015 & 0.002 & 0.000 & 0.208 & 0.000 \\
-    Control: Health & 0.051 & 0.194 & 0.079 & 0.000 & 0.591 & 0.000 \\
-    Control: Gender & 0.000 & 0.012 & 0.003 & 0.000 & 0.237 & 0.000 \\
-    Control: Marriage & 0.001 & 0.023 & 0.005 & 0.000 & 0.254 & 0.000 \\
-    Control: Occupation & -0.007 & 0.067 & 0.015 & 0.000 & 0.003 & 0.000 \\
-    Control: Firm Char. & -0.017 & 0.105 & 0.033 & 0.000 & 0.591 & 0.000 \\
-    Control: Area & 1.781 & 0.235 & \textbf{1.000} & 0.927 & 1.004 & 0.356 \\
-    Control: Macro Var. & 0.000 & 0.011 & 0.002 & 0.000 & 0.130 & 0.000 \\
-    \midrule
-    
-\multicolumn{7}{l}{\emph{Publication characteristics}}\\   
-    Impact Factor & -0.187 & 0.110 & \textbf{0.805} & -0.052 & 0.199 & 0.793 \\
-    Citations & 0.000 & 0.005 & 0.005 & 0.000 & 0.111 & 0.000 \\
-    Study: Published & -1.036 & 0.377 & \textbf{0.945} & -0.305 & 1.361 & 0.823 \\
-    Publication Year & 0.000 & 0.017 & 0.003 & 0.000 & 0.042 & 0.000 \\
-    \bottomrule
-    \addlinespace[0.2em]
-    
+Primary Education & 3.455 & 0.855 & \textbf{0.996} & 1.409 & 2.030 & 0.488 \\
+Secondary Education & -0.003 & 0.121 & 0.008 & 0.000 & 0.382 & 0.000 \\
+Higher Education & 5.397 & 0.599 & \textbf{1.000} & 4.140 & 1.514 & 0.006 \\
+Wage Earners & 0.882 & 0.791 & \textbf{0.621} & 0.000 & 1.411 & 0.000 \\
+Male & -1.202 & 0.273 & \textbf{1.000} & -0.657 & 0.698 & 0.347 \\
+Private Sector & 0.800 & 0.944 & 0.474 & 0.000 & 2.073 & 0.000 \\
+Ethnicity: Caucasian & -1.460 & 0.258 & \textbf{1.000} & -1.097 & 0.546 & 0.045 \\
+Rural & -0.091 & 0.338 & 0.083 & 0.000 & 1.260 & 0.000 \\
+Median Expenditure & -0.004 & 0.029 & 0.032 & 0.000 & 0.164 & 0.000 \\
+Minimum Wage & -0.002 & 0.020 & 0.021 & 0.000 & 0.011 & 0.000 \\
+Academic Freedom Index & -0.018 & 0.126 & 0.027 & 0.000 & 0.098 & 0.000 \\
+\midrule
 
- \multicolumn{7}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the results of the Bayesian and Frequentist model averaging. Post. mean = Posterior Mean, Post. SD = Posterior Standard Deviation, PIP = Posterior Inclusion Probability, Coef. = Coefficient, SE = Standard Error, OLS = Ordinary Least Squares, FE = Fixed Effects, 2SLS = 2 Stage Least Squares. The variables with PIP > 0.5 are highlighted. For a detailed explanation of the variables, see table \ref{tab:var}.}
+\multicolumn{7}{l}{\emph{Estimation method}}\\
+Method: Cohort/FE & 0.005 & 0.063 & 0.012 & 0.000 & 0.240 & 0.000 \\
+Method: 2SLS & 1.529 & 0.411 & \textbf{0.996} & 0.640 & 0.989 & 0.517 \\
+Method: Heckman & -0.001 & 0.031 & 0.006 & 0.000 & 0.063 & 0.000 \\
+Method: Probit & -0.003 & 0.076 & 0.008 & 0.000 & 0.083 & 0.000 \\
+Method: IV & 2.651 & 0.348 & \textbf{1.000} & 1.701 & 0.901 & 0.059 \\
+Ability: Direct & -1.218 & 0.486 & \textbf{0.930} & -0.632 & 0.699 & 0.366 \\
+Ability: Proxied & 0.085 & 0.277 & 0.104 & 0.000 & 0.924 & 0.000 \\
+Ability: Uncontrolled & 0.492 & 0.406 & \textbf{0.696} & 0.000 & 0.950 & 0.000 \\
+Control: Age & -1.921 & 0.408 & \textbf{1.000} & -0.983 & 1.106 & 0.374 \\
+Control: Age$^2$ & 2.992 & 0.432 & \textbf{1.000} & 2.049 & 1.118 & 0.067 \\
+Control: Experience & -0.021 & 0.118 & 0.042 & 0.000 & 0.686 & 0.000 \\
+Control: Experience$^2$ & -0.001 & 0.025 & 0.007 & 0.000 & 0.185 & 0.000 \\
+Control: Ethnicity & 0.000 & 0.022 & 0.006 & 0.000 & 0.206 & 0.000 \\
+Control: Health & 0.049 & 0.188 & 0.080 & 0.000 & 0.600 & 0.000 \\
+Control: Gender & 0.000 & 0.011 & 0.002 & 0.000 & 0.241 & 0.000 \\
+Control: Marriage & 0.003 & 0.038 & 0.015 & 0.000 & 0.254 & 0.000 \\
+Control: Occupation & -0.009 & 0.079 & 0.019 & 0.000 & 0.005 & 0.000 \\
+Control: Firm Char. & -0.022 & 0.121 & 0.045 & 0.000 & 0.597 & 0.000 \\
+Control: Area & 1.784 & 0.234 & \textbf{1.000} & 0.840 & 1.083 & 0.438 \\
+Control: Macro Var. & 0.000 & 0.019 & 0.007 & 0.000 & 0.126 & 0.000 \\
+\midrule
+
+\multicolumn{7}{l}{\emph{Publication characteristics}}\\
+Impact Factor & -0.215 & 0.088 & \textbf{0.931} & -0.105 & 0.165 & 0.524 \\
+Citations & 0.000 & 0.006 & 0.006 & 0.000 & 0.111 & 0.000 \\
+Study: Published & -1.157 & 0.280 & \textbf{0.999} & -0.430 & 1.242 & 0.730 \\
+Publication Year & 0.000 & 0.017 & 0.003 & 0.000 & 0.044 & 0.000 \\
+\bottomrule
+\addlinespace[0.2em]
+
+\multicolumn{7}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the results of the Bayesian and Frequentist model averaging. Post. mean = Posterior Mean, Post. SD = Posterior Standard Deviation, PIP = Posterior Inclusion Probability, Coef. = Coefficient, SE = Standard Error, OLS = Ordinary Least Squares, FE = Fixed Effects, 2SLS = 2 Stage Least Squares. The variables with PIP > 0.5 are highlighted. For a detailed explanation of the variables, see table \ref{tab:var}.}
 \end{longtable}
 \end{notsotiny}
 \end{singlespace}
+\clearpage
 }
 
 Looking at these in more detail, the publication bias stands out immediately. Despite the mixed or otherwise lukewarm claims about its presence in \autoref{chap:four}, both presented models strongly suggest that publication bias appears in the data. The standard error coefficients are 0.378 and 0.515 for both respective models; both these coefficients are statistically significant. The \ac{PIP} of 1.000 associated with the coefficient in the \ac{BMA} model is the highest possible, and the p-value for the \ac{FMA} model is also below 0.01.
@@ -326,7 +316,7 @@ As the last piece of information added to the model averaging topic, I also pres
 \begin{center}
 \caption{Inclusion probability varies little across different model specifications}
 \label{fig:BMA_comparison}
-\includegraphics[width=0.8\textwidth]{Figures/bma_comparison.png}
+\includegraphics[width=0.8\textwidth]{Figures/BMA/bma_comparison.png}
 \end{center}\vspace{-0.5cm}
 \captionsetup{width=0.8\textwidth, font = scriptsize}
 \caption*{\emph{Note:} This figure shows how much variables used in Bayesian model averaging contribute to the returns to education effect under different model specifications. The variables are displayed on the x-axis against their posterior inclusion probabilities on the y-axis. PIP = Posterior Inclusion Probability, UIP = Uniform g-prior, Dilut = Dilution Prior, Uniform = Uniform Model Prior, BRIC = Benchmark g-prior, Random = Random Model Prior, HQ = Hannan-Quinn Criterion. For the explanation of the variables and their detailed interpretation, see table \ref{tab:var}.}

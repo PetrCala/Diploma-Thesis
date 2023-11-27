@@ -7,11 +7,12 @@
 \label{tab:PB-FAT}
 \begin{tabular}{
 @{\hskip\tabcolsep\extracolsep}
-l*{5}{c}} %one left column, five center (*{} makes the cols inherit attributes)
+l*{6}{c}} %one left column, six center (*{} makes the cols inherit attributes)
 \toprule
   \multicolumn{1}{l}{} &
   \multicolumn{1}{c}{\textbf{OLS}} & 
   \multicolumn{1}{c}{\textbf{FE}} &
+  \multicolumn{1}{c}{\textbf{BE}} &
   \multicolumn{1}{c}{\textbf{RE}} & 
   \multicolumn{1}{c}{\textbf{Study}} &
   \multicolumn{1}{c}{\textbf{Precision}} \\

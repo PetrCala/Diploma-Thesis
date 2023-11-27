@@ -5,4 +5,5 @@
 \end{longtable}
 \end{notsotiny}
 \end{singlespace}
+\clearpage
 }

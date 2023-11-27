@@ -51,91 +51,91 @@ As a last technical point regarding the results, I choose to omit several data s
 
 
 % BPE summary statistics
-\begin{table}[!htbp]
-\centering
-\scriptsize
-\singlespace
-\caption{Implied best-practice across various subsets of data}
-\label{tab:bpe_summary_stats}
-\begin{tabular}{
-@{}
-l % Description
-*{7}{c} % Middle columns
->{\centering\arraybackslash}p{1cm} % Last column with fixed width
-@{}
-}
-\toprule
-    & Mean & \multicolumn{2}{c}{95\% conf. int.} & Median & Min & Max & SD & Studies \\
+% \begin{table}[!htbp]
+% \centering
+% \scriptsize
+% \singlespace
+% \caption{Implied best-practice across various subsets of data}
+% \label{tab:bpe_summary_stats}
+% \begin{tabular}{
+% @{}
+% l % Description
+% *{7}{c} % Middle columns
+% >{\centering\arraybackslash}p{1cm} % Last column with fixed width
+% @{}
+% }
+% \toprule
+%     & Mean & \multicolumn{2}{c}{95\% conf. int.} & Median & Min & Max & SD & Studies \\
   
-\midrule
+% \midrule
 
-                           All studies & 7.109 & 3.046   & 11.172  & 7.239 & 1.152 & 12.436 & 2.073 & 115 \\
-    \midrule
+%                            All studies & 7.109 & 3.046   & 11.172  & 7.239 & 1.152 & 12.436 & 2.073 & 115 \\
+%     \midrule
     
-\multicolumn{8}{l}{\emph{Data characteristics}}\\	
-     Yrs. of Schooling >= 10.6 & 6.907     & 3.199   & 10.615  & 6.749 & 3.503 & 11.598 & 1.892      & 59 \\
-      Yrs. of Schooling < 10.6 & 7.321     & 2.917   & 11.725  & 7.360 & 1.152 & 12.436 & 2.247      & 56 \\
-     Yrs. of Experience < 19.5 & 7.406     & 3.310   & 11.502  & 7.505 & 3.133 & 11.598 & 2.090      & 56 \\
-   Yrs. of Experience >= 19.45 & 6.826     & 2.837   & 10.815  & 6.790 & 1.152 & 12.436 & 2.035      & 59 \\
-              Education: Years & 7.119     & 3.181   & 11.057  & 7.134 & 1.152 & 12.436 & 2.009      & 84 \\
-             Education: Levels & 7.079     & 2.624   & 11.534  & 7.254 & 2.932 & 11.598 & 2.273      & 31 \\
-        National Register Data & 7.161     & 3.057   & 11.265  & 6.801 & 3.133 & 11.128 & 2.094      & 35 \\
-                    Micro Data & 7.484     & 4.313   & 10.655  & 7.573 & 4.168 & 11.146 & 1.618      & 18 \\
-                   Survey Data & 6.970     & 2.678   & 11.262  & 6.898 & 1.152 & 12.436 & 2.190      & 62 \\
-          Cross-sectional Data & 7.299     & 3.808   & 10.790  & 7.248 & 3.669 & 11.598 & 1.781      & 44 \\
-                    Panel Data & 6.991     & 2.601   & 11.381  & 6.979 & 1.152 & 12.436 & 2.240      & 71 \\
-              Higher Education & 7.729     & 3.380   & 12.078  & 7.463 & 3.745 & 11.598 & 2.219      & 23 \\
-           Secondary Education & 6.986     & 3.086   & 10.886  & 6.912 & 3.133 & 12.436 & 1.990      & 72 \\
-             Primary Education & 7.200     & 2.798   & 11.602  & 7.576 & 1.152 & 10.083 & 2.246      & 13 \\
-    \midrule
+% \multicolumn{8}{l}{\emph{Data characteristics}}\\	
+%      Yrs. of Schooling >= 10.6 & 6.907     & 3.199   & 10.615  & 6.749 & 3.503 & 11.598 & 1.892      & 59 \\
+%       Yrs. of Schooling < 10.6 & 7.321     & 2.917   & 11.725  & 7.360 & 1.152 & 12.436 & 2.247      & 56 \\
+%      Yrs. of Experience < 19.5 & 7.406     & 3.310   & 11.502  & 7.505 & 3.133 & 11.598 & 2.090      & 56 \\
+%    Yrs. of Experience >= 19.45 & 6.826     & 2.837   & 10.815  & 6.790 & 1.152 & 12.436 & 2.035      & 59 \\
+%               Education: Years & 7.119     & 3.181   & 11.057  & 7.134 & 1.152 & 12.436 & 2.009      & 84 \\
+%              Education: Levels & 7.079     & 2.624   & 11.534  & 7.254 & 2.932 & 11.598 & 2.273      & 31 \\
+%         National Register Data & 7.161     & 3.057   & 11.265  & 6.801 & 3.133 & 11.128 & 2.094      & 35 \\
+%                     Micro Data & 7.484     & 4.313   & 10.655  & 7.573 & 4.168 & 11.146 & 1.618      & 18 \\
+%                    Survey Data & 6.970     & 2.678   & 11.262  & 6.898 & 1.152 & 12.436 & 2.190      & 62 \\
+%           Cross-sectional Data & 7.299     & 3.808   & 10.790  & 7.248 & 3.669 & 11.598 & 1.781      & 44 \\
+%                     Panel Data & 6.991     & 2.601   & 11.381  & 6.979 & 1.152 & 12.436 & 2.240      & 71 \\
+%               Higher Education & 7.729     & 3.380   & 12.078  & 7.463 & 3.745 & 11.598 & 2.219      & 23 \\
+%            Secondary Education & 6.986     & 3.086   & 10.886  & 6.912 & 3.133 & 12.436 & 1.990      & 72 \\
+%              Primary Education & 7.200     & 2.798   & 11.602  & 7.576 & 1.152 & 10.083 & 2.246      & 13 \\
+%     \midrule
     
-\multicolumn{8}{l}{\emph{Spatial/structural variation}}\\
-                  No Education & 6.164     & 2.250   & 10.078  & 7.029 & 2.932  & 7.846 & 1.997       & 7 \\
-                  Wage Earners & 7.050     & 2.977   & 11.123  & 7.006 & 1.152 & 12.436 & 2.078     & 109 \\
-                 Self-Employed & 8.175     & 4.590   & 11.760  & 7.415 & 6.746 & 11.598 & 1.829       & 6 \\
-                  Gender: Male & 7.242     & 3.430   & 11.054  & 7.254 & 1.152 & 12.436 & 1.945      & 97 \\
-                Gender: Female & 6.388     & 1.272   & 11.504  & 6.250 & 2.932 & 11.146 & 2.610      & 18 \\
-          Ethnicity: Caucasian & 6.907     & 3.650   & 10.164  & 6.749 & 4.015 & 11.146 & 1.662      & 31 \\
-              Ethnicity: Other & 7.183     & 2.851   & 11.515  & 7.360 & 1.152 & 12.436 & 2.210      & 84 \\
-                 Sector: Urban & 7.077     & 2.943   & 11.211  & 7.123 & 1.152 & 11.598 & 2.109     & 102 \\
-                 Sector: Rural & 7.353     & 3.782   & 10.924  & 7.256 & 5.191 & 12.436 & 1.822      & 13 \\
-                  Income: High & 7.192     & 3.684   & 10.700  & 6.912 & 3.745 & 11.261 & 1.790      & 60 \\
-                Income: Middle & 7.077     & 2.414   & 11.740  & 7.368 & 1.152 & 12.436 & 2.379      & 48 \\
-                   Income: Low & 6.606     & 2.029   & 11.183  & 6.115 & 2.932 & 10.083 & 2.335       & 7 \\
-    Median Expenditure >= 8477 & 6.981     & 3.079   & 10.883  & 6.749 & 1.152 & 11.261 & 1.991      & 62 \\
-     Median Expenditure < 8477 & 7.258     & 2.993   & 11.523  & 7.319 & 3.133 & 12.436 & 2.176      & 53 \\
-            Minimum Wage < 345 & 6.976     & 2.860   & 11.092  & 7.282 & 1.152 & 12.436 & 2.100      & 57 \\
-           Minimum Wage >= 345 & 7.239     & 3.207   & 11.271  & 6.822 & 3.503 & 11.598 & 2.057      & 58 \\
-                Mean Age >= 37 & 6.863     & 3.335   & 10.391  & 6.770 & 2.932 & 11.232 & 1.800      & 60 \\
-                 Mean Age < 37 & 7.377     & 2.824   & 11.930  & 7.402 & 1.152 & 12.436 & 2.323      & 55 \\
-                 \midrule
+% \multicolumn{8}{l}{\emph{Spatial/structural variation}}\\
+%                   No Education & 6.164     & 2.250   & 10.078  & 7.029 & 2.932  & 7.846 & 1.997       & 7 \\
+%                   Wage Earners & 7.050     & 2.977   & 11.123  & 7.006 & 1.152 & 12.436 & 2.078     & 109 \\
+%                  Self-Employed & 8.175     & 4.590   & 11.760  & 7.415 & 6.746 & 11.598 & 1.829       & 6 \\
+%                   Gender: Male & 7.242     & 3.430   & 11.054  & 7.254 & 1.152 & 12.436 & 1.945      & 97 \\
+%                 Gender: Female & 6.388     & 1.272   & 11.504  & 6.250 & 2.932 & 11.146 & 2.610      & 18 \\
+%           Ethnicity: Caucasian & 6.907     & 3.650   & 10.164  & 6.749 & 4.015 & 11.146 & 1.662      & 31 \\
+%               Ethnicity: Other & 7.183     & 2.851   & 11.515  & 7.360 & 1.152 & 12.436 & 2.210      & 84 \\
+%                  Sector: Urban & 7.077     & 2.943   & 11.211  & 7.123 & 1.152 & 11.598 & 2.109     & 102 \\
+%                  Sector: Rural & 7.353     & 3.782   & 10.924  & 7.256 & 5.191 & 12.436 & 1.822      & 13 \\
+%                   Income: High & 7.192     & 3.684   & 10.700  & 6.912 & 3.745 & 11.261 & 1.790      & 60 \\
+%                 Income: Middle & 7.077     & 2.414   & 11.740  & 7.368 & 1.152 & 12.436 & 2.379      & 48 \\
+%                    Income: Low & 6.606     & 2.029   & 11.183  & 6.115 & 2.932 & 10.083 & 2.335       & 7 \\
+%     Median Expenditure >= 8477 & 6.981     & 3.079   & 10.883  & 6.749 & 1.152 & 11.261 & 1.991      & 62 \\
+%      Median Expenditure < 8477 & 7.258     & 2.993   & 11.523  & 7.319 & 3.133 & 12.436 & 2.176      & 53 \\
+%             Minimum Wage < 345 & 6.976     & 2.860   & 11.092  & 7.282 & 1.152 & 12.436 & 2.100      & 57 \\
+%            Minimum Wage >= 345 & 7.239     & 3.207   & 11.271  & 6.822 & 3.503 & 11.598 & 2.057      & 58 \\
+%                 Mean Age >= 37 & 6.863     & 3.335   & 10.391  & 6.770 & 2.932 & 11.232 & 1.800      & 60 \\
+%                  Mean Age < 37 & 7.377     & 2.824   & 11.930  & 7.402 & 1.152 & 12.436 & 2.323      & 55 \\
+%                  \midrule
 
-\multicolumn{8}{l}{\emph{Estimation method}}\\  
-                   Method: OLS & 7.270     & 3.070   & 11.470  & 7.282 & 1.152 & 12.436 & 2.143      & 85 \\
-                  Method: 2SLS & 7.153     & 3.096   & 11.210  & 6.993 & 3.683 & 10.767 & 2.070       & 8 \\
-               Method: Heckman & 6.417     & 2.824   & 10.010  & 5.434 & 5.286  & 8.532 & 1.833       & 3 \\
-                    Method: IV & 6.774     & 3.223   & 10.325  & 7.029 & 4.015 & 10.424 & 1.812      & 11 \\
-             Method: Cohort/FE & 5.861     & 2.388    & 9.334  & 5.974 & 3.503  & 8.476 & 1.772       & 7 \\
-                Method: Probit & 7.541        & NA       & NA  & 7.541 & 7.541  & 7.541    & NA       & 1 \\
-              Ability: Proxied & 6.729    & 2.531   & 10.927  & 7.006 & 2.932 & 11.232 & 2.142  &      23 \\
-          Ability: Unmentioned & 7.134    & 4.057   & 10.211  & 6.979 & 3.712 & 10.767 & 1.570  &      29 \\
-         Ability: Uncontrolled & 7.312    & 3.155   & 11.469  & 7.300 & 1.152 & 12.436 & 2.121  &      52 \\
-               Ability: Direct & 6.873    & 1.173   & 12.573  & 5.580 & 3.503 & 11.598 & 2.908  &      11 \\
-                   \midrule
+% \multicolumn{8}{l}{\emph{Estimation method}}\\  
+%                    Method: OLS & 7.270     & 3.070   & 11.470  & 7.282 & 1.152 & 12.436 & 2.143      & 85 \\
+%                   Method: 2SLS & 7.153     & 3.096   & 11.210  & 6.993 & 3.683 & 10.767 & 2.070       & 8 \\
+%                Method: Heckman & 6.417     & 2.824   & 10.010  & 5.434 & 5.286  & 8.532 & 1.833       & 3 \\
+%                     Method: IV & 6.774     & 3.223   & 10.325  & 7.029 & 4.015 & 10.424 & 1.812      & 11 \\
+%              Method: Cohort/FE & 5.861     & 2.388    & 9.334  & 5.974 & 3.503  & 8.476 & 1.772       & 7 \\
+%                 Method: Probit & 7.541        & NA       & NA  & 7.541 & 7.541  & 7.541    & NA       & 1 \\
+%               Ability: Proxied & 6.729    & 2.531   & 10.927  & 7.006 & 2.932 & 11.232 & 2.142  &      23 \\
+%           Ability: Unmentioned & 7.134    & 4.057   & 10.211  & 6.979 & 3.712 & 10.767 & 1.570  &      29 \\
+%          Ability: Uncontrolled & 7.312    & 3.155   & 11.469  & 7.300 & 1.152 & 12.436 & 2.121  &      52 \\
+%                Ability: Direct & 6.873    & 1.173   & 12.573  & 5.580 & 3.503 & 11.598 & 2.908  &      11 \\
+%                    \midrule
     
-\multicolumn{8}{l}{\emph{Publication characteristics}}\\  
-        Impact Factor >= 0.222 & 7.066    & 3.270   & 10.862  & 6.890 & 3.503 & 12.436 & 1.937  &      58 \\
-         Impact Factor < 0.222 & 7.152    & 2.801   & 11.503  & 7.319 & 1.152 & 11.598 & 2.220  &      57 \\
-               Citations >= 73 & 7.130    & 3.453   & 10.807  & 7.134 & 3.656 & 11.261 & 1.876  &      58 \\
-                Citations < 73 & 7.086    & 2.631   & 11.541  & 7.254 & 1.152 & 12.436 & 2.273  &      57 \\
-              Study: Published & 7.244    & 3.261   & 11.227  & 7.254 & 3.133 & 12.436 & 2.032  &      93 \\
-            Study: Unpublished & 6.535    & 2.227   & 10.843  & 6.749 & 1.152 & 11.146 & 2.198  &      22 \\
+% \multicolumn{8}{l}{\emph{Publication characteristics}}\\  
+%         Impact Factor >= 0.222 & 7.066    & 3.270   & 10.862  & 6.890 & 3.503 & 12.436 & 1.937  &      58 \\
+%          Impact Factor < 0.222 & 7.152    & 2.801   & 11.503  & 7.319 & 1.152 & 11.598 & 2.220  &      57 \\
+%                Citations >= 73 & 7.130    & 3.453   & 10.807  & 7.134 & 3.656 & 11.261 & 1.876  &      58 \\
+%                 Citations < 73 & 7.086    & 2.631   & 11.541  & 7.254 & 1.152 & 12.436 & 2.273  &      57 \\
+%               Study: Published & 7.244    & 3.261   & 11.227  & 7.254 & 3.133 & 12.436 & 2.032  &      93 \\
+%             Study: Unpublished & 6.535    & 2.227   & 10.843  & 6.749 & 1.152 & 11.146 & 2.198  &      22 \\
 
-    \bottomrule                                               
+%     \bottomrule                                               
     
-\multicolumn{9}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table displays implied best practice across the whole literature sample across different subsets of the main data. For determining the value of variables for each study, mode is used. For cutoff points of numeric, non-ratio type variables, medians are used. SD = Standard Deviation, OLS = Ordinary Least Squares, 2SLS = Two-stage Least Squares, IV = Instrumental Variable, FE = Fixed-Effects.}
-\end{tabular}
-\end{table}
+% \multicolumn{9}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table displays implied best practice across the whole literature sample across different subsets of the main data. For determining the value of variables for each study, mode is used. For cutoff points of numeric, non-ratio type variables, medians are used. SD = Standard Deviation, OLS = Ordinary Least Squares, 2SLS = Two-stage Least Squares, IV = Instrumental Variable, FE = Fixed-Effects.}
+% \end{tabular}
+% \end{table}
 
 
 % BPE graphs
@@ -228,46 +228,50 @@ In the graphs, the left-hand side of distributions is visibly more prominent for
 
 Let us now return to the subjective best-practice estimate and consider the role of individual variables again. Namely, I will calculate the economic significance of some prominent variables, which means observing how much each of these variables contributes to the implied best practice when its value is changed. Variables with low \ac{PIP} in the model averaging could be argued to have little impact on the effect in the first place, so for this case, I will be considering only those variables that had \ac{PIP} at least 0.5. In the case of the \ac{BMA} model outlined in \autoref{chap:five}, that totals up to 19 variables. To determine their impact on the effect, I will calculate first how much the implied best-practice changes when there occurs a one standard deviation change in each variable, and then how much that change will be when the variable shifts from its lowest reported value to its highest. The results of these calculations can be found in \autoref{tab:econ_significance}.
 
+% BPE Economic Significance
 \begin{table}[!htbp]
-\centering
-\scriptsize
-\singlespace
-\caption{Economic significance of key variables} 
-\label{tab:econ_significance}
-\begin{tabular}{
-@{}
-l
-*{4}{c}
-@{}}
-\toprule
- & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
- & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
-\midrule
-    Standard Error  & 0.642 & 9.82\%  & 3.435 & 52.56\% \\
-    Estimate: Sub-region & -0.428  & -6.55\% & -1.433& -21.92\% \\
-    Estimate: Region & -0.612  & -9.37\% & -1.325& -20.27\% \\
-    Education: Years  & 0.566 & 8.67\%  & 1.175 & 17.98\% \\
-    Wage: Log Daily  & -0.405 & -6.2\% & -1.384& -21.18\% \\
-    Micro Data  & 0.532 & 8.13\%  & 1.391 & 21.29\% \\
-    Primary Education & 0.535 & 8.18\%  & 3.540 & 54.16\% \\
-    Higher Education  & 1.366  & 20.91\%  & 5.521 & 84.48\% \\
-    Gender: Male & -0.425 & -6.5\% & -1.215& -18.58\% \\
-    Ethnicity: Caucasian & -0.608 & -9.3\% & -1.449& -22.18\% \\
-    Method: 2SLS  & 0.433 & 6.62\%  & 1.474 & 22.56\% \\
-    Method: IV  & 0.824  & 12.61\% & 2.627& 40.2\% \\
-    Ability: Direct  & -0.388  & -5.94\% & -1.138& -17.41\% \\
-    Ability: Uncontrolled & 0.271 & 4.15\% & 0.548& 8.39\% \\
-    Control: Age & -0.895 & -13.69\% & -1.883 & -28.81\% \\
-    Control: Age$^2$  & 1.315  & 20.12\%  & 2.945 & 45.06\% \\
-    Control: Area & 0.878  & 13.44\%  & 1.781 & 27.24\% \\
-    Impact Factor  & -0.296  & -4.53\% & -1.349& -20.64\% \\
-    Study: Published & -0.445 & -6.8\% & -1.047& -16.01\% \\
-\bottomrule
-\multicolumn{5}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} 
-%XXX REWRITE
-This table shows the individual effect of several important variables on the returns to education, all other things being equal. Variables with \ac{PIP} at least 0.5 are considered important for this matter. One SD change = Change in the effect incurred by a single standard deviation change in the variable. Maximum change = Change in the effect incurred by increasing the variable from its lowest value to its highest. 6.536\% returns to education is the baseline value against which the variables are compared. For an explanation of the variables, see \autoref{tab:var}. SD = Standard deviation, 2SLS = Two-stage Least Squares, IV = Instrumental Variable.}
-\end{tabular}
-\end{table}
+   \centering
+   \scriptsize
+   \singlespace
+   \caption{Economic significance of key variables} 
+   \label{tab:econ_significance}
+   \begin{tabular}{
+   @{}
+   l
+   *{4}{c}
+   @{}}
+   \toprule
+    & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
+    & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
+   \midrule
+   Standard Error & 0.635 & 9.78\% & 3.399 & 52.37\% \\
+   Estimate: Sub-region & -0.442 & -6.81\% & -1.479 & -22.79\% \\
+   Estimate: Region & -0.616 & -9.5\% & -1.334 & -20.55\% \\
+   Education: Years & 0.554 & 8.53\% & 1.149 & 17.71\% \\
+   Wage: Log Hourly & -0.216 & -3.32\% & -0.432 & -6.66\% \\
+   Wage: Log Daily & -0.472 & -7.27\% & -1.611 & -24.81\% \\
+   Wage: Log Monthly & -0.274 & -4.22\% & -0.671 & -10.34\% \\
+   Micro Data & 0.525 & 8.09\% & 1.374 & 21.17\% \\
+   Primary Education & 0.522 & 8.04\% & 3.455 & 53.23\% \\
+   Higher Education & 1.336 & 20.58\% & 5.397 & 83.14\% \\
+   Wage Earners & 0.181 & 2.78\% & 0.882 & 13.59\% \\
+   Male & -0.420 & -6.48\% & -1.202 & -18.51\% \\
+   Ethnicity: Caucasian & -0.612 & -9.43\% & -1.460 & -22.49\% \\
+   Method: 2SLS & 0.449 & 6.91\% & 1.529 & 23.55\% \\
+   Method: IV & 0.832 & 12.81\% & 2.651 & 40.84\% \\
+   Ability: Direct & -0.416 & -6.41\% & -1.218 & -18.77\% \\
+   Ability: Uncontrolled & 0.243 & 3.75\% & 0.492 & 7.58\% \\
+   Control: Age & -0.913 & -14.07\% & -1.921 & -29.6\% \\
+   Control: Age$^2$ & 1.336 & 20.58\% & 2.992 & 46.1\% \\
+   Control: Area & 0.880 & 13.56\% & 1.784 & 27.48\% \\
+   Impact Factor & -0.330 & -5.08\% & -1.501 & -23.13\% \\
+   Study: Published & -0.491 & -7.57\% & -1.157 & -17.82\% \\
+   \bottomrule
+   \multicolumn{5}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} 
+   %XXX REWRITE
+   This table shows the individual effect of several important variables on the returns to education, all other things being equal. Variables with \ac{PIP} at least 0.5 are considered important for this matter. One SD change = Change in the effect incurred by a single standard deviation change in the variable. Maximum change = Change in the effect incurred by increasing the variable from its lowest value to its highest. 6.536\% returns to education is the baseline value against which the variables are compared. For an explanation of the variables, see \autoref{tab:var}. SD = Standard deviation, 2SLS = Two-stage Least Squares, IV = Instrumental Variable.}
+   \end{tabular}
+   \end{table}
 
 With 7.109\% as the reference value of the effect against which the economic significance is compared, there are nine variables with negative influence. In contrast, ten variables pull the effect in the positive direction. Understandably, the standard error is among the variables with a positive sign (0.642 for 1 SD change, 3.435 for maximum change), as an increase in standard error should highly correlate to an increase in the effect. Otherwise, there would have been an unmistakable publication bias in the literature, which the tests in \autoref{chap:four} failed to provide conclusive evidence for. As for the rest of the variables, higher finished education, \ac{IV} regression, age in the quadratic form, and controlling for area display the highest positive impact among the rest. However, the coefficient for the age squared is offset by its linear counterpart, giving the expected convex shape to the Mincer equation and predicting a substantial increase in earnings later in life. Out of the other variables with positive direction, \textit{Education: Years} stands out the most, underlining the suspicion that estimates reporting education in highest achieved levels instead of in years tend to underestimate the returns to education.
 

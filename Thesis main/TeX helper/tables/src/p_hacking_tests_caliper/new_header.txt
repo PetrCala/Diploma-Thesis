@@ -1,0 +1,18 @@
+% Results of Caliper tests
+\afterpage{
+\begin{singlespace}
+\begin{footnotesize}
+\begin{longtable}[!htbp]{
+@{\hskip\tabcolsep\extracolsep}
+l
+*{3}{c}
+@{}
+}
+\caption{Caliper tests at values 1.645, 1.96 and 2.58}  \label{tab:caliperA}\\
+\toprule
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{c}{\centering{\textbf{Threshold 1.645}}} &
+  \multicolumn{1}{c}{\centering{\textbf{Threshold 1.96}}} &
+  \multicolumn{1}{c}{\centering{\textbf{Threshold 2.58}}} \\
+\midrule
+\endfirsthead

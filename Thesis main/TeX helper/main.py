@@ -12,7 +12,7 @@ PROJECT_ROOT = os.path.dirname(__file__)
 DT_ROOT = os.path.dirname(os.path.dirname(PROJECT_ROOT)) # Two folders up
 NUMERIC_RESULTS_PATH = os.path.join(DT_ROOT, "Results", "numeric")
 
-TABLES_TO_RUN = ["bpe_econ_sig", "exo_tests", "linear_tests", "ma", "ma_variables_description_table", "nonlinear_tests"]
+TABLES_TO_RUN = ["bpe_econ_sig", "exo_tests", "linear_tests", "ma", "ma_variables_description_table", "nonlinear_tests", "p_hacking_tests_caliper"]
 
 def readCSV(method_name:str):
     '''Specify the name of the method and read the file associated with

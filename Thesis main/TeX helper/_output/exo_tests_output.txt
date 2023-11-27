@@ -15,10 +15,10 @@ l
 \midrule
 \endfirsthead
 Publication Bias & 1.295*** & L = 9.439 \\
-(PB SE) & (0.281) & (p = 0.002) \\
+\emph{\hspace{0.2cm}(PB SE)} & (0.281) & (p = 0.002) \\
 \addlinespace[0.5em]
 Effect Beyond Bias & 5.813*** & 9.52*** \\
-(EBB SE) & (0.354) & (3.291) \\
+\emph{\hspace{0.2cm}(EBB SE)} & (0.354) & (3.291) \\
 \addlinespace[0.5em]
 Observations & 1754 & 1754 \\
 \addlinespace[0.5em]

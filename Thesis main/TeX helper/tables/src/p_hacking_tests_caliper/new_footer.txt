@@ -1,0 +1,6 @@
+\bottomrule
+\multicolumn{4}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} The table shows the results of three sets of Caliper tests by \cite{gerber2008caliper} These sets are carried out around t-statistic thresholds of 1.645, 1.96 and 2.58, which correspond to the 1\%, 5\%, and 10\% t-statistic significance levels. Caliper width denotes the width of the interval around the t-statistic, e.g., Caliper width 0.05 for threshold 1.96 means $t\in<1.91;2.01>$. A test statistic of 0.243 means that roughly 74\% of estimates appear above the threshold and roughly 26\% below it. SE = Standard Error, Observations = Total number of observations in the interval around the threshold. Standard errors, clustered at the study level, are included in parentheses.}
+\end{longtable}
+\end{footnotesize}
+\end{singlespace}
+}
