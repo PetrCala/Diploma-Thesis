@@ -31,5 +31,8 @@ jobs:
           git subtree split --prefix=Dist --branch temporary_branch
           git checkout -- Dist
           git merge temporary_branch --allow-unrelated-histories -Xtheirs --no-edit
-          git push origin Dist
           git branch -D temporary_branch
+
+        - name: Push to Dist Branch
+          run: |
+            git push origin Dist
