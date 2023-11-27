@@ -2736,7 +2736,7 @@ getLinearTests <- function(data, add_significance_marks = T, R = 100, verbose = 
     OLS_weighted_precision = res_list$ols_w_precision
   )
   rownames(results) <- c("Publication Bias", "(Standard Error)", "Bootstrapped CI (PB)", 
-                         "Effect Beyond Bias", "(Constant)", "Bootstrapped CI (Constant)", 
+                         "Effect Beyond Bias", "(Constant)", "Bootstrapped CI (EBB)", 
                          "Total observations")
   colnames(results) <- c("OLS", "Fixed Effects", "Between Effects", 
                          "Random Effects", "Study weighted OLS", "Precision weighted OLS")
@@ -5562,6 +5562,7 @@ getBPESummaryStats <- function(bpe_df, input_data, input_var_list, bpe_factors =
   clean_bpe_df <- bpe_df
   bpe_studies <- rownames(bpe_df)
   for (i in seq_along(bpe_factors)){
+    # TODO - fill with values only for the desired subsets from the main data
     bpe_factor <- bpe_factors[[i]]
     bpe_df <- copy(clean_bpe_df) # Each iteration with a clean dataset - sorting shuffles the data otherwise
     vars_to_use <- as.vector(input_var_list$var_name[input_var_list$group_category == bpe_factor])
@@ -5781,7 +5782,14 @@ writeCsvIfNotIdentical <- function(object_name, file_name, use_rownames, force_o
   # A temp function for code efficiency
   overwrite <- function(x = object_name, file = file_name, row.names = use_rownames){
     hardRemoveFile(file) # Remove if exists
-    write.table(x, file, row.names = row.names, sep = ";", dec = ".")
+    # RRRRR time - if rownames are used, the col.names must be set to NA, otherwise the first cell
+    #   will not be recognized as blank in the output .csv file.
+    #   See https://stackoverflow.com/questions/2478352/write-table-writes-unwanted-leading-empty-column-to-header-when-has-rownames
+    if (use_rownames) {
+      write.table(x, file, row.names = row.names, col.names = NA, sep = ";", dec = ".")
+    } else {
+      write.table(x, file, row.names = row.names, sep = ";", dec = ".")
+    }
   }
   # Force overwrite
   if (force_overwrite){

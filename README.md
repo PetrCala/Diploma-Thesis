@@ -136,6 +136,9 @@ Furthermore, the existence of all folders will be verified. Note that some do no
    * **to_log_for_bma** - Boolean. If `TRUE`, this variable will be converted to logarithm during the 
      Bayesian model averaging.
    * **bpe** - If set to any value, this value will be used when evaluating the best practice estimate. Can also be one of the following: `mean`, `median`, `max`, `min`. If you do not wish to use this variable in the best practice estimate, set its value to `stop`. Be careful **not to set the value to** `FALSE`, as that will raise an error.
+   * **bpe_sum_stats**  - Boolean. If `TRUE`, this variable will appear in the BPE summary stats table.
+   * **bpe_equal** - Similar idea to **equal**, only for the BPE summary stats table.
+   * **bpe_gtlt** - Similar idea to **gtlt**, only for the BPE summary stats table.
 
 ## How to Run
 To run the code, follow these steps:
@@ -189,7 +192,7 @@ Here is a list and explanation of the available methods:
 * **Model Averaging variables description table** - Combine the results of both model averaging approaches into a single, clean table.
 * **Best-practice estimate** - For studies of your choice, generate best-practice estimates. Using one of these estimates, also calculate economic significance of variables with high PIP in the BMA model. This method requires a BMA model as input.
 * **Best-practice estimate: Graphs** - Generate smart graphs that display the distribution of the generated best-practice estimates. For this, you must specify which variables you wish to use as factors - the method will evaluate various subsets of each such specified variable. These subsets are determined automatically using either the most common value of each study, or median value as a cutoff point, among other logic.
-* **Best-practice estimate: Summary statistics** - Generate a table with summary statistics of best-practice estimates across different subsets of data. Similarly to the BPE graphs, you must also provide factors (variables) which you wish to use for the smart subsetting.
+* **Best-practice estimate: Summary statistics** ***(experimental)*** - Generate a table with summary statistics of best-practice estimates across different subsets of data. Similarly to the BPE graphs, you must also provide factors (variables) which you wish to use for the smart subsetting.
 * **Robust Bayesian Model Averaging** - Robust Bayesian Model Averaging ([source](https://github.com/FBartos/RoBMA)).
 
 ## Miscellaneous

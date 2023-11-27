@@ -15,7 +15,8 @@ Data/AdditionalData/
 Dist/
 R/
 Thesis main/
-Results/
+Communication/
+Studies list/
 
 # R output files and cache
 _cache/*
