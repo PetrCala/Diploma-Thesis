@@ -688,8 +688,8 @@ if (run_this$bpe_graphs){
   )
 }
 
-###### BPE SUMMARY STATISTICS ######
-if (run_this$bpe_summary_stats){
+###### BPE SUMMARY STATISTICS - experimental ######
+if (run_this_experimental$bpe_summary_stats){
   if (!exists("bpe_df")){
     stop("You must run BPE first before you construct the summary statistic tables.")
   }

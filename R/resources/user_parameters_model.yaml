@@ -18,7 +18,6 @@ run_this:
   ma_variables_description_table: true 	
   bpe: true 					
   bpe_graphs: true
-  bpe_summary_stats: false # Experimental
   robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
@@ -261,6 +260,9 @@ export_options:
   export_zip_name: "results_all" 		# Zip file with all results
   export_bma_data: false 			# If TRUE, export the data used for BMA into the temporary data folder
   theme: "blue" 				# One of "blue", "yellow", "green", "red", "purple"
+
+run_this_experimental:
+  bpe_summary_stats: false
 
 cache_handling:
   # I recommend you use caches only after you are certain the functions run correctly
