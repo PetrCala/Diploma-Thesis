@@ -1,0 +1,41 @@
+﻿name: Update Dist Branch
+
+on:
+  push:
+    branches:
+      - test_branch
+
+jobs:
+  update-dist:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Git
+        run: |
+          git config --global user.name 'PetrCala'
+          git config --global user.email 'cala.p@seznam.cz'
+
+      - name: Run Update Script
+        run: |
+          chmod +x ./update_all.sh
+          ./update_all.sh
+
+      - name: Commit Changes
+        run: |
+          git add .
+          git commit -m "Automated update of Dist files"
+          git push origin test_branch
+
+      - name: Update Dist Branch
+        run: |
+          git checkout test_branch
+          git subtree split --prefix=Dist --branch temporary_branch
+          git checkout test_branch2
+          git merge temporary_branch --allow-unrelated-histories --no-edit
+          git push origin test_branch2
+          git branch -D temporary_branch
