@@ -1,6 +1,6 @@
 ﻿import pandas as pd
 
-from .table_utils import handleSpecial, emphasizeRownames, boldIfPIPHigh, insertLinespace, renameLatex, fillNA, insertSection
+from .table_utils import handleSpecial, emphasizeRownames, boldIfPIPHigh, insertLinespace, renameLatex, fillNA, insertSection, insertThousandSeparators
 
 class TABLE_PROCESSOR:
     def __init__(
@@ -86,6 +86,10 @@ class TABLE_PROCESSOR:
             cols_to_fill = transformations["fill_na"]
             cols_subset = self.df.columns if cols_to_fill == "all" else cols_to_fill
             self.df.loc[:, cols_subset] = self.df.loc[:,cols_subset].apply(fillNA)
+        if "insert_thousand_separators" in transformations:
+            cols_to_insert = transformations["insert_thousand_separators"]
+            cols_subset = self.df.columns if cols_to_insert == "all" else cols_to_insert
+            self.df.loc[:, cols_subset] = self.df.loc[:, cols_subset].applymap(insertThousandSeparators)
         return
 
     def transform(

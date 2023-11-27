@@ -10,8 +10,24 @@ TABLES = {
         "data_transformations": {
             "handle_special": "all", # Set to "all" to apply to all columns
             "fill_na": "all",
+            "insert_thousand_separators": ["Obs"],
         },
-        "string_transformations": {},
+        "string_transformations": {
+            "rename": [
+                ("Wage Earners <", "Self-employed >"),
+                ("Private Sector <", "Public Sector >"),
+                ("Male <", "Female >"),
+                ("Rural <", "Urban >"),
+            ],
+            "insert_section": [
+                # format: (<insert-before-this-string>,<section-name>)
+                ("Estimate: City", "Estimate characteristics"),
+                ("Study Size >=", "Data Characteristics"),
+                ("Higher Education >=", "Spatial/structural variation"),
+                ("Ability: Direct", "Estimation method"),
+                ("Impact Factor >=", "Publication characteristics")
+            ]
+        },
         "verbose": False,
     },
     "linear_tests": {
@@ -45,7 +61,6 @@ TABLES = {
                 ("Method: Cohort/FE", "Estimation method"),
                 ("Impact Factor", "Publication characteristics")
             ]
-
         },
         "verbose": False,
     },

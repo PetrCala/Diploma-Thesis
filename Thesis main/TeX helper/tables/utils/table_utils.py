@@ -22,6 +22,20 @@ def fillNA(df):
     df.fillna('', inplace = True)
     return df
 
+def insertThousandSeparators(value):
+    '''
+    Insert comma in between the thousand separators.
+    '''
+    try:
+        # Convert to float if it's a string
+        if isinstance(value, str):
+            value = float(value)
+
+        # Format with commas
+        return f"{value:,.0f}"
+    except ValueError:
+        raise ValueError(f"Cannot convert {value} to a float")
+
 # STRING TRANSFORMATIONS
 
 def renameLatex(latex:str, to_rename:list[tuple])->str:

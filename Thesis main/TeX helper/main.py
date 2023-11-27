@@ -10,7 +10,10 @@ pd.set_option('display.max_colwidth', 200) # Long descriptions
 
 PROJECT_ROOT = os.path.dirname(__file__)
 DT_ROOT = os.path.dirname(os.path.dirname(PROJECT_ROOT)) # Two folders up
-NUMERIC_RESULTS_PATH = os.path.join(DT_ROOT, "Results", "results", "numeric")
+NUMERIC_RESULTS_PATH = os.path.join(DT_ROOT, "R", "results", "numeric")
+
+# TABLES_TO_RUN = ['linear_tests', 'ma', 'nonlinear_tests']
+TABLES_TO_RUN = ['effect_summary_stats']
 
 def readCSV(method_name:str):
     '''Specify the name of the method and read the file associated with
@@ -55,7 +58,7 @@ def runAll():
     # Run all methods
     print("Processing all tables...")
     output = list()
-    for key in TABLES.keys():
+    for key in TABLES_TO_RUN:
         single_latex_output = runOne(key)
         output.append(single_latex_output)
     print("All tables processed succesfully.")
@@ -78,9 +81,9 @@ def resultsToTxt(results_list:list):
     write the results into .txt files into the 
     /_output/ folder.
     '''
-    keys =  TABLES.keys()
+    keys =  TABLES_TO_RUN
     if len(results_list) != len(keys):
-        return ValueError("Incorrect list dimensions.")
+        raise ValueError("Incorrect list dimensions.")
     # Iterate over all results and the corresponding keys
     for res, key in zip(results_list, keys):
         if res not in ["", None]:

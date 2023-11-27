@@ -4,23 +4,23 @@
 #	after running BPE.
 
 run_this:
-  variable_summary_stats: true
+  variable_summary_stats: false
   effect_summary_stats: true
-  prima_facie_graphs: true
-  box_plot: true
-  funnel_plot: true
-  t_stat_histogram: true
-  linear_tests: true
-  nonlinear_tests: true
-  exo_tests: true
-  p_hacking_tests: true
-  bma: true
-  fma: true 					
-  ma_variables_description_table: true 	
-  bpe: true 					
-  bpe_graphs: true
-  bpe_summary_stats: true 					
-  robma: true 	# Computationally expensive
+  prima_facie_graphs: false
+  box_plot: false
+  funnel_plot: false
+  t_stat_histogram: false
+  linear_tests: false
+  nonlinear_tests: false
+  exo_tests: false
+  p_hacking_tests: false
+  bma: false
+  fma: false 					
+  ma_variables_description_table: false 	
+  bpe: false 					
+  bpe_graphs: false
+  bpe_summary_stats: false 					
+  robma: false 	# Computationally expensive
 
 # CUSTOMIZABLE SOURCE FILE PATH
 source_file_params:
