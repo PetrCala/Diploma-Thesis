@@ -22,18 +22,12 @@ jobs:
 
       - name: Run Update Script
         run: |
+          git checkout dev
           chmod +x ./update_all.sh
           ./update_all.sh
 
-      - name: Commit Changes
-        run: |
-          git add .
-          git commit -m "Automated update of Dist files"
-          git push origin dev
-
       - name: Update Dist Branch
         run: |
-          git checkout dev
           git subtree split --prefix=Dist --branch temporary_branch
           git checkout -- Dist
           git merge temporary_branch --allow-unrelated-histories --no-edit
