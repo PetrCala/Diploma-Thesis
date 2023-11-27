@@ -3,7 +3,7 @@
 on:
   push:
     branches:
-      - test_branch
+      - dev
 
 jobs:
   update-dist:
@@ -29,13 +29,13 @@ jobs:
         run: |
           git add .
           git commit -m "Automated update of Dist files"
-          git push origin test_branch
+          git push origin dev
 
       - name: Update Dist Branch
         run: |
-          git checkout test_branch
+          git checkout dev
           git subtree split --prefix=Dist --branch temporary_branch
-          git checkout test_branch2
+          git checkout Dist
           git merge temporary_branch --allow-unrelated-histories --no-edit
-          git push origin test_branch2
+          git push origin Dist
           git branch -D temporary_branch
