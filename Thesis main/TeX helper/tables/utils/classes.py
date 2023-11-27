@@ -132,19 +132,17 @@ class TABLE_PROCESSOR:
         if not transformations:
             # No transformations to apply
             return latex
-        # Rename in text
-        if "rename" in transformations:
-            list_of_tuples_to_rename = transformations["rename"]
-            latex = renameLatex(latex, list_of_tuples_to_rename)
-        # Emphasize rownames
-        if "emphasize_rownames" in transformations:
-            strings_to_emphasize = transformations["emphasize_rownames"]
-            latex = emphasizeRownames(latex, strings_to_emphasize)
-        # Insert linespace
-        if "insert_linespace" in transformations:
-            strings_to_insert_before = transformations["insert_linespace"]
-            latex = insertLinespace(latex, strings_to_insert_before)
-        if "insert_section" in transformations:
-            insert_info = transformations["insert_section"]
-            latex = insertSection(latex, insert_info, len(self.colnames))
+        # Mapping of transformation names to functions
+        transformation_functions = {
+            "rename": lambda latex, args: renameLatex(latex, args),
+            "emphasize_rownames": lambda latex, args: emphasizeRownames(latex, args),
+            "insert_linespace": lambda latex, args: insertLinespace(latex, args),
+            "insert_section": lambda latex, args: insertSection(latex, args, len(self.colnames))
+        }
+
+        # Apply transformations
+        for transformation, args in transformations.items():
+            if transformation in transformation_functions:
+                latex = transformation_functions[transformation](latex, args)
+
         return latex
