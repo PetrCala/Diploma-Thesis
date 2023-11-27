@@ -37,17 +37,6 @@ cp -r "$R_FOLDER_PATH/scripts/" .
 echo "Copying resources..."
 cp -r "$R_FOLDER_PATH/resources/" .
 
-# Copy the model "user_parameters_model.yaml" file into "user_parameter.yaml" file
-# echo "Copying the user parameter file..."
-# USER_PARAMS_FILE_NAME="user_parameters_model.yaml"
-# USER_PARAMS_MODEL_PATH="$R_FOLDER_PATH/custom_user_params/$USER_PARAMS_FILE_NAME"
-# if ! test -f "$USER_PARAMS_MODEL_PATH"; then
-#   echo "The model user parameter file is missing."
-#   exit 1
-# fi
-# cp -r "$USER_PARAMS_MODEL_PATH" "$DIST_FOLDER_PATH" # Copy the file to the Dist folder
-# mv "./$USER_PARAMS_FILE_NAME" "./user_parameters.yaml" # Rename the file
-
 # Create empty folders for results storing
 new_folders=("data" "graphics" "results" "data/source" "data/temp")
 
