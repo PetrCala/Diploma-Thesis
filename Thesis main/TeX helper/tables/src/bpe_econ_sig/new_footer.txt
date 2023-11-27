@@ -1,0 +1,6 @@
+\bottomrule
+\multicolumn{5}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} 
+%XXX REWRITE
+This table shows the individual effect of several important variables on the returns to education, all other things being equal. Variables with \ac{PIP} at least 0.5 are considered important for this matter. One SD change = Change in the effect incurred by a single standard deviation change in the variable. Maximum change = Change in the effect incurred by increasing the variable from its lowest value to its highest. 6.536\% returns to education is the baseline value against which the variables are compared. For an explanation of the variables, see \autoref{tab:var}. SD = Standard deviation, 2SLS = Two-stage Least Squares, IV = Instrumental Variable.}
+\end{tabular}
+\end{table}

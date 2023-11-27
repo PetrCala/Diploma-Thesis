@@ -22,10 +22,10 @@ l
   \multicolumn{1}{c}{\textbf{Kink}} \\
 \midrule
 Publication Bias &  &  &  & 0.504*** & 2.764*** & 0.262 \\
-\emph{\hspace{0.2cm}(PB SE)} &  &  &  & (0.166) & (0.112) & (0.39) \\
+\emph{\hspace{0.2cm}(PB SE)} &  &  &  & (0.165) & (0.112) & (0.39) \\
 \addlinespace[0.5em]
-Effect Beyond Bias & 6.9*** & 6.439*** & 6.783*** & 6.803*** & 6.548*** & 6.54*** \\
-\emph{\hspace{0.2cm}(EBB SE)} & (0.092) & (0.146) & (1.055) & (0.268) & (0.091) & (0.054) \\
+Effect Beyond Bias & 6.9*** & 6.439*** & 6.783*** & 6.801*** & 6.548*** & 6.54*** \\
+\emph{\hspace{0.2cm}(EBB SE)} & (0.092) & (0.146) & (1.055) & (0.269) & (0.091) & (0.054) \\
 \addlinespace[0.5em]
 Total observations & 1754 & 1754 & 115 & 1754 & 1754 & 1754 \\
 \addlinespace[0.5em]

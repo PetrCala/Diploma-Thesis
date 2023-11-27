@@ -10,17 +10,16 @@ pd.set_option('display.max_colwidth', 200) # Long descriptions
 
 PROJECT_ROOT = os.path.dirname(__file__)
 DT_ROOT = os.path.dirname(os.path.dirname(PROJECT_ROOT)) # Two folders up
-NUMERIC_RESULTS_PATH = os.path.join(DT_ROOT, "R", "results", "numeric")
+NUMERIC_RESULTS_PATH = os.path.join(DT_ROOT, "Results", "numeric")
 
-# TABLES_TO_RUN = ['linear_tests', 'ma', 'nonlinear_tests']
-TABLES_TO_RUN = ["ma_variables_description_table", "exo_tests"]
+TABLES_TO_RUN = ["bpe_econ_sig", "exo_tests", "linear_tests", "ma", "ma_variables_description_table", "nonlinear_tests"]
 
 def readCSV(method_name:str):
     '''Specify the name of the method and read the file associated with
     this method. The name should correspond exactly to the .csv output file name in results/numeric.
     '''
     if not method_name in TABLES.keys():
-        raise ValueError("Incorrectly specified method name.")
+        raise ValueError(f"Incorrectly specified method name: {method_name}.")
     full_path = os.path.join(NUMERIC_RESULTS_PATH, f"{method_name}.csv")
     df = pd.read_csv(full_path, encoding = 'utf-8', delimiter = ";")
     return df

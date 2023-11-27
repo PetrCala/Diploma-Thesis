@@ -4,6 +4,17 @@
 # Data transformations - transformations to apply to the source data frame after it has been subsetted to the desired columns, specified as a dictionary
 # String transformations - transformations to apply to the latex string after the header/footer parts are replaced, specified as a dictionary
 TABLES = {
+    "bpe_econ_sig": {
+        "name": "BPE Economic Significance",
+        "colnames": ['Unnamed: 0', 'Effect on Sigma (1*ΔSD)', '% of best (1*ΔSD)',
+       'Effect on Sigma (ΔMax)', '% of best(ΔMax)'],
+        "data_transformations": {
+            "handle_special": "all",
+            "fill_na": "all",
+        },
+        "string_transformations": {},
+        "verbose": False
+    },
     "effect_summary_stats": {
         "name": "Effect Summary Statistics",
         "colnames": ['Var Name', 'Mean', 'CI lower', 'CI upper', 'Weighted Mean', 'WM CI lower', 'WM CI upper', 'Obs'],

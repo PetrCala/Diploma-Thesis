@@ -1,0 +1,16 @@
+% BPE Economic Significance
+\begin{table}[!htbp]
+\centering
+\scriptsize
+\singlespace
+\caption{Economic significance of key variables} 
+\label{tab:econ_significance}
+\begin{tabular}{
+@{}
+l
+*{4}{c}
+@{}}
+\toprule
+ & \multicolumn{2}{c}{One SD change} & \multicolumn{2}{c}{Maximum change}\\
+ & Effect on Returns & \% of BP & Effect on Returns & \% of BP \\
+\midrule
