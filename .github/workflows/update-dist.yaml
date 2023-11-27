@@ -28,8 +28,9 @@ jobs:
 
       - name: Update the Dist Branch locally
         run: |
+          git fetch origin
           git checkout -b Dist
-          git pull origin Dist
+          git reset --hard origin/Dist
 
       - name: Update Dist Branch
         run: |
