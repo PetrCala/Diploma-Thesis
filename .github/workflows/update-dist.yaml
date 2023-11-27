@@ -1,4 +1,4 @@
-﻿name: Update Dist Branch
+name: Update Dist Branch
 
 on:
   push:
@@ -33,6 +33,6 @@ jobs:
           git merge temporary_branch --allow-unrelated-histories -Xtheirs --no-edit
           git branch -D temporary_branch
 
-        - name: Push to Dist Branch
-          run: |
-            git push origin Dist
+      - name: Push to Dist Branch
+        run: |
+          git push origin Dist
