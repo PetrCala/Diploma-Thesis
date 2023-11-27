@@ -1,0 +1,16 @@
+%Table with the results of the IV/p-uni* tests
+\begin{singlespace}
+\begin{footnotesize}
+\begin{longtable}[!htbp]{
+@{\hskip\tabcolsep\extracolsep}
+l
+*{2}{c}
+@{}
+}
+\caption{Relaxing the exogeneity assumption}  \label{tab:IV-p}\\
+\toprule
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{c}{\centering{\textbf{IV}}} &
+  \multicolumn{1}{c}{\centering{\textbf{p-uniform*}}} \\
+\midrule
+\endfirsthead

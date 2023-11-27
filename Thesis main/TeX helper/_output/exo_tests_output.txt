@@ -1,0 +1,30 @@
+%Table with the results of the IV/p-uni* tests
+\begin{singlespace}
+\begin{footnotesize}
+\begin{longtable}[!htbp]{
+@{\hskip\tabcolsep\extracolsep}
+l
+*{2}{c}
+@{}
+}
+\caption{Relaxing the exogeneity assumption}  \label{tab:IV-p}\\
+\toprule
+  \multicolumn{1}{l}{} &
+  \multicolumn{1}{c}{\centering{\textbf{IV}}} &
+  \multicolumn{1}{c}{\centering{\textbf{p-uniform*}}} \\
+\midrule
+\endfirsthead
+Publication Bias & 1.295*** & L = 9.439 \\
+(PB SE) & (0.281) & (p = 0.002) \\
+\addlinespace[0.5em]
+Effect Beyond Bias & 5.813*** & 9.52*** \\
+(EBB SE) & (0.354) & (3.291) \\
+\addlinespace[0.5em]
+Observations & 1754 & 1754 \\
+\addlinespace[0.5em]
+F-test & 29.153 &  \\
+\bottomrule
+\multicolumn{3}{>{\scriptsize}p{0.5\linewidth}}{\emph{Note:} IV = Instrumental Variable Regression; one over the square root of the number of studies is used as an instrument for the standard error. Standard errors, reported in parentheses, are also clustered at the study level. p-uniform* = method proposed by \cite{vanAert2021puni}; L represents the publication bias test t-statistic; the corresponding p-value can be found in parentheses. ***p<0.01, **p<0.05, *p<0.1}
+\end{longtable}
+\end{footnotesize}
+\end{singlespace}

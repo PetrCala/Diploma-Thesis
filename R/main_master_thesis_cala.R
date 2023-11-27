@@ -91,6 +91,7 @@ if (!file.exists(user_param_file)) {
 user_params <- yaml::read_yaml(user_param_file) 
 source_file_params <- user_params$source_file_params # Parameters of the source data file
 run_this <- user_params$run_this # Which parts of the script to run
+run_this_experimental <- user_params$run_this_experimental # Experimental features to run
 dataset_params <- user_params$dataset_specific_parameters # Parameters unique to each dataset
 adj_params <- user_params$adjustable_parameters # Various parameters
 data_files <- user_params$data_files # Data files (only files names)

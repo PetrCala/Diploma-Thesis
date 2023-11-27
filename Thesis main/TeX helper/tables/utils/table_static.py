@@ -30,6 +30,20 @@ TABLES = {
         },
         "verbose": False,
     },
+    "exo_tests": {
+        "name": "Tests relaxing the endogeneity assumption",
+        "colnames": ["Unnamed: 0", "IV", "p-Uniform"],
+        "data_transformations": {
+            # "handle_special": "all",
+            "fill_na": "all",
+        },
+        "string_transformations": {
+            "rename": [("Total observations", "Observations")],
+            "insert_linespace": ["Effect Beyond Bias", "Observations", "F-test"]
+        },
+        "verbose": False,
+
+    },
     "linear_tests": {
         "name": "Linear models",
         "colnames": ["Unnamed: 0", "OLS", "Fixed Effects", "Between Effects", "Random Effects", "Study weighted OLS","Precision weighted OLS"],
