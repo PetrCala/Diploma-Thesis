@@ -64,6 +64,23 @@ TABLES = {
         },
         "verbose": False,
     },
+    "ma_variables_description_table": {
+        "name": "Model Averaging Variable Descriptions",
+        "colnames": ["Variable", "Description", "Mean", "SD"],
+        "data_transformations": {
+            "handle_special": "all",
+        },
+        "string_transformations": {
+            "insert_section": [
+                ("Estimate: City", "Estimate characteristics"),
+                ("Study Size", "Data characteristics"),
+                ("No Education", "Spatial/structural variation"),
+                ("Method: OLS", "Estimation method"),
+                ("Impact Factor", "Publication characteristics")
+            ]
+        },
+        "verbose": False,
+    },
     "nonlinear_tests": {
         "name": "Non-linear models",
         "colnames": ["Unnamed: 0", "WAAP", "Top10", "Stem", "Hierarch", "Selection", "Endogenous Kink"],

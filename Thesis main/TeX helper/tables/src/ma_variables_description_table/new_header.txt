@@ -1,0 +1,25 @@
+%BMA+FMA variable description table
+\begin{singlespace}
+\begin{scriptsize}
+\begin{longtable}{
+@{\hskip\tabcolsep\extracolsep\fill}
+l
+%p{0.25\hsize}
+p{0.55\hsize}
+cc
+@{}
+} %0.15 0.65
+\caption{Definition and summary statistics of regression variables}  \label{tab:var}\\
+\toprule
+  \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
+\midrule
+\endfirsthead
+\caption[]{Definition and summary statistics of regression variables (continued)}\\
+\toprule
+  \multicolumn{1}{l}{Variable} &   \multicolumn{1}{l}{Description} &         \multicolumn{1}{c}{Mean} &           \multicolumn{1}{c}{SD} \\
+\midrule
+\endhead
+\bottomrule
+\multicolumn{4}{r}{{\scriptsize Continued on next page}} \\
+\endfoot
+\endlastfoot

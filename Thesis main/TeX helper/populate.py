@@ -28,9 +28,7 @@ def populate_table(
         str: The formatted latex string that can be used directly in a .tex file.
     '''
     src_header, src_footer, new_header, new_footer = readSrcFiles(src_folder_name)
-    # Validate input
-    if len(colnames) < 1:
-        raise ValueError(f"You must specify at least one column to keep for table '{table_verbose_name}'")
+
     # Initialize the processing class
     processor = TABLE_PROCESSOR(
         df=df,

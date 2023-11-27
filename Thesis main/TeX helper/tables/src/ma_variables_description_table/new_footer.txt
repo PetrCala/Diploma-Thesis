@@ -1,0 +1,6 @@
+\bottomrule
+   
+ \multicolumn{4}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} This table presents the summary statistics and descriptions for various study characteristics eligible for inclusion in Bayesian Model Averaging. Variables marked as \textit{reference categories} were automatically excluded from the procedure, as this would create a dummy variable trap. SD = standard deviation, OLS = Ordinary Least Squares, FE = Fixed Effects, 2SLS = 2 Stage Least Squares, IV = Instrumental Variable.}
+\end{longtable}
+\end{scriptsize}
+\end{singlespace}
