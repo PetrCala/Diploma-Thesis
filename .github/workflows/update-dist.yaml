@@ -35,4 +35,4 @@ jobs:
 
       - name: Push to Dist Branch
         run: |
-          git push origin Dist
+          git push -u origin Dist
