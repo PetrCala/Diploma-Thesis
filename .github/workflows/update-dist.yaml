@@ -22,19 +22,17 @@ jobs:
 
       - name: Run Update Script
         run: |
-          git checkout dev
           chmod +x ./update_all.sh
           ./update_all.sh
 
       - name: Create a Temporary Branch
         run: |
-          git checkout dev
           git subtree split --prefix=Distribute --branch dist_update
         
       - name: Update the Dist Branch Locally
         run: |
-          git checkout -b Dist
-          git reset --hard origin/Dist
+          git fetch origin Dist
+          git checkout Dist
           git merge dist_update --allow-unrelated-histories -Xtheirs --no-edit
           git branch -D dist_update
 
