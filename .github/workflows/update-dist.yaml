@@ -25,11 +25,15 @@ jobs:
           chmod +x ./update_all.sh
           ./update_all.sh
 
+      - name: Commit the changes to the dev branch
+        run: |
+          git add .
+          git commit -m "Updating the Distribution folder of the dev branch"
+          # no push -> would create a loop
+
       - name: Create a Temporary Branch
         run: |
           git subtree split --prefix=Distribute --branch dist_update
-          # Clean up the current branch in order to allow checkout (will not be pushed)
-          git restore .
         
       - name: Update the Dist Branch Locally
         run: |
