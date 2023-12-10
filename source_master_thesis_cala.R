@@ -2603,8 +2603,8 @@ getLinearModelBootCI <- function(model_type, data, R = 100) {
   }
   
   # Get the wild bootstrap confidence intervals
-  boot_ci_intercept <- getBootstrappedCI(data, fit_model_intercept, R = R)
-  boot_ci_slope <- getBootstrappedCI(data, fit_model_slope, R = R)
+  boot_ci_intercept <- getBootstrappedCI(data, fit_model_intercept, R = R, model_type = model_type)
+  boot_ci_slope <- getBootstrappedCI(data, fit_model_slope, R = R, model_type = model_type)
   
   boot_ci_list <- list(
     pub_bias = boot_ci_slope,
@@ -2653,9 +2653,9 @@ getLinearTests <- function(data, add_significance_marks = T, R = 100, verbose = 
     names(fe_res) <- c("Estimate", "Str. Error")
     new_row <- c(fe_effect_coef, fe_effect_se)
     new_fe_res <- rbind(new_row, fe_res)
-    # Extract the coefficients
-    # fe_boot_ci_list <- getLinearModelBootCI("fe", data)
-    fe_boot_ci_list <- NULL # Perhaps no bootstrapped intervals in Fixed-effects ??
+    # Extract the coefficients - not 100% confident whether to use Bootstrap here (set to NA otherwise)
+    fe_boot_ci_list <- getLinearModelBootCI("fe", data, R = R)
+    # fe_boot_ci_list <- NA
     fe_coefs <- extractLinearCoefs(new_fe_res, fe_boot_ci_list, total_obs, add_significance_marks) 
     return(fe_coefs)
   }
@@ -2664,8 +2664,7 @@ getLinearTests <- function(data, add_significance_marks = T, R = 100, verbose = 
     fit_be <- getLinearModelFitFunction("be")
     be <- fit_be(data)
     be_res <- coeftest(be, vcov = vcov(be, type = "fixed", cluster = c(data$study_id)))
-    # be_boot_ci_list <- getLinearModelBootCI("be", data, R = R)
-    be_boot_ci_list <- NA # Not sure about whether to use the bootstrap CI here ?? 
+    be_boot_ci_list <- NA # Do not use wild bootstrap for BE
     be_coefs <- extractLinearCoefs(be_res, be_boot_ci_list, total_obs, add_significance_marks) 
     return(be_coefs)
   }
@@ -6278,6 +6277,7 @@ is_sequential_integer_vector <- function(v) {
 #' a fitted model or a specific statistic from the model. This function defines how the model is fitted to each bootstrap sample.
 #' @param R [integer] The number of bootstrap replications to perform. This parameter determines 
 #' how many times the bootstrap resampling is repeated. Default is 100.
+#' @param model_type [character] Type (name) of the model that is being used (for warning messages).
 #'
 #' @return Returns a list of containing the bootstrap confidence interval bounds.
 #'
@@ -6300,7 +6300,8 @@ is_sequential_integer_vector <- function(v) {
 getBootstrappedCI <- function(
     input_data,
     fit_model,
-    R = 100
+    R = 100,
+    model_type = NA
 ){
   # Validate the input
   stopifnot(
@@ -6323,8 +6324,13 @@ getBootstrappedCI <- function(
   results <- boot::boot(data, boot_function, R = R, fit_model = fit_model)
   
   # Construct the bootstrap confidence interval
-  ci_results <- boot.ci(results, type = "perc") # For percentile intervals
-  
+  ci_results <- list(percent = c(NA, NA, NA, NA, NA)) # Initialize as empty in case the boot::boot yielded NAs
+  tryCatch({
+    ci_results <- boot.ci(results, type = "perc") # For percentile intervals
+  }, error = function(err){
+    model_specification <- ifelse(is.na(model_type), "", paste(" for model", model_type))
+    message(paste0("Bootstrap confidence interval computation yielded NAs", model_specification, ".\n"))
+  })
   # Extract and return the 95% confidence interval bounds
   res <- list(
     lower_bound = ci_results$percent[4],
