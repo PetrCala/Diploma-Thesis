@@ -81,8 +81,13 @@ TABLES = {
             "fill_na": "all",
         },
         "string_transformations": {
-            # "rename": [("Total observations", "Observations")],
-            "emphasize_rownames": ["Bootstrapped CI (PB)", "(Standard Error)", "Bootstrapped CI (EBB)", "(Constant)"],
+            "rename": [
+                ("(Standard Error)", "SE"),
+                ("Bootstrapped CI (PB)", "Bootstrapped CI"),
+                ("(Constant)", "SE"),
+                ("Bootstrapped CI (EBB)", "Bootstrapped CI"),
+            ],
+            "emphasize_rownames": ["Bootstrapped CI", "SE"], 
             "insert_linespace": ["Effect Beyond Bias", "Total observations"]
         },
         "verbose": False,

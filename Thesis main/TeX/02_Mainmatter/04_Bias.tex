@@ -64,7 +64,9 @@ where $S$ represents the returns to schooling effect for the i-th observation of
 
 If no publication bias is present in the data, the slope coefficient will be either 0 or close to it. Conversely, higher absolute values would indicate the opposite correlation between the effect and its standard error, thereby suggesting publication bias is present in the data. This is motivated by the assumption that both the effect and its standard error should be, statistically speaking, drawn from an independent, statistically symmetrical distribution. However, practically speaking, this is rarely the case. 
 
-The results of the funnel asymmetry tests can be viewed in \autoref{tab:PB-FAT}. Firstly, I include a simple \ac{OLS} model, followed by two models accounting for unobserved heterogeneity in the form of Fixed effect and Random effect estimators. Lastly, I introduce two models that weigh the equation, first by the inverse of the number of observations reported per study and second by precision. The motivation behind the last two models is to account for unobserved heterogeneity and heteroskedasticity, respectively. Four out of five of these methods find a statistically significant presence of publication bias, and all claim the underlying effect lies within the range of 6 and 7 percent, specifically between 6.294 and 6.708 percent. This indicates that the underlying effect might be slightly lower than the simple estimates' average, approximately by one percentage point. Furthermore, the lowest predicted value can be associated with the study-size weighted model (6.294), suggesting perhaps that studies of larger size drive the effect upwards. However, it is essential to note that this difference is relatively small compared to the other estimates. The discrepancy between the study-size weighted model and the fixed-effects model, the latter of which predicts the highest returns to education at 6.708 percent, is less than half a percentage point.
+The results of the funnel asymmetry tests can be viewed in \autoref{tab:PB-FAT}. Firstly, I include a simple \ac{OLS} model, followed by two models accounting for unobserved heterogeneity in the form of Fixed effect and Random effect estimators. Lastly, I introduce two models that weigh the equation, first by the inverse of the number of observations reported per study and second by precision. The motivation behind the last two models is to account for unobserved heterogeneity and heteroskedasticity, respectively. For robustness, I cluster all standard errors at the study level, and append wild bootstrap confidence intervals where possible. These I calculate using an iteration sample of 100 for each method.
+
+Looking at concrete results, four out of five of these methods find a statistically significant presence of publication bias, and all claim the underlying effect lies within the range of 6 and 7 percent. This indicates that the underlying effect might be slightly lower than the simple estimates' average, approximately by one percentage point. Furthermore, the lowest predicted value can be associated with the study-size weighted model ($\sim$6.3), suggesting perhaps that studies of larger size drive the effect upwards. However, it is essential to note that this difference is relatively small compared to the other estimates. The discrepancy between the study-size weighted model and the fixed-effects model, the latter of which predicts the highest rate of returns to education at 6.7 percent, is less than half a percentage point. All of these results also pose a rather high level of statistical significance, save for the precision-weighted model. Apart from this model, too, the wild confidence intervals align with the study-level clustered ones. The precision-weighted model's publication bias coefficient casts a shadow of suspicion on the influence of highly precise studies. Given the wide confidence interval, it appears unfeasible to claim that an unexpected effect is at place, but rather that there is a lack thereof. Perhaps further tests may help shed more light on the issue.
 
 % Linear tests
 \begin{table}[!t]
@@ -84,12 +86,12 @@ The results of the funnel asymmetry tests can be viewed in \autoref{tab:PB-FAT}.
   \midrule
   
   Publication Bias & 0.832** &  1.169*** & 0.262 \\
-  \emph{\hspace{0.2cm}(Standard Error)} & (0.097) & (0.121) & (0.425) \\
-  \emph{\hspace{0.2cm}Bootstrapped CI (PB)} & [0.624, 1.035] & [0.92, 1.405] & [-0.833, 1.091] \\
+  \emph{\hspace{0.2cm}SE} & (0.097) & (0.121) & (0.425) \\
+  \emph{\hspace{0.2cm}Bootstrap CI} & [0.624, 1.035] & [0.92, 1.405] & [-0.833, 1.091] \\
   \addlinespace[0.5em]
   Effect Beyond Bias & 6.408*** & 6.294*** & 6.54*** \\
-  \emph{\hspace{0.2cm}(Constant)} & (0.118) &  (0.153) & (0.168) \\
-  \emph{\hspace{0.2cm}Bootstrapped CI (EBB)} & [6.164, 6.639] & [6.04, 6.645] & [6.189, 6.918] \\
+  \emph{\hspace{0.2cm}SE} & (0.118) &  (0.153) & (0.168) \\
+  \emph{\hspace{0.2cm}Bootstrap CI} & [6.164, 6.639] & [6.04, 6.645] & [6.189, 6.918] \\
   \addlinespace[0.5em]
   Total observations & 1,754 & 1,754 & 1,754 \\
 
@@ -101,17 +103,17 @@ The results of the funnel asymmetry tests can be viewed in \autoref{tab:PB-FAT}.
   \midrule
 
   Publication Bias & 0.746*** & 0.752*** & 0.747*** \\
-  \emph{\hspace{0.2cm}(Standard Error)} & (0.06) & (0.244) & (0.058) \\
-  \emph{\hspace{0.2cm}Bootstrapped CI (PB)} &  &  & [0.514, 0.995] \\
+  \emph{\hspace{0.2cm}SE} & (0.06) & (0.244) & (0.058) \\
+  \emph{\hspace{0.2cm}Bootstrap CI} &  &  & [0.514, 0.995] \\
   \addlinespace[0.5em]
   Effect Beyond Bias & 6.517*** & 6.741*** & 6.708*** \\ 
-  \emph{\hspace{0.2cm}(Constant)} & (0.107) & (0.418) & (0.294) \\
-  \emph{\hspace{0.2cm}Bootstrapped CI (EBB)} &   &  & [6.398, 6.965] \\
+  \emph{\hspace{0.2cm}SE} & (0.107) & (0.418) & (0.294) \\
+  \emph{\hspace{0.2cm}Bootstrap CI} &   &  & [6.398, 6.965] \\
   \addlinespace[0.5em]
   Total observations & 1,754 & 1,754 & 1,754 \\
       
   \bottomrule
-  \multicolumn{4}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} OLS = Ordinary Least Squares. FE = Fixed Effects. BE = Between Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1}
+  \multicolumn{4}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} SE = Standard Error, CI = Confidence Interval, OLS = Ordinary Least Squares. FE = Fixed Effects. BE = Between Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. Wild bootstrap confidence intervals at 95\% confidence level, bootstrapped over 100 iterations, are reported in brackets. ***p<0.01, **p<0.05, *p<0.1}
   \end{tabular}
   \end{table}
   
@@ -124,15 +126,15 @@ The relationship between the effect and its standard error, as described in \aut
 
 The first is the \ac{WAAP}, introduced by \cite{Ioannidis2017Waap}. Their proposition involves the application of unrestricted \ac{WLS} only on observations of adequately powered studies. "Power" here refers to a study's ability to detect whether an effect if it is truly present in the data. The more power a study has, the bigger its reliability. In technical terms, the power is calculated using the statistical significance of estimates and then compared to their standard errors. As per the original paper, I kept only the estimates of studies that display power over 80\%. Strikingly, 1469 out of the 1754 estimates in my dataset get identified as adequately powered. Using these estimates, \ac{WAAP} then proposes an estimate of 6.9\% which is slightly higher than any of the linear models presented in \autoref{tab:PB-FAT}.
 
-The second approach, proposed by \cite{Stanley2010Top}, entails discarding 90\% of data and keeping only the top 10 percent with the highest precision. This somewhat paradoxical approach stems from the idea that most researchers use statistical significance as the primary benchmark for deciding whether to publish the estimate. \cite{Stanley2010Top} show that if most of the less precise estimates are discarded, the publication bias within the data sample drops considerably. In my data, 10\% of estimates correspond to 176 observations. The Top10 model yields a modest result of 6.439\%.
+The second approach, proposed by \cite{Stanley2010Top}, entails discarding 90\% of data and keeping only the top 10 percent with the highest precision. This somewhat paradoxical approach stems from the idea that most researchers use statistical significance as the primary benchmark for deciding whether to publish the estimate. \cite{Stanley2010Top} show that if most of the less precise estimates are discarded, the publication bias within the data sample drops considerably. In my data, 10\% of estimates correspond to 176 observations. The Top10 model yields a modest result of 6.4\%.
 
-\cite{Furukawa2019Stem} chooses a similar tactic by selecting a specific number of the most precise estimates. The cutoff is determined by minimizing mean square error; this aims at striking a balance between variance/efficiency and bias. The selected points from what is referred to as "stem" are those with the lowest mean square error. You may find a visual representation of this method in \autoref{fig:stem}. The coefficient of returns to education suggested by this approach is 7.2\%, the highest among all the proposed regression-based results thus far.
+\cite{Furukawa2019Stem} chooses a similar tactic by selecting a specific number of the most precise estimates. The cutoff is determined by minimizing mean square error; this aims at striking a balance between variance/efficiency and bias. The selected points from what is referred to as "stem" are those with the lowest mean square error. The author suggests using a \textit{representative sample} for the calculation, rather than a full data sample. Arbitrarily, I chose study medians to generate this subsample, which yielded a total of 115 data points. You may find a visual representation of this method in \autoref{fig:stem}. The rate of returns to education suggested by this approach is at around 6.7\%, very much in line with the other regression-based results obtained thus far.
 
 \sidecaptionvpos{figure}{t}
 \begin{SCfigure}
 \centering
 \captionsetup{font = scriptsize}
-\caption[Stem-based method]{\vspace{0.5cm}Stem-based method\\ \emph{Note:} This figure displays a non-linear estimation of the true effect \citep{Furukawa2019Stem}. The main effect, labeled \textit{Coefficient $\beta$}, is plotted on the x-axis against precision, calculated as $log(SE)$ (Standard Error). The yellow diamond and the whiskers of the same color denote the 95\% confidence interval of the stem-based estimate of the effect. The dark grey line indicates the predicted estimates throughout various levels of data, while the purple diamond shows the minimal precision value above which lies the stem. The blue circles then represent the individual effect estimates.}
+\caption[Stem-based method]{\vspace{0.5cm}Stem-based method\\ \emph{Note:} This figure displays a non-linear estimation of the true effect \citep{Furukawa2019Stem}. The main effect, labeled \textit{Coefficient $\beta$}, is plotted on the x-axis against precision, calculated as $log(SE)$ (Standard Error). The yellow diamond and the whiskers of the same color denote the 95\% confidence interval of the stem-based estimate of the effect. The dark grey line indicates the predicted estimates throughout various levels of data, while the purple diamond shows the minimal precision value above which lies the stem. The blue circles then represent the individual effect estimates. Median of each study was the measure chosen as the representative sample of observations for the input data, resulting in 115 total data points.}
 \label{fig:stem}
 \includegraphics[width=0.5\textwidth]{Figures/stem.png}
 \end{SCfigure}
@@ -163,25 +165,25 @@ l
   \multicolumn{1}{c}{\textbf{Kink}} \\
 \midrule
 Publication Bias &  &  &  & 0.504*** & 2.764*** & 0.262 \\
-\emph{\hspace{0.2cm}(PB SE)} &  &  &  & (0.165) & (0.112) & (0.39) \\
+\emph{\hspace{0.2cm}SE} &  &  &  & (0.165) & (0.112) & (0.39) \\
 \addlinespace[0.5em]
 Effect Beyond Bias & 6.9*** & 6.439*** & 6.783*** & 6.801*** & 6.548*** & 6.54*** \\
-\emph{\hspace{0.2cm}(EBB SE)} & (0.092) & (0.146) & (1.055) & (0.269) & (0.091) & (0.054) \\
+\emph{\hspace{0.2cm}SE} & (0.092) & (0.146) & (1.055) & (0.269) & (0.091) & (0.054) \\
 \addlinespace[0.5em]
 Total Observations & 1,754 & 1,754 & 115 & 1,754 & 1,754 & 1,754 \\
 \addlinespace[0.5em]
 Model observations & 1,469 & 176 &  &  &  &  \\
 \bottomrule
-\multicolumn{7}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:}  The table reports estimates of the effect beyond bias using six non-linear methods and estimates of the publication bias obtained using two of these methods. WAAP = Weighted Average of the Adequately Powered \citep{Ioannidis2017Waap}. Top10 = Top10 method by \cite{Stanley2010Top}. Stem = the stem-based method by \cite{Furukawa2019Stem} where P represents the probability of results insignificant at 5\% being published relative to the probability of the significant ones at the same level. Hier = Hierarchical Bayes model \citep{Allenby2006Hier}. AK = \cite{Andrews2019Selection}'s Selection model. Kink = Endogenous kink model by \cite{Bom2019Kink}. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1 }
+\multicolumn{7}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} The table reports estimates of the effect beyond bias using six non-linear methods and estimates of the publication bias obtained using two of these methods. WAAP = Weighted Average of the Adequately Powered \citep{Ioannidis2017Waap}. Top10 = Top10 method by \cite{Stanley2010Top}. Stem = the stem-based method by \cite{Furukawa2019Stem} where P represents the probability of results insignificant at 5\% being published relative to the probability of the significant ones at the same level. Hier = Hierarchical Bayes model \citep{Allenby2006Hier}. AK = \cite{Andrews2019Selection}'s Selection model. Kink = Endogenous kink model by \cite{Bom2019Kink}. SE = Standard Error. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1 }
 \end{tabular}
 \end{table}
 
 
-The next test is the Selection model proposed by \cite{Andrews2019Selection}. The authors argue that the publication probability for estimates remains constant at similar levels of statistical significance, a concept called "conditional publication probability." Once a certain statistical significance threshold is crossed, the publication probability changes. \cite{Andrews2019Selection} then demonstrate how this probability can be calculated non-parametrically, and utilizing the inverse of this probability as new weights, they obtain a non-biased distribution of the estimates. Using a t-distribution at the 5\% significance level (cutoffs for $p(.)$ set to 1.96), I obtain the result of 6.548\%. The method also proposes that estimates at the 5\% significance level are more likely to be published than insignificant ones (P = 2.764).
+The next test is the Selection model proposed by \cite{Andrews2019Selection}. The authors argue that the publication probability for estimates remains constant at similar levels of statistical significance, a concept called "conditional publication probability." Once a certain statistical significance threshold is crossed, the publication probability changes. \cite{Andrews2019Selection} then demonstrate how this probability can be calculated non-parametrically, and utilizing the inverse of this probability as new weights, they obtain a non-biased distribution of the estimates. Using a t-distribution at the 5\% significance level (cutoffs for $p(.)$ set to 1.96), I obtain the result of around 6.5\%. The method also proposes that estimates at the 5\% significance level are more likely to be published than insignificant ones (P = 2.7).
 
 As the last of the non-linear techniques testing for publication bias, I add the \ac{EK} model introduced by \cite{Bom2019Kink}. Using the argument that the publication bias is usually absent for sufficiently large studies, the \ac{EK} model finds a cutoff value below which publication bias should not appear. \cite{Bom2019Kink} then fit a piecewise linear regression with a kink at this cutoff point, allowing non-linearity in the model. An advantage of this approach is that this method reduces to a simple linear model as the effect approaches zero, where said linear methods perform well. As such, the \ac{EK} approach should provide more robust results than its linear counterpart. In my case, the suggested value of the main effect is 6.54\%, which falls right into the average of the rest of the (both linear and non-linear) results. The model also provides a non-significant estimate of the presence of publication bias. This marks the last of non-linear methods; all of the results obtained from these estimations can be found in \autoref{tab:N-L}.
 
-All but one of the six models propose a statistically significant effect beyond bias within the 6 to 7 percent range. Only the stem-based method suggests a coefficient for returns to education above 7\% (specifically, 7.2\%). These results align with the linear approach and confirm the behavior observed thus far. The Hierarchical Bayes indicates a strong presence of publication bias, while the Endogenous Kink method result is insignificant. Finally, the Selection model proposes that results at the 5\% significance level have a considerably higher chance of publication than insignificant ones.
+Every single one of the six models propose a statistically significant effect beyond bias within the 6 to 7 percent range. These results align with the linear approach and confirm the behavior observed thus far. The Hierarchical Bayes indicates a strong presence of publication bias, while the Endogenous Kink method result is insignificant. Finally, the Selection model proposes that results at the 5\% significance level have a considerably higher chance of publication than insignificant ones.
 
 
 \section{Tests Without the Exogeneity Assumption}
@@ -193,40 +195,39 @@ The correlation in the data, and thus endogeneity, can come from several sources
 
 First, the \ac{IV} regression, for which we need an instrument. The criteria for finding a valid one are relatively simple - it should be a metric that somehow captures the behavior of (correlates with) standard error while having no relationship to the estimate. Using such metric, it should be possible to derive the publication bias coefficient ($\beta_1$ from \autoref{eq:fat_reg}) not poisoned by endogeneity. Several instruments appear valid here, including $\frac{1}{\sqrt{n_{\text{obs}}}}$, $\frac{1}{n_{\text{obs}}}$, $\frac{1}{n_{\text{obs}}^2}$, and $\log(n_{\text{obs}})$, where $n_{\text{obs}}$ stands for the number of observations associated with each estimate. The number of observations variable holds several inherent properties that make all these instruments valid options. Firstly, the size of an experiment, or the number of subjects in the study, does not directly change the population-wide effect. If such a true effect exists, it should be independent of how many subjects we include in the analysis. Secondly, the standard error decreases as the sample size increases. This is a fundamental principle of statistics. In other words, the more subjects there are in the study, the bigger the confidence that the findings based on that sample are close to the results had the whole population been used for calculation.
 
-Still, which of these four proposed instruments is the best? To find out, I wrote a helper function in R that automatically detects the best-performing instruments based on the results of several specification tests. These are, namely, the Underidentification test, the Weak identification test, the Stock-Yogo weak ID test, and the Sargan statistic.\footnote{All of these specification tests are in-built into the \textit{ivreg} function of the {ivreg} R package, which I used to estimate this method. Source \href{https://cran.r-project.org/package=ivreg}{here}.} I omit the numeric results of these tests as they are not crucial for interpreting the results, and only mention that $\frac{1}{\sqrt{n_{\text{obs}}}}$ performed the best out of the four instruments. Using this instrument, the \ac{IV} regression gives 6.155\% as an estimate of returns to education, which coincides with the estimates computed up to this point.
-
 %Table with the results of the IV/p-uni* tests
-\afterpage{
-\begin{singlespace}
-\begin{footnotesize}
-\begin{longtable}[!htbp]{
-@{\hskip\tabcolsep\extracolsep}
-l
-*{2}{c}
-@{}
+\begin{table}[!t]
+\centering
+\footnotesize
+\singlespace
+\caption{Relaxing the exogeneity assumption}
+\label{tab:IV-p}
+\begin{tabular}{
+  @{\hskip\tabcolsep\extracolsep}
+  l
+  *{2}{c}
+  @{}
 }
-\caption{Relaxing the exogeneity assumption}  \label{tab:IV-p}\\
 \toprule
-  \multicolumn{1}{l}{} &
-  \multicolumn{1}{c}{\centering{\textbf{IV}}} &
-  \multicolumn{1}{c}{\centering{\textbf{p-uniform*}}} \\
-  \midrule
-  \endfirsthead
-  Publication Bias & 1.295*** & L = 9.439 \\
-  \emph{\hspace{0.2cm}(PB SE)} & (0.281) & (p = 0.002) \\
-  \addlinespace[0.5em]
-  Effect Beyond Bias & 5.813*** & 9.52*** \\
-  \emph{\hspace{0.2cm}(EBB SE)} & (0.354) & (3.291) \\
-  \addlinespace[0.5em]
-  Observations & 1,754 & 1,754 \\
-  \addlinespace[0.5em]
-  F-test & 29.153 &  \\
-  \bottomrule
-\multicolumn{3}{>{\scriptsize}p{0.5\linewidth}}{\emph{Note:} IV = Instrumental Variable Regression; one over the square root of the number of studies is used as an instrument for the standard error. Standard errors, reported in parentheses, are also clustered at the study level. p-uniform* = method proposed by \cite{vanAert2021puni}; L represents the publication bias test t-statistic; the corresponding p-value can be found in parentheses. ***p<0.01, **p<0.05, *p<0.1}
-\end{longtable}
-\end{footnotesize}
-\end{singlespace}
-}
+\multicolumn{1}{l}{} &
+\multicolumn{1}{c}{\centering{\textbf{IV}}} &
+\multicolumn{1}{c}{\centering{\textbf{p-uniform*}}} \\
+\midrule
+Publication Bias & 1.295*** & L = 9.439 \\
+\emph{\hspace{0.2cm}SE} & (0.281) & (p = 0.002) \\
+\addlinespace[0.5em]
+Effect Beyond Bias & 5.813*** & 9.52*** \\
+\emph{\hspace{0.2cm}SE} & (0.354) & (3.291) \\
+\addlinespace[0.5em]
+Observations & 1,754 & 1,754 \\
+\addlinespace[0.5em]
+F-test & 29.153 &  \\
+\bottomrule
+\multicolumn{3}{>{\scriptsize}p{0.5\linewidth}}{\emph{Note:} IV = Instrumental Variable Regression; one over the square root of the number of studies is used as an instrument for the standard error. Standard errors, reported in parentheses, are also clustered at the study level. p-uniform* = method proposed by \cite{vanAert2021puni}; L represents the publication bias test t-statistic; the corresponding p-value can be found in parentheses. F-test = Anderson-Rubin statistic \citep{anderson1949estimation}, SE = Standard Error. ***p<0.01, **p<0.05, *p<0.1}
+\end{tabular}
+\end{table}
+
+Still, which of these four proposed instruments is the best? To find out, I wrote a helper function in R that automatically detects the best-performing instruments based on the results of several specification tests. These are, namely, the Underidentification test, the Weak identification test, the Stock-Yogo weak ID test, and the Sargan statistic.\footnote{All of these specification tests are in-built into the \textit{ivreg} function of the {ivreg} R package, which I used to estimate this method. Source \href{https://cran.r-project.org/package=ivreg}{here}.} I omit the numeric results of these tests as they are not crucial for interpreting the results, and only mention that $\frac{1}{\sqrt{n_{\text{obs}}}}$ performed the best out of the four instruments, with Anderson-Rubin F-statistic for the first stage of nearly 30. Using this strong instrument, the \ac{IV} regression gives 6.1\% as an estimate of returns to education, which coincides with the estimates computed up to this point.
 
 As another way of estimating the effect-error relationship without prior assumptions about its form, I turn to the p-uniform* method. This approach, proposed by \cite{vanAert2021puni}, builds on the p-uniform method \citep{van2016conducting}. The core idea stems from the principle that the p-values in the data should be uniformly distributed at the true effect size. This line of thinking requires no assumptions about the form nor correlation of the relationship and helps search for publication bias in a novel way. The p-uniform* method, then, improves the p-uniform approach in efficiency, precision, and between-study variance detection. In my data, this technique estimates the effect to be 9.52\% and indicates the presence of publication bias, both at high levels of significance. Results of both methods can be found in table \autoref{tab:IV-p}. 
 
@@ -238,7 +239,7 @@ While the instrumental variable approach proposes rather sensible results, the p
 
 Yet another method I will use to search for deviations from normality in the reported literature results are Caliper tests, developed by \cite{gerber2008caliper}. Their proposed approach does not assume any prior relationship between the effect and the standard effect, similar to the tests from \autoref{sec:exo_tests}. Here, t-statistics are subjected to scrutiny, and the authors argue that upon looking at the immediate vicinity of a conventional significance level, no structural breaks in the distribution of t-statistic should occur. In other words, the t-statistic distribution should, in theory, behave relatively normally, and any large jumps may indicate the presence of publication bias.
 
-Going into more detail, \cite{gerber2008caliper} suggest observing the number of t-statistics around significant t-statistic thresholds, such as 1.69 or 1.96, in intervals of varying widths, called Caliper widths. If, within any half of that interval, there is a significant imbalance in the number of t-statistics compared to the other half, it indicates a structural break around the observed threshold. In my case, I will explore how the t-statistics included from all studies of the data set behave around thresholds 1.645, 1.96, and 2.58, with Caliper widths of 0.05, 0.1, and 0.2. The choice of the latter is arbitrary, while the choice of the former stems from the fact that the three values correspond to the 1\%, 5\%, and 10\% significance levels. In academia, it is a common practice to append asterisks to results when presenting estimates together with their standard errors and hence, t-statistics. Unfortunately, this practice inadvertently emphasizes results marked with these asterisks \citep{simmons2011false}. As such, researchers may be tempted to include these asterisks in their tables at the cost of honesty, leading them to tamper with their figures (most notably standard errors). Consequently, publication bias may arise.
+Going into more detail, \cite{gerber2008caliper} suggest observing the number of t-statistics around significant t-statistic thresholds, such as 1.69 or 1.96, in intervals of varying widths, called Caliper widths. If, within any half of that interval, there is a significant imbalance in the number of t-statistics compared to the other half, it indicates a structural break around the observed threshold. In my case, I will explore how the t-statistics included from all studies of the data set behave around thresholds 1.645, 1.96, and 2.58, with Caliper widths of 0.05, 0.1, and 0.15. The choice of the latter is arbitrary, while the choice of the former stems from the fact that the three values correspond to the 1\%, 5\%, and 10\% significance levels. In academia, it is a common practice to append asterisks to results when presenting estimates together with their standard errors and hence, t-statistics. Unfortunately, this practice inadvertently emphasizes results marked with these asterisks \citep{simmons2011false}. As such, researchers may be tempted to include these asterisks in their tables at the cost of honesty, leading them to tamper with their figures (most notably standard errors). Consequently, publication bias may arise.
 
 In \autoref{fig:t_hist}, you may find the distribution of t-statistics in my data, while \autoref{tab:caliperA} reports the results of Caliper tests described in the previous paragraphs.
 
@@ -261,23 +262,24 @@ In \autoref{fig:t_hist}, you may find the distribution of t-statistics in my dat
 
 
 % Results of Caliper tests
-\afterpage{
-\begin{singlespace}
-\begin{footnotesize}
-\begin{longtable}[!htbp]{
+\begin{table}[!htbp]
+\centering
+\footnotesize
+\singlespace
+\caption{Caliper tests at values 1.645, 1.96 and 2.58}
+\label{tab:caliperA}
+\begin{tabular}{
 @{\hskip\tabcolsep\extracolsep}
 l
 *{3}{c}
 @{}
 }
-\caption{Caliper tests at values 1.645, 1.96 and 2.58}  \label{tab:caliperA}\\
 \toprule
   \multicolumn{1}{l}{} &
   \multicolumn{1}{c}{\centering{\textbf{Threshold 1.645}}} &
   \multicolumn{1}{c}{\centering{\textbf{Threshold 1.96}}} &
   \multicolumn{1}{c}{\centering{\textbf{Threshold 2.58}}} \\
 \midrule
-\endfirsthead
 Caliper width 0.05 & 0.517*** & 0.243*** & 0.152*** \\
 \emph{\hspace{0.2cm}SE} & (0.084) & (0.063) & (0.046) \\
 \emph{\hspace{0.2cm}Observations} & 7 & 17 & 18 \\
@@ -290,17 +292,16 @@ Caliper width 0.15 & 0.483*** & 0.269*** & 0.186*** \\
 \emph{\hspace{0.2cm}SE} & (0.042) & (0.041) & (0.028) \\
 \emph{\hspace{0.2cm}Observations} & 26 & 37 & 45 \\
 \bottomrule
-\multicolumn{4}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} The table shows the results of three sets of Caliper tests by \cite{gerber2008caliper} These sets are carried out around t-statistic thresholds of 1.645, 1.96 and 2.58, which correspond to the 1\%, 5\%, and 10\% t-statistic significance levels. Caliper width denotes the width of the interval around the t-statistic, e.g., Caliper width 0.05 for threshold 1.96 means $t\in<1.91;2.01>$. A test statistic of 0.243 means that roughly 74\% of estimates appear above the threshold and roughly 26\% below it. SE = Standard Error, Observations = Total number of observations in the interval around the threshold. Standard errors, clustered at the study level, are included in parentheses.}
-\end{longtable}
-\end{footnotesize}
-\end{singlespace}
-}
+\multicolumn{4}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} The table shows the results of three sets of Caliper tests by \cite{gerber2008caliper} These sets are carried out around t-statistic thresholds of 1.645, 1.96 and 2.58, which correspond to the 1\%, 5\%, and 10\% t-statistic significance levels. Caliper width denotes the width of the interval around the t-statistic, e.g., Caliper width 0.05 for threshold 1.96 means $t\in<1.91;2.01>$. A test statistic of 0.243 means that roughly 74\% of estimates appear above the threshold and roughly 26\% below it. SE = Standard Error. Observations = Total number of observations in the interval around the threshold. Standard errors, clustered at the study level, are included in parentheses.}
+\end{tabular}
+\end{table}
 
 
 Two quick notes about the results are in order. First, there are very few (only 34 out of the 1754 observations) estimates with negative t-statistics. Looking at the distribution from a purely statistical standpoint, it appears peculiar that the other 1730 are all associated with a positive t-statistic. From a practical perspective, however, this makes a lot of sense if we presume that the true effect indeed lies around 7\%. This assumption appears quite feasible, given the consistency of the tests carried out in the previous sections.
 
 The second note should be addressed to the results of the Caliper tests. The jumps around thresholds could be described as \textit{striking}, \textit{considerable}, and \textit{mild}, talking about the 1\%, 5\%, and 10\% thresholds, respectively. Speaking more bluntly, the words \textit{high}, \textit{medium}, and \textit{low} could be used. The t-statistics just above the thresholds of 1.645 and 1.96 are being over-reported in the data sample to some degree. So far, we have obtained somewhat skeptical views on publication bias presence in the dataset, but perhaps these thresholds could represent initial tangible indications of reporting misbehavior.
 
+% Continue here XXX (12-11-2023)
 \section{Novel Tests for Detecting Publication Bias}
 \label{sec:phacking}
 
