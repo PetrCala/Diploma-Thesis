@@ -6,7 +6,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 R_FOLDER_PATH="$PROJECT_ROOT/R"
 DIST_FOLDER_PATH="$PROJECT_ROOT/Distribute"
 
-# Base path
+# Base path 
 
 cd $PROJECT_ROOT
 
