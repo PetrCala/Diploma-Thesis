@@ -30,9 +30,7 @@ jobs:
       - name: Commit the changes to the dev branch
         run: |
           git add .
-          # Use [skip ci] to avoid retriggering the workflow
-          git commit -m "Updating the Distribution folder of the dev branch [skip ci]"
-          git push origin dev
+          git commit -m "Preparing the distribution files"
 
       - name: Create a Temporary Branch
         run: |
