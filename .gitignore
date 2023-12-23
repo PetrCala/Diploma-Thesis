@@ -54,3 +54,6 @@ chromedriver
 
 # Vim temp files
 *.yaml.swp
+
+# VS code tepm files
+**/.vscode/
