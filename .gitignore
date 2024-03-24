@@ -27,6 +27,10 @@ R/user_parameters.yaml
 **/~$*.xlsx
 **/~$*.xlsm
 
+# Other temp files
+*.DS_Store
+**/*.log
+
 # Large literature files
 **/Studies/
 **/Studies list/

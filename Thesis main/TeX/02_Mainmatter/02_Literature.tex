@@ -10,20 +10,20 @@ The backbone of research into the returns to schooling topic lies in the Human C
 Roughly a decade later, \cite{mincer1974schooling} proposed a vital extension to this theory, quantifying this relationship in a model called the \ac{HCEF}. In this equation, usually referred to as the \textit{Mincer equation}, the log of one's earnings can be expressed as an additive function of a linear education term and a quadratic experience term. Rigorously, we can write this semi-logarithmic relationship as
 
 \begin{equation}
-    \label{eq:mincer}
-    ln(Y_i) = \alpha + \beta S_i + \gamma_{1}X_i + \gamma_{2}X_{i}^2 + \epsilon_i,
+  \label{eq:mincer}
+  ln(Y_i) = \alpha + \beta S_i + \gamma_{1}X_i + \gamma_{2}X_{i}^2 + \epsilon_i,
 \end{equation}
 
 where $ln(Y_i)$ denotes the log of earnings of an individual $i$, $S_i$ represents their attained years of schooling, $X_i$ stands for the years of work experience of said individual, and $\epsilon_i$ captures the individual-specific error. In cases where the individual's experience is absent, \cite{mincer1974schooling} proposes using a measure of potential experience instead. This can be calculated as
 
 \begin{equation}
-    \label{eq:potential_exp}
-    X_i = A_i - S_i - 6,
+  \label{eq:potential_exp}
+  X_i = A_i - S_i - 6,
 \end{equation}
 
 where $X_i$ denotes the potential experience, $A_i$ represents the individual's age, and $S_i$ stands for the completed years of schooling. Six is a constant; we assume that the individual starts their education at age six.
 
-Over the decades, this equation has been subjected to the scrutiny of many research papers \citep{ashenfelter1994estimates, heckman2006earnings, card1992does}; naturally, this scrutiny raised several questions regarding the functional form of the equation. 
+Over the decades, this equation has been subjected to the scrutiny of many research papers \citep{ashenfelter1994estimates, heckman2006earnings, card1992does}; naturally, this scrutiny raised several questions regarding the functional form of the equation.
 \cite{heckman2003fifty} subject the equation to a thorough analysis by relaxing the proposed functional form, and arrive at results that differ substantially from the ones drawn from the Mincer equation. As for specific extensions to the existing equation, \cite{card1999causal} proposed adding control variables to the Mincer equation, including race, geographic region, and union membership. Using these new controls, they highlighted the importance of an individual's location factors and their role in determining one's income. \cite{psacharopoulos2004returns} highlighted the importance of the individual's socioeconomic background as a predictor for earnings with findings that firmly back up their claim. \cite{belzil2004earnings} then extend the equation to account for individual heterogeneity by employing a dynamic programming model of schooling decisions.
 
 Among the many available methods for estimating this relationship, OLS is the most common approach \citep{ashenfelter1999review, card1999causal}. However, OLS estimates suffer from several estimation problems, including sample selectivity, omitted variable bias, and measurement error bias, as noted by \cite{aslam2007rates}, among others. Equations using year cohorts \citep{angrist2009mostly}, Heckman's correction for sample selectivity \citep{heckman1979sample}, or fixed-effects are among the several that tackle these issues.
@@ -49,36 +49,36 @@ On balance, the ability bias issue lives in a niche spot of researchers' conscio
 Before answering the questions, it is crucial to look at and acknowledge the existing meta-analyses that have already tackled these issues before me. As of me writing this paper and to the best of my knowledge, these are all of the meta-analyses that have been conducted on the topic of returns to education thus far - \cite{ psacharopoulos1994meta, fleisher2005meta, churchill2018meta, psacharopoulos2018meta, patrinos2020meta, cui2021meta, iwasaki2021meta, ma2021meta, wincenciak2022meta, horie2023meta}. In \autoref{tab:meta_overview}, I outlined how each of these studies tackles the several main points of existing research.
 
 \begin{table}[!t]
-\centering
-\footnotesize
-\singlespace
-\caption{Existing meta-analyses choose to tackle different issues}
-\label{tab:meta_overview}
-\begin{tabular}{
-@{}
-l
-*{5}{c}
-@{}}
-\toprule
-\textbf{Study name} & \textbf{AB} & \textbf{AB*} & \textbf{PB} & \textbf{PB*} & \textbf{Method} \\
-\midrule
-\cite{psacharopoulos1994meta}& . & . & . & . & . \\
-\cite{fleisher2005meta} & . & . & . & . & \checkmark \\
-\cite{churchill2018meta} & . & . & \checkmark & \checkmark & \checkmark \\
-\cite{psacharopoulos2018meta} & . & . & . & . & . \\
-\cite{patrinos2020meta} & . & . & . & . & . \\
-\cite{cui2021meta} & . & . & \checkmark & \checkmark & \checkmark \\
-\cite{iwasaki2021meta} & . & . & \checkmark & . & \checkmark \\
-\cite{ma2021meta}  & . & . & \checkmark & \checkmark & \checkmark \\
-\cite{wincenciak2022meta} & \checkmark & \checkmark & . & . & \checkmark \\
-\cite{horie2023meta} & . & . & \checkmark & . & . \\
-\midrule
-Number of studies: & 1 & 1 & 5 & 3 & 6 \\
-Percentage of studies: & 10\% & 10\% & 50\% & 30\% & 60\% \\
-\bottomrule
-\multicolumn{6}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} This table lists (to my knowledge) all existing meta-analyses on the topic of returns to education, along with information about methodology each of them chooses to employ. A check-mark means the study does tackle the corresponding issue. The last two rows display the number of studies dealing with each issue in absolute and relative terms. AB = The study analyses ability bias as a predictor for returns to schooling, AB* = The study finds that ability bias is a strong predictor for returns to schooling, PB = The study addresses publication bias, PB* = The study finds publication bias in its data, Method = The study addresses the type of methodology used by the examined studies.
-}
-\end{tabular}
+  \centering
+  \footnotesize
+  \singlespace
+  \caption{Existing meta-analyses choose to tackle different issues}
+  \label{tab:meta_overview}
+  \begin{tabular}{
+      @{}
+      l
+      *{5}{c}
+      @{}}
+    \toprule
+    \textbf{Study name}           & \textbf{AB} & \textbf{AB*} & \textbf{PB} & \textbf{PB*} & \textbf{Method} \\
+    \midrule
+    \cite{psacharopoulos1994meta} & .           & .            & .           & .            & .               \\
+    \cite{fleisher2005meta}       & .           & .            & .           & .            & \checkmark      \\
+    \cite{churchill2018meta}      & .           & .            & \checkmark  & \checkmark   & \checkmark      \\
+    \cite{psacharopoulos2018meta} & .           & .            & .           & .            & .               \\
+    \cite{patrinos2020meta}       & .           & .            & .           & .            & .               \\
+    \cite{cui2021meta}            & .           & .            & \checkmark  & \checkmark   & \checkmark      \\
+    \cite{iwasaki2021meta}        & .           & .            & \checkmark  & .            & \checkmark      \\
+    \cite{ma2021meta}             & .           & .            & \checkmark  & \checkmark   & \checkmark      \\
+    \cite{wincenciak2022meta}     & \checkmark  & \checkmark   & .           & .            & \checkmark      \\
+    \cite{horie2023meta}          & .           & .            & \checkmark  & .            & .               \\
+    \midrule
+    Number of studies:            & 1           & 1            & 5           & 3            & 6               \\
+    Percentage of studies:        & 10\%        & 10\%         & 50\%        & 30\%         & 60\%            \\
+    \bottomrule
+    \multicolumn{6}{>{\scriptsize}p{0.8\linewidth}}{\emph{Note:} This table lists (to my knowledge) all existing meta-analyses on the topic of returns to education, along with information about methodology each of them chooses to employ. A check-mark means the study does tackle the corresponding issue. The last two rows display the number of studies dealing with each issue in absolute and relative terms. AB = The study analyses ability bias as a predictor for returns to schooling, AB* = The study finds that ability bias is a strong predictor for returns to schooling, PB = The study addresses publication bias, PB* = The study finds publication bias in its data, Method = The study addresses the type of methodology used by the examined studies.
+    }
+  \end{tabular}
 \end{table}
 
 Out of these ten studies, only the paper by \cite{wincenciak2022meta} attempts to directly answer the role of ability in estimating returns to schooling. They find that ability is a significant predictor of returns to education (about 0.8-0.9\% points) when controlled for. They conclude that the omission of ability bias may lead to biased estimates of the discussed effect. As for other studies, \cite{fleisher2005meta} and \cite{patrinos2020meta} acknowledge the presence of ability as a potential predictor in the Mincer regression but either dismiss its validity or choose not to analyze the issue in depth.
