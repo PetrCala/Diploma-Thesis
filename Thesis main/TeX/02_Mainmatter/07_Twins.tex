@@ -22,7 +22,7 @@ For the purpose of this study, given that its main focus is to determine the ext
 
 I will construct the new dataset, comprising natural experiments, with two analysis goals in mind. First, as described in the previous section, I will attempt to quantify the omitted variable bias, and second, I will want to compare the results with the conclusions obtained from the earlier chapters. As such, the form of the dataset will be nearly identical to the one described in \autoref{chap:three}, with slight modifications to accommodate the specific design of the included studies.
 
-As for the studies themselves, I start with the literature review of \cite{nakamuro2012estimating} and \cite{li2012estimating}, and from there, perform snowballing to identify as many relevant studies on the topic as possible. Using this approach, I identified, in total, 16 collectable studies. For their complete list, see \autoref{app:one}.  Given how intertwined the studies on the topic are, perhaps due to the relatively small scope of the topic, the choice of which papers to include was somewhat streamlined. Possibly, I may have missed several studies, but I am highly confident that this set should provide a highly representative sample of the literature.
+As for the studies themselves, I start with the literature review of \cite{nakamuro2012estimating} and \cite{li2012estimating}, and from there, perform snowballing to identify as many relevant studies on the topic as possible. Using this approach, I identified, in total, 16 collectable studies. However, three of these only reported data on mixed samples (both MZ and DZ twins, or MZ twins and non-twins), so I decided to exclude them from the dataset. The remaining 13 studies, which I will use for the analysis, are listed in \autoref{app:one}.  Given how intertwined the studies on the topic are, perhaps due to the relatively small scope of the topic, the choice of which papers to include was somewhat streamlined. Possibly, I may have missed several studies, but I am highly confident that this set should provide a highly representative sample of the literature.
 
 The most important criteria for the selection of each of these studies was for them to feature data on monozygotic twins. Given that most of the papers featured data on dizygotic twins, or non-twins subjects as well, so I decided to collect all available information. However, for the purpose of this analysis, I subset the data only to the observations that concern monozygotic twins. During the collection, it also became apparent that some variables were unusable for this particular use case. Two variables, \textit{Sector: Public/Private}, \textit{Sector: Urban/Rural}, had no observations associated with them at all, while the variables \textit{Control: Experience squared}, \textit{Control: Occupation}, and \textit{Education: Primary/Secondary/...} had fewer than ten. As such, I removed all these variables from the dataset, together with the \textit{Ability} variable, for the approach to measuring ability bias is slightly different now, as explained in \autoref{sec:twins_literature}. For some variable groups, only some sub-categories had no data, such as \textit{Estimate: Sub-region/Continent}, \textit{Micro Data}, \textit{Region: Lat-America/Middle East and North Africa/South Asia/Saharan Africa}, \textit{Income: Low}, \textit{Instrument: Distance to school}, and finally, \textit{Control: Health}. On the other hand, I also added a handful of new variables, including:
 
@@ -36,11 +36,11 @@ The most important criteria for the selection of each of these studies was for t
 \end{itemize}
 
 
+
+For the list of all variables used in the analysis and their descriptive statistics, see \autoref{tab:twins_new_vars}. For the list of descriptions of the rest of the variables, see \autoref{tab:var}. The final form of the new dataset includes 154 observations across 13 studies and can be found in the online appendix.
+
+
 %XXX continue from here
-
-For the list of all variables used in the analysis and their descriptive statistics, see \autoref{tab:twins_new_vars}. For the list of descriptions of the rest of the variables, see \autoref{tab:var}. The final form of the new dataset includes 293 observations across 16 studies and can be found in the online appendix.
-
-
 
 
 
