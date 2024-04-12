@@ -63,43 +63,97 @@ For brevity's sake, I choose not to focus in depth during the analysis on differ
       @{}
     }
     \toprule
-    Variable                                                                & Mean   & SD                                                           & Obs   & Variable                                                               & Mean   & SD    & Obs \\
+    Variable                                                                & Mean   & SD                 & Obs   & Variable                                                               & Mean  & SD    & Obs   \\
     \midrule
-    Effect                                                                  & 6.251  & 2.76                                                         & 293   & Income: High                                                           & 0.823  & 0.383 & 241 \\
-    \multicolumn{3}{l}{\textit{\hspace{0.1cm}Estimate characteristics}}     &        & Income: Middle                                               & 0.177 & 0.383                                                                  & 52                   \\
-    Standard Error                                                          & 1.126  & 1.036                                                        & 293   & Median Expenditure                                                     & 4.214  & 3.901 & 293 \\
-    Estimate: City                                                          & 0.338  & 0.474                                                        & 99    & Minimum Wage                                                           & 3.025  & 2.761 & 293 \\
-    Estimate: Region                                                        & 0.055  & 0.228                                                        & 16    & Acad. Freedom Index                                                    & 0.786  & 0.241 & 293 \\
-    Estimate: Country                                                       & 0.608  & 0.489                                                        & 178   & Mean Age                                                               & 3.653  & 0.100 & 293 \\
-    \multicolumn{3}{l}{\textit{\hspace{0.1cm}Data characteristics}}         &        & \multicolumn{3}{l}{\textit{\hspace{0.1cm}Estimation method}} &                                                                                                       \\
-    Study Size                                                              & 3.000  & 0.426                                                        & 293   & Method: OLS                                                            & 0.345  & 0.476 & 101 \\
-    Yrs. of Schooling                                                       & 12.463 & 1.456                                                        & 293   & Method: GLS                                                            & 0.102  & 0.304 & 30  \\
-    Yrs. of Experience                                                      & 17.875 & 5.627                                                        & 293   & Method: Selection/FE                                                   & 0.253  & 0.435 & 74  \\
-    Education: Years                                                        & 0.959  & 0.199                                                        & 281   & Method: FD                                                             & 0.034  & 0.182 & 10  \\
-    Education: Levels                                                       & 0.041  & 0.199                                                        & 12    & Method: IV-FD                                                          & 0.068  & 0.253 & 20  \\
-    Wage: Hourly                                                            & 0.287  & 0.453                                                        & 84    & Method: IV                                                             & 0.198  & 0.399 & 58  \\
-    Wage: Daily                                                             & 0.130  & 0.337                                                        & 38    & Instr.: Sibling Ed.                                                    & 0.140  & 0.348 & 41  \\
-    Wage: Monthly/Annual                                                    & 0.584  & 0.494                                                        & 171   & Instr.: Smoking                                                        & 0.061  & 0.241 & 18  \\
-    Survey Data                                                             & 0.689  & 0.464                                                        & 202   & Instr.: Other                                                          & 0.048  & 0.214 & 14  \\
-    National Register Data                                                  & 0.311  & 0.464                                                        & 91    & Control: Age                                                           & 0.584  & 0.494 & 171 \\
-    Cross-sectional Data                                                    & 0.498  & 0.501                                                        & 146   & Control: Age$^2$                                                       & 0.478  & 0.5   & 140 \\
-    Panel Data                                                              & 0.502  & 0.501                                                        & 147   & Control: Experience                                                    & 0.218  & 0.414 & 64  \\
-    Data Year                                                               & 3.297  & 1.286                                                        & 293   & Control: Ethnicity                                                     & 0.157  & 0.364 & 46  \\
-    \multicolumn{3}{l}{\textit{\hspace{0.1cm}Spatial/Structural variation}} &        & Control: Gender                                              & 0.522 & 0.5                                                                    & 153                  \\
-    Wage Earners                                                            & 0.962  & 0.052                                                        & 102   & Control: Marriage                                                      & 0.416  & 0.494 & 122 \\
-    Gender: Male                                                            & 0.557  & 0.277                                                        & 265   & Control: Firm Char.                                                    & 0.123  & 0.329 & 36  \\
-    Gender: Female                                                          & 0.443  & 0.277                                                        & 28    & Control: Area                                                          & 0.055  & 0.228 & 16  \\
-    White                                                                   & 0.694  & 0.421                                                        & 190   & Control: Macro Var.                                                    & 0.038  & 0.19  & 11  \\
-    Ethnicity: Caucasian                                                    & 0.208  & 0.407                                                        & 61    & \multicolumn{3}{l}{\textit{\hspace{0.1cm}Publication characteristics}} &                      \\
-    Married                                                                 & 0.699  & 0.143                                                        & 268   & Impact Factor                                                          & -0.269 & 1.125 & 206 \\
-    Unmarried                                                               & 0.301  & 0.143                                                        & 252   & Citations                                                              & 3.855  & 2.173 & 293 \\
-    Twins: Identical                                                        & 0.640  & 0.415                                                        & 242   & Study: Published                                                       & 0.703  & 0.458 & 206 \\
-    Twins: Non-Identical                                                    & 0.263  & 0.377                                                        & 126   & Study: Unpublished                                                     & 0.297  & 0.458 & 87  \\
-    Twins: None                                                             & 0.097  & 0.275                                                        & 34    & Publication Year                                                       & 1.018  & 0.898 & 264 \\
+    Effect                                                                  & 6.819  & 3.349              & 154   & Income: Middle                                                         & 0.26  & 0.44  & 40  \\
+    \multicolumn{3}{l}{\textit{\hspace{0.1cm}Estimate characteristics}}     &        & Median Expenditure & 9.166 & 1.386                                                                  & 154                   \\
+    Standard Error                                                          & 1.544  & 1.055              & 154   & Minimum Wage                                                           & 6.607 & 1.042 & 154   \\
+    Estimate: City                                                          & 0.597  & 0.492              & 92    & Academic Freedom Index                                                 & 0.749 & 0.279 & 154   \\
+    Estimate: Region                                                        & 0.065  & 0.247              & 10    & \multicolumn{3}{l}{\textit{\hspace{0.1cm}Estimation method}}           &                       \\
+    Estimate: Country                                                       & 0.338  & 0.474              & 52    & Method: OLS                                                            & 0.26  & 0.44  & 40    \\
+    \multicolumn{3}{l}{\textit{\hspace{0.1cm}Data characteristics}}         &        & Method: GLS        & 0.143 & 0.351                                                                  & 22                    \\
+    Study Size                                                              & 20.149 & NA                 & 154   & Method: Selection/FE                                                   & 0.208 & 0.407 & 32    \\
+    Yrs. of Schooling                                                       & 13.061 & 0.999              & 154   & Method: FD                                                             & 0.065 & 0.247 & 10    \\
+    Yrs. of Experience                                                      & 15.639 & 4.891              & 154   & Method: IV-FD                                                          & 0.104 & 0.306 & 16    \\
+    Education: Years                                                        & 0.929  & 0.258              & 143   & Method: IV                                                             & 0.221 & 0.416 & 34    \\
+    Education: Levels                                                       & 0.071  & 0.258              & 11    & Instr.: Sibling Ed.                                                    & 0.188 & 0.392 & 29    \\
+    Wage: Hourly                                                            & NA     & NA                 & NA    & Instr.: Smoking                                                        & 0.104 & 0.306 & 16    \\
+    Wage: Daily                                                             & NA     & NA                 & NA    & Control: Age                                                           & 0.617 & 0.488 & 95    \\
+    Wage: Monthly/Annual                                                    & 0.597  & 0.492              & 92    & Control: Age$^2$                                                       & 0.513 & 0.501 & 79    \\
+    Survey Data                                                             & 0.909  & 0.288              & 140   & Control: Experience                                                    & 0.325 & 0.47  & 50    \\
+    National Register Data                                                  & 0.091  & 0.288              & 14    & Control: Ethnicity                                                     & 0.169 & 0.376 & 26    \\
+    Cross-sectional Data                                                    & 0.578  & 0.496              & 89    & Control: Gender                                                        & 0.539 & 0.5   & 83    \\
+    Panel Data                                                              & 0.422  & 0.496              & 65    & Control: Marriage                                                      & 0.539 & 0.5   & 83    \\
+    Data Year                                                               & 3.300  & 0.863              & 154   & Control: Firm Char.                                                    & 0.097 & 0.297 & 15    \\
+    \multicolumn{3}{l}{\textit{\hspace{0.1cm}Spatial/Structural variation}} &        & Control: Area      & 0.039 & 0.194                                                                  & 6                     \\
+    Wage Earners                                                            & 0.913  & 0.062              & 32    & Control: Macro Var.                                                    & 0.071 & 0.258 & 11    \\
+    Gender: Male                                                            & 0.429  & 0.231              & 129   & \multicolumn{3}{l}{\textit{\hspace{0.1cm}Publication characteristics}} &                       \\
+    Gender: Female                                                          & 0.571  & 0.231              & 25    & Impact Factor                                                          & 0.139 & 0.86  & 110   \\
+    White                                                                   & 0.573  & 0.444              & 87    & Citations                                                              & 3.844 & 2.357 & 124   \\
+    Ethnicity: Caucasian                                                    & 0.201  & 0.402              & 31    & Study: Published                                                       & 0.714 & 0.453 & 110   \\
+    Married                                                                 & 0.679  & 0.155              & 141   & Study: Unpublished                                                     & 0.286 & 0.453 & 44    \\
+    Unmarried                                                               & 0.321  & 0.155              & 135   & Publication Year                                                       & 1.383 & 0.743 & 130   \\
+    Income: High                                                            & 0.74   & 0.44               & 114   &                                                                        &       &       &       \\
+
     \bottomrule
     \multicolumn{8}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} This table presents basic summary statistics for variables of the new twin dataset. For detailed descriptions of all variables unmentioned in this chapter, see \autoref{tab:var}. SD = Standard Deviation, OLS = Ordinary Least Squares, GLS = Generalized Least Squares, FE = Fixed-Effects, IV = Instrumental Variable.}
   \end{tabular}
 \end{table}
+
+% \begin{table}[!htbp]
+%   \centering
+%   \scriptsize
+%   \singlespace
+%   \caption{Variables of the twin dataset}
+%   \label{tab:twins_new_vars}
+%   \begin{tabular}
+%     {
+%       @{\hskip\tabcolsep\extracolsep}
+%       l
+%       *{3}{c}
+%       |
+%       l
+%         *{3}{c}
+%       @{}
+%     }
+%     \toprule
+%     Variable                                                                & Mean   & SD                                                           & Obs   & Variable                                                               & Mean   & SD    & Obs \\
+%     \midrule
+%     Effect                                                                  & 6.251  & 2.76                                                         & 293   & Income: High                                                           & 0.823  & 0.383 & 241 \\
+%     \multicolumn{3}{l}{\textit{\hspace{0.1cm}Estimate characteristics}}     &        & Income: Middle                                               & 0.177 & 0.383                                                                  & 52                   \\
+%     Standard Error                                                          & 1.126  & 1.036                                                        & 293   & Median Expenditure                                                     & 4.214  & 3.901 & 293 \\
+%     Estimate: City                                                          & 0.338  & 0.474                                                        & 99    & Minimum Wage                                                           & 3.025  & 2.761 & 293 \\
+%     Estimate: Region                                                        & 0.055  & 0.228                                                        & 16    & Acad. Freedom Index                                                    & 0.786  & 0.241 & 293 \\
+%     Estimate: Country                                                       & 0.608  & 0.489                                                        & 178   & Mean Age                                                               & 3.653  & 0.100 & 293 \\
+%     \multicolumn{3}{l}{\textit{\hspace{0.1cm}Data characteristics}}         &        & \multicolumn{3}{l}{\textit{\hspace{0.1cm}Estimation method}} &                                                                                                       \\
+%     Study Size                                                              & 3.000  & 0.426                                                        & 293   & Method: OLS                                                            & 0.345  & 0.476 & 101 \\
+%     Yrs. of Schooling                                                       & 12.463 & 1.456                                                        & 293   & Method: GLS                                                            & 0.102  & 0.304 & 30  \\
+%     Yrs. of Experience                                                      & 17.875 & 5.627                                                        & 293   & Method: Selection/FE                                                   & 0.253  & 0.435 & 74  \\
+%     Education: Years                                                        & 0.959  & 0.199                                                        & 281   & Method: FD                                                             & 0.034  & 0.182 & 10  \\
+%     Education: Levels                                                       & 0.041  & 0.199                                                        & 12    & Method: IV-FD                                                          & 0.068  & 0.253 & 20  \\
+%     Wage: Hourly                                                            & 0.287  & 0.453                                                        & 84    & Method: IV                                                             & 0.198  & 0.399 & 58  \\
+%     Wage: Daily                                                             & 0.130  & 0.337                                                        & 38    & Instr.: Sibling Ed.                                                    & 0.140  & 0.348 & 41  \\
+%     Wage: Monthly/Annual                                                    & 0.584  & 0.494                                                        & 171   & Instr.: Smoking                                                        & 0.061  & 0.241 & 18  \\
+%     Survey Data                                                             & 0.689  & 0.464                                                        & 202   & Instr.: Other                                                          & 0.048  & 0.214 & 14  \\
+%     National Register Data                                                  & 0.311  & 0.464                                                        & 91    & Control: Age                                                           & 0.584  & 0.494 & 171 \\
+%     Cross-sectional Data                                                    & 0.498  & 0.501                                                        & 146   & Control: Age$^2$                                                       & 0.478  & 0.5   & 140 \\
+%     Panel Data                                                              & 0.502  & 0.501                                                        & 147   & Control: Experience                                                    & 0.218  & 0.414 & 64  \\
+%     Data Year                                                               & 3.297  & 1.286                                                        & 293   & Control: Ethnicity                                                     & 0.157  & 0.364 & 46  \\
+%     \multicolumn{3}{l}{\textit{\hspace{0.1cm}Spatial/Structural variation}} &        & Control: Gender                                              & 0.522 & 0.5                                                                    & 153                  \\
+%     Wage Earners                                                            & 0.962  & 0.052                                                        & 102   & Control: Marriage                                                      & 0.416  & 0.494 & 122 \\
+%     Gender: Male                                                            & 0.557  & 0.277                                                        & 265   & Control: Firm Char.                                                    & 0.123  & 0.329 & 36  \\
+%     Gender: Female                                                          & 0.443  & 0.277                                                        & 28    & Control: Area                                                          & 0.055  & 0.228 & 16  \\
+%     White                                                                   & 0.694  & 0.421                                                        & 190   & Control: Macro Var.                                                    & 0.038  & 0.19  & 11  \\
+%     Ethnicity: Caucasian                                                    & 0.208  & 0.407                                                        & 61    & \multicolumn{3}{l}{\textit{\hspace{0.1cm}Publication characteristics}} &                      \\
+%     Married                                                                 & 0.699  & 0.143                                                        & 268   & Impact Factor                                                          & -0.269 & 1.125 & 206 \\
+%     Unmarried                                                               & 0.301  & 0.143                                                        & 252   & Citations                                                              & 3.855  & 2.173 & 293 \\
+%     Twins: Identical                                                        & 0.640  & 0.415                                                        & 242   & Study: Published                                                       & 0.703  & 0.458 & 206 \\
+%     Twins: Non-Identical                                                    & 0.263  & 0.377                                                        & 126   & Study: Unpublished                                                     & 0.297  & 0.458 & 87  \\
+%     Twins: None                                                             & 0.097  & 0.275                                                        & 34    & Publication Year                                                       & 1.018  & 0.898 & 264 \\
+%     \bottomrule
+%     \multicolumn{8}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} This table presents basic summary statistics for variables of the new twin dataset. For detailed descriptions of all variables unmentioned in this chapter, see \autoref{tab:var}. SD = Standard Deviation, OLS = Ordinary Least Squares, GLS = Generalized Least Squares, FE = Fixed-Effects, IV = Instrumental Variable.}
+%   \end{tabular}
+% \end{table}
 
 
 \section{Empirical analysis: Are the results just identical?}
