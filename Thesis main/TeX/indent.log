@@ -1,7 +1,7 @@
 INFO:  latexindent.pl version 3.23.7, 2024-03-16, a script to indent .tex files
        latexindent.pl lives here: /opt/homebrew/Cellar/latexindent/3.23.7/libexec/bin/
-       Sat Apr 13 09:02:30 2024
-       Filename: /Users/jf41513/code/Diploma-Thesis/Thesis main/TeX/02_Mainmatter/__latexindent_temp_07_Twins.tex
+       Sat Apr 13 15:06:44 2024
+       Filename: /Users/jf41513/code/Diploma-Thesis/Thesis main/TeX/02_Mainmatter/__latexindent_temp_06_BPE.tex
 INFO:  Processing switches:
        -y|--yaml: YAML settings specified via command line
        -c|--cruft: cruft directory
@@ -23,9 +23,9 @@ INFO:  YAML reading settings
        latexindent.pl didn't find indentconfig.yaml or .indentconfig.yaml
        see all possible locations: https://latexindentpl.readthedocs.io/en/latest/sec-appendices.html#indentconfig-options)
 INFO:  YAML settings read: -y switch
-       YAML setting: defaultIndent:'    '
-       single-quoted string found in -y switch: '    ', substitute to     
-       Updating mainSettings with defaultIndent:     
+       YAML setting: defaultIndent:'  '
+       single-quoted string found in -y switch: '  ', substitute to   
+       Updating mainSettings with defaultIndent:   
 INFO:  Phase 1: searching for objects
 INFO:  Phase 2: finding surrounding indentation
 INFO:  Phase 3: indenting objects
