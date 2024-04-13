@@ -3,13 +3,13 @@
 % grammar checked (07-27)
 
 \begin{quoting}
-\textit{An investment in knowledge pays the best interest.}
+  \textit{An investment in knowledge pays the best interest.}
 \end{quoting}
 \vspace{-0.2em}
 \hfill --- Benjamin Franklin
 \vspace{0.5em}
 
-It is widely acknowledged that attending school brings numerous benefits for one's future. To claim the opposite would simply appear foolish, considering the vast quantities of existing literature that explore the positive impact of schooling \citep{oreopoulos2013making, ritchie2018much, heckman2010rate, psacharopoulos2004returns}. However, what happens if a researcher conducts an experiment, and the results suggest that education hurts the prospects of the subjects that took part? Such an experiment will most likely be viewed skeptically, if not frowned upon. The initial response of the publishers presented with such results might, in most cases, go more along the lines of "Perhaps there is something wrong with your setup?" rather than "Truly, what a revolutionary discovery!" In expectation of such a response and considering the time and often money invested into the experiment, the researcher is posed with a tough decision - keep the results as is, or sacrifice legitimacy in return for better publication prospects?
+It is widely acknowledged that attending school brings numerous benefits for one's future. To claim the opposite would simply appear foolish, considering the vast quantities of existing literature that explore the positive impact of schooling \citep{oreopoulos2013making, ritchie2018much, heckman2010rate, psacharopoulos2004returns}. However, what happens if a researcher conducts an experiment, and the results suggest that education hurts the prospects of the subjects that took part? Such an experiment will most likely be viewed skeptically, if not frowned upon. The initial response of the publishers presented with such results might, in most cases, go more along the lines of "Perhaps there is something wrong with your setup?" rather than "Heureka, what a discovery!" In expectation of such a response and considering the time and often money invested into the experiment, the researcher is posed with a tough decision - keep the results as is, or sacrifice legitimacy in return for better publication prospects?
 
 The issue described above is commonly referred to as publication bias and is exactly what this part of the paper explores. Among the many forms this malpractice can take, perhaps two are the most prominent. Firstly, studies can remain unpublished due to the discrepancy between their results and the existing knowledge, also known as the \textit{file drawer problem} \citep{stanley2005beyond}. Secondly, the results within those studies may be modified to gain higher order of statistical significance; this can be done by modifying the standard error or even the effect itself - a form of malpractice sometimes referred to as p-hacking \citep{simmons2011false}. Luckily, this manipulation can be detected within the data using various statistical tests, given the unnatural patterns that the p-value distribution tends to exhibit in case such practices are employed.
 
@@ -25,22 +25,22 @@ I first test for publication bias using the funnel plot \citep{Egger1997, stanle
 As mentioned above, I construct the funnel plot using the inverted standard error as the measure for precision because all estimates in the dataset have their standard error reported (this was one of the conditions during data collection, as described in \autoref{chap:three}). Apart from a funnel plot with all collected data points, I also present a figure that displays only the medians of the effect for all 74 studies. These two graphs appear in the sub-figures of \autoref{fig:funnel_plot}.
 
 \begin{figure}[!t]
-\begin{center}
-\caption{The funnel plot shows no immediately suspicious patterns}
-\label{fig:funnel_plot}
-\begin{subfigure}[b]{0.45\textwidth}
-   \caption{All observations}
-   \includegraphics[width=0.95\linewidth]{Figures/funnel.png}
-   \label{fig:funnel_plot_all} 
-\end{subfigure}
-\begin{subfigure}[b]{0.45\textwidth}
-   \caption{Study medians}
-   \includegraphics[width=0.95\linewidth]{Figures/funnel_medians.png}
-   \label{fig:funnel_plot_medians}
-\end{subfigure}
-\end{center}\vspace{-0.6cm}
-\captionsetup{width=0.85\textwidth, font = scriptsize}
-\caption*{\emph{Note:} This figure displays two funnel plots as per \cite{Egger1997}, where the percentage returns to an additional year of schooling are plotted on the x-axis against precision on the y-axis, measured as $1/SE$ (Standard Error). Plot (a) shows the funnel plot for all observations within the data (1754 data points), while plot (b) shows only the medians of each study (115 data points). The red line marks the mean of these data points. In case of no publication bias, these funnel plots should be symmetrically centered around the true mean.}
+  \begin{center}
+    \caption{The funnel plot shows no immediately suspicious patterns}
+    \label{fig:funnel_plot}
+    \begin{subfigure}[b]{0.45\textwidth}
+      \caption{All observations}
+      \includegraphics[width=0.95\linewidth]{Figures/funnel.png}
+      \label{fig:funnel_plot_all}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+      \caption{Study medians}
+      \includegraphics[width=0.95\linewidth]{Figures/funnel_medians.png}
+      \label{fig:funnel_plot_medians}
+    \end{subfigure}
+  \end{center}\vspace{-0.6cm}
+  \captionsetup{width=0.85\textwidth, font = scriptsize}
+  \caption*{\emph{Note:} This figure displays two funnel plots as per \cite{Egger1997}, where the percentage returns to an additional year of schooling are plotted on the x-axis against precision on the y-axis, measured as $1/SE$ (Standard Error). Plot (a) shows the funnel plot for all observations within the data (1754 data points), while plot (b) shows only the medians of each study (115 data points). The red line marks the mean of these data points. In case of no publication bias, these funnel plots should be symmetrically centered around the true mean.}
 \end{figure}
 
 No apparent asymmetry nor holes appear at first glance in the plot with all observations. The less telling plot with study medians exhibits a little more "emptiness" at places, but we can take this simply as a cause of the lower observation count. The crucial takeaway from the latter plot is the lack of suspicious outliers in either direction. Despite this relative consistency, both graphs are perhaps a little more dispersed for higher precision values than the ideal shape might have it. In any case, this is far from enough evidence to claim the presence of publication bias and, contrarily, a hint that the data may be relatively normal.
@@ -56,13 +56,13 @@ The funnel plot itself, albeit a quick and easy way of detecting obvious publica
 These techniques test for the funnel plot asymmetry using a simple equation that regresses the effect on its standard error to uncover any correlation between the two. If such a correlation exists, it can be interpreted as a systematic relationship between the effect and its standard error, indicating publication bias. Algebraically, the relationship can be written as:
 
 \begin{equation}\label{eq:fat_reg}
-    S_{ij} = \beta_0 + \beta_1 * (SE_{S})_{ij} + u_{ij},
-    \vspace{0.3cm}
+  S_{ij} = \beta_0 + \beta_1 * (SE_{S})_{ij} + u_{ij},
+  \vspace{0.3cm}
 \end{equation}
 
 where $S$ represents the returns to schooling effect for the i-th observation of the j-th study in the dataset, and $SE_{S}$ corresponds to the effect's standard error. The slope coefficient, $\beta_1$, then measures the publication bias in the data, while the intercept coefficient, $\beta_0$, captures the "true" effect of returns to schooling corrected for publication bias. $u_{ij}$ stands for the error regression term. In the tables below, I will refer to the slope coefficient with the label \textit{Publication bias}, while the intercept will be labeled as \textit{Effect beyond bias}.
 
-If no publication bias is present in the data, the slope coefficient will be either 0 or close to it. Conversely, higher absolute values would indicate the opposite correlation between the effect and its standard error, thereby suggesting publication bias is present in the data. This is motivated by the assumption that both the effect and its standard error should be, statistically speaking, drawn from an independent, statistically symmetrical distribution. However, practically speaking, this is rarely the case. 
+If no publication bias is present in the data, the slope coefficient will be either 0 or close to it. Conversely, higher absolute values would indicate the opposite correlation between the effect and its standard error, thereby suggesting publication bias is present in the data. This is motivated by the assumption that both the effect and its standard error should be, statistically speaking, drawn from an independent, statistically symmetrical distribution. However, practically speaking, this is rarely the case.
 
 The results of the funnel asymmetry tests can be viewed in \autoref{tab:PB-FAT}. Firstly, I include a simple \ac{OLS} model, followed by two models accounting for unobserved heterogeneity in the form of Fixed effect and Random effect estimators. Lastly, I introduce two models that weigh the equation, first by the inverse of the number of observations reported per study and second by precision. The motivation behind the last two models is to account for unobserved heterogeneity and heteroskedasticity, respectively. For robustness, I cluster all standard errors at the study level, and append wild bootstrap confidence intervals where possible. These I calculate using an iteration sample of 100 for each method.
 
@@ -76,53 +76,53 @@ Looking at concrete results, four out of five of these methods find a statistica
   \caption{Linear tests for publication bias}
   \label{tab:PB-FAT}
   \begin{tabular}{
-  @{\hskip\tabcolsep\extracolsep}
-  l*{3}{c}} %one left column, three center (*{} makes the cols inherit attributes)
-  \toprule
-    \multicolumn{1}{l}{} &
-    \multicolumn{1}{c}{\textbf{OLS}} & 
+      @{\hskip\tabcolsep\extracolsep}
+      l*{3}{c}} %one left column, three center (*{} makes the cols inherit attributes)
+    \toprule
+    \multicolumn{1}{l}{}               &
+    \multicolumn{1}{c}{\textbf{OLS}}   &
     \multicolumn{1}{c}{\textbf{Study}} &
-    \multicolumn{1}{c}{\textbf{Precision}} \\
-  \midrule
-  
-  Publication Bias & 0.832** &  1.169*** & 0.262 \\
-  \emph{\hspace{0.2cm}SE} & (0.097) & (0.121) & (0.425) \\
-  \emph{\hspace{0.2cm}Bootstrap CI} & [0.624, 1.035] & [0.92, 1.405] & [-0.833, 1.091] \\
-  \addlinespace[0.5em]
-  Effect Beyond Bias & 6.408*** & 6.294*** & 6.54*** \\
-  \emph{\hspace{0.2cm}SE} & (0.118) &  (0.153) & (0.168) \\
-  \emph{\hspace{0.2cm}Bootstrap CI} & [6.164, 6.639] & [6.04, 6.645] & [6.189, 6.918] \\
-  \addlinespace[0.5em]
-  Total observations & 1,754 & 1,754 & 1,754 \\
+    \multicolumn{1}{c}{\textbf{Precision}}                                                \\
+    \midrule
 
-  \midrule
-    \multicolumn{1}{l}{} &
-    \multicolumn{1}{c}{\textbf{FE}} &
-    \multicolumn{1}{c}{\textbf{BE}} &
-    \multicolumn{1}{c}{\textbf{RE}} \\
-  \midrule
+    Publication Bias                   & 0.832**        & 1.169***      & 0.262           \\
+    \emph{\hspace{0.2cm}SE}            & (0.097)        & (0.121)       & (0.425)         \\
+    \emph{\hspace{0.2cm}Bootstrap CI}  & [0.624, 1.035] & [0.92, 1.405] & [-0.833, 1.091] \\
+    \addlinespace[0.5em]
+    Effect Beyond Bias                 & 6.408***       & 6.294***      & 6.54***         \\
+    \emph{\hspace{0.2cm}SE}            & (0.118)        & (0.153)       & (0.168)         \\
+    \emph{\hspace{0.2cm}Bootstrap CI}  & [6.164, 6.639] & [6.04, 6.645] & [6.189, 6.918]  \\
+    \addlinespace[0.5em]
+    Total observations                 & 1,754          & 1,754         & 1,754           \\
 
-  Publication Bias & 0.746*** & 0.752*** & 0.747*** \\
-  \emph{\hspace{0.2cm}SE} & (0.06) & (0.244) & (0.058) \\
-  \emph{\hspace{0.2cm}Bootstrap CI} &  &  & [0.514, 0.995] \\
-  \addlinespace[0.5em]
-  Effect Beyond Bias & 6.517*** & 6.741*** & 6.708*** \\ 
-  \emph{\hspace{0.2cm}SE} & (0.107) & (0.418) & (0.294) \\
-  \emph{\hspace{0.2cm}Bootstrap CI} &   &  & [6.398, 6.965] \\
-  \addlinespace[0.5em]
-  Total observations & 1,754 & 1,754 & 1,754 \\
-      
-  \bottomrule
-  \multicolumn{4}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} SE = Standard Error, CI = Confidence Interval, OLS = Ordinary Least Squares. FE = Fixed Effects. BE = Between Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. Wild bootstrap confidence intervals at 95\% confidence level, bootstrapped over 100 iterations, are reported in brackets. ***p<0.01, **p<0.05, *p<0.1}
+    \midrule
+    \multicolumn{1}{l}{}               &
+    \multicolumn{1}{c}{\textbf{FE}}    &
+    \multicolumn{1}{c}{\textbf{BE}}    &
+    \multicolumn{1}{c}{\textbf{RE}}                                                       \\
+    \midrule
+
+    Publication Bias                   & 0.746***       & 0.752***      & 0.747***        \\
+    \emph{\hspace{0.2cm}SE}            & (0.06)         & (0.244)       & (0.058)         \\
+    \emph{\hspace{0.2cm}Bootstrap CI}  &                &               & [0.514, 0.995]  \\
+    \addlinespace[0.5em]
+    Effect Beyond Bias                 & 6.517***       & 6.741***      & 6.708***        \\
+    \emph{\hspace{0.2cm}SE}            & (0.107)        & (0.418)       & (0.294)         \\
+    \emph{\hspace{0.2cm}Bootstrap CI}  &                &               & [6.398, 6.965]  \\
+    \addlinespace[0.5em]
+    Total observations                 & 1,754          & 1,754         & 1,754           \\
+
+    \bottomrule
+    \multicolumn{4}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} The table displays the results obtained from estimating \autoref{eq:fat_reg} SE = Standard Error, CI = Confidence Interval, OLS = Ordinary Least Squares. FE = Fixed Effects. BE = Between Effects. RE = Random Effects. Precision = Estimates are weighted by the inverse standard error. Study = Estimates are weighted by the inverse number of observations reported per study. Standard errors, clustered at the study level, are included in parentheses. Wild bootstrap confidence intervals at 95\% confidence level, bootstrapped over 100 iterations, are reported in brackets. ***p<0.01, **p<0.05, *p<0.1}
   \end{tabular}
-  \end{table}
-  
+\end{table}
+
 
 
 \section{Non-linear Tests}
 \label{sec:nonlinear_tests}
 
-The relationship between the effect and its standard error, as described in \autoref{eq:fat_reg}, is assumed to be linear in the funnel asymmetry tests. However, it is crucial to acknowledge that this assumption does not always hold. In cases where the relationship behaves less straightforwardly, the \ac{FAT-PET} tend to underestimate the underlying effect if it differs from zero \citep{stanley2014meta}. In the context of my data, this concern may be valid since most of the data points are positive and occasionally even reach double digits. To address potential non-linear forms of the relationship that may appear in the data, I present six techniques that relax the linearity assumption. 
+The relationship between the effect and its standard error, as described in \autoref{eq:fat_reg}, is assumed to be linear in the funnel asymmetry tests. However, it is crucial to acknowledge that this assumption does not always hold. In cases where the relationship behaves less straightforwardly, the \ac{FAT-PET} tend to underestimate the underlying effect if it differs from zero \citep{stanley2014meta}. In the context of my data, this concern may be valid since most of the data points are positive and occasionally even reach double digits. To address potential non-linear forms of the relationship that may appear in the data, I present six techniques that relax the linearity assumption.
 
 The first is the \ac{WAAP}, introduced by \cite{Ioannidis2017Waap}. Their proposition involves the application of unrestricted \ac{WLS} only on observations of adequately powered studies. "Power" here refers to a study's ability to detect whether an effect if it is truly present in the data. The more power a study has, the bigger its reliability. In technical terms, the power is calculated using the statistical significance of estimates and then compared to their standard errors. As per the original paper, I kept only the estimates of studies that display power over 80\%. Strikingly, 1469 out of the 1754 estimates in my dataset get identified as adequately powered. Using these estimates, \ac{WAAP} then proposes an estimate of 6.9\% which is slightly higher than any of the linear models presented in \autoref{tab:PB-FAT}.
 
@@ -132,50 +132,50 @@ The second approach, proposed by \cite{Stanley2010Top}, entails discarding 90\% 
 
 \sidecaptionvpos{figure}{t}
 \begin{SCfigure}
-\centering
-\captionsetup{font = scriptsize}
-\caption[Stem-based method]{\vspace{0.5cm}Stem-based method\\ \emph{Note:} This figure displays a non-linear estimation of the true effect \citep{Furukawa2019Stem}. The main effect, labeled \textit{Coefficient $\beta$}, is plotted on the x-axis against precision, calculated as $log(SE)$ (Standard Error). The yellow diamond and the whiskers of the same color denote the 95\% confidence interval of the stem-based estimate of the effect. The dark grey line indicates the predicted estimates throughout various levels of data, while the purple diamond shows the minimal precision value above which lies the stem. The blue circles then represent the individual effect estimates. Median of each study was the measure chosen as the representative sample of observations for the input data, resulting in 115 total data points.}
-\label{fig:stem}
-\includegraphics[width=0.5\textwidth]{Figures/stem.png}
+  \centering
+  \captionsetup{font = scriptsize}
+  \caption[Stem-based method]{\vspace{0.5cm}Stem-based method\\ \emph{Note:} This figure displays a non-linear estimation of the true effect \citep{Furukawa2019Stem}. The main effect, labeled \textit{Coefficient $\beta$}, is plotted on the x-axis against precision, calculated as $log(SE)$ (Standard Error). The yellow diamond and the whiskers of the same color denote the 95\% confidence interval of the stem-based estimate of the effect. The dark grey line indicates the predicted estimates throughout various levels of data, while the purple diamond shows the minimal precision value above which lies the stem. The blue circles then represent the individual effect estimates. Median of each study was the measure chosen as the representative sample of observations for the input data, resulting in 115 total data points.}
+  \label{fig:stem}
+  \includegraphics[width=0.5\textwidth]{Figures/stem.png}
 \end{SCfigure}
 
 Further, I estimate the Hierarchical Bayes model by \cite{Allenby2006Hier}. The procedure employs Bayesian statistics to leverage variability within individual studies to determine the weights of individual observations aggregated at the study level. The model parameters get treated as random variables instead of fixed numbers, allowing for variability at multiple levels within the dataset. As such, different units can have comparable sharing strength, allowing for more robust estimates. The hierarchical part stems from the fact that priors are specified using another model (called hyperprior) instead of a direct specification, as is usually done in Bayesian modeling. This complex multi-level modeling framework yields an estimate of 6.8\% in my case. Additionally, the analysis suggests the presence of publication bias at a significance level of 1\%.
 
 % Non-linear tests
 \begin{table}[!b]
-\centering
-\footnotesize
-\singlespace
-\caption{Nonlinear tests for publication bias}
-\label{tab:N-L}
-\begin{tabular}{
-@{\hskip\tabcolsep\extracolsep}
-l
-*{6}{c}
-@{}
-} %0.15 0.65
-\toprule
-  \addlinespace[0.5em]
-  \multicolumn{1}{c}{} &
-  \multicolumn{1}{c}{\textbf{WAAP}} & 
-  \multicolumn{1}{c}{\textbf{Top10}} &
-  \multicolumn{1}{c}{\textbf{Stem}} & 
-  \multicolumn{1}{c}{\textbf{Hier}} &
-  \multicolumn{1}{c}{\textbf{AK}} &
-  \multicolumn{1}{c}{\textbf{Kink}} \\
-\midrule
-Publication Bias &  &  &  & 0.504*** & 2.764*** & 0.262 \\
-\emph{\hspace{0.2cm}SE} &  &  &  & (0.165) & (0.112) & (0.39) \\
-\addlinespace[0.5em]
-Effect Beyond Bias & 6.9*** & 6.439*** & 6.783*** & 6.801*** & 6.548*** & 6.54*** \\
-\emph{\hspace{0.2cm}SE} & (0.092) & (0.146) & (1.055) & (0.269) & (0.091) & (0.054) \\
-\addlinespace[0.5em]
-Total Observations & 1,754 & 1,754 & 115 & 1,754 & 1,754 & 1,754 \\
-\addlinespace[0.5em]
-Model observations & 1,469 & 176 &  &  &  &  \\
-\bottomrule
-\multicolumn{7}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} The table reports estimates of the effect beyond bias using six non-linear methods and estimates of the publication bias obtained using two of these methods. WAAP = Weighted Average of the Adequately Powered \citep{Ioannidis2017Waap}. Top10 = Top10 method by \cite{Stanley2010Top}. Stem = the stem-based method by \cite{Furukawa2019Stem} where P represents the probability of results insignificant at 5\% being published relative to the probability of the significant ones at the same level. Hier = Hierarchical Bayes model \citep{Allenby2006Hier}. AK = \cite{Andrews2019Selection}'s Selection model. Kink = Endogenous kink model by \cite{Bom2019Kink}. SE = Standard Error. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1 }
-\end{tabular}
+  \centering
+  \footnotesize
+  \singlespace
+  \caption{Nonlinear tests for publication bias}
+  \label{tab:N-L}
+  \begin{tabular}{
+      @{\hskip\tabcolsep\extracolsep}
+      l
+      *{6}{c}
+      @{}
+    } %0.15 0.65
+    \toprule
+    \addlinespace[0.5em]
+    \multicolumn{1}{c}{}               &
+    \multicolumn{1}{c}{\textbf{WAAP}}  &
+    \multicolumn{1}{c}{\textbf{Top10}} &
+    \multicolumn{1}{c}{\textbf{Stem}}  &
+    \multicolumn{1}{c}{\textbf{Hier}}  &
+    \multicolumn{1}{c}{\textbf{AK}}    &
+    \multicolumn{1}{c}{\textbf{Kink}}                                                                  \\
+    \midrule
+    Publication Bias                   &         &          &          & 0.504*** & 2.764*** & 0.262   \\
+    \emph{\hspace{0.2cm}SE}            &         &          &          & (0.165)  & (0.112)  & (0.39)  \\
+    \addlinespace[0.5em]
+    Effect Beyond Bias                 & 6.9***  & 6.439*** & 6.783*** & 6.801*** & 6.548*** & 6.54*** \\
+    \emph{\hspace{0.2cm}SE}            & (0.092) & (0.146)  & (1.055)  & (0.269)  & (0.091)  & (0.054) \\
+    \addlinespace[0.5em]
+    Total Observations                 & 1,754   & 1,754    & 115      & 1,754    & 1,754    & 1,754   \\
+    \addlinespace[0.5em]
+    Model observations                 & 1,469   & 176      &          &          &          &         \\
+    \bottomrule
+    \multicolumn{7}{>{\scriptsize}p{0.95\linewidth}}{\emph{Note:} The table reports estimates of the effect beyond bias using six non-linear methods and estimates of the publication bias obtained using two of these methods. WAAP = Weighted Average of the Adequately Powered \citep{Ioannidis2017Waap}. Top10 = Top10 method by \cite{Stanley2010Top}. Stem = the stem-based method by \cite{Furukawa2019Stem} where P represents the probability of results insignificant at 5\% being published relative to the probability of the significant ones at the same level. Hier = Hierarchical Bayes model \citep{Allenby2006Hier}. AK = \cite{Andrews2019Selection}'s Selection model. Kink = Endogenous kink model by \cite{Bom2019Kink}. SE = Standard Error. Standard errors, clustered at the study level, are included in parentheses. ***p<0.01, **p<0.05, *p<0.1 }
+  \end{tabular}
 \end{table}
 
 
@@ -197,39 +197,39 @@ First, the \ac{IV} regression, for which we need an instrument. The criteria for
 
 %Table with the results of the IV/p-uni* tests
 \begin{table}[!t]
-\centering
-\footnotesize
-\singlespace
-\caption{Relaxing the exogeneity assumption}
-\label{tab:IV-p}
-\begin{tabular}{
-  @{\hskip\tabcolsep\extracolsep}
-  l
-  *{2}{c}
-  @{}
-}
-\toprule
-\multicolumn{1}{l}{} &
-\multicolumn{1}{c}{\centering{\textbf{IV}}} &
-\multicolumn{1}{c}{\centering{\textbf{p-uniform*}}} \\
-\midrule
-Publication Bias & 1.295*** & L = 9.439 \\
-\emph{\hspace{0.2cm}SE} & (0.281) & (p = 0.002) \\
-\addlinespace[0.5em]
-Effect Beyond Bias & 5.813*** & 9.52*** \\
-\emph{\hspace{0.2cm}SE} & (0.354) & (3.291) \\
-\addlinespace[0.5em]
-Observations & 1,754 & 1,754 \\
-\addlinespace[0.5em]
-F-test & 29.153 &  \\
-\bottomrule
-\multicolumn{3}{>{\scriptsize}p{0.5\linewidth}}{\emph{Note:} IV = Instrumental Variable Regression; one over the square root of the number of studies is used as an instrument for the standard error. Standard errors, reported in parentheses, are also clustered at the study level. p-uniform* = method proposed by \cite{vanAert2021puni}; L represents the publication bias test t-statistic; the corresponding p-value can be found in parentheses. F-test = Anderson-Rubin statistic \citep{anderson1949estimation}, SE = Standard Error. ***p<0.01, **p<0.05, *p<0.1}
-\end{tabular}
+  \centering
+  \footnotesize
+  \singlespace
+  \caption{Relaxing the exogeneity assumption}
+  \label{tab:IV-p}
+  \begin{tabular}{
+      @{\hskip\tabcolsep\extracolsep}
+      l
+      *{2}{c}
+      @{}
+    }
+    \toprule
+    \multicolumn{1}{l}{}                        &
+    \multicolumn{1}{c}{\centering{\textbf{IV}}} &
+    \multicolumn{1}{c}{\centering{\textbf{p-uniform*}}}                  \\
+    \midrule
+    Publication Bias                            & 1.295*** & L = 9.439   \\
+    \emph{\hspace{0.2cm}SE}                     & (0.281)  & (p = 0.002) \\
+    \addlinespace[0.5em]
+    Effect Beyond Bias                          & 5.813*** & 9.52***     \\
+    \emph{\hspace{0.2cm}SE}                     & (0.354)  & (3.291)     \\
+    \addlinespace[0.5em]
+    Observations                                & 1,754    & 1,754       \\
+    \addlinespace[0.5em]
+    F-test                                      & 29.153   &             \\
+    \bottomrule
+    \multicolumn{3}{>{\scriptsize}p{0.5\linewidth}}{\emph{Note:} IV = Instrumental Variable Regression; one over the square root of the number of studies is used as an instrument for the standard error. Standard errors, reported in parentheses, are also clustered at the study level. p-uniform* = method proposed by \cite{vanAert2021puni}; L represents the publication bias test t-statistic; the corresponding p-value can be found in parentheses. F-test = Anderson-Rubin statistic \citep{anderson1949estimation}, SE = Standard Error. ***p<0.01, **p<0.05, *p<0.1}
+  \end{tabular}
 \end{table}
 
 Still, which of these four proposed instruments is the best? To find out, I wrote a helper function in R that automatically detects the best-performing instruments based on the results of several specification tests. These are, namely, the Underidentification test, the Weak identification test, the Stock-Yogo weak ID test, and the Sargan statistic.\footnote{All of these specification tests are in-built into the \textit{ivreg} function of the {ivreg} R package, which I used to estimate this method. Source \href{https://cran.r-project.org/package=ivreg}{here}.} I omit the numeric results of these tests as they are not crucial for interpreting the results, and only mention that $\frac{1}{\sqrt{n_{\text{obs}}}}$ performed the best out of the four instruments, with Anderson-Rubin F-statistic for the first stage of nearly 30. Using this strong instrument, the \ac{IV} regression gives 6.1\% as an estimate of returns to education, which coincides with the estimates computed up to this point.
 
-As another way of estimating the effect-error relationship without prior assumptions about its form, I turn to the p-uniform* method. This approach, proposed by \cite{vanAert2021puni}, builds on the p-uniform method \citep{van2016conducting}. The core idea stems from the principle that the p-values in the data should be uniformly distributed at the true effect size. This line of thinking requires no assumptions about the form nor correlation of the relationship and helps search for publication bias in a novel way. The p-uniform* method, then, improves the p-uniform approach in efficiency, precision, and between-study variance detection. In my data, this technique estimates the effect to be 9.52\% and indicates the presence of publication bias, both at high levels of significance. Results of both methods can be found in table \autoref{tab:IV-p}. 
+As another way of estimating the effect-error relationship without prior assumptions about its form, I turn to the p-uniform* method. This approach, proposed by \cite{vanAert2021puni}, builds on the p-uniform method \citep{van2016conducting}. The core idea stems from the principle that the p-values in the data should be uniformly distributed at the true effect size. This line of thinking requires no assumptions about the form nor correlation of the relationship and helps search for publication bias in a novel way. The p-uniform* method, then, improves the p-uniform approach in efficiency, precision, and between-study variance detection. In my data, this technique estimates the effect to be 9.52\% and indicates the presence of publication bias, both at high levels of significance. Results of both methods can be found in table \autoref{tab:IV-p}.
 
 While the instrumental variable approach proposes rather sensible results, the p-uniform* is an outlier among previous estimates. This is perhaps more perplexing given that, were between-study to cause the effect's overinflation, p-uniform* is a method that should account for this. Among various possibilities, these results may stem from a calculation error or, perchance, a hidden trend or anomaly within the data, which is hard to detect. Suffice it to say I dug into the calculation multiple times to validate that all specifications and other inputs were sensible; still, I could not find anything out of the ordinary. As such, I present the results with a grain of salt but believe them to be fully valid.
 
@@ -245,55 +245,55 @@ In \autoref{fig:t_hist}, you may find the distribution of t-statistics in my dat
 
 %T-statistic distribution
 \begin{figure}[!b]
-\centering
-\caption{The distribution of t-statistics is heavily skewed}
-\label{fig:t_hist}
-\begin{subfigure}[b]{0.45\textwidth}
-  \caption{All t-statistics}
-  \includegraphics[width=0.95\linewidth]{Figures/t_hist.png}
-\end{subfigure}
-\begin{subfigure}[b]{0.45\textwidth}
-  \caption{Close up around zero}
-  \includegraphics[width=0.95\linewidth]{Figures/t_hist_closeup.png}
-\end{subfigure}
-\captionsetup{width=0.85\textwidth, font = scriptsize}
-\caption*{\emph{Note:} The figure depicts the distribution of t-statistics associated with estimates within the dataset. Plot (a) shows all t-statistics in the dataset, while plot (b) focuses on a close up view around 0. The two red lines mark the critical significance values -1.96 and 1.96 (from left to right) at the 95\% confidence level. The dotted orange line represents the mean t-statistic within the data. Outliers are hidden for clarity of presentation, but we included them in the calculations.}
+  \centering
+  \caption{The distribution of t-statistics is heavily skewed}
+  \label{fig:t_hist}
+  \begin{subfigure}[b]{0.45\textwidth}
+    \caption{All t-statistics}
+    \includegraphics[width=0.95\linewidth]{Figures/t_hist.png}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.45\textwidth}
+    \caption{Close up around zero}
+    \includegraphics[width=0.95\linewidth]{Figures/t_hist_closeup.png}
+  \end{subfigure}
+  \captionsetup{width=0.85\textwidth, font = scriptsize}
+  \caption*{\emph{Note:} The figure depicts the distribution of t-statistics associated with estimates within the dataset. Plot (a) shows all t-statistics in the dataset, while plot (b) focuses on a close up view around 0. The two red lines mark the critical significance values -1.96 and 1.96 (from left to right) at the 95\% confidence level. The dotted orange line represents the mean t-statistic within the data. Outliers are hidden for clarity of presentation, but we included them in the calculations.}
 \end{figure}
 
 
 % Results of Caliper tests
 \begin{table}[!htbp]
-\centering
-\footnotesize
-\singlespace
-\caption{Caliper tests at values 1.645, 1.96 and 2.58}
-\label{tab:caliperA}
-\begin{tabular}{
-@{\hskip\tabcolsep\extracolsep}
-l
-*{3}{c}
-@{}
-}
-\toprule
-  \multicolumn{1}{l}{} &
-  \multicolumn{1}{c}{\centering{\textbf{Threshold 1.645}}} &
-  \multicolumn{1}{c}{\centering{\textbf{Threshold 1.96}}} &
-  \multicolumn{1}{c}{\centering{\textbf{Threshold 2.58}}} \\
-\midrule
-Caliper width 0.05 & 0.517*** & 0.243*** & 0.152*** \\
-\emph{\hspace{0.2cm}SE} & (0.084) & (0.063) & (0.046) \\
-\emph{\hspace{0.2cm}Observations} & 7 & 17 & 18 \\
-\addlinespace[0.5em]
-Caliper width 0.1 & 0.467*** & 0.23*** & 0.183*** \\
-\emph{\hspace{0.2cm}SE} & (0.069) & (0.051) & (0.037) \\
-\emph{\hspace{0.2cm}Observations} & 13 & 25 & 28 \\
-\addlinespace[0.5em]
-Caliper width 0.15 & 0.483*** & 0.269*** & 0.186*** \\
-\emph{\hspace{0.2cm}SE} & (0.042) & (0.041) & (0.028) \\
-\emph{\hspace{0.2cm}Observations} & 26 & 37 & 45 \\
-\bottomrule
-\multicolumn{4}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} The table shows the results of three sets of Caliper tests by \cite{gerber2008caliper} These sets are carried out around t-statistic thresholds of 1.645, 1.96 and 2.58, which correspond to the 1\%, 5\%, and 10\% t-statistic significance levels. Caliper width denotes the width of the interval around the t-statistic, e.g., Caliper width 0.05 for threshold 1.96 means $t\in<1.91;2.01>$. A test statistic of 0.243 means that roughly 74\% of estimates appear above the threshold and roughly 26\% below it. SE = Standard Error. Observations = Total number of observations in the interval around the threshold. Standard errors, clustered at the study level, are included in parentheses.}
-\end{tabular}
+  \centering
+  \footnotesize
+  \singlespace
+  \caption{Caliper tests at values 1.645, 1.96 and 2.58}
+  \label{tab:caliperA}
+  \begin{tabular}{
+      @{\hskip\tabcolsep\extracolsep}
+      l
+      *{3}{c}
+      @{}
+    }
+    \toprule
+    \multicolumn{1}{l}{}                                     &
+    \multicolumn{1}{c}{\centering{\textbf{Threshold 1.645}}} &
+    \multicolumn{1}{c}{\centering{\textbf{Threshold 1.96}}}  &
+    \multicolumn{1}{c}{\centering{\textbf{Threshold 2.58}}}                                   \\
+    \midrule
+    Caliper width 0.05                                       & 0.517*** & 0.243*** & 0.152*** \\
+    \emph{\hspace{0.2cm}SE}                                  & (0.084)  & (0.063)  & (0.046)  \\
+    \emph{\hspace{0.2cm}Observations}                        & 7        & 17       & 18       \\
+    \addlinespace[0.5em]
+    Caliper width 0.1                                        & 0.467*** & 0.23***  & 0.183*** \\
+    \emph{\hspace{0.2cm}SE}                                  & (0.069)  & (0.051)  & (0.037)  \\
+    \emph{\hspace{0.2cm}Observations}                        & 13       & 25       & 28       \\
+    \addlinespace[0.5em]
+    Caliper width 0.15                                       & 0.483*** & 0.269*** & 0.186*** \\
+    \emph{\hspace{0.2cm}SE}                                  & (0.042)  & (0.041)  & (0.028)  \\
+    \emph{\hspace{0.2cm}Observations}                        & 26       & 37       & 45       \\
+    \bottomrule
+    \multicolumn{4}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} The table shows the results of three sets of Caliper tests by \cite{gerber2008caliper} These sets are carried out around t-statistic thresholds of 1.645, 1.96 and 2.58, which correspond to the 1\%, 5\%, and 10\% t-statistic significance levels. Caliper width denotes the width of the interval around the t-statistic, e.g., Caliper width 0.05 for threshold 1.96 means $t\in<1.91;2.01>$. A test statistic of 0.243 means that roughly 74\% of estimates appear above the threshold and roughly 26\% below it. SE = Standard Error. Observations = Total number of observations in the interval around the threshold. Standard errors, clustered at the study level, are included in parentheses.}
+  \end{tabular}
 \end{table}
 
 
@@ -309,41 +309,41 @@ As the last chapter of my hunt for publication bias, I present three new methods
 
 % p-hacking tests
 \begin{table}[!b]
-\centering
-\footnotesize
-\singlespace
-\caption{P-hacking tests}
-\label{tab:p-hacking}
-\begin{tabular}
-{
-@{\hskip\tabcolsep\extracolsep}
-l
-*{2}{c}
-@{}
-}
-\toprule
-  \multicolumn{3}{l}{\textit{Panel A: P-hacking tests by \cite{elliott2022hacking}}} \\ 
-  \multicolumn{1}{l}{} &
-  \multicolumn{1}{p{4cm}}{\centering{\textbf{Test for non-increasingness}}} &
-  \multicolumn{1}{p{4cm}}{\centering{\textbf{Test for monotonicity and bounds}}} \\
-\midrule
-    p-value & 0.819 & 0.871 \\
-    Observations ($p\leq0.1$) & 1,610  & 1,610\\
-    Total observations & 1,754 & 1,754 \\
-\addlinespace[0.1em]
-\hline
-\addlinespace[0.5em]
-  \multicolumn{3}{l}{\textit{Panel B: MAIVE estimator \citep{irsova2023maive}}} \\ 
-   & \multicolumn{1}{c}{\centering{\textbf{MAIVE coefficient}}} & \\
-  
-\midrule
-    Coefficient & 5.736*** & \\
-    Standard Error & (0.460) & \\
-    Observations & 1,754 & \\
-    F-test & 12.491 & \\
-\bottomrule
-\multicolumn{3}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} This table shows the results of two techniques that detect p-hacking. Panel A shows the results of p-hacking tests by \cite{elliott2022hacking}, namely the histogram-based test for non-increasingness and the histogram-based test for monotonicity and bounds. Panel B reports the results of the spurious precision robust approach using the MAIVE estimator by \cite{irsova2023maive}. F-test = Test statistic of the IV first step F-test. Cluster-robust standard errors are used in the MAIVE estimation. These are reported in parentheses. ***p<0.01, **p<0.05, *p<0.1}
-\end{tabular}
+  \centering
+  \footnotesize
+  \singlespace
+  \caption{P-hacking tests}
+  \label{tab:p-hacking}
+  \begin{tabular}
+    {
+      @{\hskip\tabcolsep\extracolsep}
+      l
+      *{2}{c}
+      @{}
+    }
+    \toprule
+    \multicolumn{3}{l}{\textit{Panel A: P-hacking tests by \cite{elliott2022hacking}}}                                                             \\
+    \multicolumn{1}{l}{}                                                      &
+    \multicolumn{1}{p{4cm}}{\centering{\textbf{Test for non-increasingness}}} &
+    \multicolumn{1}{p{4cm}}{\centering{\textbf{Test for monotonicity and bounds}}}                                                                 \\
+    \midrule
+    p-value                                                                   & 0.819                                                      & 0.871 \\
+    Observations ($p\leq0.1$)                                                 & 1,610                                                      & 1,610 \\
+    Total observations                                                        & 1,754                                                      & 1,754 \\
+    \addlinespace[0.1em]
+    \hline
+    \addlinespace[0.5em]
+    \multicolumn{3}{l}{\textit{Panel B: MAIVE estimator \citep{irsova2023maive}}}                                                                  \\
+                                                                              & \multicolumn{1}{c}{\centering{\textbf{MAIVE coefficient}}} &       \\
+
+    \midrule
+    Coefficient                                                               & 5.736***                                                   &       \\
+    Standard Error                                                            & (0.460)                                                    &       \\
+    Observations                                                              & 1,754                                                      &       \\
+    F-test                                                                    & 12.491                                                     &       \\
+    \bottomrule
+    \multicolumn{3}{>{\scriptsize}p{0.9\linewidth}}{\emph{Note:} This table shows the results of two techniques that detect p-hacking. Panel A shows the results of p-hacking tests by \cite{elliott2022hacking}, namely the histogram-based test for non-increasingness and the histogram-based test for monotonicity and bounds. Panel B reports the results of the spurious precision robust approach using the MAIVE estimator by \cite{irsova2023maive}. F-test = Test statistic of the IV first step F-test. Cluster-robust standard errors are used in the MAIVE estimation. These are reported in parentheses. ***p<0.01, **p<0.05, *p<0.1}
+  \end{tabular}
 \end{table}
 
 First, let us talk about the Elliott tests. \cite{elliott2022hacking} propose an approach where \textit{no p-hacking in the literature} is considered as a null, and using a set of general assumptions, they test this hypothesis against an alternative of \textit{p-hacking in the literature}. The p-curves for various subsets of the true effects should be non-increasing and continuous, providing p-hacking is absent. For p-values based on t-tests, the authors then devise a new set of assumptions under which the lack of p-hacking should lead to a monotonous form of the p-curve. The advantage of the method lies in the fact that no threshold for the t-statistic needs to be specified; the technique only focuses on the p-curves. In my case, I present the results of the two tests I vaguely described - the test for non-increasingness of the p-curve and the test for monotonicity and bounds. With sufficiently low p-values, we could reject the null hypothesis of no p-hacking, but that is not the case in my dataset. Both tests yield p-values over 0.8, so there is insufficient evidence to reject the null in favor of the alternative (p-hacking).
@@ -353,42 +353,42 @@ Next, the \ac{MAIVE} estimator developed by \cite{irsova2023maive}. The authors 
 
 %RoBMA
 \begin{table}[!htbp]
-\centering
-\footnotesize
-\singlespace
-\caption{Robust Bayesian Model Averaging}
-\label{tab:robma}
-\begin{tabular}{
-l
-*{4}{c}
-}
-\toprule 
-\multicolumn{5}{l}{\textit{Panel A: Model-averaged estimates}} \\ 
-&
-\multicolumn{1}{c}{\centering{\textbf{Mean}}} &
-\multicolumn{1}{c}{\centering{\textbf{Median}}} &
-\multicolumn{1}{c}{\centering{\textbf{0.025}}} &
-\multicolumn{1}{c}{\centering{\textbf{0.975}}}  \\
-\midrule
-Coefficient & 7.123** & 7.122** & 6.946** & 7.299** \\
-Standard Error & (3.506) & (3.504) & (3.373) & (3.645) \\
-Observations & 1,754 & 1,754 & 1,754 & 1,754 \\
-\addlinespace[0.1em]
-\hline
-\addlinespace[0.5em]
-\multicolumn{5}{l}{\textit{Panel B: Summary of individual components}} \\ 
-&
-\multicolumn{1}{c}{\centering{\textbf{Models}}} &
-\multicolumn{1}{c}{\centering{\textbf{Prior Prob.}}} &
-\multicolumn{1}{c}{\centering{\textbf{Post. Prob.}}} &
-\multicolumn{1}{c}{\centering{\textbf{Inclusion BF}}} \\
-\midrule
-Effect        & 2/4 & 0.500 & 1.000 & $\infty$   \\ 
-Heterogeneity & 2/4 & 0.500 & 1.000 & $\infty$   \\ 
-Bias          & 0/4 & 0.500 & 0.000 & 0.000 \\ 
-\bottomrule
-\multicolumn{5}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} This table shows the Robust Bayesian Model Averaging method by \cite{maier2022robust}. Panel A contains four descriptive statics of the estimates obtained from model-averaging - mean, median, 2.5th quantile, and 97.5th quantile. Standard errors are reported in parentheses. In Panel B, the summary of three individual components is displayed - effect, heterogeneity, and publication bias. Models = Probability of each model assuming a given individual component. Prior Prob. = Prior Probability. Post. Prob. = Posterior Probability. Inclusion BF = Inclusion Bayes Factor. ***p<0.01, **p<0.05, *p<0.1}
-\end{tabular}
+  \centering
+  \footnotesize
+  \singlespace
+  \caption{Robust Bayesian Model Averaging}
+  \label{tab:robma}
+  \begin{tabular}{
+      l
+        *{4}{c}
+    }
+    \toprule
+    \multicolumn{5}{l}{\textit{Panel A: Model-averaged estimates}}                                \\
+                                                         &
+    \multicolumn{1}{c}{\centering{\textbf{Mean}}}        &
+    \multicolumn{1}{c}{\centering{\textbf{Median}}}      &
+    \multicolumn{1}{c}{\centering{\textbf{0.025}}}       &
+    \multicolumn{1}{c}{\centering{\textbf{0.975}}}                                                \\
+    \midrule
+    Coefficient                                          & 7.123** & 7.122** & 6.946** & 7.299**  \\
+    Standard Error                                       & (3.506) & (3.504) & (3.373) & (3.645)  \\
+    Observations                                         & 1,754   & 1,754   & 1,754   & 1,754    \\
+    \addlinespace[0.1em]
+    \hline
+    \addlinespace[0.5em]
+    \multicolumn{5}{l}{\textit{Panel B: Summary of individual components}}                        \\
+                                                         &
+    \multicolumn{1}{c}{\centering{\textbf{Models}}}      &
+    \multicolumn{1}{c}{\centering{\textbf{Prior Prob.}}} &
+    \multicolumn{1}{c}{\centering{\textbf{Post. Prob.}}} &
+    \multicolumn{1}{c}{\centering{\textbf{Inclusion BF}}}                                         \\
+    \midrule
+    Effect                                               & 2/4     & 0.500   & 1.000   & $\infty$ \\
+    Heterogeneity                                        & 2/4     & 0.500   & 1.000   & $\infty$ \\
+    Bias                                                 & 0/4     & 0.500   & 0.000   & 0.000    \\
+    \bottomrule
+    \multicolumn{5}{>{\scriptsize}p{0.85\linewidth}}{\emph{Note:} This table shows the Robust Bayesian Model Averaging method by \cite{maier2022robust}. Panel A contains four descriptive statics of the estimates obtained from model-averaging - mean, median, 2.5th quantile, and 97.5th quantile. Standard errors are reported in parentheses. In Panel B, the summary of three individual components is displayed - effect, heterogeneity, and publication bias. Models = Probability of each model assuming a given individual component. Prior Prob. = Prior Probability. Post. Prob. = Posterior Probability. Inclusion BF = Inclusion Bayes Factor. ***p<0.01, **p<0.05, *p<0.1}
+  \end{tabular}
 \end{table}
 
 
