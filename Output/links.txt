@@ -1,0 +1,15 @@
+Main repository:
+
+https://github.com/PetrCala/Diploma-Thesis
+
+
+
+Main data frame:
+
+https://github.com/PetrCala/Diploma-Thesis/blob/dev/Data/data_set_master_thesis_cala.xlsm
+
+
+
+Twins data frame:
+
+https://github.com/PetrCala/Diploma-Thesis/blob/dev/Data/twin_data_master_thesis_cala.xlsm
