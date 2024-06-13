@@ -88,43 +88,95 @@
 
 % \begin{comment}
 
-\begin{frame}{Outline}
-    \tableofcontents
-    % You might wish to add the option [pausesections]
-\end{frame}
+% \begin{frame}{Outline}
+%     \tableofcontents
+%     % You might wish to add the option [pausesections]
+% \end{frame}
 
 % \end{comment}
 
-\section{Summary}
+\begin{frame}{Introduction}
+
+    \begin{large}
+        Motivation
+    \end{large}
+
+    \begin{itemize}
+        \item<1-> Does ability bias affect the estimation of returns to education?
+        \item<2-> Two extensive meta-analyses on the topic\\(1754 and 293 observations)
+    \end{itemize}
+
+    \begin{large}
+        Findings
+    \end{large}
+
+    \begin{itemize}
+        \item<1-> Average effect of returns to education of around 7\%
+        \item<2-> Drops by around one percentage point after correcting for publication bias
+        \item <3-> Ability matters, and controlling for it in a regression decreases the expected returns to education
+        \item <4-> The returns drop even further for twin studies with identical inherent ability (4\% to 6\%)
+    \end{itemize}
+
+\end{frame}
+
+\section{Overview}
 \subsection{}
 
-\begin{frame}{Background and motivation}
+\begin{frame}{What Is Ability Bbias}
 
-    \begin{center}
+    \begin{block}<1->{Mincer Equation (Mincer, 1974)}
         \large
         \begin{equation*}
             \text{Wage} \sim \text{Schooling} + \text{Experience} + \text{Experience}^2
         \end{equation*}
-    \end{center}
-
+    \end{block}
 
     \begin{itemize}
-        \item Human Capital Theory \hfill (Becker, 1962)
-        \item Mincer equation \hfill (Mincer, 1974)
-        \item g factor \hfill (Ree et al., 1994)
-        \item Ability bias \hfill (Griliches, 1977)
+        \item<2-> Ability bias: Distorted estimation of returns to education due to omission of ability (Blackburn \& Neumark, 1993)
+        \item<3-> Ability correlates with both education and earnings
+        \item<4-> Sorting bias: Correlation between education and ability
+        \item<5-> How to separate the effect of education from the effect of ability?
     \end{itemize}
+
 \end{frame}
 
-\begin{frame}{Mincer Equation Enhanced}
-    \begin{center}
+\begin{frame}{Ways To Deal With Ability Bias}
 
-        \begin{Large}
-            What about ability?
-        \end{Large}
+    \begin{itemize}
+        \item<1-> Inclusion of Ability Measures
+              \begin{itemize}
+                  \item<2-> Use cognitive test scores as control variables
+                  \item<2-> Separates effect of education from ability
+              \end{itemize}
+        \item<3-> Instrumental Variables (IV)
+              \begin{itemize}
+                  \item<4-> Find variable correlated with education, not with error term
+                  \item<4-> Isolates exogenous variation in education
+              \end{itemize}
+        \item<5-> Fixed Effects Models
+              \begin{itemize}
+                  \item<6-> Use within-individual variation over time
+                  \item<6-> Controls for time-invariant unobserved heterogeneity
+              \end{itemize}
+        \item<7-> Sibling and Twin Studies
+              \begin{itemize}
+                  \item<8-> Compare siblings/twins with different education levels
+                  \item<8-> Controls for family and genetic factors
+              \end{itemize}
+    \end{itemize}
 
+\end{frame}
 
-    \end{center}
+\begin{frame}{My approach}
+
+    \begin{itemize}
+        \item<1-> A large meta-analysis of 1754 estimates of returns to education over 115 studies
+        \item<2-> Correct for publication bias, observe heterogeneity
+        \item<3-> Observe the isolated effect of ability
+        \item<4-> Conduct a whole another meta-analysis comprised of twin studies (293 observations)
+        \item<5-> Fully automate the whole analysis process
+    \end{itemize}
+
 \end{frame}
 
 \begin{frame}{What do we already know?}
@@ -160,30 +212,18 @@
 \section{Contribution}
 \subsection{}
 
-\begin{frame}{Data Collection}
+% \begin{frame}{Different Ways To Address Ability}
 
-    \begin{itemize}
-        \item Google Scholar search
-        \item 574 records identified through query
-        \item 200 of them screened and evaluated for eligibility
-        \item 74 fulfilled selection criteria
-        \item 41 more studies added through snowballing
-        \item 115 final studies yielded a total of 1754 estimates
-    \end{itemize}
-\end{frame}
+%     \begin{itemize}
+%         \item Google Scholar search
+%         \item 574 records identified through query
+%         \item 200 of them screened and evaluated for eligibility
+%         \item 74 fulfilled selection criteria
+%         \item 41 more studies added through snowballing
+%         \item 115 final studies yielded a total of 1754 estimates
+%     \end{itemize}
+% \end{frame}
 
-\begin{frame}{Schooling in Years vs. Levels}
-    \begin{center}
-
-        \begin{Large}
-            $
-                S_i = \left(1 + \beta_{i, higher} - \beta_{i, lower}\right)^{\frac{1}{Y_{i, higher} - Y_{i, lower}}} - 1
-            $
-        \end{Large}
-
-
-    \end{center}
-\end{frame}
 
 
 \begin{frame}{Graphical Test Using a Funnel Plot}
@@ -247,6 +287,7 @@
 
 
 
+
 % \begin{frame}{Results Using Some Recent Methods}
 %   \begin{tiny}
 
@@ -304,38 +345,37 @@
 % \end{frame}
 
 
-\subsection{}
 
 \begin{frame}{Individual Variables in Returns to Education}
 
+    Over 30 variables split into six categories:
+    \vspace{0.3cm}
 
-
-    \begin{block}{Six categories of variables:}
-        \begin{itemize}
-            \item Estimates and their descriptive statistics
-            \item Estimate characteristics
-            \item Data characteristics
-            \item Spatial/structural variation
-            \item Estimation method
-            \item Publication characteristics
-        \end{itemize}
-    \end{block}
+    \begin{itemize}
+        \item<1-> Estimates and their descriptive statistics
+        \item<2-> Estimate characteristics
+        \item<3-> Data characteristics
+        \item<4-> Spatial/structural variation
+        \item<5-> Estimation method
+        \item<6-> Publication characteristics
+    \end{itemize}
 
 \end{frame}
 
 \begin{frame}{Different Approach to Ability}
 
-    \begin{block}{Four ways to address ability:}
-        \begin{itemize}
-            \item Directly
-            \item Indirectly
-            \item Verbally
-            \item Not at all
-        \end{itemize}
-    \end{block}
+    Four ways to address ability:
+    \vspace{0.3cm}
 
+    \begin{itemize}
+        \item<1-> Directly - using cognitive test scores
+        \item<2-> Indirectly - using instrumental variables
+        \item<3-> Verbally - acknowledging the issue
+        \item<4-> Not at all - ignoring the problem
+    \end{itemize}
 
 \end{frame}
+
 
 \begin{frame}{Model Inclusion in Bayesian Model Averaging}
     \begin{center}
@@ -425,20 +465,16 @@
 
 
 
-% \begin{frame}{What we learned}
-%   \begin{block}{Main Findings}
-%     \begin{enumerate}
-%       \item
-%             An overall effect of returns to schooling drops roughly one percentage point (7\% to 6\%) after corrected for publication bias
-%       \item
-%             Ability matters, and controlling for it in the regression decreases the expected returns to schooling
-%       \item
-%             Nine variables have a significant positive influence on returns to schooling, while ten have a negative one
-%     \end{enumerate}
-%   \end{block}
+% \item<1-> Average effect of returns to education of around 6\% to 7\%
 
-
-% \end{frame}
+\begin{frame}{Conclusion}
+    \begin{itemize}
+        \item<1-> An overall effect of returns to schooling drops roughly one percentage point (7\% to 6\%) after corrected for publication bias
+        \item<2-> Ability matters, and controlling for it in the regression decreases the expected returns to schooling
+        \item<3-> Nine variables have a significant positive influence on returns to schooling, while ten have a negative one
+        \item<4-> The returns to schooling drop even further for twin studies with identical inherent ability (4\% to 6\%)
+    \end{itemize}
+\end{frame}
 
 % \section{Extensions}
 % \subsection{}
@@ -632,66 +668,56 @@
 
 
 
-% % All of the following is optional and typically not needed. 
-% %\appendix
-% %\section<presentation>*{\appendixname}
-% %\subsection<presentation>*{For Further Reading}
+% All of the following is optional and typically not needed. 
+\appendix
+\section{Appendix}
+% \section<presentation>*{\appendixname}
 
 
+\begin{frame}
+    \frametitle<presentation>{}
+
+    \begin{center}
+        \begin{LARGE}
+            Thank you!
+        \end{LARGE}
+    \end{center}
+
+\end{frame}
+
+\begin{frame}%[allowframebreaks]
+    \frametitle<presentation>{References}
+
+    \begin{thebibliography}{10}
+
+        %         %\beamertemplatebookbibitems
+        %         % Start with overview books.
 
 
-% \appendix
+        %         \beamertemplatearticlebibitems
+        %         % Followed by interesting articles. Keep the list short. 
+
+        \bibitem[{Mincer (1974)}]{Mincer1974}
+        Mincer, Jacob A. "The human capital earnings function."
+        \newblock\emph{Schooling, experience, and earnings, pp. 83-96. NBER, 1974.}
+
+        \bibitem[{Blackbuck \& Neumark (1993)}]{Blackburn1993}
+        Blackburn, McKinley L., and David Neumark. "Omitted-ability bias and the increase in the return to schooling." \newblock\emph{Journal of labor economics 11, no. 3 (1993): 521-544}.
 
 
-
-% \begin{frame}
-%   \frametitle<presentation>{}
-
-%   \begin{center}
-%     \begin{LARGE}
-%       Thank you!
-%     \end{LARGE}
-%   \end{center}
-
-% \end{frame}
-
-% \begin{frame}%[allowframebreaks]
-%   \frametitle<presentation>{References}
-
-%   \begin{thebibliography}{10}
-
-%     %\beamertemplatebookbibitems
-%     % Start with overview books.
+    \end{thebibliography}
+\end{frame}
 
 
-%     \beamertemplatearticlebibitems
-%     % Followed by interesting articles. Keep the list short. 
+\begin{frame}{Making a twin dataset}
 
-%     \bibitem[{Becker(1962)}]{Becker1962}
-%     Becker, Gary S. "Investment in human capital: A theoretical analysis."
-%     \newblock\emph{Journal of political economy} 70, no. 5, Part 2 (1962): 9-49.
-%     \bibitem[{Mincer (1974)}]{Mincer1974}
-%     Mincer, Jacob. "Schooling, Experience, and Earnings. Human Behavior & Social Institutions No. 2."
-%     \bibitem[{Ree et al. (1994)}]{Ree1994}
-%     Ree, Malcolm James, James A. Earles, and Mark S. Teachout. "Predicting job performance: Not much more than g.."
-%     \newblock\emph{Journal of applied psychology 79, no. 4}: 518.
-%     \bibitem[{Griliches (1977)}]{Griliches1977}
-%     Griliches, Zvi. "Estimating the returns to schooling: Some econometric problems."
-%     \newblock\emph{Journal of political economy}: 1-22.
-%   \end{thebibliography}
-% \end{frame}
+    \begin{itemize}
+        \item Only subjects with identical inherent ability - twins
+        \item 16 twin studies with 293 observations
+        \item Assumption: Differences in returns to education are due to differences in education
+    \end{itemize}
 
-
-% \begin{frame}{Making a twin dataset}
-
-%   \begin{itemize}
-%     \item What if we could observe subjects with identical inherent ability?
-%     \item Make a dataset comprised of twin subjects!
-%     \item 16 twin studies with 293 observations
-%     \item Differences in methodology $\to$ ability bias
-%   \end{itemize}
-
-% \end{frame}
+\end{frame}
 
 % \begin{frame}{Are the results just identical?}
 
@@ -731,64 +757,76 @@
 %   \end{tiny}
 % \end{frame}
 
-% \begin{frame}{Graphing out the individual method differences}
-%   \begin{center}
-%     \includegraphics[width=0.7\textwidth]{Figures/twins_prima_method.png}
-%   \end{center}
-% \end{frame}
+\begin{frame}{Graphing out the individual method differences}
+    \begin{center}
+        \includegraphics[width=0.7\textwidth]{Figures/twins_prima_method.png}
+    \end{center}
+\end{frame}
 
 
 
-% \begin{frame}{Publication bias revisited}
-%   \begin{tiny}
-%     \begin{table}[!htbp]
-%       \centering
-%       \singlespace
-%       \begin{tabular}{
-%           @{\hskip\tabcolsep\extracolsep}
-%           l*{6}{c}} %one left column, five center (*{} makes the cols inherit attributes)
-%         \toprule
-%         \multicolumn{1}{c}{}                  &
-%         \textbf{OLS}                          &
-%         \textbf{FE}                           &
-%         \textbf{BE}                           &
-%         \textbf{RE}                           &
-%         \textbf{Study}                        &
-%         \textbf{Precision}                                                                                \\
-%         \midrule
+\begin{frame}{Publication bias for twins}
+    \begin{tiny}
+        \begin{table}[!htbp]
+            \begin{tabular}{
+                    @{}
+                    l*{6}{c}} %one left column, five center (*{} makes the cols inherit attributes)
+                \toprule
+                \multicolumn{1}{c}{}                  &
+                \textbf{OLS}                          &
+                \textbf{FE}                           &
+                \textbf{BE}                           &
+                \textbf{RE}                           &
+                \textbf{Study}                        &
+                \textbf{Precision}                                                                                \\
+                \midrule
 
-%         Publication bias                      & 1.347   & 0.602   & 2.133   & 0.840   & 0.947   & 2.897   \\
-%         \emph{\hspace{0.2cm}(Standard error)} & (0.138) & (0.162) & (0.505) & (0.154) & (0.177) & (0.442) \\
-%         \addlinespace[0.5em]
-%         Effect beyond bias                    & 4.735   & 5.574   & 4.106   & 5.55    & 4.754   & 3.907   \\
-%         \emph{\hspace{0.2cm}(Constant)}       & (0.175) & (0.219) & (0.711) & (0.342) & (0.185) & (0.232) \\
+                Publication bias                      & 1.347   & 0.602   & 2.133   & 0.840   & 0.947   & 2.897   \\
+                \emph{\hspace{0.2cm}(Standard error)} & (0.138) & (0.162) & (0.505) & (0.154) & (0.177) & (0.442) \\
+                \addlinespace[0.5em]
+                Effect beyond bias                    & 4.735   & 5.574   & 4.106   & 5.55    & 4.754   & 3.907   \\
+                \emph{\hspace{0.2cm}(Constant)}       & (0.175) & (0.219) & (0.711) & (0.342) & (0.185) & (0.232) \\
 
-%         \midrule
+                \midrule
 
-%                                               &
-%         \textbf{WAAP}                         &
-%         \textbf{Top10}                        &
-%         \textbf{Stem}                         &
-%         \textbf{Hier}                         &
-%         \textbf{AK}                           &
-%         \textbf{Kink}                                                                                     \\
-%         \midrule
-%         Publication bias                      &         &         &         & 0.601   & 2.257   & 2.895   \\
-%                                               &         &         &         & (0.365) & (0.126) & (0.435) \\
-%         \addlinespace[0.5em]
-%         Effect beyond bias                    & 5.77    & 4.314   & 3.403   & 5.857   & 5.616   & 3.908   \\
-%                                               & (0.159) & (0.265) & (0.95)  & (0.544) & (0.157) & (0.093) \\
+                                                      &
+                \textbf{WAAP}                         &
+                \textbf{Top10}                        &
+                \textbf{Stem}                         &
+                \textbf{Hier}                         &
+                \textbf{AK}                           &
+                \textbf{Kink}                                                                                     \\
+                \midrule
+                Publication bias                      &         &         &         & 0.601   & 2.257   & 2.895   \\
+                                                      &         &         &         & (0.365) & (0.126) & (0.435) \\
+                \addlinespace[0.5em]
+                Effect beyond bias                    & 5.77    & 4.314   & 3.403   & 5.857   & 5.616   & 3.908   \\
+                                                      & (0.159) & (0.265) & (0.95)  & (0.544) & (0.157) & (0.093) \\
 
-%         \midrule
-%         \addlinespace[0.5em]
-%         Observations                          & 293     & 293     & 293     & 293     & 293     & 293     \\
+                \midrule
+                \addlinespace[0.5em]
+                Observations                          & 293     & 293     & 293     & 293     & 293     & 293     \\
 
-%         \bottomrule
-%       \end{tabular}
-%     \end{table}
+                \bottomrule
+            \end{tabular}
+        \end{table}
 
-%   \end{tiny}
-% \end{frame}
+    \end{tiny}
+\end{frame}
+
+\begin{frame}{Schooling in Years vs. Levels}
+    \begin{center}
+
+        \begin{Large}
+            $
+                S_i = \left(1 + \beta_{i, higher} - \beta_{i, lower}\right)^{\frac{1}{Y_{i, higher} - Y_{i, lower}}} - 1
+            $
+        \end{Large}
+
+
+    \end{center}
+\end{frame}
+
 
 
 \end{document}

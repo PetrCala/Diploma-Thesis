@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1718202494.19406 "/Users/jf41513/code/Diploma-Thesis/Thesis main/Presentation/main.tex" "Output/main.pdf" "main" 1718202496.13225 0
+["pdflatex"] 1718261510.2428 "/Users/jf41513/code/Diploma-Thesis/Thesis main/Presentation/main.tex" "Output/main.pdf" "main" 1718261513.98624 0
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/adobe/helvetic/phvb8r.tfm" 1136768653 4484 b828043cbd581d289d955903c1339981 ""
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/adobe/helvetic/phvb8t.tfm" 1136768653 6628 34c39492c0adc454c1c199922bba8363 ""
@@ -257,15 +257,15 @@
   "/Users/jf41513/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1713209069 134692 a3f4bd37b20a753609bc166bc7d484d6 ""
   "/Users/jf41513/Library/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt" 1711250078 6813469 6fde46766fd564180f3c9eada5a3161c ""
   "/Users/jf41513/Library/TinyTeX/texmf.cnf" 1711250012 637 edd806fb06a89761a6034e1968af9017 ""
-  "/Users/jf41513/code/Diploma-Thesis/Thesis main/Presentation/main.tex" 1718202494.10705 29140 8a44546ceadf3e2772bbff30337fcaf7 ""
+  "/Users/jf41513/code/Diploma-Thesis/Thesis main/Presentation/main.tex" 1718261506.48021 31531 d624f5ff4ced6000bf1520649c2f7416 ""
   "Figures/bma_UIP_dilut_results.png" 1717232537.1321 85647 8a418c50f36694095f2da0f435c6f050 ""
   "Figures/funnel.png" 1717232537.13835 114363 dfa45c5d1642da0035803892f39af5a9 ""
   "Figures/logo.pdf" 1717232537.14114 89436 f0a4df330473a7bd11e302d97af26acd ""
-  "Output/main.aux" 1718202496.04804 2783 03288d4ca2ac2508c062b585ac4ebc0d "pdflatex"
-  "Output/main.nav" 1718202496.04895 1733 a04d661399792dbd8f031f5939482cec "pdflatex"
-  "Output/main.out" 1718202496.04877 329 9041add953e35f6c5589565e1486dc71 "pdflatex"
-  "Output/main.toc" 1718202496.04898 117 15e63e83d34816855d1bea57200589e5 "pdflatex"
-  "main.tex" 1718202494.10705 29140 8a44546ceadf3e2772bbff30337fcaf7 ""
+  "Figures/twins_prima_method.png" 1717232537.14492 350827 dabb0143e4b8daf6852e4560bad764d9 ""
+  "Output/main.aux" 1718261513.89978 4341 d77b5679406c3d26f710fe9e24674302 "pdflatex"
+  "Output/main.nav" 1718261513.90104 2705 c6014dced716010f0d163264dd9eceae "pdflatex"
+  "Output/main.out" 1718261513.90084 457 f28655616ee0d92af5a5034226a5c8c4 "pdflatex"
+  "main.tex" 1718261506.48021 31531 d624f5ff4ced6000bf1520649c2f7416 ""
   (generated)
   "Output/main.aux"
   "Output/main.log"

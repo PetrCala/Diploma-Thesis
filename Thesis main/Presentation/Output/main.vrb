@@ -1,41 +1,41 @@
 \frametitle{Project structure}
 
-  \begin{scriptsize}
-    \begin{forest}
-      for tree={
-      grow'=0,
-      child anchor=west,
-      parent anchor=south,
-      anchor=west,
-      calign=first,
-      edge path={
-          \noexpand\path [draw, \forestoption{edge}]
-          (!u.south west) +(7.5pt,0) |- (.child anchor) pic {folder} \forestoption{edge label};
-        },
-      font=\ttfamily,
-      before typesetting nodes={
-          if n=1
-            {insert before={[,phantom]}}
-            {}
-        },
-      fit=band,
-      before computing xy={l=15pt},
-      }
-      [.
-      [data/ ]
-      [pckg/ ]
-      [scripts/ ]
-      [results/
-      [graphic/]
-      [numeric/]
-      [main\_results.txt]
-      ]
-      [main\_master\_thesis\_cala.R]
-      [script\_runner\_master\_thesis\_cala.R]
-      [source\_master\_thesis\_cala.R]
-      [README.md]
-      [user\_parameters.yaml]
-      ]
-    \end{forest}
-  \end{scriptsize}
+    \begin{scriptsize}
+        \begin{forest}
+            for tree={
+            grow'=0,
+            child anchor=west,
+            parent anchor=south,
+            anchor=west,
+            calign=first,
+            edge path={
+                    \noexpand\path [draw, \forestoption{edge}]
+                    (!u.south west) +(7.5pt,0) |- (.child anchor) pic {folder} \forestoption{edge label};
+                },
+            font=\ttfamily,
+            before typesetting nodes={
+                    if n=1
+                        {insert before={[,phantom]}}
+                        {}
+                },
+            fit=band,
+            before computing xy={l=15pt},
+            }
+            [.
+            [data/ ]
+            [pckg/ ]
+            [scripts/ ]
+            [results/
+            [graphic/]
+            [numeric/]
+            [main\_results.txt]
+            ]
+            [main\_master\_thesis\_cala.R]
+            [script\_runner\_master\_thesis\_cala.R]
+            [source\_master\_thesis\_cala.R]
+            [README.md]
+            [user\_parameters.yaml]
+            ]
+        \end{forest}
+    \end{scriptsize}
 
