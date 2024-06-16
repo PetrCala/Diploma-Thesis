@@ -1,5 +1,6 @@
 \frametitle{Project structure}
 
+    \begingroup
     \begin{scriptsize}
         \begin{forest}
             for tree={
@@ -10,7 +11,7 @@
             calign=first,
             edge path={
                     \noexpand\path [draw, \forestoption{edge}]
-                    (!u.south west) +(7.5pt,0) |- (.child anchor) pic {folder} \forestoption{edge label};
+                    (!u.south west) + (7.5pt,0) |- (.child anchor) pic {foldr} \forestset{edge label}; % Use the newly defined pic style
                 },
             font=\ttfamily,
             before typesetting nodes={
@@ -38,4 +39,5 @@
             ]
         \end{forest}
     \end{scriptsize}
+    \endgroup
 
