@@ -120,15 +120,15 @@
     \end{large}
 
     \begin{itemize}
-        \item<1-> Average effect of returns to education of around 7\%
-        \item<2-> Drops by around one percentage point after correcting for publication bias
-        \item <3-> Ability matters, and controlling for it in a regression decreases the expected returns to education
-        \item <4-> The returns drop even further for twin studies with identical inherent ability (4\% to 6\%)
+        \item<3-> Average effect of returns to education of around 7\%
+        \item<4-> Drops by around one percentage point after correcting for publication bias
+        \item <5-> Ability matters, and controlling for it in a regression decreases the expected returns to education
+        \item <6-> The returns drop even further for twin studies with identical inherent ability (4\% to 6\%)
     \end{itemize}
 
 \end{frame}
 
-\section{Overview}
+\section{Introduction}
 \subsection{}
 
 \begin{frame}{What Is Ability Bbias}
@@ -141,9 +141,10 @@
     \end{block}
 
     \begin{itemize}
+        \item<1-> Returns to education: The increase in earnings due to an additional year of schooling
         \item<2-> Ability bias: Distorted estimation of returns to education due to omission of ability (Blackburn \& Neumark, 1993)
         \item<3-> Ability correlates with both education and earnings
-        \item<4-> Sorting bias: Correlation between education and ability
+        \item<4-> Sorting bias: Correlation between ability and education
         \item<5-> How to separate the effect of education from the effect of ability?
     \end{itemize}
 
@@ -162,28 +163,16 @@
                   \item<4-> Find variable correlated with education, not with error term
                   \item<4-> Isolates exogenous variation in education
               \end{itemize}
-        \item<5-> Fixed Effects Models
+        \item<5-> Sibling and Twin Studies
               \begin{itemize}
-                  \item<6-> Use within-individual variation over time
-                  \item<6-> Controls for time-invariant unobserved heterogeneity
+                  \item<6-> Compare siblings/twins with different education levels
+                  \item<6-> Controls for family and genetic factors
               \end{itemize}
-        \item<7-> Sibling and Twin Studies
+        \item<7-> Other Methods
               \begin{itemize}
-                  \item<8-> Compare siblings/twins with different education levels
-                  \item<8-> Controls for family and genetic factors
+                  \item<8-> Fixed Effects Models
+                  \item<8-> Nonparametric methods
               \end{itemize}
-    \end{itemize}
-
-\end{frame}
-
-\begin{frame}{My approach}
-
-    \begin{itemize}
-        \item<1-> A large meta-analysis of 1754 estimates of returns to education over 115 studies
-        \item<2-> Correct for publication bias, observe heterogeneity
-        \item<3-> Observe the isolated effect of ability
-        \item<4-> Conduct a whole another meta-analysis comprised of twin studies (293 observations)
-        \item<5-> Fully automate the whole analysis process
     \end{itemize}
 
 \end{frame}
@@ -218,16 +207,23 @@
     \end{table}
 \end{frame}
 
+
+
 \section{Contribution}
 \subsection{}
 
-\begin{frame}{Estimates of ability across the dataset}
+\begin{frame}{My contribution}
 
-    \begin{center}
-        \includegraphics[width=0.8\textwidth]{Figures/prima_facie_ability.png}
-    \end{center}
+    \begin{itemize}
+        \item<1-> A large meta-analysis of 1754 estimates of returns to education over 115 studies
+        \item<2-> Correct for publication bias, observe heterogeneity
+        \item<3-> Observe the isolated effect of ability
+        \item<4-> Conduct a whole another meta-analysis comprised of twin studies (293 observations)
+        \item<5-> Fully automate the whole analysis process
+    \end{itemize}
 
 \end{frame}
+
 
 % \begin{frame}{Different Ways To Address Ability}
 
@@ -241,6 +237,30 @@
 %     \end{itemize}
 % \end{frame}
 
+\begin{frame}{Different Approach to Ability}
+
+    Four ways to address ability:
+    \vspace{0.3cm}
+
+    \begin{itemize}
+        \item<1-> Directly - using cognitive test scores or proxies thereof
+        \item<2-> Indirectly - using instrumental variables or other methods
+        \item<3-> Verbally - acknowledging the issue
+        \item<4-> Not at all - ignoring the problem
+    \end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}{Estimates of ability across the dataset}
+
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{Figures/prima_facie_ability.png}
+    \end{center}
+
+\end{frame}
+
 
 
 \begin{frame}{Graphical Test Using a Funnel Plot}
@@ -250,6 +270,7 @@
         \end{center}
     \end{figure}
 \end{frame}
+
 
 
 
@@ -323,20 +344,6 @@
 
 \end{frame}
 
-\begin{frame}{Different Approach to Ability}
-
-    Four ways to address ability:
-    \vspace{0.3cm}
-
-    \begin{itemize}
-        \item<1-> Directly - using cognitive test scores or proxies thereof
-        \item<2-> Indirectly - using instrumental variables
-        \item<3-> Verbally - acknowledging the issue
-        \item<4-> Not at all - ignoring the problem
-    \end{itemize}
-
-\end{frame}
-
 
 \begin{frame}{Model Inclusion in Bayesian Model Averaging}
     \begin{center}
@@ -381,11 +388,9 @@
 \end{frame}
 
 
-\begin{frame}{Aggregating BPE Results}
-    \begin{center}
-        \includegraphics[width=0.8\textwidth]{Figures/bpe_ability.png}
-    \end{center}
-\end{frame}
+
+\section{Twins}
+\subsection{}
 
 
 
@@ -398,6 +403,16 @@
     \end{itemize}
 
 \end{frame}
+
+
+\begin{frame}{Twin Funnel Plot}
+    \begin{figure}[htbp]
+        \begin{center}
+            \includegraphics[width=0.7\textwidth]{Figures/funnel_twins.png}
+        \end{center}
+    \end{figure}
+\end{frame}
+
 
 
 \begin{frame}{Publication bias for twins}
@@ -449,6 +464,9 @@
     \end{tiny}
 \end{frame}
 
+
+\section{Conclusion}
+\subsection{}
 
 
 \begin{frame}{Conclusion}
@@ -626,6 +644,12 @@
         \end{tabular}
     \end{table}
 
+\end{frame}
+
+\begin{frame}{Aggregating BPE Results}
+    \begin{center}
+        \includegraphics[width=0.8\textwidth]{Figures/bpe_ability.png}
+    \end{center}
 \end{frame}
 
 
