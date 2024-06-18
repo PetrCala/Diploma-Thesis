@@ -1,6 +1,6 @@
 \babel@toc {nil}{}\relax 
-\beamer@sectionintoc {1}{Introduction}{8}{0}{1}
-\beamer@sectionintoc {2}{Contribution}{22}{0}{2}
-\beamer@sectionintoc {3}{Twins}{42}{0}{3}
-\beamer@sectionintoc {4}{Conclusion}{45}{0}{4}
-\beamer@sectionintoc {5}{Appendix}{49}{1}{5}
+\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
+\beamer@sectionintoc {2}{Contribution}{6}{0}{2}
+\beamer@sectionintoc {3}{Twins}{14}{0}{3}
+\beamer@sectionintoc {4}{Conclusion}{17}{0}{4}
+\beamer@sectionintoc {5}{Appendix}{18}{1}{5}
