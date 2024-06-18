@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1718728561.63422 "/Users/jf41513/code/Diploma-Thesis/Thesis main/Presentation/main.tex" "Output/main.pdf" "main" 1718728567.62903 0
+["pdflatex"] 1718737456.82494 "/Users/jf41513/code/Diploma-Thesis/Thesis main/Presentation/main.tex" "Output/main.pdf" "main" 1718737461.9432 0
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/adobe/helvetic/phvb8r.tfm" 1136768653 4484 b828043cbd581d289d955903c1339981 ""
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/adobe/helvetic/phvb8t.tfm" 1136768653 6628 34c39492c0adc454c1c199922bba8363 ""
@@ -17,6 +17,7 @@
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm" 1246382020 940 75ac932a52f80982a9f8ea75d03a34cf ""
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm" 1246382020 940 228d6584342e91276bf566bcf9716b83 ""
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/public/cm/cmex10.tfm" 1136768653 992 662f679a0b3d2d53c1b94050fdaa3f50 ""
+  "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm" 1136768653 1528 abec98dbc43e172678c11b3b9031252a ""
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm" 1136768653 1524 4414a8315f39513458b80dfc63bff03a ""
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm" 1136768653 1512 f21f83efb36853c0b70002322c1ab3ad ""
   "/Users/jf41513/Library/TinyTeX/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm" 1136768653 1520 eccf95517727cb11801f4f1aee3a21b4 ""
@@ -258,7 +259,7 @@
   "/Users/jf41513/Library/TinyTeX/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1713209069 134692 a3f4bd37b20a753609bc166bc7d484d6 ""
   "/Users/jf41513/Library/TinyTeX/texmf-var/web2c/pdftex/pdflatex.fmt" 1711250078 6813469 6fde46766fd564180f3c9eada5a3161c ""
   "/Users/jf41513/Library/TinyTeX/texmf.cnf" 1711250012 637 edd806fb06a89761a6034e1968af9017 ""
-  "/Users/jf41513/code/Diploma-Thesis/Thesis main/Presentation/main.tex" 1718728565.45447 30507 da4bf9a4859f95b7e20c6cb1267ea40d ""
+  "/Users/jf41513/code/Diploma-Thesis/Thesis main/Presentation/main.tex" 1718737456.73417 31085 4896102c906e07d439d44ea9df24a0bc ""
   "Figures/bma_UIP_dilut_results.png" 1717232537.1321 85647 8a418c50f36694095f2da0f435c6f050 ""
   "Figures/bpe_ability.png" 1717232537.13363 271958 288ff86a387dba580e23e149fc76c2e4 ""
   "Figures/funnel.png" 1717232537.13835 114363 dfa45c5d1642da0035803892f39af5a9 ""
@@ -267,13 +268,14 @@
   "Figures/graphical_results.png" 1717232537.14065 725679 59cc9bcb31e69c630fb671c42999c016 ""
   "Figures/logo.pdf" 1717232537.14114 89436 f0a4df330473a7bd11e302d97af26acd ""
   "Figures/main_results.png" 1717232537.14224 40169 b676665177f887ef8f7f7afdf8c5e6de ""
+  "Figures/mincer_example.png" 1718737452.84118 166353 dd29bb97e43f8dc95d6a6420744f322f ""
   "Figures/numeric_results.png" 1717232537.14248 8395 e3c4ce3d4a573ab5b7e75f2bc6731e52 ""
   "Figures/prima_facie_ability.png" 1717232537.143 263714 97e87c0d84f09e4227b630e8cd5f029a ""
   "Figures/project_structure.png" 1718542593.30003 104556 df7c6d3615c1a799c974bb3fd4d9fffe ""
-  "Output/main.aux" 1718728567.50907 6786 b43ef8ed46fdf2edc267616ae8702f51 "pdflatex"
-  "Output/main.nav" 1718728567.51103 4374 d0bae2f35cb20c052a12270c6d39cb0a "pdflatex"
-  "Output/main.out" 1718728567.51061 738 63a42e5c530e8c756383c44b69f8bc48 "pdflatex"
-  "main.tex" 1718728565.45447 30507 da4bf9a4859f95b7e20c6cb1267ea40d ""
+  "Output/main.aux" 1718737461.84498 7042 6269dd5cb6b187e2d9f33ade2068ac83 "pdflatex"
+  "Output/main.nav" 1718737461.84626 4558 291e0d7680fccd2c5f9d604956f4403c "pdflatex"
+  "Output/main.out" 1718737461.84609 738 63a42e5c530e8c756383c44b69f8bc48 "pdflatex"
+  "main.tex" 1718737456.73417 31085 4896102c906e07d439d44ea9df24a0bc ""
   (generated)
   "Output/main.aux"
   "Output/main.log"
