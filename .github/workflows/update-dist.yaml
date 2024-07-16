@@ -3,7 +3,8 @@ name: Update Dist Branch
 on:
   push:
     branches:
-      - dev
+      # - dev
+      - non-existent-branch
 
 jobs:
   update-dist:
