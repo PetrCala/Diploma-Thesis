@@ -1,11 +1,12 @@
 ﻿# A simple repository for my Diploma Thesis
-* **Topic** - Ability bias in the returns to schooling: How large it is and why it matters
-* **Author** - Bc. Petr Čala
-* **Year of defense** - 2024
-* **Supervisor** - doc. PhDr. Zuzana Havránková Ph.D.
 
-## About
+- **Topic** - Ability bias in the returns to schooling: How large it is and why it matters
+- **Author** - Bc. Petr Čala
+- **Year of defense** - 2024
+- **Supervisor** - doc. PhDr. Zuzana Havránková Ph.D.
 
-### You branched off too far
+## The tools for replication now have a new home
 
-This branch is meant for my personal use only. It allows me to do version tracking and keep the work portable. If you wish to conduct your own analysis using the provided files, switch to the `Dist` branch, and go through the README there.
+If you are looking for the repository where you can clone the results of my diploma thesis, or see the more technical aspects of it, simply follow this link:
+
+[Automatic Replication Tools for Meta-Analysis](https://github.com/PetrCala/artma)
