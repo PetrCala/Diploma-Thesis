@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# DEPRECATED
+
 # STATIC
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
