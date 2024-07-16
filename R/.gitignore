@@ -10,6 +10,10 @@ __pycache__/
 # User parameter file
 user_parameters.yaml
 
+# Local
+data/temp/
+_cache/
+
 # Leftover folders from the subtree split
 Data/AdditionalData/
 Dist/

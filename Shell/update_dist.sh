@@ -14,12 +14,13 @@ SOURCE_FILES=(
   "source_master_thesis_cala.R"
   "README.md"
   ".gitignore"
+  ".lintr"
   "LICENSE"
 )
 
 for f in "${SOURCE_FILES[@]}"; do
   # Assume all source files are located inside the R folder
-  source_file="$R_FOLDER_PATH/$f"    
+  source_file="$R_FOLDER_PATH/$f"
   # Check if the file exists in the R folder
   if ! test -f "$source_file"; then
     echo "Error: $f not found under path $source_file"
@@ -38,6 +39,8 @@ cd $DIST_FOLDER_PATH
 # Copy the external package folder, scripts folder, resources folder
 echo "Copying packages..."
 cp -r "$R_FOLDER_PATH/pckg/" .
+echo "Copying R..."
+cp -r "$R_FOLDER_PATH/R/" .
 echo "Copying scripts..."
 cp -r "$R_FOLDER_PATH/scripts/" .
 echo "Copying resources..."
@@ -48,12 +51,12 @@ new_folders=("data" "graphics" "results" "data/source" "data/temp")
 
 # Loop through the list of characters
 for folder in "${new_folders[@]}"; do
-    # Check if the folder already exists
-    if [ ! -d "$DIST_FOLDER_PATH/$folder" ]; then
-        # Create the folder
-        mkdir "$DIST_FOLDER_PATH/$folder"
-        echo "Folder created: $folder"
-    fi
+  # Check if the folder already exists
+  if [ ! -d "$DIST_FOLDER_PATH/$folder" ]; then
+    # Create the folder
+    mkdir "$DIST_FOLDER_PATH/$folder"
+    echo "Folder created: $folder"
+  fi
 done
 
 # Handle R source files

@@ -19,15 +19,15 @@ options(scipen = 999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
 
 # Static
-source_file <- "source_master_thesis_cala.R" # Main source file
+source_file <- "base/source_master_thesis_cala.R" # Main source file
 user_param_file <- "user_parameters.yaml" # File with user parameters
 user_param_model_file <- "resources/user_parameters_model.yaml" # Model user parameters file
-package_file <- "resources/packages.R" # Package file
 table_templates_file <- "resources/table_templates.yaml" # Table templates file
+const_file <- "base/const.R" # constant file
+env_file <- "libs/env.R" # Environment preparation file
+initial_packages <- c("rstudioapi", "devtools", "pbapply")
 
 # Load several packages necessary for the environment preparation
-initial_packages <- list("rstudioapi", "devtools", "pbapply")
-
 load_initial_package <- function(pkg, quietly = TRUE) {
   if (!require(pkg, quietly = quietly, character.only = TRUE)) install.packages(pkg)
   library(pkg, quietly = quietly, character.only = TRUE)
@@ -49,7 +49,8 @@ if (interactive()) {
 ### Validate the existence of source files and load them
 source_file_list <- list(
   "Source file" = source_file,
-  "Package file" = package_file,
+  "Const file" = const_file,
+  "Environment file" = env_file,
   "Table templates file" = table_templates_file
 )
 
@@ -65,14 +66,13 @@ verify_file_existence <- function(file_name, file_path) {
 # Check each file's existence using lapply
 invisible(lapply(names(source_file_list), function(name) verify_file_existence(name, source_file_list[[name]])))
 
-# Load the source script
-source(source_file)
-
-# Load the package file
-source(package_file)
+# Load some basic functions and utility objects
+source(source_file);
+source(const_file)
+source(env_file)
 
 # Load packages
-loadPackages(packages, verbose = TRUE)
+load_packages(CONST$PACKAGES, verbose = TRUE)
 
 # Load the table templates
 table_templates <- yaml::read_yaml(table_templates_file)
@@ -127,8 +127,8 @@ folders_to_clean_old_files <- c(
 invisible(sapply(folders_to_clean_forcefully, cleanFolder, force = TRUE)) # Clean all files
 invisible(sapply(folders_to_clean_old_files, cleanFolder)) # Clean only files older than 1 hour
 
-# Load external packages
-loadExternalPackages(folder_paths$ext_package_folder)
+# Load external packages - not needed for the moment
+# loadExternalPackages(folder_paths$ext_package_folder)
 
 # Define paths of all source files and save them in a vector for validation
 data_files_full_paths <- paste0(folder_paths$data_folder, as.vector(unlist(data_files))) # Vector of "./data/file_name"

@@ -13,60 +13,23 @@ Clone this repository onto your computer using `git clone https://github.com/Pet
 
 ### Project structure
 
-The project is structured as follows:
+Here is a list of some crucial files you should get to know before running the project.
 
-```tree
-.
-├── data/
-│   ├── source/
-│   │   ├── data_set_master_thesis_cala.xlsx
-│   └── temp/
-├── pckg/
-│   └── LowRankQP/
-├── resources/
-│   ├── packages.R
-│   ├── table_templates.yaml
-│   └── user_parameters_model.yaml
-├── results/
-│   ├── graphic/
-│   ├── numeric/
-│   └── main_results.txt
-├── scripts/
-│   ├── elliott_master_thesis_cala.R
-│   ├── endo_kink_master_thesis_cala.R
-│   ├── maive_master_thesis_cala.R
-│   ├── selection_model_master_thesis_cala.R
-│   └── stem_method_master_thesis_cala.R
-├── main_master_thesis_cala.R
-├── script_runner_master_thesis_cala.R
-├── source_master_thesis_cala.R
-├── README.md
-├── .lintr
-└── user_parameters.yaml
-```
-
-- `data/` -> Folder for storing data. The folder is further split into two sub-folders:
-  - `source/` -> Put your `.xlsx` or `.xlsm` source data file here. In the distributed folder, there is a placeholder file called `data_set_master_thesis_cala.xlsm`.
-  - `temp/` - > This folder will automatically get created upon script run. Here will be the `.csv` files created from the sheets of your data set. This allows reproducibility and consistency within the script.
-- `pckg/` -> Folder with external packages that are not available online anymore, such as `LowRankQP`.
-- `resources/` -> Folder with various resources.
-  - `packages.R` -> An R script containing an object with all packages used for the project, along with their versions.
-  - `table_templates.yaml` -> Store TeX table templates here in form of nested lists. User-modifiable.
-  - `user_parameters_model.yaml` -> Customizable parameters. This file should be copied into the project roote, renamed to `user_parameters.yaml`, and modified to fit the user preferences. Any modifications can be done by opening the file using any text editor, such as `Notepad`. Alternatively, you may want to edit this file using fancier text editors, such as [Sublime Text](https://www.sublimetext.com/docs/vintage.html), or [VIM](https://www.vim.org/).
-- `results/` -> Folder with all results. A `.zip` file with all results will be automatically created here.
-  - `graphic/` -> All graphic results will be automatically stored here.
-  - `numeric/` -> All numeric results will be automatically stored here as `.csv` files.
-  - `text/` -> All TeX table code will be automatically stored here. This code is directly pasteable into .tex files for compilation (may require packages such as _longtable_,...).
-  - `main_results.txt` -> An R console log file where all numeric/tabular results are stored in a presentable form.
-- `scripts/` -> Source scripts for various external methods.
-  - `elliott_master_thesis_cala.R` -> Source code for the p-hacking tests developed by Elliott et al. (2022).
-  - `endo_kink_master_thesis_cala.R` -> Source code for the Endogenous Kink method (Bom & Rachinger, 2019).
-  - `maive_master_thesis_cala.r` -> Source code for the MAIVE estimator method (Irsova et al., 2023).
-  - `selection_model_master_thesis_cala.R` -> Source code for the Selection model (Andrew & Kasy, 2019). Rewritten from STATA, should be quite robust.
-  - `stem_method_master_thesis_cala.R` -> Source code for the STEM method (Furukawa, 2019).
-- `main_master_thesis_cala.R` -> Main script. Call the desired methods with the specified user parameters. Automatically handle package installation, working directory handling, temporary file creation.
-- `source_master_thesis_cala.R` -> Source script with all the functions. This script is not meant to be ran. Virtaully any function called from the main script is located here. Every function (hopefully) has a docstring explaining its _functionality_ (pun intended). Navigate the script using function names.
-- `script_runner_master_thesis_cala.R` -> Script for running the code in an aesthetic way. Calls the main script using the `source` command, which omits redundant code. This script is most useful when working with RStudio. When working with a terminal, calling this script is exactly the same as calling the main script.
+- `src/` -> Folder with the main file stack.
+  - `data/` -> Folder for storing data. The folder is further split into two sub-folders:
+    - `source/` -> Put your `.xlsx` or `.xlsm` source data file here. In the distributed folder, there is a placeholder file called `data_set_master_thesis_cala.xlsm`.
+    - `temp/` - > This folder will automatically get created upon script run. Here will be the `.csv` files created from the sheets of your data set. This allows reproducibility and consistency within the script.
+  - `pckg/` -> Folder with external packages that are not available online anymore, such as `LowRankQP`.
+  - `resources/` -> Folder with various resources.
+    - `user_parameters_model.yaml` -> Customizable parameters. This file should be copied into the project roote, renamed to `user_parameters.yaml`, and modified to fit the user preferences. Any modifications can be done by opening the file using any text editor, such as `Notepad`. Alternatively, you may want to edit this file using fancier text editors, such as [Sublime Text](https://www.sublimetext.com/docs/vintage.html), or [VIM](https://www.vim.org/).
+  - `results/` -> Folder with all results. A `.zip` file with all results will be automatically created here.
+    - `graphic/` -> All graphic results will be automatically stored here.
+    - `numeric/` -> All numeric results will be automatically stored here as `.csv` files.
+    - `text/` -> All TeX table code will be automatically stored here. This code is directly pasteable into .tex files for compilation (may require packages such as _longtable_,...).
+    - `main_results.txt` -> An R console log file where all numeric/tabular results are stored in a presentable form.
+  - `main_master_thesis_cala.R` -> Main script. Call the desired methods with the specified user parameters. Automatically handle package installation, working directory handling, temporary file creation.
+  - `source_master_thesis_cala.R` -> Source script with all the functions. This script is not meant to be ran. Virtaully any function called from the main script is located here. Every function (hopefully) has a docstring explaining its _functionality_ (pun intended). Navigate the script using function names.
+  - `script_runner_master_thesis_cala.R` -> Script for running the code in an aesthetic way. Calls the main script using the `source` command, which omits redundant code. This script is most useful when working with RStudio. When working with a terminal, calling this script is exactly the same as calling the main script.
 - `README.md` -> This README file.
 - `.lintr` -> Configuration file for linting.
 
@@ -93,11 +56,14 @@ Furthermore, the existence of all folders will be verified. Note that some do no
    cd Diploma-Thesis
    ```
 
-5. In case you wish to only test the functionality of the script using placeholder data within the data folder, skip to the **How to run** section below. If you wish, on the other hand, to run your own analysis, make sure to follow the next steps as well.
-6. Parameter modification is handled through the `user_parameters.yaml` file. Upon cloning the repository, this file does not exist. It will automatically be created upon running any of the main scripts, where the scripts create this file in the project root with the contents of the model parameter file `resources/user_parameters_model.yaml`. Alternatively, you can manually copy this file to the project root yourself. If you do so, make sure to name it `user_parameters.yaml`. After the file is present in the project root (and named `user_parameters.yaml`, it can be modified to your liking. However, **when modifying the user parameters file, make sure to follow instructions from step 2 of the [How to run](#how-to-run) section.**
-7. Place your data file into the `data/source/` folder, right next to the placeholder data file. In case you modified the path to this folder, make sure to place the data file into that folder instead. You may delete the placeholder file in case you do not need it.
-8. The file with data must contain two sheets - `data_set` and `var_list` (these are modifiable within the user parameter file). The former should contain all your data that satisfies the conditions described in step 9, while the latter should contain information about variables of the dataset, as described in step 10.
-9. The data frame must contain several specific columns, named **Required columns**, and there are also several columns that are optional - **Optional Columns**. If your dataset does not contain the required columns, make sure to add them. If it does contain them, but they are named differently in your data, simply change their names in the `required_cols` section of the `user_parameters.yaml` file. This is the list of the required and optional columns:
+5. Run
+
+   ```bash
+   chmod +x ./run.sh
+   ./run.sh setup
+   ```
+
+This will attempt to install all required R packages. In case some the installation for some of these packages fails, you may have to install them manually. To see the list of required packages, go to `src/base/const.R`. 6. In case you wish to only test the functionality of the script using placeholder data within the data folder, skip to the **How to run** section below. If you wish, on the other hand, to run your own analysis, make sure to follow the next steps as well. 7. Parameter modification is handled through the `user_parameters.yaml` file. Upon cloning the repository, this file does not exist. It will automatically be created upon running any of the main scripts, where the scripts create this file in the project root with the contents of the model parameter file `resources/user_parameters_model.yaml`. Alternatively, you can manually copy this file to the project root yourself. If you do so, make sure to name it `user_parameters.yaml`. After the file is present in the project root (and named `user_parameters.yaml`, it can be modified to your liking. However, **when modifying the user parameters file, make sure to follow instructions from step 2 of the [How to run](#how-to-run) section.** 8. Place your data file into the `data/source/` folder, right next to the placeholder data file. In case you modified the path to this folder, make sure to place the data file into that folder instead. You may delete the placeholder file in case you do not need it. 9. The file with data must contain two sheets - `data_set` and `var_list` (these are modifiable within the user parameter file). The former should contain all your data that satisfies the conditions described in step 9, while the latter should contain information about variables of the dataset, as described in step 10. 10. The data frame must contain several specific columns, named **Required columns**, and there are also several columns that are optional - **Optional Columns**. If your dataset does not contain the required columns, make sure to add them. If it does contain them, but they are named differently in your data, simply change their names in the `required_cols` section of the `user_parameters.yaml` file. This is the list of the required and optional columns:
 
 - Required columns:
   - **obs_id** - Unique ID of the observation.
