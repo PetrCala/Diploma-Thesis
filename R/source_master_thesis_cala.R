@@ -2034,7 +2034,7 @@ getOutliers <- function(input_data, effect_proximity = 0.2, maximum_precision = 
     
   # Filter suspicious observations
   outliers <- obs[outlier_filter]
-  if ((length(outliers)>0) & (verbose)) {
+  if ((length(outliers)>0) && (verbose)) {
     # Get the list of studies with outliers
     suspicious_studies <- c()
     for (outlier in outliers) {
@@ -4209,10 +4209,10 @@ getBMAData <- function(input_data, input_var_list, variable_info, scale_data = T
     is.logical(from_vector)
   )
   # Subset the data
-  if (from_vector & !is.vector(variable_info)){
+  if (from_vector && !is.vector(variable_info)){
     stop("You must provide a vector if you wish to extract the variable information form a vector.")
   }
-  if (!from_vector & !is.data.frame(variable_info)){
+  if (!from_vector && !is.data.frame(variable_info)){
     stop("You must provide a data frame if you wish to extract the variable information form a data frame.")
   }
   if (is.data.frame(variable_info)){ # Input data frame
@@ -4472,7 +4472,7 @@ graphBMAComparison <- function(bma_models, input_var_list, theme = "blue", verbo
   bma_models <- lapply(bma_models, renameBMAModel, input_var_list = input_var_list)
   # Loop through the BMA objects and construct the partial call strings
   bma_model_calls <- list()
-  for (i in 1:length(bma_models)){
+  for (i in seq_along(bma_models)){
     bma_model <- bma_models[[i]]
     # Get the model flagging information
     gprior <- bma_model$gprior.info$gtype
