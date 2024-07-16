@@ -3,7 +3,7 @@
 # STATIC
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-R_FOLDER_PATH="$PROJECT_ROOT/R"
+R_FOLDER_PATH="$PROJECT_ROOT/artma"
 DIST_FOLDER_PATH="$PROJECT_ROOT/Distribute"
 
 # Define a list of files to copy - relative to the R folder
@@ -39,8 +39,8 @@ cd $DIST_FOLDER_PATH
 # Copy the external package folder, scripts folder, resources folder
 echo "Copying packages..."
 cp -r "$R_FOLDER_PATH/pckg/" .
-echo "Copying R..."
-cp -r "$R_FOLDER_PATH/R/" .
+echo "Copying src..."
+cp -r "$R_FOLDER_PATH/src/" .
 echo "Copying scripts..."
 cp -r "$R_FOLDER_PATH/scripts/" .
 echo "Copying resources..."
