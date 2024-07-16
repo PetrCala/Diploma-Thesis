@@ -1,11 +1,11 @@
 #' |--------------------------|
 #' Script name: main_master_thesis_cala.R
-#' 
+#'
 #' The main script for running the analysis for my Master Thesis on the topic
 #' of 'Ability bias in returns to schooling: how large it is and why it matters?'
-#' 
+#'
 #' For detailed explanation, see the README file distributed with this script.
-#' 
+#'
 #' Author: Petr Čala
 #' Year created: 2023
 #' GitHub: github.com/PetrCala/
@@ -15,10 +15,10 @@
 
 # Clean the environment - DO NOT CHANGE THIS
 rm(list = ls())
-options(scipen=999) # No scientific notation
+options(scipen = 999) # No scientific notation
 set.seed(123) # Results reproduction, stochastic functions to deterministic for caching
 
-# Static 
+# Static
 source_file <- "source_master_thesis_cala.R" # Main source file
 user_param_file <- "user_parameters.yaml" # File with user parameters
 user_param_model_file <- "resources/user_parameters_model.yaml" # Model user parameters file
@@ -26,20 +26,20 @@ package_file <- "resources/packages.R" # Package file
 table_templates_file <- "resources/table_templates.yaml" # Table templates file
 
 # Load several packages necessary for the environment preparation
-initial_packages <- list('rstudioapi', 'devtools', 'pbapply')
+initial_packages <- list("rstudioapi", "devtools", "pbapply")
 
-load_initial_package <- function(pkg, quietly=T) {
-  if (!require(pkg, quietly = quietly, character.only=T)) install.packages(pkg)
-  library(pkg, quietly = quietly, character.only=T)
+load_initial_package <- function(pkg, quietly = TRUE) {
+  if (!require(pkg, quietly = quietly, character.only = TRUE)) install.packages(pkg)
+  library(pkg, quietly = quietly, character.only = TRUE)
 }
 
 invisible(lapply(initial_packages, function(x) suppressPackageStartupMessages(load_initial_package(x))))
 
 # Working directory - change only if the script is being ran interactively
-if(interactive()) {
-  if (! getwd() == dirname(getActiveDocumentContext()$path)){
+if (interactive()) {
+  if (!getwd() == dirname(getActiveDocumentContext()$path)) {
     newdir <- dirname(getActiveDocumentContext()$path)
-    cat(sprintf('Setting the working directory to: %s \n', newdir))
+    cat(sprintf("Setting the working directory to: %s \n", newdir))
     setwd(newdir) # Set WD to the current file location
   }
 }
@@ -48,7 +48,7 @@ if(interactive()) {
 
 ### Validate the existence of source files and load them
 source_file_list <- list(
-  "Source file" = source_file, 
+  "Source file" = source_file,
   "Package file" = package_file,
   "Table templates file" = table_templates_file
 )
@@ -72,10 +72,10 @@ source(source_file)
 source(package_file)
 
 # Load packages
-loadPackages(packages, verbose=TRUE)
+loadPackages(packages, verbose = TRUE)
 
 # Load the table templates
-table_templates <- yaml::read_yaml(table_templates_file) 
+table_templates <- yaml::read_yaml(table_templates_file)
 
 ### Validate the existence of the user parameter file and recreate it if it does not exist
 
@@ -88,7 +88,7 @@ if (!file.exists(user_param_file)) {
 }
 
 # Load user parameters and unlist for easier fetching
-user_params <- yaml::read_yaml(user_param_file) 
+user_params <- yaml::read_yaml(user_param_file)
 source_file_params <- user_params$source_file_params # Parameters of the source data file
 run_this <- user_params$run_this # Which parts of the script to run
 run_this_experimental <- user_params$run_this_experimental # Experimental features to run
@@ -120,12 +120,12 @@ folders_to_clean_forcefully <- c(
   folder_paths$numeric_results_folder
   # folder_paths$tex_results_folder
 )
-folders_to_clean_old_files_only <- c(
+folders_to_clean_old_files <- c(
   folder_paths$graphic_results_folder,
   folder_paths$temp_data_folder
 )
-invisible(sapply(folders_to_clean_forcefully, cleanFolder, force = T)) # Clean all files
-invisible(sapply(folders_to_clean_old_files_only, cleanFolder)) # Clean only files older than 1 hour
+invisible(sapply(folders_to_clean_forcefully, cleanFolder, force = TRUE)) # Clean all files
+invisible(sapply(folders_to_clean_old_files, cleanFolder)) # Clean only files older than 1 hour
 
 # Load external packages
 loadExternalPackages(folder_paths$ext_package_folder)
@@ -142,8 +142,8 @@ all_source_files <- c(
 csv_suffix <- source_file_params$csv_suffix # File suffix
 source_data_path <- paste0(
   source_file_params$source_data_folder, # Folder
-  source_file_params$file_name,   # File
-  source_file_params$file_suffix  # Suffix
+  source_file_params$file_name, # File
+  source_file_params$file_suffix # Suffix
 )
 data_sheet_name <- source_file_params$data_sheet_name # Name of sheet with data
 var_list_sheet_name <- source_file_params$var_list_sheet_name # Name of sheet with variable info
@@ -166,8 +166,8 @@ sink(log_file_path, append = FALSE, split = TRUE) # Capture console output
 ######################### DATA PREPROCESSING #########################
 
 # Construct the source file paths
-data_path <- paste0(folder_paths$temp_data_folder, data_sheet_name, '_', csv_suffix, '.csv')
-var_list_path <- paste0(folder_paths$temp_data_folder, var_list_sheet_name, '_', csv_suffix, '.csv')
+data_path <- paste0(folder_paths$temp_data_folder, data_sheet_name, "_", csv_suffix, ".csv")
+var_list_path <- paste0(folder_paths$temp_data_folder, var_list_sheet_name, "_", csv_suffix, ".csv")
 
 # Read all the source .csv files
 data_separators <- identifyCsvSeparators(data_path) # Read on the larger file for higher likelihood of identification
@@ -185,14 +185,14 @@ data <- runCachedFunction(
 )
 
 # Get the raw but preprocessed data summary statistics (without winsorization, missing value handling)
-if (run_this$variable_summary_stats){
+if (run_this$variable_summary_stats) {
   variable_sum_stats_list <- runCachedFunction(
     getVariableSummaryStats, user_params,
     verbose_function = getVariableSummaryStatsVerbose,
     data, var_list
   )
   variable_sum_stats <- variable_sum_stats_list[[1]] # Also missing data information
-  if (export_options$export_results){
+  if (export_options$export_results) {
     exportResults(variable_sum_stats, user_params, "variable_summary_stats", result_type = "num")
   }
 }
@@ -233,9 +233,9 @@ data <- runCachedFunction(
 )
 
 # Subset data using the conditions specified in the customizable section
-subset_conditions <- getMultipleParams(dataset_params, "data_subset_condition_", T) # Extract all the data subset conditions
+subset_conditions <- getMultipleParams(dataset_params, "data_subset_condition_", TRUE) # Extract all the data subset conditions
 data <- runCachedFunction(
-  applyDataSubsetConditions, user_params, 
+  applyDataSubsetConditions, user_params,
   verbose_function = applyDataSubsetConditionsVerbose,
   data, subset_conditions
 )
@@ -243,7 +243,7 @@ data <- runCachedFunction(
 ######################### DATA EXPLORATION #########################
 
 ###### EFFECT SUMMARY STATISTICS ######
-if (run_this$effect_summary_stats){
+if (run_this$effect_summary_stats) {
   effect_sum_stats_list <- runCachedFunction(
     getEffectSummaryStats, user_params,
     verbose_function = getEffectSummaryStatsVerbose,
@@ -252,13 +252,13 @@ if (run_this$effect_summary_stats){
     formal_output = adj_params$formal_output_on
   )
   effect_sum_stats <- effect_sum_stats_list[[1]] # Also missing variable info
-  if (export_options$export_results){
+  if (export_options$export_results) {
     exportResults(effect_sum_stats, user_params, "effect_summary_stats", result_type = "num")
   }
 }
 
 ###### PRIMA FACIE GRAPHS ######
-if (run_this$prima_facie_graphs){
+if (run_this$prima_facie_graphs) {
   print("Generating the prima facie graphs...")
   prima_facie_graphs <- runCachedFunction(
     getPrimaFacieGraphs, user_params,
@@ -277,12 +277,12 @@ if (run_this$prima_facie_graphs){
 }
 
 ###### BOX PLOT ######
-if (run_this$box_plot){
+if (run_this$box_plot) {
   # Parameters
   factor_names <- getMultipleParams(dataset_params, "box_plot_group_by_factor_")
   factor_names <- factor_names[!is.na(factor_names)] # Only non-NA factors
   # Run box plots for all these factors iteratively
-  for (factor_name in factor_names){
+  for (factor_name in factor_names) {
     # Main plot
     box_plot_list <- runCachedFunction(
       getLargeBoxPlot, user_params,
@@ -296,15 +296,15 @@ if (run_this$box_plot){
       factor_by = factor_name,
       effect_name = dataset_params$effect_name,
       theme = export_options$theme,
-      verbose = F # Internal function parameter - no doubling
+      verbose = FALSE # Internal function parameter - no doubling
     )
   }
 }
 
 ###### FUNNEL PLOT ######
-if (run_this$funnel_plot){
-  run_cached_funnel <- function(use_medians, graph_name){
-    return ( 
+if (run_this$funnel_plot) {
+  run_cached_funnel <- function(use_medians, graph_name) {
+    return(
       runCachedFunction(
         getFunnelPlot, user_params,
         verbose_function = nullVerboseFunction,
@@ -332,9 +332,9 @@ if (run_this$funnel_plot){
 
 ###### HISTOGRAM OF T-STATISTICS ######
 
-if (run_this$t_stat_histogram){
-  run_cached_t_stat_histogram <- function(lower_cutoff, upper_cutoff, minimum_distance_between_ticks, graph_name){
-    return ( 
+if (run_this$t_stat_histogram) {
+  run_cached_t_stat_histogram <- function(lower_cutoff, upper_cutoff, minimum_distance_between_ticks, graph_name) {
+    return(
       runCachedFunction(
         getTstatHist, user_params,
         verbose_function = nullVerboseFunction,
@@ -356,10 +356,10 @@ if (run_this$t_stat_histogram){
   # Main t-stat historam
   t_hist_path <- paste0(folder_paths$graphic_results_folder, "t_hist.png")
   t_hist_plot <- run_cached_t_stat_histogram(
-    lower_cutoff = adj_params$t_hist_lower_cutoff, 
-    upper_cutoff = adj_params$t_hist_upper_cutoff, 
+    lower_cutoff = adj_params$t_hist_lower_cutoff,
+    upper_cutoff = adj_params$t_hist_upper_cutoff,
     minimum_distance_between_ticks = adj_params$t_hist_minimum_distance_between_ticks,
-    graph_name=t_hist_path
+    graph_name = t_hist_path
   )
   # Closeup histogram
   if (adj_params$t_hist_close_up_use) {
@@ -368,16 +368,16 @@ if (run_this$t_stat_histogram){
       lower_cutoff = adj_params$t_hist_close_up_lower_cutoff,
       upper_cutoff = adj_params$t_hist_close_up_upper_cutoff,
       minimum_distance_between_ticks = adj_params$t_hist_close_up_minimum_distance_between_ticks,
-      graph_name=t_hist_closeup_path
+      graph_name = t_hist_closeup_path
     )
   }
 }
 
-######################### LINEAR TESTS ######################### 
+######################### LINEAR TESTS #########################
 
 ###### PUBLICATION BIAS - FAT-PET (Stanley, 2005) ######
 
-if (run_this$linear_tests){
+if (run_this$linear_tests) {
   if (adj_params$linear_verbose) {
     print("Running linear tests...")
   }
@@ -389,25 +389,23 @@ if (run_this$linear_tests){
     R = adj_params$bootstrap_r,
     verbose = adj_params$linear_verbose
   )
-  if (export_options$export_results){
+  if (export_options$export_results) {
     exportResults(linear_tests_results, user_params, "linear_tests", result_type = "num")
   }
 }
 
-######################### NON-LINEAR TESTS ######################### 
-if (run_this$nonlinear_tests){
+######################### NON-LINEAR TESTS #########################
+if (run_this$nonlinear_tests) {
   # Extract source script paths
   stem_script_path <- paste0(folder_paths$scripts_folder, script_files$stem_source)
   selection_script_path <- paste0(folder_paths$scripts_folder, script_files$selection_model_source)
   endo_script_path <- paste0(folder_paths$scripts_folder, script_files$endo_kink_source)
-  nonlinear_script_paths <- list(stem=stem_script_path,
-                                 selection=selection_script_path,
-                                 endo=endo_script_path)
+  nonlinear_script_paths <- list(stem = stem_script_path, selection = selection_script_path, endo = endo_script_path)
   # Parameters
-  selection_params <- getMultipleParams(adj_params, "non_linear_param_selection_",T,T)
+  selection_params <- getMultipleParams(adj_params, "non_linear_param_selection_", TRUE, TRUE)
   # Estimation
   nonlinear_tests_results <- runCachedFunction(
-    getNonlinearTests, user_params, 
+    getNonlinearTests, user_params,
     verbose_function = getNonlinearTestsVerbose,
     data, script_paths = nonlinear_script_paths,
     add_significance_marks = adj_params$non_linear_add_significance_marks,
@@ -419,22 +417,22 @@ if (run_this$nonlinear_tests){
     stem_representative_sample = adj_params$non_linear_stem_representative_sample,
     stem_legend_pos = adj_params$non_linear_stem_legend_position
   )
-  if (export_options$export_results){
+  if (export_options$export_results) {
     exportResults(nonlinear_tests_results, user_params, "nonlinear_tests", result_type = "num")
   }
-  if (export_options$export_tex){
+  if (export_options$export_tex) {
     exportResults(nonlinear_tests_results, user_params, "nonlinear_tests", result_type = "tex",
-                  table_template = table_templates$nonlinear_tests
+      table_template = table_templates$nonlinear_tests
     )
   }
 }
 
 ### Apply p-uniform* method using sample means
 
-######################### RELAXING THE EXOGENEITY ASSUMPTION ######################### 
-if (run_this$exo_tests){
+######################### RELAXING THE EXOGENEITY ASSUMPTION #########################
+if (run_this$exo_tests) {
   # Parameters
-  puni_params <- getMultipleParams(adj_params, "puni_param_",T,T)
+  puni_params <- getMultipleParams(adj_params, "puni_param_", TRUE, TRUE)
   # Estimation
   exo_tests_results_list <- runCachedFunction(
     getExoTests, user_params,
@@ -445,14 +443,14 @@ if (run_this$exo_tests){
     add_significance_marks = adj_params$exo_add_significance_marks
   )
   exo_tests_results <- exo_tests_results_list[[1]]
-  if (export_options$export_results){
+  if (export_options$export_results) {
     exportResults(exo_tests_results, user_params, "exo_tests", result_type = "num")
   }
 }
 
 
 ######################### P-HACKING TESTS #########################
-if (run_this$p_hacking_tests){
+if (run_this$p_hacking_tests) {
   ###### PUBLICATION BIAS - Caliper test (Gerber & Malhotra, 2008) ######
   caliper_results <- runCachedFunction(
     getCaliperResults, user_params,
@@ -464,7 +462,7 @@ if (run_this$p_hacking_tests){
     verbose = adj_params$caliper_verbose,
     add_significance_marks = adj_params$caliper_add_significance_marks
   )
-  
+
   ###### PUBLICATION BIAS - p-hacking test (Elliott et al., 2022) ######
   elliott_results <- runCachedFunction(
     getElliottResults, user_params,
@@ -479,24 +477,24 @@ if (run_this$p_hacking_tests){
     CS_bins = adj_params$elliott_CS_bins,
     verbose = adj_params$elliott_verbose
   )
-  
+
   ###### MAIVE Estimator (Irsova et al., 2023) ######
   maive_results <- runCachedFunction(
     getMaiveResults, user_params,
     verbose_function = getMaiveResultsVerbose,
     data,
     script_path = paste0(folder_paths$scripts_folder, script_files$maive_source),
-    method=adj_params$maive_method,
-    weight=adj_params$maive_weight,
-    instrument=adj_params$maive_instrument,
-    studylevel=adj_params$maive_studylevel,
-    verbose=adj_params$maive_verbose,
+    method = adj_params$maive_method,
+    weight = adj_params$maive_weight,
+    instrument = adj_params$maive_instrument,
+    studylevel = adj_params$maive_studylevel,
+    verbose = adj_params$maive_verbose,
     add_significance_marks = adj_params$maive_add_significance_marks
   )
-  if (export_options$export_results){
-     exportResults(caliper_results, user_params, "p_hacking_tests_caliper", result_type = "num")
-     exportResults(elliott_results, user_params, "p_hacking_tests_elliott", result_type = "num")
-     exportResults(maive_results, user_params, "p_hacking_tests_maive", result_type = "num")
+  if (export_options$export_results) {
+    exportResults(caliper_results, user_params, "p_hacking_tests_caliper", result_type = "num")
+    exportResults(elliott_results, user_params, "p_hacking_tests_elliott", result_type = "num")
+    exportResults(maive_results, user_params, "p_hacking_tests_maive", result_type = "num")
   }
 }
 
@@ -504,8 +502,8 @@ if (run_this$p_hacking_tests){
 
 ###### HETEROGENEITY - Bayesian Model Averaging in R ######
 
-if (run_this$bma){
-  if (adj_params$automatic_bma){
+if (run_this$bma) {
+  if (adj_params$automatic_bma) {
     # Get the optimal BMA formula automatically
     bma_formula_list <- runCachedFunction(
       findOptimalBMAFormula, user_params,
@@ -523,8 +521,7 @@ if (run_this$bma){
       input_vars, data
     )
     # Run the Variance Inflation Test
-    vif_coefs <- runVifTest(bma_formula, data,
-                            print_all_coefs = adj_params$bma_verbose, verbose = T)
+    vif_coefs <- runVifTest(bma_formula, data, print_all_coefs = adj_params$bma_verbose, verbose = TRUE)
   }
   # BMA estimation
   bma_vars <- all.vars(bma_formula) # Only variables - for data subsettings
@@ -534,15 +531,15 @@ if (run_this$bma){
     data, var_list, bma_vars,
     scale_data = adj_params$bma_scale_data
   )
-  raw_bma_params <- getMultipleParams(adj_params, "bma_param_",T,T)
+  raw_bma_params <- getMultipleParams(adj_params, "bma_param_", TRUE, TRUE)
   bma_params <- handleBMAParams(raw_bma_params) # Split into lists, each for a single model
   # Run a BMA estimation for each parameter list - iterate last to first, where index == 1 is main model
   bma_models <- list() # All BMA model objects stored here
   bma_all_coefs <- list() # All BMA coefficients stored here
-  for (i in length(bma_params):1){
+  for (i in rev(seq_along(bma_params))) {
     model_params <- bma_params[[i]]
     # Estimate the model
-    print(paste("Running Bayesian Model Averaging with",model_params$g, "g-prior and",model_params$mprior, "model prior..."))
+    print(paste("Running Bayesian Model Averaging with", model_params$g, "g-prior and", model_params$mprior, "model prior..."))
     bma_model <- runCachedFunction(
       runBMA, user_params,
       verbose_function = nullVerboseFunction,
@@ -569,22 +566,22 @@ if (run_this$bma){
   graphBMAComparison(
     bma_models, var_list,
     theme = export_options$theme,
-    verbose = T,
+    verbose = TRUE,
     export_graphics = export_options$export_graphics,
     export_path = folder_paths$graphic_results_folder,
     graph_scale = adj_params$bma_comparison_graph_scale
   )
   # Store the bma data in the temporary data folder
-  if (export_options$export_bma_data){
-    bma_data_path <- paste0(folder_paths$temp_data_folder, 'bma_data', '_', csv_suffix, '.csv')
+  if (export_options$export_bma_data) {
+    bma_data_path <- paste0(folder_paths$temp_data_folder, "bma_data", "_", csv_suffix, ".csv")
     write_csv(bma_data, bma_data_path)
   }
 }
 
 ###### HETEROGENEITY - Frequentist model averaging code for R (Hansen) ######
 
-if (run_this$fma){
-  if (!exists("bma_data") || !exists("bma_model")){
+if (run_this$fma) {
+  if (!exists("bma_data") || !exists("bma_model")) {
     stop("You must create these two objects first - bma_data, bma_model. Refer to the 'bma' section.")
   }
   # Estimation
@@ -599,28 +596,28 @@ if (run_this$fma){
 ###### MODEL AVERAGING RESULTS PRESENTATION ######
 
 # Print out the results of model averaging into a nice table - only if BMA and FMA output exists
-if (adj_params$ma_results_table & (all(exists("bma_coefs"), exists("fma_coefs")))){
+if (adj_params$ma_results_table && (all(exists("bma_coefs"), exists("fma_coefs")))) {
   ma_res_table <- runCachedFunction(
     getMATable, user_params,
     verbose_function = getMATableVerbose,
     bma_coefs, fma_coefs, var_list
   )
-  if (export_options$export_results){
-     exportResults(ma_res_table, user_params, "ma", result_type = "num")
-   }
+  if (export_options$export_results) {
+    exportResults(ma_res_table, user_params, "ma", result_type = "num")
+  }
 }
 
 # Model averaging variable description table
-if (run_this$ma_variables_description_table){
+if (run_this$ma_variables_description_table) {
   # Get the table with new BMA data (including all reference groups and other excluded BMA variables)
   desc_table_data <- runCachedFunction(
     getBMAData, user_params,
     verbose_function = nullVerboseFunction, # No verbose output
     data, var_list,
     var_list,
-    scale_data = F, # Display original values
-    from_vector = F,
-    include_reference_groups = T
+    scale_data = FALSE, # Display original values
+    from_vector = FALSE,
+    include_reference_groups = TRUE
   )
   ma_var_desc_table <- runCachedFunction( # Runs with winsorized data
     getMAVariablesDescriptionTable, user_params,
@@ -628,19 +625,19 @@ if (run_this$ma_variables_description_table){
     desc_table_data, var_list,
     verbose = adj_params$ma_variables_description_table_verbose # Use View(...) for best viewing experience
   )
-  if (export_options$export_results){
-     exportResults(ma_var_desc_table, user_params, "ma_variables_description_table", result_type = "num")
-   }
+  if (export_options$export_results) {
+    exportResults(ma_var_desc_table, user_params, "ma_variables_description_table", result_type = "num")
+  }
 }
 
 ######################### BEST-PRACTICE ESTIMATE #########################
-if (run_this$bpe){
-  if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")){
+if (run_this$bpe) {
+  if (!exists("bma_data") || !exists("bma_model") || !exists("bma_formula")) {
     stop("You must create these three objects first - bma_data, bma_model, bma_formula. Refer to the 'bma' section.")
   }
   # Parameters
   bpe_study_ids <- getMultipleParams(dataset_params, "bpe_studies")
-  if ("all" %in% bpe_study_ids){
+  if ("all" %in% bpe_study_ids) {
     print("Running the best practice estimate for all studies. This may take some time...")
   }
   # BPE estimation
@@ -655,7 +652,7 @@ if (run_this$bpe){
   )
   bpe_df <- bpe_res$bpe_df
   # Economic significance table
-  bpe_est <- bpe_df[1,1] # BPE estimate of the first row - usually Author's BPE
+  bpe_est <- bpe_df[1, 1] # BPE estimate of the first row - usually Author's BPE
   bpe_econ_sig <- runCachedFunction(
     getEconomicSignificance, user_params,
     verbose_function = getEconomicSignificanceVerbose,
@@ -664,7 +661,7 @@ if (run_this$bpe){
     verbose_output = adj_params$bpe_econ_sig_verbose
   )
   # Export
-  if (export_options$export_results){
+  if (export_options$export_results) {
     bpe_res_name <- ifelse("all" %in% bpe_study_ids, "bpe_res_all_studies", "bpe_res")
     exportResults(bpe_df, user_params, bpe_res_name, result_type = "num")
     exportResults(bpe_econ_sig, user_params, "bpe_econ_sig", result_type = "num")
@@ -672,8 +669,8 @@ if (run_this$bpe){
 }
 
 ###### BPE GRAPHS ######
-if (run_this$bpe_graphs){
-  if (!exists("bpe_df")){
+if (run_this$bpe_graphs) {
+  if (!exists("bpe_df")) {
     stop("You must run BPE first before you construct the summary statistic tables.")
   }
   bpe_graphs <- runCachedFunction(
@@ -690,8 +687,8 @@ if (run_this$bpe_graphs){
 }
 
 ###### BPE SUMMARY STATISTICS - experimental ######
-if (run_this_experimental$bpe_summary_stats){
-  if (!exists("bpe_df")){
+if (run_this_experimental$bpe_summary_stats) {
+  if (!exists("bpe_df")) {
     stop("You must run BPE first before you construct the summary statistic tables.")
   }
   bpe_sum_stats <- runCachedFunction(
@@ -701,7 +698,7 @@ if (run_this_experimental$bpe_summary_stats){
     bpe_factors = dataset_params$bpe_factors,
     conf.level = adj_params$bpe_summary_stats_conf_level
   )
-  if (export_options$export_results){
+  if (export_options$export_results) {
     exportResults(bpe_sum_stats, user_params, "bpe_summary_stats", result_type = "num")
   }
 }
@@ -709,8 +706,8 @@ if (run_this_experimental$bpe_summary_stats){
 ######################### ROBUST BAYESIAN MODEL AVERAGING #########################
 
 # Source:  https://github.com/FBartos/RoBMA
-if (run_this$robma){
-  robma_params <- getMultipleParams(adj_params, "robma_param_",T,T)
+if (run_this$robma) {
+  robma_params <- getMultipleParams(adj_params, "robma_param_", TRUE, TRUE)
   print("Running Robust BMA. This may take some time...")
   robma_res <- runCachedFunction(
     getRoBMA, user_params,
@@ -721,16 +718,16 @@ if (run_this$robma){
     robma_params
   )
   # Export
-  if (export_options$export_results){
-     exportResults(robma_res$Components, user_params, "robma_components", result_type = "num")
-     exportResults(robma_res$Estimates, user_params, "robma_estimates", result_type = "num")
+  if (export_options$export_results) {
+    exportResults(robma_res$Components, user_params, "robma_components", result_type = "num")
+    exportResults(robma_res$Estimates, user_params, "robma_estimates", result_type = "num")
   }
 }
 
 ### EXPORT ###
 
 # Zip the results
-if (export_options$export_results){
+if (export_options$export_results) {
   # Create the file
   zipFolders(
     zip_name = export_options$export_zip_name,
