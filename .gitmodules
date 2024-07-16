@@ -1,0 +1,3 @@
+[submodule "artma"]
+	path = artma
+	url = https://github.com/PetrCala/artma.git
