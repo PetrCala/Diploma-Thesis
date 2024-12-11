@@ -9,4 +9,4 @@
 
 If you are looking for the repository where you can clone the results of my diploma thesis, or see the more technical aspects of it, simply follow this link:
 
-[Automatic Replication Tools for Meta-Analysis](https://github.com/PetrCala/artma)
+[Automatic Replication Tools for Meta-Analysis - Diploma Thesis](https://github.com/PetrCala/artma-dt)
